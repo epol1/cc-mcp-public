@@ -81,13 +81,13 @@
         {
           "id": "cep-backend",
           "name": "CEP HTTP backend",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "afterfx-backend",
           "name": "AfterFX.com fallback backend",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -141,13 +141,13 @@
         {
           "id": "rt-ensure",
           "name": "Loader + version guard",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "rt-undo",
           "name": "One-eval undo-group requests",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -159,7 +159,7 @@
         {
           "id": "rt-nodeerr",
           "name": "Node-id error attribution",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -267,31 +267,31 @@
         {
           "id": "ease-convert",
           "name": "Bezier→KeyframeEase (1D/multi/spatial)",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "ease-verify",
           "name": "valueAtTime verification in AE",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "easing-lib",
           "name": "Easing presets (Remotion set)",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "spring",
           "name": "Remotion-exact spring",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "bake",
           "name": "Curve baking + key reduction",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
@@ -747,13 +747,13 @@
         {
           "id": "snapshot",
           "name": "Snapshot (+32bpc fix)",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "contact",
           "name": "Contact sheets",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
@@ -819,7 +819,7 @@
         {
           "id": "t-unit",
           "name": "Unit tests",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {

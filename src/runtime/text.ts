@@ -58,16 +58,18 @@ export function makeTextDocument(ctx: Ctx, base: TextDocument, s: TextDocSpec): 
   const j = JUST[s.justify || 'left'];
   if (!j) fail(ctx, 'unknown justification ' + s.justify);
   td.justification = (ParagraphJustification as any)[j];
-  td.allCaps = s.caps === 'all';
-  td.smallCaps = s.caps === 'small';
+  // allCaps/smallCaps/superscript/subscript are read-only in AE 26.5; the *Option enums are the writable API (verified).
+  td.fontCapsOption = s.caps === 'all' ? FontCapsOption.FONT_ALL_CAPS : s.caps === 'small' ? FontCapsOption.FONT_SMALL_CAPS : FontCapsOption.FONT_NORMAL_CAPS;
+  td.fontBaselineOption = FontBaselineOption.FONT_NORMAL_BASELINE;
   td.fauxBold = s.fauxBold === true;
   td.fauxItalic = s.fauxItalic === true;
   td.baselineShift = s.baselineShift || 0;
-  td.horizontalScale = s.hScale !== undefined ? s.hScale : 100;
-  td.verticalScale = s.vScale !== undefined ? s.vScale : 100;
+  // Scripting uses multipliers (1 = 100%), unlike the Character panel's percents (verified: 100 → 100× text).
+  td.horizontalScale = (s.hScale !== undefined ? s.hScale : 100) / 100;
+  td.verticalScale = (s.vScale !== undefined ? s.vScale : 100) / 100;
   td.tsume = s.tsume || 0;
   if (s.ligature !== undefined) td.ligature = s.ligature;
-  if (s.box) { td.boxTextSize = [s.box.w, s.box.h]; }
+  if (s.box && td.boxText) { td.boxTextSize = [s.box.w, s.box.h]; }
   if (s.runs) {
     for (let i = 0; i < s.runs.length; i++) {
       const r = s.runs[i];

@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.003**: 12.22% weighted, 17/143 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.004**: 19.11% weighted, 28/143 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -14,25 +14,25 @@
 - [x] Status dashboard + release flow
 - [x] README status image (SVG/PNG)
 
-## Bridge & Execution (58%)
+## Bridge & Execution (67%)
 - [x] CEP extension (hot reload) _(w2)_
 - [x] Eval wrapping, structured errors
 - [x] Backend interface (TS client)
-- [~] CEP HTTP backend
-- [~] AfterFX.com fallback backend
+- [x] CEP HTTP backend
+- [x] AfterFX.com fallback backend
 - [~] Dialog watchdog _(w2)_
 - [~] Crash recovery + relaunch _(w2)_
 - [ ] Large result spill to file
 - [ ] aec doctor
 
-## ES3 Runtime Core (75%)
+## ES3 Runtime Core (92%)
 - [x] Babel/Rollup ES3 build _(w2)_
 - [x] ES3 post-pass + acorn check
 - [x] Runtime helpers + stringify
-- [ ] Loader + version guard
-- [~] One-eval undo-group requests
+- [x] Loader + version guard
+- [x] One-eval undo-group requests
 - [x] Crash-prone API fence
-- [~] Node-id error attribution
+- [x] Node-id error attribution
 - [x] Generic group/property builder _(w2)_
 - [~] Build orchestrator (passes, sticky controls) _(w2)_
 
@@ -52,12 +52,12 @@
 - [ ] Effect/Mask/TrackMatte
 - [ ] Brand tokens/theme helpers
 
-## Animation & Easing (0%)
-- [ ] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
-- [ ] valueAtTime verification in AE _(w2)_
-- [ ] Easing presets (Remotion set)
-- [ ] Remotion-exact spring
-- [ ] Curve baking + key reduction _(w3)_
+## Animation & Easing (77%)
+- [x] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
+- [x] valueAtTime verification in AE _(w2)_
+- [x] Easing presets (Remotion set)
+- [x] Remotion-exact spring
+- [x] Curve baking + key reduction _(w3)_
 - [ ] tween/keys/interpolate
 - [ ] stagger/loop/wiggle
 - [ ] (t)=>value escape hatch
@@ -142,9 +142,9 @@
 - [ ] addControls/variant/precompose _(w2)_
 - [ ] One-step undo verified
 
-## Visual Feedback (0%)
-- [ ] Snapshot (+32bpc fix)
-- [ ] Contact sheets
+## Visual Feedback (21%)
+- [x] Snapshot (+32bpc fix)
+- [~] Contact sheets
 - [ ] aerender preview MP4/GIF _(w2)_
 - [ ] Lint checks _(w2)_
 - [ ] Auto-attach to results
@@ -156,8 +156,8 @@
 - [ ] Claude skill + CLAUDE.md _(w2)_
 - [ ] Claude Code registration
 
-## Testing (0%)
-- [ ] Unit tests _(w2)_
+## Testing (8%)
+- [~] Unit tests _(w2)_
 - [ ] Codegen snapshots + ES3 parse
 - [ ] Inspector round-trip (real AE) _(w3)_
 - [ ] Edit-op tests + undo _(w2)_
