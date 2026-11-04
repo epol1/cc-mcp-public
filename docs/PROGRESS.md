@@ -34,14 +34,14 @@
   - ripple: frames pixel-identical after the shift;
   - greenscreen place → key → background → animate → undo.
 - **Docs:** `docs/DSL.md` (19 sections; 61 examples type-check and compile), `skills/ae-compose/SKILL.md` + `recipes.md`.
-- **Tests:** 253 unit/codegen tests pass (`npm run test:unit`). The 12 bugs the test agent found are fixed and kept as regression tests.
+- **Tests:** 253 unit/codegen tests pass (`npm run test:unit`). The 12 bugs the test agent found are fixed and kept as regression tests. AE integration checks in `tests/integration/` pass: round-trip, ripple, live controls, ease. Watch mode works.
+- **Showcases:** all 14 built, reviewed from contact sheets and iterated.
+- **MCP:** a fresh headless Claude Code session using only the skill and the MCP tools built, reviewed, fixed and ripple-edited a title card unaided (REPORT.md).
 
 ## Next
-1. Showcases 01–14 in `examples/` (01–05 written; build each, review the contact sheet, iterate). 09 = edit demo on an imported copy of `languages_proj` (never `app.open`: import the .aep).
-2. Integration tests in AE: inspector round-trip, edit ops + undo on the hand-built copy, ripple (`scratch/p3/ripple-test.ts` → tests/integration), seeds.
-3. Watch mode check; MCP from Claude Code (`claude -p --mcp-config .mcp.json`); a fresh session using only the skill.
-4. ARCHITECTURE.md: mark unbuilt items (lint, interpolate/stagger helpers, dolly/pushIn rigs, Range Selector mode) as planned or remove them.
-5. README (install, setup checklist, CLI, MCP for Claude Code/Desktop, 5-minute quickstart), REPORT.md, independent DoD review, release.
+1. Act on the independent DoD review (testing/t-review).
+2. Planned features (marked in ARCHITECTURE.md): lint, `stagger`/`interpolate` helpers, dolly/push-in rig helpers, Range Selector text mode, text on path, multi-color confetti, `.aepx` gradient reads, seed-determinism and Remotion side-by-side tests.
+3. `undo`: detect an AE session whose undo history is not recording (D61) and say so instead of reporting success.
 
 ## Open issues
 - AE crashes `(0 :: 42)` from shape-gradient internals: fenced (D15). One crash with no script running happened while the `Blue Dwarf V0` dev plugins were installed; they have since been removed (D18). No crashes since.

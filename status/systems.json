@@ -339,7 +339,7 @@
         {
           "id": "fn-hatch",
           "name": "(t)=>value escape hatch",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -915,19 +915,19 @@
         {
           "id": "watch",
           "name": "watch mode",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "skill",
           "name": "Claude skill + CLAUDE.md",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "mcp-register",
           "name": "Claude Code registration",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -975,7 +975,7 @@
         {
           "id": "t-review",
           "name": "Independent final review",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         }
       ]
@@ -1089,13 +1089,13 @@
         {
           "id": "agent-guide",
           "name": "AGENT_GUIDE.md",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "report",
           "name": "REPORT.md",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         }
       ]

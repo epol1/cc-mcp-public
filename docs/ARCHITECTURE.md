@@ -21,7 +21,7 @@ The primary user of this tool is **an AI agent (Claude) working with a human des
 2. **Feedback is automatic.** Every build and edit returns:
    - a **contact sheet image**,
    - the **key frames**,
-   - a **lint report**: text overflow, safe-area violations, overlaps, blank frames, too-fast reads, renderer/feature mismatches, missing fonts,
+   - *(planned, not built)* a **lint report**: text overflow, safe-area violations, overlaps, blank frames, too-fast reads, renderer/feature mismatches, missing fonts. Today the agent reviews the automatic contact sheet instead, plus build warnings (unknown params, hidden properties, missing footage),
    - the ids it created, so the next edit can target them.
 
    The agent never has to remember to look.
@@ -50,7 +50,7 @@ ae-compose/
     catalog/      effect discovery → cached catalog → generated TS types; name resolution (fuzzy)
     inspect/      Node side of the inspector (JSON → IR/outline), .aepx gradient parser
     edit/         patch-op schema and helpers
-    visual/       snapshot, contact sheet (sharp), aerender preview (ffmpeg), 32 bpc fix, lint
+    visual/       snapshot, contact sheet (sharp), preview (frame capture + ffmpeg; aerender optional), 32 bpc fix, key-color sampling
     cli/          `aec` commands
     mcp/          MCP stdio server
   packages/bridge-cep/extension/   CEP extension (stable manifest, hot-reloaded server.js)
@@ -93,7 +93,7 @@ Also: `Effect` (by friendly name or matchName, typed params), `Mask`, `TrackMatt
   5. apply relative animation.
 
   All of it happens inside **one undo group in one eval**. No measurement round-trip, no stale cache.
-- Node runs the same solver with estimated metrics (from a measurement cache) for `--dry-run`, lint and tests.
+- Node runs the same solver in the unit tests (estimated metrics); builds always solve inside AE with real metrics.
 - Animations on laid-out layers are **relative to the solved position** by default (`y: spring({ from: 80 })` means "start 80 px below its layout slot").
 
 ### 2.5 Animation as data
@@ -102,9 +102,9 @@ Each animatable prop accepts a static value, a **track descriptor** or a functio
 - `spring({ from, to, stiffness, damping, mass, delay, duration, rig })` gives Remotion-exact numerics (golden-tested against `remotion@4.0.540`).
   - `rig: "keys"` (default): extrema-seeded fitted keys, typically 5–9.
   - `rig: "expression"`: a closed-form spring expression driven by sliders.
-- `interpolate(input, inRange, outRange, { easing, extrapolate })`, which maps another track or time. The default extrapolation is `clamp` in ae-compose (documented difference from Remotion).
+- *(planned, not built)* `interpolate(input, inRange, outRange, …)`. Today: `sample(fn, { duration })` bakes any JS function of time into keys, and `expr(code)` writes an expression.
 - Easing: the full Remotion `Easing` set plus named presets (`easeOutCubic`, `easeInOutQuart`, `expoOut`, `backOut`, `anticipate`, `snappy`, `smooth`…). Cubic forms map exactly. Others are baked (§4.4).
-- `stagger(children, { each, from: "start|center|end|random", seed })`, `loop(track, { mode: "cycle|pingpong" })` (→ `loopOut`), and `wiggle(freq, amp, { seed })` (→ `wiggle()` expression with `seedRandom`).
+- `loop(anim, 'cycle' | 'pingpong' | 'offset' | 'continue')` (→ `loopOut`), `wiggle(freq, amp, { seed })` (→ `wiggle()` with `seedRandom`). Staggers: per-unit text animators have `each` + `order`; for layers, compute delays in JS or use `plus(control, i * step)` so one slider shifts the whole stagger. A `stagger()` helper is planned.
 - Escape hatch: `(t) => value` (seconds). It is sampled and reduced to keys within tolerance, or emitted as an expression when `as: "expression"` and the body is expression-safe.
 
 ### 2.6 Text animation (first-class)
@@ -112,8 +112,8 @@ Each animatable prop accepts a static value, a **track descriptor** or a functio
 - Per-range styling uses `runs={[{ start, end, fill, font, size }]}` (→ `characterRange`).
 - `animate` on `<Text>` can target **units**: `perChar`, `perWord`, `perLine`. These compile to **native text animators**:
   - **Expression Selector mode** (default for eased/spring staggers): animator properties hold the "from" offsets (Position, Scale, Rotation, Opacity, Blur, Fill, Tracking…). The selector's Amount expression evaluates the exact easing or spring per unit at `time − inPoint − delay − textIndex·each`, with `each`, `duration`, `delay` and overshoot linked to controls. This gives the same per-unit curves as Remotion and is fully live-tweakable.
-  - **Range Selector mode** (`mode: "range"`): classic Start/End/Offset keys with shape and ease high/low, for designers who prefer native keys.
-- Presets: `riseIn`, `fadeUp`, `blurIn`, `scaleIn`, `typewriter`, `trackingIn`, `slideMask`, `popIn`, `wave`, `scramble` (Character Offset), and a 3D `flipIn` (per-character 3D).
+  - *(planned, not built)* **Range Selector mode**: classic Start/End/Offset keys for designers who prefer native keys. Today every per-unit animator uses the Expression Selector.
+- Presets (`textPresets`): `riseIn`, `fadeUp`, `blurIn`, `popIn`, `trackingIn`, `typewriter`, `flipIn` (per-character 3D), `slideMask`, `scramble` (Character Offset). Exits use `direction: 'out'`, optionally `anchor: 'end'` (D51).
 
 ### 2.7 Controls
 `control(name, default, opts)` marks any value as live. It compiles to an expression control on a **"Controls" null** (or on the layer, `scope: "layer"`). Optionally it's also exposed as an Essential Graphics property (`eg: true`, default for showcase scenes). Types are inferred: number → Slider (range/step), color → Color, boolean → Checkbox, point → Point/3D Point, angle → Angle, enum → Dropdown, layer → Layer control.
@@ -237,6 +237,31 @@ How controls drive animation without rebuilding:
 
 Targets are ids, names or paths. Ambiguous targets fail with candidates listed. Every op result reports what changed (before → after), so the agent can confirm.
 
+*As built:* the agent-facing op names are `set`, `ease`, `easeKey`, `interpolation`, `retime`, `layerTiming`, `addEffect`, `setEffect`, `removeEffect`, `moveEffect`, `text`, `path`, `layer`, `removeLayer`, `duplicateLayer`, `addLayer`, `comp`, `precompose`, `duplicateComp`, `addControls`, `ripple`, `place`, `key` and `raw` (`src/edit/ops.ts`; reference in `docs/DSL.md` §16). Planned but not built: `reshapeCurve` presets, `addTextAnimator`, `setGradient`, typed `setParticle` and `set3D` (use `set` on AE paths and `addEffect` meanwhile).
+
+### 6.1 Atomic batches
+Every batch is all or nothing (D53): a net-zero sentinel change makes the undo group non-empty, and a failure part-way undoes it, so the project is exactly as before (`rolledBack: true`). One `undo` call undoes the last batch or build. Read-only tools that need temporary comps record counted no-op groups, which `undo` skips.
+
+### 6.2 Ripple edits
+`ripple` turns "make the scene at 1:02 slower" into one op (D50):
+- **The edit is a time map:** old span [a, b] becomes [a, a + len] (insert: a = b; remove: len = 0; otherwise stretch).
+- **Layers after the edit** move whole via `startTime`.
+- **Layers spanning it:**
+  - keys are remapped, with eases rescaled by segment length;
+  - a key on an insert point is doubled so the value holds;
+  - linear segments are split so they hold;
+  - markers and in/out points are mapped.
+- **ae-compose expressions:** they are time-warped, or rig pivots are moved.
+- **Precomps** spanning the edit are rippled inside unless they are shared.
+- **Scenes:** comp markers with a duration (named `<Sequence>`s create them). `scene + by` holds at the scene's quietest moment.
+
+The TSX-side equivalent is `<Series>` plus exits with `anchor: 'end'` (D51).
+
+### 6.3 Project media
+- **Finding media:** `list_project_items` searches the project, and `preview_item` shows any item without placing it.
+- **Placing it:** `place` adds an item or file as a layer (`below`/`above`/`start`/`fit`).
+- **Keying:** `key` chroma-keys with Keylight + Advanced Spill Suppressor and an auto-sampled screen color (D52).
+
 ## 7. Bridge and execution
 - `Backend` interface: `eval(script, { timeoutMs }) → { ok, result | error{name,line,message,nodeId,src} }`, plus `health()`. There are two implementations:
   - `CepBackend`: HTTP to `127.0.0.1:47811` with a token, a serialized queue, and eval-wrapping so syntax errors don't raise modals.
@@ -259,7 +284,7 @@ Targets are ids, names or paths. Ambiguous targets fail with candidates listed. 
    - `geometry={{ extrude, bevel: { style, depth, direction }, holeBevelDepth }}`.
 3. **Cameras:**
    - one-node or two-node; `lens` (mm) or zoom; DOF (`focusDistance`, `aperture`/`fStop`, `blurLevel`, iris settings);
-   - rigs built from parented nulls: `orbit()`, `dolly()`, `truck()`, `crane()`, `pushIn()`, `lookAt(id)`, `focusOn(id)` (focus distance follows the target via expression), `follow(id)`;
+   - rigs: `<OrbitCamera>` (parented null + expression, live speed), camera `lookAt` and `focusOn` (expressions). Dolly/truck/crane/push-in moves are keyed `position`/`pointOfInterest` animations (see showcase 11); dedicated helpers are planned;
    - speeds, angles and focus are exposed as controls.
 4. **Lights:** parallel/spot/point/ambient/environment with intensity, color, falloff, cone, shadows. `environment={{ hdri: "studio.hdr", visible, blur }}`. Rigs: three-point, rim and key/fill.
 5. **3D layout:** `ZStack` (depth spacing), `Grid3D`, `Circle3D`/`Arc3D`, `Parallax` (depth from a factor), `Orbit` placement. Unit convention: 1 unit = 1 px at z = 0.
@@ -268,7 +293,7 @@ Targets are ids, names or paths. Ambiguous targets fail with candidates listed. 
 ## 9. Particles (first-class)
 - Components: `ParticleWorld`, `ParticleSystemsII`, `ParticlePlayground`, `StarBurst`, `Rainfall`, `Snowfall`, `PixelPolly`, `Shatter`, `CardDance`. Params are typed from the catalog, and `Effect` handles any other vanilla effect.
 - **Layer references:** `texture={<Text>…</Text>}` or a layer id. Element-valued refs automatically become a hidden source precomp (in `_parts`) added to the comp, hidden, with the `LAYER_INDEX` param set.
-- **Emitter linking:** `emitter={follow("logoNull")}` → producer position expressions from `layer.toWorld(anchorPoint)` converted to the effect's coordinate space. `burstAt: marker("Burst")` → birth-rate keys or expression gated on markers.
+- **Emitter linking:** `emitter={{ follow: 'logoNull' }}` → producer position expressions from `layer.toWorld(anchorPoint)` converted to the effect's coordinate space. Bursts: `burst={{ at: 1.2 }}` → hold keys on Birth Rate; `burst={{ at: { marker: 'hit' } }}` → an expression gated on that comp marker (moving the marker retimes the burst).
 - **Camera integration:**
   - CC Particle World uses the comp camera (Effect Camera → comp camera) when the scene has a camera.
   - Shatter and Card Dance set `Camera System` to Comp Camera.
@@ -281,7 +306,7 @@ Targets are ids, names or paths. Ambiguous targets fail with candidates listed. 
 - `snapshot(comp, times[])`: a temp wrapper comp (premultiplied-alpha safe) with `saveFrameToPng().wait()` and the 32 bpc ×10 fix (D13). Returns PNG paths and downscaled base64.
 - `contactSheet(comp, n)`: N frames → one grid image (sharp) with timecode labels. It's attached automatically to build and edit results.
 - `renderPreview(comp, range, { scale, fps })`: saves a temp copy of the project and runs aerender (PNG sequence, draft settings) then ffmpeg (MP4 or GIF). Used for particle and motion checks.
-- **Lint**: text overflow (box/rect vs. comp), safe-area violations, layer overlaps at peaks, blank or near-black frames, text on screen shorter than its reading time (~0.3 s + 0.06 s/char), keys with linear-only easing, renderer mismatch.
+- *(planned, not built)* **Lint**: text overflow, safe-area violations, overlaps at peaks, blank frames, too-short reading time, linear-only easing, renderer mismatch. Today: the automatic contact sheet plus build warnings, and the skill's review checklist.
 
 ## 11. Interfaces
 - **CLI** (`aec`): `build <scene.tsx> [--variants] [--new-version] [--dry-run]`, `watch`, `inspect "<comp>"`, `edit <ops.json>`, `snapshot`, `contact-sheet`, `preview`, `effects --refresh`, `dialogs`, `recover`, `doctor`.

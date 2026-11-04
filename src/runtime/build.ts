@@ -63,21 +63,22 @@ function isControl(fx: PropertyGroup): boolean {
   return CONTROL_MN[fx.matchName] === true || fx.matchName.indexOf('Pseudo/') === 0;
 }
 
-/** Build-time default of each control, stored in the layer comment after the tag ("aec:<id>;d=<json>"). */
+/** Build-time default of each control, stored in the layer comment after the tag ("aec:<id>;d=Rise=80&Rise%20Delay=0.2"). */
 function storedDefaults(L: Layer): { [name: string]: any } {
   const c = L.comment || '';
   const i = c.indexOf(';d=');
   if (i < 0) return {};
-  // Format: name=v[,v...] entries separated by  (values are numbers or number arrays).
+  // Query-string format: escape(name)=v[,v...]&... (AE strips control characters from comments, so the
+  // separators must be printable; escape() keeps "=" and "&" out of names).
   const out: { [name: string]: any } = {};
-  const parts = c.substring(i + 3).split('');
+  const parts = c.substring(i + 3).split('&');
   for (let k = 0; k < parts.length; k++) {
-    const eq = parts[k].lastIndexOf('=');
+    const eq = parts[k].indexOf('=');
     if (eq <= 0) continue;
     const vs = parts[k].substring(eq + 1).split(',');
     const nums: number[] = [];
     for (let j = 0; j < vs.length; j++) nums[j] = parseFloat(vs[j]);
-    out[parts[k].substring(0, eq)] = nums.length === 1 ? nums[0] : nums;
+    out[unescape(parts[k].substring(0, eq))] = nums.length === 1 ? nums[0] : nums;
   }
   return out;
 }
@@ -106,12 +107,12 @@ function stampDefaults(L: Layer): void {
     if (typeof v !== 'number' && !(v && v.length !== undefined)) continue;
     const vals: string[] = [];
     if (typeof v === 'number') vals[0] = String(v); else for (let j = 0; j < v.length; j++) vals[j] = String(v[j]);
-    d[d.length] = fx.name + '=' + vals.join(',');
+    d[d.length] = escape(fx.name) + '=' + vals.join(',');
     any = true;
   }
   if (!any) return;
   const tag = tagOf(L);
-  if (tag) L.comment = TAG + tag + ';d=' + d.join('');
+  if (tag) L.comment = TAG + tag + ';d=' + d.join('&');
 }
 
 /**

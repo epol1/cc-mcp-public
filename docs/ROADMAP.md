@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.011**: 89.04% weighted, 141/163 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.012**: 91.04% weighted, 147/163 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -57,7 +57,7 @@
 - [ ] Brand tokens/theme helpers
 - [x] Exits anchored to layer end (ripple-friendly)
 
-## Animation & Easing (97%)
+## Animation & Easing (100%)
 - [x] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
 - [x] valueAtTime verification in AE _(w2)_
 - [x] Easing presets (Remotion set)
@@ -65,7 +65,7 @@
 - [x] Curve baking + key reduction _(w3)_
 - [x] tween/keys/interpolate
 - [x] stagger/loop/wiggle
-- [~] (t)=>value escape hatch
+- [x] (t)=>value escape hatch
 - [x] Color ease calibration (255 units)
 - [x] Motion blur: comp/layer/forced (CC Force MB, Pixel MB) _(w2)_
 
@@ -169,21 +169,21 @@
 - [ ] Lint checks _(w2)_
 - [x] Auto-attach to results
 
-## Interfaces (78%)
+## Interfaces (100%)
 - [x] CLI (aec) _(w2)_
 - [x] MCP server (18 tools) _(w3)_
-- [~] watch mode
-- [~] Claude skill + CLAUDE.md _(w2)_
-- [~] Claude Code registration
+- [x] watch mode
+- [x] Claude skill + CLAUDE.md _(w2)_
+- [x] Claude Code registration
 
-## Testing (67%)
+## Testing (71%)
 - [x] Unit tests _(w2)_
 - [x] Codegen snapshots + ES3 parse
 - [x] Inspector round-trip (real AE) _(w3)_
 - [x] Edit-op tests + undo _(w2)_
 - [ ] Seed determinism
 - [ ] Remotion quality bar _(w2)_
-- [ ] Independent final review
+- [~] Independent final review
 
 ## Showcase Scenes (100%)
 - [x] 01 Kinetic typography _(w2)_
@@ -201,11 +201,11 @@
 - [x] 13 Ambient 3D particles _(w2)_
 - [x] 14 Particle Playground _(w2)_
 
-## Docs (60%)
+## Docs (100%)
 - [x] README + quickstart
 - [x] DSL reference _(w2)_
-- [ ] AGENT_GUIDE.md
-- [ ] REPORT.md
+- [x] AGENT_GUIDE.md
+- [x] REPORT.md
 
 ## Definition of done
 - [ ] aec doctor passes

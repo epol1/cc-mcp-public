@@ -1,7 +1,8 @@
 // Showcase 09 — Editing a hand-built project (not made by ae-compose). Imports the collected fixture
 // assets/handmade/languages_proj/languages.aep INTO the open project (the user's project stays open; nothing is
 // written to the original file), inspects it, then restyles it with edit ops: re-ease every position move to a
-// snappier curve, add a glow to the title, retint, and ripple a hold into the timeline. Contact sheets before and
+// snappier curve, add a glow, ripple a hold into the timeline, and add live Map Delay / Map Speed controls to
+// the hand-made map move. Contact sheets before and
 // after are written next to this file, then ONE undo restores the comp exactly.
 // Run: npx tsx examples/09-edit-existing/run.ts [--keep]
 import fs from 'node:fs';
@@ -41,6 +42,8 @@ const ops: any[] = [];
 for (const L of moving.slice(0, 6)) ops.push({ op: 'ease', layer: L.index, prop: 'position', easing: 'easeOutExpo' });
 if (texts[0]) ops.push({ op: 'addEffect', layer: texts[0].index, effect: 'Glow', params: { 'Glow Radius': 25, 'Glow Intensity': 0.6 } });
 ops.push({ op: 'ripple', at: Math.min(2, main.dur / 3), by: 0.5 });
+// Live controls on a hand-built animation: delay and speed sliders that retime its keys without editing them.
+if (moving[0]) ops.push({ op: 'addControls', layer: moving[0].index, prop: 'position', delay: 'Map Delay', speed: 'Map Speed' });
 
 const r = await applyEdits({ comp, ops }, { frames: 8 });
 console.log('edit', r.ok ? 'ok' : `${r.error} at ${r.at}${r.rolledBack ? ' (rolled back)' : ''}`);

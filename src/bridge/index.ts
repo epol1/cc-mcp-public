@@ -57,7 +57,8 @@ export async function evalAE(script: string, opts: { timeoutMs?: number; cancelD
           if (!running) break;
           try {
             const w = await aeWindows();
-            for (const d of w.dialogs) { const pr = await pressDialog(d.hwnd, 'Cancel'); if (pr.pressed) cancelled.push(d.title); }
+            // Only titled dialogs: untitled #32770 windows can be AE's own panels (seen at startup).
+            for (const d of w.dialogs) { if (!d.title) continue; const pr = await pressDialog(d.hwnd, 'Cancel'); if (pr.pressed) cancelled.push(d.title); }
           } catch { /* best-effort */ }
         }
       })()
