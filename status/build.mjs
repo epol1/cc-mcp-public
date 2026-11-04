@@ -35,8 +35,8 @@ if (recIdx > 0) {
   fs.writeFileSync(histPath, JSON.stringify(history, null, 1) + '\n');
 }
 const weekAgo = Date.now() - 7 * 864e5;
-const base = [...history].reverse().find((h) => Date.parse(h.date) <= weekAgo) || history[0];
-const week = base ? tasksDone - base.tasksDone : tasksDone;
+const base = [...history].reverse().find((h) => Date.parse(h.date) <= weekAgo);
+const week = base ? tasksDone - base.tasksDone : tasksDone; // no point older than a week: the whole project is within the window
 
 // "Counted from the code" metrics.
 function walk(dir, pred, acc = []) {
@@ -154,4 +154,71 @@ let md = `# Roadmap\n\n> Generated from \`status/systems.json\` by \`status/buil
 for (const s of systems) { md += `## ${s.name} (${Math.round(s.pct * 100)}%)\n`; for (const t of s.tasks) md += `- ${mark[t.status]} ${t.name}${t.weight > 1 ? ` _(w${t.weight})_` : ''}\n`; md += '\n'; }
 md += `## Definition of done\n`; for (const d of data.definitionOfDone) md += `- ${mark[d.status]} ${d.name}\n`;
 fs.writeFileSync(path.join(root, 'docs/ROADMAP.md'), md);
-console.log(`status: ${pct.toFixed(2)}% | tasks ${tasksDone}/${tasksAll} | DoD ${dodDone}/${data.definitionOfDone.length} | wrote status/index.html, docs/ROADMAP.md`);
+// status/status.svg + status/status.png: the same dashboard as a static image, because GitHub's
+// README can only show Markdown and images (no styled HTML). README.md embeds the PNG.
+{
+  const SW = 1600, F = 'Segoe UI, Helvetica, Arial, sans-serif';
+  const C = { bg: '#0d1117', panel: '#161b22', line: '#30363d', text: '#e6edf3', mute: '#8b949e', gray: '#4b525a', green: '#2ea043', amber: '#d29922', blue: '#2f81f7', orange: '#f0883e' };
+  const fill = { done: C.green, wip: C.amber, todo: C.gray };
+  const T = (x, y, s, size = 16, color = C.text, extra = '') => `<text x="${x}" y="${y}" font-family="${F}" font-size="${size}" fill="${color}" ${extra}>${esc(s)}</text>`;
+  const parts = [];
+  parts.push(T(40, 62, 'Status', 40, C.text, 'font-weight="600"'));
+  parts.push(T(42, 90, `ae-compose ${version} · ${new Date().toISOString().slice(0, 10)} · generated from status/systems.json`, 15, C.mute));
+  parts.push(`<line x1="40" x2="${SW - 40}" y1="106" y2="106" stroke="${C.line}"/>`);
+  // badges
+  let bx = 40;
+  const badgeSvg = (k, v, color) => { const kw = k.length * 9.6 + 28, vw = v.length * 10.4 + 24; const s = `<rect x="${bx}" y="122" width="${kw}" height="34" fill="#3a3f47"/>${T(bx + 14, 145, k, 18)}<rect x="${bx + kw}" y="122" width="${vw}" height="34" fill="${color}"/>${T(bx + kw + 12, 145, v, 18, '#fff', 'font-weight="600"')}`; bx += kw + vw + 12; return s; };
+  parts.push(badgeSvg('overall', pct.toFixed(2) + '%', pct >= 100 ? C.green : C.orange));
+  parts.push(badgeSvg('tasks done', `${tasksDone}/${tasksAll}`, tasksDone === tasksAll ? C.green : C.orange));
+  parts.push(badgeSvg('showcases', `${showDone}/${show ? show.tasks.length : 0}`, C.orange));
+  parts.push(badgeSvg('definition of done', `${dodDone}/${data.definitionOfDone.length}`, C.orange));
+  parts.push(badgeSvg('done in 7 days', `+${week} tasks`, C.blue));
+  // treemap
+  const MX = 40, MY = 205, MW = 880, MH = 500;
+  parts.push(T(MX, MY - 12, `Systems: ${pct.toFixed(2)}% (${+done.toFixed(1)}/${total} weighted)`, 22));
+  for (const r of squarify(systems.map((s) => ({ ...s, value: s.total })).sort((a, b) => b.value - a.value), MX, MY, MW, MH)) {
+    parts.push(`<rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${r.w.toFixed(1)}" height="${r.h.toFixed(1)}" fill="#22272e" stroke="${C.bg}" stroke-width="2"/>`);
+    const cells = [];
+    for (const t of [...r.tasks].sort((a, b) => order[a.status] - order[b.status])) for (let k = 0; k < (t.weight || 1); k++) cells.push(t);
+    const ih = Math.max(r.h - 22, 8), cols = Math.max(1, Math.round(Math.sqrt((cells.length * r.w) / ih))), rows = Math.ceil(cells.length / cols);
+    const cw = r.w / cols, ch = ih / rows;
+    cells.forEach((t, i) => parts.push(`<rect x="${(r.x + (i % cols) * cw + 1).toFixed(1)}" y="${(r.y + 22 + Math.floor(i / cols) * ch + 1).toFixed(1)}" width="${Math.max(cw - 2, 1).toFixed(1)}" height="${Math.max(ch - 2, 1).toFixed(1)}" fill="${fill[t.status]}" ${t.status === 'todo' ? 'opacity="0.75"' : ''}/>`));
+    const label = r.name.length * 7.6 > r.w - 40 ? r.name.slice(0, Math.max(3, Math.floor((r.w - 44) / 7.6))) + '…' : r.name;
+    parts.push(`<rect x="${(r.x + 1).toFixed(1)}" y="${(r.y + 1).toFixed(1)}" width="${(r.w - 2).toFixed(1)}" height="20" fill="${C.bg}" opacity="0.8"/>`);
+    parts.push(T((r.x + 6).toFixed(1), (r.y + 16).toFixed(1), label, 13) + T((r.x + r.w - 34).toFixed(1), (r.y + 16).toFixed(1), Math.round(r.pct * 100) + '%', 12, C.mute));
+  }
+  // right column: definition of done, showcases, metrics
+  const RX = 970;
+  parts.push(T(RX, MY - 12, `Definition of done (${dodDone}/${data.definitionOfDone.length})`, 22));
+  data.definitionOfDone.forEach((d, i) => { const y = MY + 8 + i * 26; parts.push(`<rect x="${RX}" y="${y}" width="13" height="13" rx="2" fill="${fill[d.status] || C.gray}"/>` + T(RX + 22, y + 12, d.name, 15)); });
+  const SY = MY + 8 + data.definitionOfDone.length * 26 + 30;
+  parts.push(T(RX, SY, `Showcase scenes (${showDone}/${show ? show.tasks.length : 0})`, 22));
+  (show ? show.tasks : []).forEach((t, i) => { const x = RX + (i % 7) * 86, y = SY + 14 + Math.floor(i / 7) * 48; parts.push(`<rect x="${x}" y="${y}" width="80" height="42" fill="${fill[t.status]}"/>` + T(x + 30, y + 27, t.name.slice(0, 2), 16, t.status === 'todo' ? '#c9d1d9' : C.bg, 'font-weight="600"')); });
+  const MY2 = SY + 14 + 2 * 48 + 26;
+  parts.push(T(RX, MY2, 'Counted from the code', 22));
+  metrics.forEach(([k, v], i) => { const x = RX + i * 118, y = MY2 + 12; parts.push(`<rect x="${x}" y="${y}" width="110" height="62" fill="${C.panel}" stroke="${C.line}"/>` + T(x + 10, y + 32, v.toLocaleString('en-US'), 22, C.text, 'font-weight="600"') + T(x + 10, y + 52, k, 12, C.mute)); });
+  // bottom: remaining work bars + history
+  const BY = Math.max(MY + MH + 50, MY2 + 12 + 62 + 46);
+  const top = bars.slice(0, 10);
+  parts.push(T(MX, BY, `Remaining tasks by system (${tasksAll - tasksDone})`, 22));
+  top.forEach((b, i) => { const y = BY + 16 + i * 26; parts.push(T(MX, y + 15, b.name, 15) + `<rect x="${MX + 230}" y="${y + 2}" width="560" height="18" fill="${C.gray}"/><rect x="${MX + 230}" y="${y + 2}" width="${((560 * b.remaining) / maxRem).toFixed(1)}" height="18" fill="${C.amber}"/>` + T(MX + 805, y + 16, String(b.remaining), 15, C.mute)); });
+  parts.push(T(RX, BY, 'Progress history', 22));
+  const hx0 = RX, hw = 590, hy0 = BY + 20, hh = 200;
+  const hp = pts.map((p, i) => [hx0 + (pts.length === 1 ? hw / 2 : (i * hw) / (pts.length - 1)), hy0 + hh - (p.pct / 100) * hh]);
+  parts.push(`<rect x="${hx0}" y="${hy0}" width="${hw}" height="${hh}" fill="${C.panel}" stroke="${C.line}"/>`);
+  for (const g of [25, 50, 75]) parts.push(`<line x1="${hx0}" x2="${hx0 + hw}" y1="${hy0 + hh - (g / 100) * hh}" y2="${hy0 + hh - (g / 100) * hh}" stroke="${C.line}" stroke-dasharray="4 4"/>` + T(hx0 + hw + 6, hy0 + hh - (g / 100) * hh + 4, g + '%', 11, C.mute));
+  parts.push(`<polyline points="${hp.map((p) => p.map((n) => n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${C.green}" stroke-width="3"/>`);
+  hp.forEach(([x, y]) => parts.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${C.green}"/>`));
+  if (pts.length) parts.push(T(hx0 + 8, hy0 + 20, `${pts[0].version} → ${pts[pts.length - 1].version}: ${pts[pts.length - 1].pct}%`, 13, C.mute));
+  const SH = BY + 16 + Math.max(top.length * 26, hh + 10) + 40;
+  parts.push(`<text x="${MX}" y="${SH - 14}" font-family="${F}" font-size="13" fill="${C.mute}">Cells: one per weight unit of each task.  <tspan fill="${C.green}">■</tspan> done  <tspan fill="${C.amber}">■</tspan> in progress  <tspan fill="${C.gray}">■</tspan> to do</text>`);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SW}" height="${SH}" viewBox="0 0 ${SW} ${SH}"><rect width="100%" height="100%" fill="${C.bg}"/>${parts.join('')}</svg>`;
+  fs.writeFileSync(path.join(root, 'status/status.svg'), svg);
+  try {
+    const sharp = (await import('sharp')).default;
+    await sharp(Buffer.from(svg), { density: 96 }).png({ compressionLevel: 9 }).toFile(path.join(root, 'status/status.png'));
+  } catch (e) {
+    console.warn('status.png not rendered (sharp unavailable):', e.message);
+  }
+}
+console.log(`status: ${pct.toFixed(2)}% | tasks ${tasksDone}/${tasksAll} | DoD ${dodDone}/${data.definitionOfDone.length} | wrote status/index.html, status/status.{svg,png}, docs/ROADMAP.md`);

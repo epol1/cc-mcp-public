@@ -47,6 +47,12 @@
           "name": "Status dashboard + release flow",
           "status": "done",
           "weight": 1
+        },
+        {
+          "id": "readme-status",
+          "name": "README status image (SVG/PNG)",
+          "status": "done",
+          "weight": 1
         }
       ]
     },
@@ -69,13 +75,13 @@
         {
           "id": "backend-iface",
           "name": "Backend interface (TS client)",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "cep-backend",
           "name": "CEP HTTP backend",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
@@ -117,19 +123,19 @@
         {
           "id": "es3-build",
           "name": "Babel/Rollup ES3 build",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "es3-post",
           "name": "ES3 post-pass + acorn check",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "rt-helpers",
           "name": "Runtime helpers + stringify",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
@@ -141,20 +147,32 @@
         {
           "id": "rt-undo",
           "name": "One-eval undo-group requests",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
           "id": "rt-safety",
           "name": "Crash-prone API fence",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "rt-nodeerr",
           "name": "Node-id error attribution",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
+        },
+        {
+          "id": "rt-groups",
+          "name": "Generic group/property builder",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "rt-build",
+          "name": "Build orchestrator (passes, sticky controls)",
+          "status": "wip",
+          "weight": 2
         }
       ]
     },

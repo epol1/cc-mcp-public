@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "ae-compose",
+    "paths": {
+      "ae-compose": ["./src/dsl/index.ts"],
+      "ae-compose/jsx-runtime": ["./src/dsl/jsx-runtime.ts"],
+      "ae-compose/jsx-dev-runtime": ["./src/dsl/jsx-runtime.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "examples/**/*.tsx", "bin/**/*.ts"],
+  "exclude": ["src/runtime/**"]
+}

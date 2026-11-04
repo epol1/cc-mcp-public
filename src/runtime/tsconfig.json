@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noLib": true,
+    "types": ["types-for-adobe/AfterEffects/26.0"],
+    "typeRoots": ["../../node_modules"],
+    "strict": true,
+    "noImplicitAny": false,
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": ["./**/*.ts", "./types/**/*.d.ts", "../shared/**/*.ts"]
+}

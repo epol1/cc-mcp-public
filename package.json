@@ -1,0 +1,53 @@
+{
+  "name": "ae-compose",
+  "version": "0.0.2",
+  "private": true,
+  "description": "TSX motion-design compiler + live bridge, MCP server and CLI that builds native, editable After Effects comps",
+  "type": "module",
+  "bin": {
+    "aec": "bin/aec.mjs"
+  },
+  "exports": {
+    ".": "./src/dsl/index.ts",
+    "./jsx-runtime": "./src/dsl/jsx-runtime.ts",
+    "./jsx-dev-runtime": "./src/dsl/jsx-runtime.ts"
+  },
+  "scripts": {
+    "build:runtime": "node build/runtime.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p src/runtime/tsconfig.json --noEmit",
+    "test:unit": "vitest run tests/unit tests/codegen --passWithNoTests",
+    "test:ae": "vitest run tests/integration --no-file-parallelism",
+    "status": "node status/build.mjs",
+    "aec": "node bin/aec.mjs",
+    "mcp": "node bin/aec-mcp.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@babel/core": "8.1.0",
+    "@babel/preset-env": "8.0.7",
+    "@babel/preset-typescript": "8.0.7",
+    "@rollup/plugin-babel": "7.1.0",
+    "@rollup/plugin-node-resolve": "16.0.3",
+    "@types/node": "^26.6.6",
+    "acorn": "8.19.0",
+    "acorn-walk": "8.3.5",
+    "magic-string": "1.4.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "4.0.540",
+    "rollup": "4.67.5",
+    "types-for-adobe": "7.2.6",
+    "typescript": "6.0.3",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "chokidar": "^6.0.0",
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  }
+}

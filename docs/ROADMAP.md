@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.002**: 7.27% weighted, 10/140 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.003**: 12.22% weighted, 17/143 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -12,26 +12,29 @@
 - [x] AE 26.5 API verification _(w2)_
 - [x] Architecture doc _(w2)_
 - [x] Status dashboard + release flow
+- [x] README status image (SVG/PNG)
 
-## Bridge & Execution (46%)
+## Bridge & Execution (58%)
 - [x] CEP extension (hot reload) _(w2)_
 - [x] Eval wrapping, structured errors
-- [ ] Backend interface (TS client)
-- [ ] CEP HTTP backend
+- [x] Backend interface (TS client)
+- [~] CEP HTTP backend
 - [~] AfterFX.com fallback backend
 - [~] Dialog watchdog _(w2)_
 - [~] Crash recovery + relaunch _(w2)_
 - [ ] Large result spill to file
 - [ ] aec doctor
 
-## ES3 Runtime Core (0%)
-- [ ] Babel/Rollup ES3 build _(w2)_
-- [ ] ES3 post-pass + acorn check
-- [ ] Runtime helpers + stringify
+## ES3 Runtime Core (75%)
+- [x] Babel/Rollup ES3 build _(w2)_
+- [x] ES3 post-pass + acorn check
+- [x] Runtime helpers + stringify
 - [ ] Loader + version guard
-- [ ] One-eval undo-group requests
-- [ ] Crash-prone API fence
-- [ ] Node-id error attribution
+- [~] One-eval undo-group requests
+- [x] Crash-prone API fence
+- [~] Node-id error attribution
+- [x] Generic group/property builder _(w2)_
+- [~] Build orchestrator (passes, sticky controls) _(w2)_
 
 ## IR & Schema (0%)
 - [ ] zod schema v1 _(w3)_
