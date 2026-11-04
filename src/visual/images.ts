@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import type { OverlayOptions } from 'sharp';
 
 /** saveFrameToPng in 32 bpc projects writes values scaled ×0.1 (exactly linear). Undo it. */
 export async function normalizeCapture(file: string, bpc: number): Promise<Buffer> {
@@ -31,7 +32,7 @@ export async function contactSheet(frames: SheetFrame[], opts: { bpc: number; fp
   const rows = Math.ceil(frames.length / cols);
   const W = cols * cw + (cols + 1) * gap;
   const H = head + rows * (ch + strip) + (rows + 1) * gap;
-  const layers: sharp.OverlayOptions[] = [];
+  const layers: OverlayOptions[] = [];
   for (let i = 0; i < frames.length; i++) {
     const x = gap + (i % cols) * (cw + gap);
     const y = head + gap + Math.floor(i / cols) * (ch + strip + gap);

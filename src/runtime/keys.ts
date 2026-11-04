@@ -25,8 +25,15 @@ function interp(t: string | undefined): KeyframeInterpolationType {
   return KeyframeInterpolationType.BEZIER;
 }
 
-function eases(src: IrEase[] | undefined, dims: number): KeyframeEase[] {
+function eases(src: IrEase[] | undefined, dims: number, colorScale: number): KeyframeEase[] {
   const out: KeyframeEase[] = [];
+  // Spatial and color properties take ONE ease: speed along the (straight) path = |per-dim speeds|,
+  // ×255 for color (AE measures color speed in 0–255 units, calibrated D31).
+  if (dims === 1 && src && src.length > 1) {
+    let ss = 0;
+    for (let d = 0; d < src.length; d++) ss += src[d].speed * src[d].speed;
+    return [new KeyframeEase(Math.sqrt(ss) * colorScale, clamp(src[0].influence, 0.1, 100))];
+  }
   for (let d = 0; d < dims; d++) {
     const e = src && src.length ? src[d < src.length ? d : src.length - 1] : { speed: 0, influence: 16.666666667 };
     out[d] = new KeyframeEase(e.speed, clamp(e.influence, 0.1, 100));
@@ -49,6 +56,7 @@ export function applyKeys(ctx: Ctx, prop: Property, keys: IrKey[]): void {
   const dims = easeDims(prop);
   const spatial = isSpatial(prop);
   const isText = prop.propertyValueType === PropertyValueType.TEXT_DOCUMENT;
+  const cs = prop.propertyValueType === PropertyValueType.COLOR ? 255 : 1;
   for (let n = 0; n < keys.length; n++) {
     const k = keys[n];
     const idx = prop.nearestKeyIndex(k.t);
@@ -70,7 +78,7 @@ export function applyKeys(ctx: Ctx, prop: Property, keys: IrKey[]): void {
     prop.setTemporalAutoBezierAtKey(idx, false);
     prop.setTemporalContinuousAtKey(idx, k.tc === true);
     if (it === KeyframeInterpolationType.BEZIER || ot === KeyframeInterpolationType.BEZIER) {
-      (prop as any).setTemporalEaseAtKey(idx, eases(k.ie, dims), eases(k.oe, dims));
+      (prop as any).setTemporalEaseAtKey(idx, eases(k.ie, dims, cs), eases(k.oe, dims, cs));
     }
     if (k.label) {
       try { (prop as any).setLabelAtKey(idx, k.label); } catch (e) { /* older AE */ }

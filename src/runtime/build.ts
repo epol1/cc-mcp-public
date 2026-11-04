@@ -6,7 +6,7 @@ import { AecError, newCtx, warn } from './ctx';
 import type { IrAsset } from './project';
 import { ensureFolder, findTaggedComp, importAsset } from './project';
 import type { IrLayer } from './layers';
-import { createLayer, lockIfNeeded, setLayerAttrs, tagOf, TAG, wireLayer } from './layers';
+import { applyAnchorBox, applyFootage, createLayer, lockIfNeeded, setLayerAttrs, tagOf, TAG, wireLayer } from './layers';
 import type { Pending } from './groups';
 import { applyProps, buildGroups, flushExpressions } from './groups';
 import { setTextDocument } from './text';
@@ -148,7 +148,8 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     ctx.cur = L.id;
     const layer = ctx.layers[L.id];
     setLayerAttrs(ctx, layer, L);
-    if (L.text) setTextDocument(ctx, layer as TextLayer, L.text);
+    if (L.text) { setTextDocument(ctx, layer as TextLayer, L.text); applyAnchorBox(layer, L); }
+    if (L.type === 'footage' || L.type === 'model') applyFootage(ctx, layer, comp, L);
   });
   each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
   // Pass 3: structure (shape contents, effects, masks, text animators).
@@ -157,6 +158,8 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     if (!L.groups) return;
     for (let g = 0; g < L.groups.length; g++) buildGroups(ctx, ctx.layers[L.id], ctx.layers[L.id], L.groups[g].at, L.groups[g].items, pending);
   });
+  // Shape anchors need the contents built first (text anchors were measured before animators).
+  each(c.layers, (L) => { if (L.type === 'shape') { ctx.cur = L.id; applyAnchorBox(ctx.layers[L.id], L); } });
   // Pass 4: values and keyframes.
   each(c.layers, (L) => { ctx.cur = L.id; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); });
   // Pass 5: expressions (all targets exist now).

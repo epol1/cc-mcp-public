@@ -171,8 +171,20 @@
         {
           "id": "rt-build",
           "name": "Build orchestrator (passes, sticky controls)",
-          "status": "wip",
+          "status": "done",
           "weight": 2
+        },
+        {
+          "id": "rt-resolve",
+          "name": "Forgiving deep property resolver",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "rt-ease-collapse",
+          "name": "Spatial/color ease collapse",
+          "status": "done",
+          "weight": 1
         }
       ]
     },
@@ -189,13 +201,13 @@
         {
           "id": "ir-ids",
           "name": "Stable ids + source locations",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "ir-units",
           "name": "Units/time/color normalization",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -207,49 +219,49 @@
         {
           "id": "jsx-runtime",
           "name": "JSX runtime (jsxDEV sources)",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "scene-loader",
           "name": "Scene loader (esbuild)",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "timing",
           "name": "Composition/Sequence/Series",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "basic-layers",
           "name": "Solid/Null/Adjustment/Precomp",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "footage",
           "name": "Footage (fit/crop/trim)",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
           "id": "dsl-text",
           "name": "Text primitive",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "dsl-shapes",
           "name": "Shape primitives",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "dsl-fx",
           "name": "Effect/Mask/TrackMatte",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
@@ -297,19 +309,25 @@
         {
           "id": "tween",
           "name": "tween/keys/interpolate",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "stagger",
           "name": "stagger/loop/wiggle",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
           "id": "fn-hatch",
           "name": "(t)=>value escape hatch",
-          "status": "todo",
+          "status": "wip",
+          "weight": 1
+        },
+        {
+          "id": "color-ease",
+          "name": "Color ease calibration (255 units)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -321,7 +339,7 @@
         {
           "id": "textdoc",
           "name": "Full TextDocument + style runs",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -333,13 +351,13 @@
         {
           "id": "expr-sel",
           "name": "Expression-selector per char/word/line",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "text-presets",
           "name": "Text presets (riseIn, typewriter…)",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
@@ -363,25 +381,25 @@
         {
           "id": "shape-basic",
           "name": "Rect/Ellipse/Star/Group",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "pen",
           "name": "Pen paths + SVG d",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "paint",
           "name": "Fill/Stroke/dashes/taper",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "shape-ops",
           "name": "Trim/Repeater/Merge/Offset/…",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -399,7 +417,13 @@
         {
           "id": "masks-mattes",
           "name": "Masks + track mattes",
-          "status": "todo",
+          "status": "wip",
+          "weight": 1
+        },
+        {
+          "id": "svg-parse",
+          "name": "SVG path parser (M/L/C/S/Q/T/A/Z)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -411,7 +435,7 @@
         {
           "id": "fx-apply",
           "name": "Effects + typed params",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
@@ -435,7 +459,7 @@
         {
           "id": "fx-fuzzy",
           "name": "Fuzzy name resolution",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -447,19 +471,19 @@
         {
           "id": "ctl-null",
           "name": "Controls null, all control types",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "ctl-static",
           "name": "Static value linking",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "ctl-retime",
           "name": "Retimable-keys rig",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
@@ -471,13 +495,13 @@
         {
           "id": "ctl-eg",
           "name": "Essential Graphics",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
           "id": "ctl-sticky",
           "name": "Sticky controls on rebuild",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
@@ -753,7 +777,7 @@
         {
           "id": "contact",
           "name": "Contact sheets",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -771,7 +795,7 @@
         {
           "id": "auto-attach",
           "name": "Auto-attach to results",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         }
       ]
@@ -867,7 +891,7 @@
         {
           "id": "s01",
           "name": "01 Kinetic typography",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {

@@ -24,6 +24,8 @@ export interface GroupSpec {
   props?: PropSpec[];
   set?: PropSpec; // when the added item is itself a property (text animator props)
   kids?: { at: string; items: GroupSpec[] }[];
+  /** Dropdown Menu Control items (setPropertyParameters). */
+  menu?: string[];
   id?: string; // IR id for attribution
 }
 
@@ -95,6 +97,7 @@ export function buildGroups(ctx: Ctx, layer: Layer, owner: any, at: string, item
     let g: any = byIndexPath(layer, path);
     if (spec.name) { g.name = spec.name; g = byIndexPath(layer, path); }
     if (spec.attrs) setAttrs(ctx, g, spec.attrs);
+    if (spec.menu) { (g.property(1) as any).setPropertyParameters(spec.menu); g = byIndexPath(layer, path); }
     if (spec.kids) {
       for (let k = 0; k < spec.kids.length; k++) {
         buildGroups(ctx, layer, byIndexPath(layer, path), spec.kids[k].at, spec.kids[k].items, pending);

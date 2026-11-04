@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.004**: 19.11% weighted, 28/143 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.005**: 36.24% weighted, 54/147 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -25,7 +25,7 @@
 - [ ] Large result spill to file
 - [ ] aec doctor
 
-## ES3 Runtime Core (92%)
+## ES3 Runtime Core (100%)
 - [x] Babel/Rollup ES3 build _(w2)_
 - [x] ES3 post-pass + acorn check
 - [x] Runtime helpers + stringify
@@ -34,65 +34,69 @@
 - [x] Crash-prone API fence
 - [x] Node-id error attribution
 - [x] Generic group/property builder _(w2)_
-- [~] Build orchestrator (passes, sticky controls) _(w2)_
+- [x] Build orchestrator (passes, sticky controls) _(w2)_
+- [x] Forgiving deep property resolver
+- [x] Spatial/color ease collapse
 
-## IR & Schema (0%)
+## IR & Schema (40%)
 - [ ] zod schema v1 _(w3)_
-- [ ] Stable ids + source locations
-- [ ] Units/time/color normalization
+- [x] Stable ids + source locations
+- [x] Units/time/color normalization
 
-## TSX DSL (0%)
-- [ ] JSX runtime (jsxDEV sources)
-- [ ] Scene loader (esbuild)
-- [ ] Composition/Sequence/Series _(w2)_
-- [ ] Solid/Null/Adjustment/Precomp
-- [ ] Footage (fit/crop/trim) _(w2)_
-- [ ] Text primitive
-- [ ] Shape primitives _(w2)_
-- [ ] Effect/Mask/TrackMatte
+## TSX DSL (83%)
+- [x] JSX runtime (jsxDEV sources)
+- [x] Scene loader (esbuild)
+- [x] Composition/Sequence/Series _(w2)_
+- [x] Solid/Null/Adjustment/Precomp
+- [~] Footage (fit/crop/trim) _(w2)_
+- [x] Text primitive
+- [x] Shape primitives _(w2)_
+- [x] Effect/Mask/TrackMatte
 - [ ] Brand tokens/theme helpers
 
-## Animation & Easing (77%)
+## Animation & Easing (93%)
 - [x] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
 - [x] valueAtTime verification in AE _(w2)_
 - [x] Easing presets (Remotion set)
 - [x] Remotion-exact spring
 - [x] Curve baking + key reduction _(w3)_
-- [ ] tween/keys/interpolate
-- [ ] stagger/loop/wiggle
-- [ ] (t)=>value escape hatch
+- [x] tween/keys/interpolate
+- [~] stagger/loop/wiggle
+- [~] (t)=>value escape hatch
+- [x] Color ease calibration (255 units)
 
-## Text Animation (0%)
-- [ ] Full TextDocument + style runs _(w2)_
+## Text Animation (55%)
+- [x] Full TextDocument + style runs _(w2)_
 - [ ] Range-selector animators _(w2)_
-- [ ] Expression-selector per char/word/line _(w3)_
-- [ ] Text presets (riseIn, typewriter…) _(w2)_
+- [x] Expression-selector per char/word/line _(w3)_
+- [~] Text presets (riseIn, typewriter…) _(w2)_
 - [ ] 3D per-character
 - [ ] Text on path
 
-## Shapes & Paths (0%)
-- [ ] Rect/Ellipse/Star/Group
-- [ ] Pen paths + SVG d _(w2)_
-- [ ] Fill/Stroke/dashes/taper
-- [ ] Trim/Repeater/Merge/Offset/… _(w2)_
+## Shapes & Paths (58%)
+- [x] Rect/Ellipse/Star/Group
+- [x] Pen paths + SVG d _(w2)_
+- [x] Fill/Stroke/dashes/taper
+- [x] Trim/Repeater/Merge/Offset/… _(w2)_
 - [ ] Gradients via .ffx _(w3)_
 - [ ] SVG/AI → shape layers _(w2)_
-- [ ] Masks + track mattes
+- [~] Masks + track mattes
+- [x] SVG path parser (M/L/C/S/Q/T/A/Z)
 
-## Effects & Catalog (8%)
-- [ ] Effects + typed params
+## Effects & Catalog (42%)
+- [x] Effects + typed params
 - [~] Discovery (vanilla filter)
 - [ ] Param harvest (ranges, popups) _(w2)_
 - [ ] Generated TS types
-- [ ] Fuzzy name resolution
+- [x] Fuzzy name resolution
 
-## Controls & Variants (0%)
-- [ ] Controls null, all control types
-- [ ] Static value linking
-- [ ] Retimable-keys rig _(w3)_
+## Controls & Variants (38%)
+- [x] Controls null, all control types
+- [x] Static value linking
+- [~] Retimable-keys rig _(w3)_
 - [ ] Expression rigs (spring/orbit) _(w2)_
-- [ ] Essential Graphics
-- [ ] Sticky controls on rebuild
+- [~] Essential Graphics
+- [~] Sticky controls on rebuild
 - [ ] Variants _(w2)_
 - [ ] Compare comp
 
@@ -142,12 +146,12 @@
 - [ ] addControls/variant/precompose _(w2)_
 - [ ] One-step undo verified
 
-## Visual Feedback (21%)
+## Visual Feedback (36%)
 - [x] Snapshot (+32bpc fix)
-- [~] Contact sheets
+- [x] Contact sheets
 - [ ] aerender preview MP4/GIF _(w2)_
 - [ ] Lint checks _(w2)_
-- [ ] Auto-attach to results
+- [~] Auto-attach to results
 
 ## Interfaces (0%)
 - [ ] CLI (aec) _(w2)_
@@ -165,8 +169,8 @@
 - [ ] Remotion quality bar _(w2)_
 - [ ] Independent final review
 
-## Showcase Scenes (0%)
-- [ ] 01 Kinetic typography _(w2)_
+## Showcase Scenes (4%)
+- [~] 01 Kinetic typography _(w2)_
 - [ ] 02 Logo reveal _(w2)_
 - [ ] 03 Lower third
 - [ ] 04 Product promo (footage) _(w2)_

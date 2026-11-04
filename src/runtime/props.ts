@@ -12,12 +12,32 @@ export function child(g: PropertyGroup | Layer, seg: string): PropertyBase | nul
   return p || null;
 }
 
+// Contents groups are never searched deeply: nested shape groups repeat the same matchNames.
+const NO_DEEP: { [mn: string]: boolean } = { 'ADBE Root Vectors Group': true, 'ADBE Vectors Group': true, 'ADBE Effect Parade': true, 'ADBE Mask Parade': true, 'ADBE Text Animators': true };
+
+function deep(g: any, seg: string, depth: number): any {
+  if (depth > 4 || !g || g.propertyType === PropertyType.PROPERTY) return null;
+  for (let i = 1; i <= g.numProperties; i++) {
+    const c = g.property(i);
+    if (c.matchName === seg || c.name === seg) return c;
+  }
+  for (let i = 1; i <= g.numProperties; i++) {
+    const c = g.property(i);
+    if (c.propertyType !== PropertyType.PROPERTY && !NO_DEEP[c.matchName]) {
+      const r = deep(c, seg, depth + 1);
+      if (r) return r;
+    }
+  }
+  return null;
+}
+
+/** Resolves a path; a segment that isn't a direct child is searched in nested (non-contents) groups. */
 export function resolve(root: PropertyGroup | Layer, path: string): PropertyBase | null {
   const segs = path.split('/');
   let cur: any = root;
   for (let i = 0; i < segs.length; i++) {
     if (!cur) return null;
-    cur = child(cur, segs[i]);
+    cur = child(cur, segs[i]) || (segs[i].charAt(0) !== '#' ? deep(cur, segs[i], 0) : null);
   }
   return cur;
 }

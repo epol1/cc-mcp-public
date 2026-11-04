@@ -13,5 +13,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["./**/*.ts", "./types/**/*.d.ts", "../shared/**/*.ts"]
+  "include": ["./**/*.ts", "./types/**/*.d.ts", "../shared/es3/**/*.ts"]
 }

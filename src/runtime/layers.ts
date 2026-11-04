@@ -36,6 +36,49 @@ export interface IrLayer {
   props?: PropSpec[];
   matte?: { layer: string; type: 'alpha' | 'alphaInverted' | 'luma' | 'lumaInverted' };
   markers?: { t: number; comment?: string; dur?: number; label?: number }[];
+  /** Anchor at a fraction of the layer's content box (sourceRectAtTime), e.g. [0.5, 0.5] = center. */
+  anchorBox?: number[];
+  /** Footage fit into the comp: cover | contain | fill | width | height | none. */
+  fit?: string;
+  muted?: boolean;
+  loop?: boolean;
+}
+
+function hasProp(L: IrLayer, suffix: string): boolean {
+  if (!L.props) return false;
+  for (let i = 0; i < L.props.length; i++) { const p = L.props[i].p; if (p.substring(p.length - suffix.length) === suffix) return true; }
+  return false;
+}
+
+/** Sets the anchor point to a fraction of the content box (text/shape). Call before animators/keys. */
+export function applyAnchorBox(layer: Layer, L: IrLayer): void {
+  if (!L.anchorBox) return;
+  const r = (layer as any).sourceRectAtTime(L.in !== undefined ? L.in : 0, false);
+  const ap = layer.property('ADBE Transform Group').property('ADBE Anchor Point') as Property;
+  const x = r.left + r.width * L.anchorBox[0];
+  const y = r.top + r.height * L.anchorBox[1];
+  ap.setValue((layer as any).threeDLayer ? [x, y, 0] : [x, y]);
+}
+
+/** Fits footage to the comp unless the IR sets Scale explicitly. */
+export function applyFootage(ctx: Ctx, layer: Layer, comp: CompItem, L: IrLayer): void {
+  const av = layer as any;
+  if (L.muted && av.hasAudio) av.audioEnabled = false;
+  if (L.loop && av.canSetTimeRemapEnabled) {
+    av.timeRemapEnabled = true;
+    const tr = layer.property('ADBE Time Remapping') as Property;
+    tr.expression = 'loopOut("cycle")';
+  }
+  if (!L.fit || L.fit === 'none' || hasProp(L, 'ADBE Scale')) return;
+  const sw = av.source ? av.source.width : av.width, sh = av.source ? av.source.height : av.height;
+  if (!sw || !sh) { warn(ctx, 'cannot fit: source has no size'); return; }
+  let fx = comp.width / sw, fy = comp.height / sh;
+  if (L.fit === 'cover') fx = fy = Math.max(fx, fy);
+  else if (L.fit === 'contain') fx = fy = Math.min(fx, fy);
+  else if (L.fit === 'width') fy = fx;
+  else if (L.fit === 'height') fx = fy;
+  const sc = layer.property('ADBE Transform Group').property('ADBE Scale') as Property;
+  sc.setValue([fx * 100, fy * 100, 100]);
 }
 
 const LIGHT: { [k: string]: string } = { parallel: 'PARALLEL', spot: 'SPOT', point: 'POINT', ambient: 'AMBIENT', environment: 'ENVIRONMENT' };
