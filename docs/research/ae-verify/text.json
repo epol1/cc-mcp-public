@@ -1,0 +1,1500 @@
+{
+ "tdProps": "allCaps,applyFill,applyStroke,autoHyphenate,autoKernType,autoLeading,baselineDirection,baselineLocs,baselineShift,boxAutoFitPolicy,boxFirstBaselineAlignment,boxFirstBaselineAlignmentMinimum,boxInsetSpacing,boxOverflow,boxText,boxTextPos,boxTextSize,boxVerticalAlignment,composedLineCount,composerEngine,digitSet,direction,endIndent,everyLineComposer,fauxBold,fauxItalic,fillColor,firstLineIndent,font,fontBaselineOption,fontCapsOption,fontFamily,fontLocation,fontObject,fontSize,fontStyle,hangingRoman,horizontalScale,justification,kerning,leading,leadingType,ligature,lineJoinType,lineOrientation,noBreak,paragraphCount,pointText,smallCaps,spaceAfter,spaceBefore,startIndent,strokeColor,strokeOverFill,strokeWidth,subscript,superscript,text,tracking,tsume,verticalScale,__proto__",
+ "tdMethods": "characterRange,composedLineCharacterIndexesAt,composedLineRange,paragraphCharacterIndexesAt,paragraphRange,resetCharStyle,resetParagraphStyle",
+ "fontAfter": "Inter-Bold",
+ "fontFamily": "Inter",
+ "fontStyle": "Bold",
+ "fontLocation": "",
+ "rect": [
+  -335.919367104769,
+  -104.21023106575,
+  672.465179949999,
+  106.651992488652
+ ],
+ "charRangeProps": "allCaps,applyFill,applyStroke,autoHyphenate,autoKernType,autoLeading,baselineDirection,baselineShift,characterEnd,characterStart,composerEngine,digitSet,direction,endIndent,everyLineComposer,fauxBold,fauxItalic,fillColor,firstLineIndent,font,fontBaselineOption,fontCapsOption,fontFamily,fontLocation,fontObject,fontSize,fontStyle,hangingRoman,horizontalScale,isRangeValid,justification,kerning,leading,leadingType,ligature,lineJoinType,noBreak,smallCaps,spaceAfter,spaceBefore,startIndent,strokeColor,strokeOverFill,strokeWidth,subscript,superscript,text,tracking,tsume,verticalScale,__proto__",
+ "charRangeOk": true,
+ "charRangeReadback": {
+  "fill": [
+   1,
+   0.30000001192093,
+   0.20000000298023
+  ],
+  "size": 180
+ },
+ "paraRangeProps": "characterEnd,characterStart,isRangeValid,__proto__",
+ "composedLineCount": 1,
+ "boxText": {
+  "boxText": true,
+  "boxTextSize": [
+   600,
+   300
+  ],
+  "pos": [
+   -300,
+   -150
+  ]
+ },
+ "boxLines": 3,
+ "animatorProps": {
+  "ADBE Text Anchor Point 3D": "Anchor Point",
+  "ADBE Text Position 3D": "Position",
+  "ADBE Text Scale 3D": "Scale",
+  "ADBE Text Skew": "Skew",
+  "ADBE Text Skew Axis": "Skew Axis",
+  "ADBE Text Rotation X": "X Rotation",
+  "ADBE Text Rotation Y": "Y Rotation",
+  "ADBE Text Rotation": "Rotation",
+  "ADBE Text Opacity": "Opacity",
+  "ADBE Text Fill Color": "Fill Color",
+  "ADBE Text Fill Hue": "Fill Hue",
+  "ADBE Text Stroke Color": "Stroke Color",
+  "ADBE Text Stroke Width": "Stroke Width",
+  "ADBE Text Tracking Amount": "Tracking Amount",
+  "ADBE Text Line Spacing": "Line Spacing",
+  "ADBE Text Character Offset": "Character Offset",
+  "ADBE Text Blur": "Blur",
+  "ADBE Text Fill Opacity": "Fill Opacity",
+  "ADBE Text Line Anchor": "Line Anchor",
+  "ADBE Text Character Change Type": "Character Alignment"
+ },
+ "selectors": {
+  "ADBE Text Selector": {
+   "n": "Range Selector 1",
+   "m": "ADBE Text Selector",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Start",
+     "m": "ADBE Text Percent Start",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": -100,
+     "max": 100
+    },
+    {
+     "n": "End",
+     "m": "ADBE Text Percent End",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": -100,
+     "max": 100
+    },
+    {
+     "n": "Offset",
+     "m": "ADBE Text Percent Offset",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": -100,
+     "max": 100
+    },
+    {
+     "n": "Start",
+     "m": "ADBE Text Index Start",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": -99999,
+     "max": 99999,
+     "noExpr": true
+    },
+    {
+     "n": "End",
+     "m": "ADBE Text Index End",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": -99999,
+     "max": 99999,
+     "noExpr": true
+    },
+    {
+     "n": "Offset",
+     "m": "ADBE Text Index Offset",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": -99999,
+     "max": 99999,
+     "noExpr": true
+    },
+    {
+     "n": "Advanced",
+     "m": "ADBE Text Range Advanced",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Units",
+       "m": "ADBE Text Range Units",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 2,
+       "static": true,
+       "noExpr": true
+      },
+      {
+       "n": "Based On",
+       "m": "ADBE Text Range Type2",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 4,
+       "static": true,
+       "noExpr": true
+      },
+      {
+       "n": "Mode",
+       "m": "ADBE Text Selector Mode",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 6
+      },
+      {
+       "n": "Amount",
+       "m": "ADBE Text Selector Max Amount",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": -100,
+       "max": 100
+      },
+      {
+       "n": "Shape",
+       "m": "ADBE Text Range Shape",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 6,
+       "static": true,
+       "noExpr": true
+      },
+      {
+       "n": "Smoothness",
+       "m": "ADBE Text Selector Smoothness",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "Ease High",
+       "m": "ADBE Text Levels Max Ease",
+       "t": "P",
+       "vt": null,
+       "v": 0,
+       "min": -100,
+       "max": 100
+      },
+      {
+       "n": "Ease Low",
+       "m": "ADBE Text Levels Min Ease",
+       "t": "P",
+       "vt": null,
+       "v": 0,
+       "min": -100,
+       "max": 100
+      },
+      {
+       "n": "Randomize Order",
+       "m": "ADBE Text Randomize Order",
+       "t": "P",
+       "vt": null,
+       "v": 0,
+       "static": true,
+       "noExpr": true
+      },
+      {
+       "n": "Random Seed",
+       "m": "ADBE Text Random Seed",
+       "t": "P",
+       "vt": null,
+       "v": 0,
+       "min": 0,
+       "max": 10000,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Text Wiggly Selector": {
+   "n": "Wiggly Selector 1",
+   "m": "ADBE Text Wiggly Selector",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Mode",
+     "m": "ADBE Text Selector Mode",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 6
+    },
+    {
+     "n": "Max Amount",
+     "m": "ADBE Text Wiggly Max Amount",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": -100,
+     "max": 100
+    },
+    {
+     "n": "Min Amount",
+     "m": "ADBE Text Wiggly Min Amount",
+     "t": "P",
+     "vt": null,
+     "v": -100,
+     "min": -100,
+     "max": 100
+    },
+    {
+     "n": "Based On",
+     "m": "ADBE Text Range Type2",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 4,
+     "static": true,
+     "noExpr": true
+    },
+    {
+     "n": "Wiggles/Second",
+     "m": "ADBE Text Temporal Freq",
+     "t": "P",
+     "vt": null,
+     "v": 2
+    },
+    {
+     "n": "Correlation",
+     "m": "ADBE Text Character Correlation",
+     "t": "P",
+     "vt": null,
+     "v": 50,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "Temporal Phase",
+     "m": "ADBE Text Temporal Phase",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Spatial Phase",
+     "m": "ADBE Text Spatial Phase",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Lock Dimensions",
+     "m": "ADBE Text Wiggly Lock Dim",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Random Seed",
+     "m": "ADBE Text Wiggly Random Seed",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "max": 10000
+    }
+   ]
+  },
+  "ADBE Text Expressible Selector": {
+   "n": "Expression Selector 1",
+   "m": "ADBE Text Expressible Selector",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Based On",
+     "m": "ADBE Text Range Type2",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 4,
+     "static": true,
+     "noExpr": true
+    },
+    {
+     "n": "Amount",
+     "m": "ADBE Text Expressible Amount",
+     "t": "P",
+     "vt": null,
+     "v": [
+      100,
+      100,
+      100
+     ],
+     "min": -100,
+     "max": 100
+    }
+   ]
+  }
+ },
+ "animatorTree": {
+  "n": "Properties",
+  "m": "ADBE Text Animator Properties",
+  "t": "NG",
+  "c": [
+   {
+    "n": "Anchor Point",
+    "m": "ADBE Text Anchor Point 3D",
+    "t": "P",
+    "vt": null,
+    "v": [
+     0,
+     0,
+     0
+    ],
+    "spatial": true
+   },
+   {
+    "n": "Position",
+    "m": "ADBE Text Position 3D",
+    "t": "P",
+    "vt": null,
+    "v": [
+     0,
+     0,
+     0
+    ],
+    "spatial": true
+   },
+   {
+    "n": "Scale",
+    "m": "ADBE Text Scale 3D",
+    "t": "P",
+    "vt": null,
+    "v": [
+     100,
+     100,
+     100
+    ]
+   },
+   {
+    "n": "Skew",
+    "m": "ADBE Text Skew",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -70,
+    "max": 70
+   },
+   {
+    "n": "Skew Axis",
+    "m": "ADBE Text Skew Axis",
+    "t": "P",
+    "vt": null,
+    "v": 0
+   },
+   {
+    "n": "X Rotation",
+    "m": "ADBE Text Rotation X",
+    "t": "P",
+    "vt": null,
+    "v": 0
+   },
+   {
+    "n": "Y Rotation",
+    "m": "ADBE Text Rotation Y",
+    "t": "P",
+    "vt": null,
+    "v": 0
+   },
+   {
+    "n": "Rotation",
+    "m": "ADBE Text Rotation",
+    "t": "P",
+    "vt": null,
+    "v": 0
+   },
+   {
+    "n": "Opacity",
+    "m": "ADBE Text Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100
+   },
+   {
+    "n": "Fill Opacity",
+    "m": "ADBE Text Fill Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100
+   },
+   {
+    "n": "Stroke Opacity",
+    "m": "ADBE Text Stroke Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Fill Color",
+    "m": "ADBE Text Fill Color",
+    "t": "P",
+    "vt": "COLOR",
+    "v": [
+     1,
+     0,
+     0,
+     1
+    ],
+    "min": -3921568.62745098,
+    "max": 3921568.62745098,
+    "spatial": true
+   },
+   {
+    "n": "Stroke Color",
+    "m": "ADBE Text Stroke Color",
+    "t": "P",
+    "vt": "COLOR",
+    "v": [
+     1,
+     0,
+     0,
+     1
+    ],
+    "min": -3921568.62745098,
+    "max": 3921568.62745098,
+    "spatial": true
+   },
+   {
+    "n": "Fill Hue",
+    "m": "ADBE Text Fill Hue",
+    "t": "P",
+    "vt": null,
+    "v": 0
+   },
+   {
+    "n": "Stroke Hue",
+    "m": "ADBE Text Stroke Hue",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Fill Saturation",
+    "m": "ADBE Text Fill Saturation",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Stroke Saturation",
+    "m": "ADBE Text Stroke Saturation",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Fill Brightness",
+    "m": "ADBE Text Fill Brightness",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Stroke Brightness",
+    "m": "ADBE Text Stroke Brightness",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Color",
+    "m": "ADBE 3DText Front RGB",
+    "t": "P",
+    "vt": "COLOR",
+    "v": [
+     1,
+     0,
+     0,
+     1
+    ],
+    "min": -3921568.62745098,
+    "max": 3921568.62745098,
+    "noExpr": true,
+    "spatial": true
+   },
+   {
+    "n": "Front Hue",
+    "m": "ADBE 3DText Front Hue",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Front Saturation",
+    "m": "ADBE 3DText Front Sat",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Brightness",
+    "m": "ADBE 3DText Front Bright",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Opacity",
+    "m": "ADBE 3DText Front Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Ambient",
+    "m": "ADBE 3DText Front Ambient",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Diffuse",
+    "m": "ADBE 3DText Front Diffuse",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Specular Intensity",
+    "m": "ADBE 3DText Front Specular",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Specular Shininess",
+    "m": "ADBE 3DText Front Shininess",
+    "t": "P",
+    "vt": null,
+    "v": 5,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Metal",
+    "m": "ADBE 3DText Front Metal",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Reflection Intensity",
+    "m": "ADBE 3DText Front Reflection",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Reflection Sharpness",
+    "m": "ADBE 3DText Front Gloss",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Reflection Rolloff",
+    "m": "ADBE 3DText Front Fresnel",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Transparency",
+    "m": "ADBE 3DText Front Xparency",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Transparency Rolloff",
+    "m": "ADBE 3DText Front XparRoll",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Front Index of Refraction",
+    "m": "ADBE 3DText Front IOR",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 5,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Color",
+    "m": "ADBE 3DText Bevel RGB",
+    "t": "P",
+    "vt": "COLOR",
+    "v": [
+     1,
+     0,
+     0,
+     1
+    ],
+    "min": -3921568.62745098,
+    "max": 3921568.62745098,
+    "noExpr": true,
+    "spatial": true
+   },
+   {
+    "n": "Bevel Hue",
+    "m": "ADBE 3DText Bevel Hue",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Saturation",
+    "m": "ADBE 3DText Bevel Sat",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Brightness",
+    "m": "ADBE 3DText Bevel Bright",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Opacity",
+    "m": "ADBE 3DText Bevel Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Ambient",
+    "m": "ADBE 3DText Bevel Ambient",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Diffuse",
+    "m": "ADBE 3DText Bevel Diffuse",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Specular Intensity",
+    "m": "ADBE 3DText Bevel Specular",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Specular Shininess",
+    "m": "ADBE 3DText Bevel Shininess",
+    "t": "P",
+    "vt": null,
+    "v": 5,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Metal",
+    "m": "ADBE 3DText Bevel Metal",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Reflection Intensity",
+    "m": "ADBE 3DText Bevel Reflection",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Reflection Sharpness",
+    "m": "ADBE 3DText Bevel Gloss",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Reflection Rolloff",
+    "m": "ADBE 3DText Bevel Fresnel",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Transparency",
+    "m": "ADBE 3DText Bevel Xparency",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Transparency Rolloff",
+    "m": "ADBE 3DText Bevel XparRoll",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Index of Refraction",
+    "m": "ADBE 3DText Bevel IOR",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 5,
+    "noExpr": true
+   },
+   {
+    "n": "Side Color",
+    "m": "ADBE 3DText Side RGB",
+    "t": "P",
+    "vt": "COLOR",
+    "v": [
+     1,
+     0,
+     0,
+     1
+    ],
+    "min": -3921568.62745098,
+    "max": 3921568.62745098,
+    "noExpr": true,
+    "spatial": true
+   },
+   {
+    "n": "Side Hue",
+    "m": "ADBE 3DText Side Hue",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Side Saturation",
+    "m": "ADBE 3DText Side Sat",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Brightness",
+    "m": "ADBE 3DText Side Bright",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Opacity",
+    "m": "ADBE 3DText Side Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Ambient",
+    "m": "ADBE 3DText Side Ambient",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Diffuse",
+    "m": "ADBE 3DText Side Diffuse",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Specular Intensity",
+    "m": "ADBE 3DText Side Specular",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Specular Shininess",
+    "m": "ADBE 3DText Side Shininess",
+    "t": "P",
+    "vt": null,
+    "v": 5,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Metal",
+    "m": "ADBE 3DText Side Metal",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Reflection Intensity",
+    "m": "ADBE 3DText Side Reflection",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Reflection Sharpness",
+    "m": "ADBE 3DText Side Gloss",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Reflection Rolloff",
+    "m": "ADBE 3DText Side Fresnel",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Transparency",
+    "m": "ADBE 3DText Side Xparency",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Transparency Rolloff",
+    "m": "ADBE 3DText Side XparRoll",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Side Index of Refraction",
+    "m": "ADBE 3DText Side IOR",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 5,
+    "noExpr": true
+   },
+   {
+    "n": "Back Color",
+    "m": "ADBE 3DText Back RGB",
+    "t": "P",
+    "vt": "COLOR",
+    "v": [
+     1,
+     0,
+     0,
+     1
+    ],
+    "min": -3921568.62745098,
+    "max": 3921568.62745098,
+    "noExpr": true,
+    "spatial": true
+   },
+   {
+    "n": "Back Hue",
+    "m": "ADBE 3DText Back Hue",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Back Saturation",
+    "m": "ADBE 3DText Back Sat",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Brightness",
+    "m": "ADBE 3DText Back Bright",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -100,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Opacity",
+    "m": "ADBE 3DText Back Opacity",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Ambient",
+    "m": "ADBE 3DText Back Ambient",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Diffuse",
+    "m": "ADBE 3DText Back Diffuse",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Specular Intensity",
+    "m": "ADBE 3DText Back Specular",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Specular Shininess",
+    "m": "ADBE 3DText Back Shininess",
+    "t": "P",
+    "vt": null,
+    "v": 5,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Metal",
+    "m": "ADBE 3DText Back Metal",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Reflection Intensity",
+    "m": "ADBE 3DText Back Reflection",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Reflection Sharpness",
+    "m": "ADBE 3DText Back Gloss",
+    "t": "P",
+    "vt": null,
+    "v": 100,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Reflection Rolloff",
+    "m": "ADBE 3DText Back Fresnel",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Transparency",
+    "m": "ADBE 3DText Back Xparency",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Transparency Rolloff",
+    "m": "ADBE 3DText Back XparRoll",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 100,
+    "noExpr": true
+   },
+   {
+    "n": "Back Index of Refraction",
+    "m": "ADBE 3DText Back IOR",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 5,
+    "noExpr": true
+   },
+   {
+    "n": "Bevel Depth",
+    "m": "ADBE 3DText Bevel Depth",
+    "t": "P",
+    "vt": null,
+    "v": 2,
+    "min": 0,
+    "max": 1000,
+    "noExpr": true
+   },
+   {
+    "n": "Extrusion Depth",
+    "m": "ADBE 3DText Extrude Depth",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 10000,
+    "noExpr": true
+   },
+   {
+    "n": "Stroke Width",
+    "m": "ADBE Text Stroke Width",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -1000,
+    "max": 1000
+   },
+   {
+    "n": "Line Anchor",
+    "m": "ADBE Text Line Anchor",
+    "t": "P",
+    "vt": null,
+    "v": 50,
+    "min": 0,
+    "max": 100
+   },
+   {
+    "n": "Tracking Type",
+    "m": "ADBE Text Track Type",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 3,
+    "noExpr": true
+   },
+   {
+    "n": "Tracking Amount",
+    "m": "ADBE Text Tracking Amount",
+    "t": "P",
+    "vt": null,
+    "v": 0
+   },
+   {
+    "n": "Character Alignment",
+    "m": "ADBE Text Character Change Type",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 4,
+    "static": true,
+    "noExpr": true
+   },
+   {
+    "n": "Character Range",
+    "m": "ADBE Text Character Range",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 2,
+    "static": true,
+    "noExpr": true
+   },
+   {
+    "n": "Character Value",
+    "m": "ADBE Text Character Replace",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": 0,
+    "max": 65535,
+    "noExpr": true
+   },
+   {
+    "n": "Character Offset",
+    "m": "ADBE Text Character Offset",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "min": -65535,
+    "max": 65535
+   },
+   {
+    "n": "Line Spacing",
+    "m": "ADBE Text Line Spacing",
+    "t": "P",
+    "vt": null,
+    "v": [
+     0,
+     0
+    ]
+   },
+   {
+    "n": "Blur",
+    "m": "ADBE Text Blur",
+    "t": "P",
+    "vt": null,
+    "v": [
+     0,
+     0
+    ],
+    "min": 0,
+    "max": 10000
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 1",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 2",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 3",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 4",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 5",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 6",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 7",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "",
+    "m": "ADBE Text VF Axis 8",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   }
+  ]
+ },
+ "moreOptions": {
+  "n": "More Options",
+  "m": "ADBE Text More Options",
+  "t": "NG",
+  "c": [
+   {
+    "n": "Anchor Point Grouping",
+    "m": "ADBE Text Anchor Point Option",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 4,
+    "static": true,
+    "noExpr": true
+   },
+   {
+    "n": "Grouping Alignment",
+    "m": "ADBE Text Anchor Point Align",
+    "t": "P",
+    "vt": null,
+    "v": [
+     0,
+     0
+    ]
+   },
+   {
+    "n": "Fill & Stroke",
+    "m": "ADBE Text Render Order",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 3,
+    "static": true,
+    "noExpr": true
+   },
+   {
+    "n": "Inter-Character Blending",
+    "m": "ADBE Text Character Blend Mode",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 29,
+    "static": true,
+    "noExpr": true
+   },
+   {
+    "n": "Variable Font Spacing",
+    "m": "ADBE Text Variable Font Spacing",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "min": 1,
+    "max": 3,
+    "static": true,
+    "noExpr": true
+   }
+  ]
+ },
+ "pathOptions": {
+  "n": "Path Options",
+  "m": "ADBE Text Path Options",
+  "t": "NG",
+  "c": [
+   {
+    "n": "Path",
+    "m": "ADBE Text Path",
+    "t": "P",
+    "vt": "MASK_INDEX",
+    "v": 0,
+    "static": true,
+    "noExpr": true
+   },
+   {
+    "n": "Reverse Path",
+    "m": "ADBE Text Reverse Path",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Perpendicular To Path",
+    "m": "ADBE Text Perpendicular To Path",
+    "t": "P",
+    "vt": null,
+    "v": 1,
+    "noExpr": true
+   },
+   {
+    "n": "Force Alignment",
+    "m": "ADBE Text Force Align Path",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "First Margin",
+    "m": "ADBE Text First Margin",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   },
+   {
+    "n": "Last Margin",
+    "m": "ADBE Text Last Margin",
+    "t": "P",
+    "vt": null,
+    "v": 0,
+    "noExpr": true
+   }
+  ]
+ },
+ "threeDPerChar": true
+}

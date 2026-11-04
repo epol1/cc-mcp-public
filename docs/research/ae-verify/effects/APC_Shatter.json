@@ -1,0 +1,758 @@
+{
+ "n": "Shatter",
+ "m": "APC Shatter",
+ "t": "NG",
+ "c": [
+  {
+   "n": "View",
+   "m": "APC Shatter-0002",
+   "t": "P",
+   "vt": null,
+   "v": 5,
+   "min": 1,
+   "max": 5
+  },
+  {
+   "n": "Render",
+   "m": "APC Shatter-0004",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3
+  },
+  {
+   "n": "Shape",
+   "m": "APC Shatter-0007",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Pattern",
+   "m": "APC Shatter-0006",
+   "t": "P",
+   "vt": null,
+   "v": 3,
+   "min": 1,
+   "max": 22
+  },
+  {
+   "n": "Custom Shatter Map",
+   "m": "APC Shatter-0008",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "White Tiles Fixed",
+   "m": "APC Shatter-0144",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Repetitions",
+   "m": "APC Shatter-0010",
+   "t": "P",
+   "vt": null,
+   "v": 10.0009918212891,
+   "min": 1,
+   "max": 200
+  },
+  {
+   "n": "Direction",
+   "m": "APC Shatter-0012",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Origin",
+   "m": "APC Shatter-0014",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Extrusion Depth",
+   "m": "APC Shatter-0016",
+   "t": "P",
+   "vt": null,
+   "v": 0.19999694824219,
+   "min": 0,
+   "max": 10
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0023",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Force 1",
+   "m": "APC Shatter-0025",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Position",
+   "m": "APC Shatter-0024",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Depth",
+   "m": "APC Shatter-0026",
+   "t": "P",
+   "vt": null,
+   "v": 0.09999084472656,
+   "min": -10,
+   "max": 10
+  },
+  {
+   "n": "Radius",
+   "m": "APC Shatter-0028",
+   "t": "P",
+   "vt": null,
+   "v": 0.39999389648438,
+   "min": 0,
+   "max": 5
+  },
+  {
+   "n": "Strength",
+   "m": "APC Shatter-0030",
+   "t": "P",
+   "vt": null,
+   "v": 5,
+   "min": -50,
+   "max": 50
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0035",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Force 2",
+   "m": "APC Shatter-0037",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Position",
+   "m": "APC Shatter-0032",
+   "t": "P",
+   "vt": null,
+   "v": [
+    1440,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Depth",
+   "m": "APC Shatter-0034",
+   "t": "P",
+   "vt": null,
+   "v": 0.09999084472656,
+   "min": -10,
+   "max": 10
+  },
+  {
+   "n": "Radius",
+   "m": "APC Shatter-0036",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 5
+  },
+  {
+   "n": "Strength",
+   "m": "APC Shatter-0038",
+   "t": "P",
+   "vt": null,
+   "v": 5,
+   "min": -50,
+   "max": 50
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0047",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gradient",
+   "m": "APC Shatter-0049",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Shatter Threshold",
+   "m": "APC Shatter-0018",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Gradient Layer",
+   "m": "APC Shatter-0020",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Invert Gradient",
+   "m": "APC Shatter-0022",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0057",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Physics",
+   "m": "APC Shatter-0059",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Rotation Speed",
+   "m": "APC Shatter-0040",
+   "t": "P",
+   "vt": null,
+   "v": 0.19999694824219,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Tumble Axis",
+   "m": "APC Shatter-0042",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 8
+  },
+  {
+   "n": "Randomness",
+   "m": "APC Shatter-0044",
+   "t": "P",
+   "vt": null,
+   "v": 0.09999084472656,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Viscosity",
+   "m": "APC Shatter-0046",
+   "t": "P",
+   "vt": null,
+   "v": 0.09999084472656,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Mass Variance",
+   "m": "APC Shatter-0048",
+   "t": "P",
+   "vt": null,
+   "v": 30,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Gravity",
+   "m": "APC Shatter-0050",
+   "t": "P",
+   "vt": null,
+   "v": 3,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Gravity Direction",
+   "m": "APC Shatter-0052",
+   "t": "P",
+   "vt": null,
+   "v": 180
+  },
+  {
+   "n": "Gravity Inclination",
+   "m": "APC Shatter-0054",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -90,
+   "max": 90
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0077",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Textures",
+   "m": "APC Shatter-0079",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Color",
+   "m": "APC Shatter-0056",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Opacity",
+   "m": "APC Shatter-0058",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Front Mode",
+   "m": "APC Shatter-0060",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 6
+  },
+  {
+   "n": "Front Layer",
+   "m": "APC Shatter-0062",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Side Mode",
+   "m": "APC Shatter-0064",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 6
+  },
+  {
+   "n": "Side Layer",
+   "m": "APC Shatter-0066",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Back Mode",
+   "m": "APC Shatter-0068",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 6
+  },
+  {
+   "n": "Back Layer",
+   "m": "APC Shatter-0070",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0097",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Camera System",
+   "m": "APC Shatter-0072",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3
+  },
+  {
+   "n": "Camera Position",
+   "m": "APC Shatter-0146",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "X Rotation",
+   "m": "APC Shatter-0074",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Y Rotation",
+   "m": "APC Shatter-0076",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Z Rotation",
+   "m": "APC Shatter-0078",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "X,Y Position",
+   "m": "APC Shatter-0080",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Z Position",
+   "m": "APC Shatter-0082",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Focal Length",
+   "m": "APC Shatter-0084",
+   "t": "P",
+   "vt": null,
+   "v": 70,
+   "min": 10,
+   "max": 1000
+  },
+  {
+   "n": "Transform Order",
+   "m": "APC Shatter-0086",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 12
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0117",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Corner Pins",
+   "m": "APC Shatter-0148",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Upper Left  Corner",
+   "m": "APC Shatter-0088",
+   "t": "P",
+   "vt": null,
+   "v": [
+    0,
+    0
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Upper Right Corner",
+   "m": "APC Shatter-0090",
+   "t": "P",
+   "vt": null,
+   "v": [
+    1920,
+    0
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Lower Left  Corner",
+   "m": "APC Shatter-0092",
+   "t": "P",
+   "vt": null,
+   "v": [
+    0,
+    1080
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Lower Right Corner",
+   "m": "APC Shatter-0094",
+   "t": "P",
+   "vt": null,
+   "v": [
+    1920,
+    1080
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Auto Focal Length",
+   "m": "APC Shatter-0096",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Focal Length",
+   "m": "APC Shatter-0098",
+   "t": "P",
+   "vt": null,
+   "v": 70,
+   "min": 10,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0133",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Lighting",
+   "m": "APC Shatter-0150",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Light Type",
+   "m": "APC Shatter-0108",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 3
+  },
+  {
+   "n": "Light Intensity",
+   "m": "APC Shatter-0100",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 50
+  },
+  {
+   "n": "Light Color",
+   "m": "APC Shatter-0102",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Light Position",
+   "m": "APC Shatter-0104",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Light Depth",
+   "m": "APC Shatter-0106",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -100,
+   "max": 100
+  },
+  {
+   "n": "Ambient Light",
+   "m": "APC Shatter-0110",
+   "t": "P",
+   "vt": null,
+   "v": 0.25,
+   "min": 0,
+   "max": 2
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0149",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Material",
+   "m": "APC Shatter-0152",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Diffuse Reflection",
+   "m": "APC Shatter-0112",
+   "t": "P",
+   "vt": null,
+   "v": 0.75,
+   "min": 0,
+   "max": 2
+  },
+  {
+   "n": "Specular Reflection",
+   "m": "APC Shatter-0114",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 2
+  },
+  {
+   "n": "Highlight Sharpness",
+   "m": "APC Shatter-0116",
+   "t": "P",
+   "vt": null,
+   "v": 10,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "",
+   "m": "APC Shatter-0159",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Compositing Options",
+   "m": "ADBE Effect Built In Params",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Masks",
+     "m": "ADBE Effect Mask Parade",
+     "t": "IG",
+     "c": []
+    },
+    {
+     "n": "Effect Opacity",
+     "m": "ADBE Effect Mask Opacity",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "GPU Rendering",
+     "m": "ADBE Force CPU GPU",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 3,
+     "static": true,
+     "noExpr": true
+    }
+   ]
+  }
+ ],
+ "layerRefs": [
+  "APC Shatter-0008=Custom Shatter Map",
+  "APC Shatter-0020=Gradient Layer",
+  "APC Shatter-0062=Front Layer",
+  "APC Shatter-0066=Side Layer",
+  "APC Shatter-0070=Back Layer"
+ ]
+}

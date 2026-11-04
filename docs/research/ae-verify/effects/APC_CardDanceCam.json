@@ -1,0 +1,744 @@
+{
+ "n": "Card Dance",
+ "m": "APC CardDanceCam",
+ "t": "NG",
+ "c": [
+  {
+   "n": "Rows & Columns",
+   "m": "APC CardDanceCam-0002",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 2
+  },
+  {
+   "n": "Rows",
+   "m": "APC CardDanceCam-0004",
+   "t": "P",
+   "vt": null,
+   "v": 9,
+   "min": 1,
+   "max": 1000
+  },
+  {
+   "n": "Columns",
+   "m": "APC CardDanceCam-0006",
+   "t": "P",
+   "vt": null,
+   "v": 12,
+   "min": 1,
+   "max": 1000
+  },
+  {
+   "n": "Back Layer",
+   "m": "APC CardDanceCam-0008",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gradient Layer 1",
+   "m": "APC CardDanceCam-0010",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gradient Layer 2",
+   "m": "APC CardDanceCam-0012",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Rotation Order",
+   "m": "APC CardDanceCam-0014",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 6
+  },
+  {
+   "n": "Transformation Order",
+   "m": "APC CardDanceCam-0016",
+   "t": "P",
+   "vt": null,
+   "v": 6,
+   "min": 1,
+   "max": 6
+  },
+  {
+   "n": "X Position",
+   "m": "APC CardDanceCam-0019",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0018",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0020",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0022",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0027",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Y Position",
+   "m": "APC CardDanceCam-0029",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0024",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0026",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0028",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0037",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Z Position",
+   "m": "APC CardDanceCam-0039",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0030",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0032",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0034",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0047",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "X Rotation",
+   "m": "APC CardDanceCam-0049",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0036",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0038",
+   "t": "P",
+   "vt": null,
+   "v": 90,
+   "min": -1800,
+   "max": 1800
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0040",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1800,
+   "max": 1800
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0057",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Y Rotation",
+   "m": "APC CardDanceCam-0059",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0042",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0044",
+   "t": "P",
+   "vt": null,
+   "v": 90,
+   "min": -1800,
+   "max": 1800
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0046",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1800,
+   "max": 1800
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0067",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Z Rotation",
+   "m": "APC CardDanceCam-0069",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0048",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0050",
+   "t": "P",
+   "vt": null,
+   "v": 90,
+   "min": -1800,
+   "max": 1800
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0052",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1800,
+   "max": 1800
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0077",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "X Scale",
+   "m": "APC CardDanceCam-0079",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0054",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0056",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0058",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0087",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Y Scale",
+   "m": "APC CardDanceCam-0089",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Source",
+   "m": "APC CardDanceCam-0060",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Multiplier",
+   "m": "APC CardDanceCam-0062",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Offset",
+   "m": "APC CardDanceCam-0064",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0097",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Camera System",
+   "m": "APC CardDanceCam-0066",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3
+  },
+  {
+   "n": "Camera Position",
+   "m": "APC CardDanceCam-0112",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "X Rotation",
+   "m": "APC CardDanceCam-0068",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Y Rotation",
+   "m": "APC CardDanceCam-0070",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Z Rotation",
+   "m": "APC CardDanceCam-0072",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "X,Y Position",
+   "m": "APC CardDanceCam-0074",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Z Position",
+   "m": "APC CardDanceCam-0076",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Focal Length",
+   "m": "APC CardDanceCam-0078",
+   "t": "P",
+   "vt": null,
+   "v": 70,
+   "min": 10,
+   "max": 1000
+  },
+  {
+   "n": "Transform Order",
+   "m": "APC CardDanceCam-0080",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 12
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0117",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Corner Pins",
+   "m": "APC CardDanceCam-0114",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Upper Left  Corner",
+   "m": "APC CardDanceCam-0082",
+   "t": "P",
+   "vt": null,
+   "v": [
+    0,
+    0
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Upper Right Corner",
+   "m": "APC CardDanceCam-0084",
+   "t": "P",
+   "vt": null,
+   "v": [
+    1920,
+    0
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Lower Left  Corner",
+   "m": "APC CardDanceCam-0086",
+   "t": "P",
+   "vt": null,
+   "v": [
+    0,
+    1080
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Lower Right Corner",
+   "m": "APC CardDanceCam-0088",
+   "t": "P",
+   "vt": null,
+   "v": [
+    1920,
+    1080
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Auto Focal Length",
+   "m": "APC CardDanceCam-0090",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Focal Length",
+   "m": "APC CardDanceCam-0092",
+   "t": "P",
+   "vt": null,
+   "v": 70,
+   "min": 10,
+   "max": 1000
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0133",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Lighting",
+   "m": "APC CardDanceCam-0116",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Light Type",
+   "m": "APC CardDanceCam-0102",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 3
+  },
+  {
+   "n": "Light Intensity",
+   "m": "APC CardDanceCam-0094",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 50
+  },
+  {
+   "n": "Light Color",
+   "m": "APC CardDanceCam-0096",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Light Position",
+   "m": "APC CardDanceCam-0098",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Light Depth",
+   "m": "APC CardDanceCam-0100",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -100,
+   "max": 100
+  },
+  {
+   "n": "Ambient Light",
+   "m": "APC CardDanceCam-0104",
+   "t": "P",
+   "vt": null,
+   "v": 0.25,
+   "min": 0,
+   "max": 2
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0149",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Material",
+   "m": "APC CardDanceCam-0118",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Diffuse Reflection",
+   "m": "APC CardDanceCam-0106",
+   "t": "P",
+   "vt": null,
+   "v": 0.75,
+   "min": 0,
+   "max": 2
+  },
+  {
+   "n": "Specular Reflection",
+   "m": "APC CardDanceCam-0108",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 2
+  },
+  {
+   "n": "Highlight Sharpness",
+   "m": "APC CardDanceCam-0110",
+   "t": "P",
+   "vt": null,
+   "v": 10,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "",
+   "m": "APC CardDanceCam-0159",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Compositing Options",
+   "m": "ADBE Effect Built In Params",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Masks",
+     "m": "ADBE Effect Mask Parade",
+     "t": "IG",
+     "c": []
+    },
+    {
+     "n": "Effect Opacity",
+     "m": "ADBE Effect Mask Opacity",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "GPU Rendering",
+     "m": "ADBE Force CPU GPU",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 3,
+     "static": true,
+     "noExpr": true
+    }
+   ]
+  }
+ ],
+ "layerRefs": [
+  "APC CardDanceCam-0008=Back Layer",
+  "APC CardDanceCam-0010=Gradient Layer 1",
+  "APC CardDanceCam-0012=Gradient Layer 2"
+ ]
+}

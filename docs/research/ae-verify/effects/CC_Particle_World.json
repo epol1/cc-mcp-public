@@ -1,0 +1,1038 @@
+{
+ "n": "CC Particle World",
+ "m": "CC Particle World",
+ "t": "NG",
+ "c": [
+  {
+   "n": "Grid & Guides",
+   "m": "CC Particle World-0050",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Position",
+   "m": "CC Particle World-0051",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Radius",
+   "m": "CC Particle World-0052",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Motion Path",
+   "m": "CC Particle World-0053",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Motion Path Frames",
+   "m": "CC Particle World-0054",
+   "t": "P",
+   "vt": null,
+   "v": 30,
+   "min": 0,
+   "max": 1000,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Grid",
+   "m": "CC Particle World-0055",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Grid Position",
+   "m": "CC Particle World-0056",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Grid Axis",
+   "m": "CC Particle World-0057",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 3,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Grid Subdivisions",
+   "m": "CC Particle World-0058",
+   "t": "P",
+   "vt": null,
+   "v": 16,
+   "min": 1,
+   "max": 200,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Grid Size",
+   "m": "CC Particle World-0059",
+   "t": "P",
+   "vt": null,
+   "v": 0.39999389648438,
+   "min": 0,
+   "max": 100,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Horizon",
+   "m": "CC Particle World-0060",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Axis Box",
+   "m": "CC Particle World-0061",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0062",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Birth Rate",
+   "m": "CC Particle World-0004",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 0,
+   "max": 30000
+  },
+  {
+   "n": "Longevity (sec)",
+   "m": "CC Particle World-0005",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 0,
+   "max": 3000,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Producer",
+   "m": "CC Particle World-0006",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Position X",
+   "m": "CC Particle World-0007",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Position Y",
+   "m": "CC Particle World-0008",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Position Z",
+   "m": "CC Particle World-0009",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Radius X",
+   "m": "CC Particle World-0010",
+   "t": "P",
+   "vt": null,
+   "v": 0.02499389648438,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Radius Y",
+   "m": "CC Particle World-0011",
+   "t": "P",
+   "vt": null,
+   "v": 0.02499389648438,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Radius Z",
+   "m": "CC Particle World-0012",
+   "t": "P",
+   "vt": null,
+   "v": 0.02499389648438,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0013",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Physics",
+   "m": "CC Particle World-0014",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Animation",
+   "m": "CC Particle World-0015",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 14
+  },
+  {
+   "n": "Velocity",
+   "m": "CC Particle World-0016",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Inherit Velocity %",
+   "m": "CC Particle World-0017",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Gravity",
+   "m": "CC Particle World-0018",
+   "t": "P",
+   "vt": null,
+   "v": 0.5,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Resistance",
+   "m": "CC Particle World-0041",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 50
+  },
+  {
+   "n": "Extra",
+   "m": "CC Particle World-0019",
+   "t": "P",
+   "vt": null,
+   "v": 0.5,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Extra Angle",
+   "m": "CC Particle World-0020",
+   "t": "P",
+   "vt": null,
+   "v": 360
+  },
+  {
+   "n": "Floor",
+   "m": "CC Particle World-0063",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Floor Position",
+   "m": "CC Particle World-0003",
+   "t": "P",
+   "vt": null,
+   "v": 0.19999694824219,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Particle Visibility",
+   "m": "CC Particle World-0064",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Render Animation",
+   "m": "CC Particle World-0065",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Floor Action",
+   "m": "CC Particle World-0066",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Bounciness",
+   "m": "CC Particle World-0067",
+   "t": "P",
+   "vt": null,
+   "v": 65,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Random Bounciness",
+   "m": "CC Particle World-0068",
+   "t": "P",
+   "vt": null,
+   "v": 25,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Bounce Spread",
+   "m": "CC Particle World-0069",
+   "t": "P",
+   "vt": null,
+   "v": 10,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0070",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Direction Axis",
+   "m": "CC Particle World-0094",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Axis X",
+   "m": "CC Particle World-0095",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Axis Y",
+   "m": "CC Particle World-0096",
+   "t": "P",
+   "vt": null,
+   "v": -1,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Axis Z",
+   "m": "CC Particle World-0097",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0098",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gravity Vector",
+   "m": "CC Particle World-0099",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gravity X",
+   "m": "CC Particle World-0100",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gravity Y",
+   "m": "CC Particle World-0101",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gravity Z",
+   "m": "CC Particle World-0102",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0103",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0021",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particle",
+   "m": "CC Particle World-0022",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particle Type",
+   "m": "CC Particle World-0023",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 26
+  },
+  {
+   "n": "Texture",
+   "m": "CC Particle World-0044",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Texture Layer",
+   "m": "CC Particle World-0045",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Scatter",
+   "m": "CC Particle World-0046",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Texture Time",
+   "m": "CC Particle World-0047",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 3,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Align To Direction",
+   "m": "CC Particle World-0049",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0048",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Rotation Speed",
+   "m": "CC Particle World-0043",
+   "t": "P",
+   "vt": null,
+   "v": 180,
+   "min": 0,
+   "max": 18000
+  },
+  {
+   "n": "Initial Rotation",
+   "m": "CC Particle World-0042",
+   "t": "P",
+   "vt": null,
+   "v": 360,
+   "min": 0,
+   "max": 18000
+  },
+  {
+   "n": "Rotation Axis",
+   "m": "CC Particle World-0071",
+   "t": "P",
+   "vt": null,
+   "v": 4,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Birth Size",
+   "m": "CC Particle World-0024",
+   "t": "P",
+   "vt": null,
+   "v": 0.25,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Death Size",
+   "m": "CC Particle World-0025",
+   "t": "P",
+   "vt": null,
+   "v": 0.25,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Size Variation",
+   "m": "CC Particle World-0026",
+   "t": "P",
+   "vt": null,
+   "v": 50,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Max Opacity",
+   "m": "CC Particle World-0027",
+   "t": "P",
+   "vt": null,
+   "v": 75,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Opacity Map",
+   "m": "CC Particle World-0072",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Disabled",
+   "m": "CC Particle World-0105",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 10000,
+   "noExpr": true
+  },
+  {
+   "n": "Color Map",
+   "m": "CC Particle World-0028",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 1,
+   "max": 5
+  },
+  {
+   "n": "Birth Color",
+   "m": "CC Particle World-0029",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    1,
+    0.31372549019608,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Death Color",
+   "m": "CC Particle World-0030",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    0.7843137254902,
+    0.15686274509804,
+    0.15686274509804,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Custom Color Map",
+   "m": "CC Particle World-0073",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Color At Birth",
+   "m": "CC Particle World-0074",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    1,
+    0.31372549019608,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Color At 25%",
+   "m": "CC Particle World-0075",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    0.62745098039216,
+    0.15686274509804,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Color At 50%",
+   "m": "CC Particle World-0076",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    0.75294117647059,
+    0.36078431372549,
+    0.07843137254902,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Color At 75%",
+   "m": "CC Particle World-0077",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    0.50196078431373,
+    0,
+    0,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Color At Death",
+   "m": "CC Particle World-0078",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    0,
+    0,
+    0,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0079",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Volume Shade (approx.)",
+   "m": "CC Particle World-0040",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Transfer Mode",
+   "m": "CC Particle World-0039",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0031",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Extras",
+   "m": "CC Particle World-0080",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Effect Camera",
+   "m": "CC Particle World-0032",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Distance",
+   "m": "CC Particle World-0033",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -1000,
+   "max": 1000
+  },
+  {
+   "n": "Rotation X",
+   "m": "CC Particle World-0034",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Rotation Y",
+   "m": "CC Particle World-0035",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Rotation Z",
+   "m": "CC Particle World-0036",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "FOV",
+   "m": "CC Particle World-0037",
+   "t": "P",
+   "vt": null,
+   "v": 45,
+   "min": 0,
+   "max": 160
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0038",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Depth Cue",
+   "m": "CC Particle World-0081",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Type",
+   "m": "CC Particle World-0082",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 3
+  },
+  {
+   "n": "Distance",
+   "m": "CC Particle World-0083",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Fog Color",
+   "m": "CC Particle World-0084",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    0.50196078431373,
+    0.50196078431373,
+    0.50196078431373,
+    1
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0085",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Light Direction",
+   "m": "CC Particle World-0086",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Light X",
+   "m": "CC Particle World-0087",
+   "t": "P",
+   "vt": null,
+   "v": -0.57734680175781,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Light Y",
+   "m": "CC Particle World-0088",
+   "t": "P",
+   "vt": null,
+   "v": 0.57734680175781,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Light Z",
+   "m": "CC Particle World-0089",
+   "t": "P",
+   "vt": null,
+   "v": 0.57734680175781,
+   "min": -1,
+   "max": 1,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0090",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Hold Particle Release",
+   "m": "CC Particle World-0091",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 100
+  },
+  {
+   "n": "Composite With Original",
+   "m": "CC Particle World-0092",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 1
+  },
+  {
+   "n": "Random Seed",
+   "m": "CC Particle World-0104",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 10000,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "CC Particle World-0093",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Compositing Options",
+   "m": "ADBE Effect Built In Params",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Masks",
+     "m": "ADBE Effect Mask Parade",
+     "t": "IG",
+     "c": []
+    },
+    {
+     "n": "Effect Opacity",
+     "m": "ADBE Effect Mask Opacity",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "GPU Rendering",
+     "m": "ADBE Force CPU GPU",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 3,
+     "static": true,
+     "noExpr": true
+    }
+   ]
+  }
+ ],
+ "layerRefs": [
+  "CC Particle World-0045=Texture Layer"
+ ]
+}

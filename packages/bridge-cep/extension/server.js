@@ -62,6 +62,31 @@ function writeInfo(port, token) {
   m.fs.writeFileSync(infoPath(), JSON.stringify(info, null, 2));
 }
 
+// AE shows a *modal alert* for syntax errors in evalScript'd code (verified), which blocks the
+// bridge until a human clicks OK. So user code is passed as a string literal and run through
+// eval() inside try/catch: SyntaxErrors become catchable and come back as structured errors.
+// Note: eval'd `var`s are local to the wrapper; code that must define globals assigns to $.global.
+var ERR_MARK = "\u0001AEC_ERR\u0001";
+
+function toEs3StringLiteral(s) {
+  return JSON.stringify(s).replace(/[\u007f-￿]/g, function (c) {
+    return "\\u" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4);
+  });
+}
+
+function wrapScript(script) {
+  return "(function(){try{var __r=eval(" + toEs3StringLiteral(script) + ");return (__r===undefined||__r===null)?'':String(__r);}" +
+    "catch(e){return '" + ERR_MARK + "'+(e&&e.name||'Error')+'\\u0001'+(e&&e.line||0)+'\\u0001'+(e&&e.message||String(e));}})()";
+}
+
+function parseWrapped(r) {
+  if (r.ok && typeof r.result === "string" && r.result.indexOf(ERR_MARK) === 0) {
+    var parts = r.result.slice(ERR_MARK.length).split("\u0001");
+    return { ok: false, error: parts[0] + ": " + parts.slice(2).join("\u0001"), errorName: parts[0], line: parseInt(parts[1], 10) || 0, message: parts.slice(2).join("\u0001"), ms: r.ms };
+  }
+  return r;
+}
+
 function evalScript(script, timeoutMs) {
   var run = function () {
     return new Promise(function (resolve) {
@@ -151,7 +176,9 @@ function handle(token) {
         try { body = JSON.parse(raw); } catch (e) { return send(res, 400, { ok: false, error: "invalid JSON body" }); }
         if (typeof body.script !== "string") return send(res, 400, { ok: false, error: "script must be a string" });
         var timeoutMs = typeof body.timeoutMs === "number" ? body.timeoutMs : 120000;
-        return evalScript(body.script, timeoutMs).then(function (r) {
+        var raw = body.raw === true;
+        return evalScript(raw ? body.script : wrapScript(body.script), timeoutMs).then(function (r) {
+          if (!raw) r = parseWrapped(r);
           if (!r.ok) { stats.errors++; stats.lastError = r.error; }
           send(res, 200, r);
         });

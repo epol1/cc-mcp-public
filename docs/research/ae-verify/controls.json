@@ -1,0 +1,428 @@
+{
+ "texLayerSet": 2,
+ "pw_Extras": {
+  "n": "Extras",
+  "m": "CC Particle World-0080",
+  "t": "P",
+  "vt": "NO_VALUE",
+  "static": true,
+  "noExpr": true
+ },
+ "pw_Effect Camera": {
+  "n": "Effect Camera",
+  "m": "CC Particle World-0032",
+  "t": "P",
+  "vt": "NO_VALUE",
+  "static": true,
+  "noExpr": true
+ },
+ "controls": {
+  "ADBE Slider Control": {
+   "n": "Slider Control",
+   "m": "ADBE Slider Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Slider",
+     "m": "ADBE Slider Control-0001",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": -1000000,
+     "max": 1000000
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Color Control": {
+   "n": "Color Control",
+   "m": "ADBE Color Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Color",
+     "m": "ADBE Color Control-0001",
+     "t": "P",
+     "vt": "COLOR",
+     "v": [
+      1,
+      0,
+      0,
+      1
+     ],
+     "min": -3921568.62745098,
+     "max": 3921568.62745098,
+     "spatial": true
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Checkbox Control": {
+   "n": "Checkbox Control",
+   "m": "ADBE Checkbox Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Checkbox",
+     "m": "ADBE Checkbox Control-0001",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "max": 1
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Point Control": {
+   "n": "Point Control",
+   "m": "ADBE Point Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Point",
+     "m": "ADBE Point Control-0001",
+     "t": "P",
+     "vt": null,
+     "v": [
+      50,
+      50
+     ],
+     "spatial": true
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Point3D Control": {
+   "n": "3D Point Control",
+   "m": "ADBE Point3D Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "3D Point",
+     "m": "ADBE Point3D Control-0001",
+     "t": "P",
+     "vt": null,
+     "v": [
+      50,
+      50,
+      0
+     ],
+     "spatial": true
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Angle Control": {
+   "n": "Angle Control",
+   "m": "ADBE Angle Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Angle",
+     "m": "ADBE Angle Control-0001",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Layer Control": {
+   "n": "Layer Control",
+   "m": "ADBE Layer Control",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Layer",
+     "m": "ADBE Layer Control-0001",
+     "t": "P",
+     "vt": "LAYER_INDEX",
+     "v": 1,
+     "static": true,
+     "noExpr": true
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Dropdown Control": {
+   "n": "Dropdown Menu Control",
+   "m": "Pseudo/@@eZyntXo1TFSsAF7peOnUJA",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Menu",
+     "m": "Pseudo/@@eZyntXo1TFSsAF7peOnUJA-0001",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 3,
+     "dropdown": true
+    },
+    {
+     "n": "Compositing Options",
+     "m": "ADBE Effect Built In Params",
+     "t": "NG",
+     "c": [
+      {
+       "n": "Masks",
+       "m": "ADBE Effect Mask Parade",
+       "t": "IG"
+      },
+      {
+       "n": "Effect Opacity",
+       "m": "ADBE Effect Mask Opacity",
+       "t": "P",
+       "vt": null,
+       "v": 100,
+       "min": 0,
+       "max": 100
+      },
+      {
+       "n": "GPU Rendering",
+       "m": "ADBE Force CPU GPU",
+       "t": "P",
+       "vt": null,
+       "v": 1,
+       "min": 1,
+       "max": 3,
+       "static": true,
+       "noExpr": true
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "dropdownAfter": {
+  "isDropdown": true,
+  "name": "Menu",
+  "value": 1
+ },
+ "dropdownItems": "no getter",
+ "sliderRenamed": "Title Delay",
+ "exprOk": "ok",
+ "eg": {
+  "added": true,
+  "count": 1,
+  "name": "Title Delay"
+ }
+}

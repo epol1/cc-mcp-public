@@ -1,0 +1,3481 @@
+{
+ "count": 575,
+ "effects": [
+  [
+   "CINEMA 4D Effect",
+   "Cineware",
+   "Cinema 4D",
+   "6.1"
+  ],
+  [
+   "Cryptomatte",
+   "Cryptomatte",
+   "3D Channel",
+   "2.6.7"
+  ],
+  [
+   "EXtractoR",
+   "EXtractoR",
+   "3D Channel",
+   "2.6.7"
+  ],
+  [
+   "IDentifier",
+   "IDentifier",
+   "3D Channel",
+   "2.6.7"
+  ],
+  [
+   "CC Ball Action",
+   "CC Ball Action",
+   "Simulation",
+   "2.4"
+  ],
+  [
+   "CC Bender",
+   "CC Bender",
+   "Distort",
+   "1.6"
+  ],
+  [
+   "CC Bend It",
+   "CC Bend It",
+   "Distort",
+   "1.6"
+  ],
+  [
+   "CC Blobbylize",
+   "CC Blobbylize",
+   "Distort",
+   "1.10.1"
+  ],
+  [
+   "CS BlockLoad",
+   "CC Block Load",
+   "Stylize",
+   "1.3"
+  ],
+  [
+   "CC Bubbles",
+   "CC Bubbles",
+   "Simulation",
+   "2.5"
+  ],
+  [
+   "CC Burn Film",
+   "CC Burn Film",
+   "Stylize",
+   "1.8"
+  ],
+  [
+   "CS Color Neutralizer",
+   "CC Color Neutralizer",
+   "Color Correction",
+   "1.3"
+  ],
+  [
+   "CC Color Offset",
+   "CC Color Offset",
+   "Color Correction",
+   "1.9"
+  ],
+  [
+   "CS Composite",
+   "CC Composite",
+   "Channel",
+   "2.2.1"
+  ],
+  [
+   "CC Composite",
+   "CC Composite (obsolete)",
+   "_Obsolete",
+   "1.10"
+  ],
+  [
+   "CS CrossBlur",
+   "CC Cross Blur",
+   "Blur & Sharpen",
+   "1.5"
+  ],
+  [
+   "CC Cylinder",
+   "CC Cylinder",
+   "Perspective",
+   "1.10"
+  ],
+  [
+   "CC Drizzle",
+   "CC Drizzle",
+   "Simulation",
+   "1.9"
+  ],
+  [
+   "CC Environment",
+   "CC Environment",
+   "Perspective",
+   "1.6"
+  ],
+  [
+   "CC Flo Motion",
+   "CC Flo Motion",
+   "Distort",
+   "1.10"
+  ],
+  [
+   "CC Force Motion Blur",
+   "CC Force Motion Blur",
+   "Time",
+   "2.1"
+  ],
+  [
+   "CC Glass",
+   "CC Glass",
+   "Stylize",
+   "1.9.1"
+  ],
+  [
+   "CC Glass Wipe",
+   "CC Glass Wipe",
+   "Transition",
+   "1.11.1"
+  ],
+  [
+   "CC Glue Gun",
+   "CC Glue Gun",
+   "Generate",
+   "1.10"
+  ],
+  [
+   "CC Griddler",
+   "CC Griddler",
+   "Distort",
+   "2.3"
+  ],
+  [
+   "CC Grid Wipe",
+   "CC Grid Wipe",
+   "Transition",
+   "1.7"
+  ],
+  [
+   "CC Hair",
+   "CC Hair",
+   "Simulation",
+   "1.7.1"
+  ],
+  [
+   "CS HexTile",
+   "CC HexTile",
+   "Stylize",
+   "1.2"
+  ],
+  [
+   "CC Image Wipe",
+   "CC Image Wipe",
+   "Transition",
+   "1.8.1"
+  ],
+  [
+   "CC Jaws",
+   "CC Jaws",
+   "Transition",
+   "1.7"
+  ],
+  [
+   "CC Kaleida",
+   "CC Kaleida",
+   "Stylize",
+   "1.10"
+  ],
+  [
+   "CS Kernel",
+   "CC Kernel",
+   "Color Correction",
+   "1.2"
+  ],
+  [
+   "CC Lens",
+   "CC Lens",
+   "Distort",
+   "2.2"
+  ],
+  [
+   "CC Light Burst 2.5",
+   "CC Light Burst 2.5",
+   "Generate",
+   "3.6"
+  ],
+  [
+   "CC Light Rays",
+   "CC Light Rays",
+   "Generate",
+   "1.10"
+  ],
+  [
+   "CC Light Sweep",
+   "CC Light Sweep",
+   "Generate",
+   "1.9"
+  ],
+  [
+   "CC Light Wipe",
+   "CC Light Wipe",
+   "Transition",
+   "1.7"
+  ],
+  [
+   "CS LineSweep",
+   "CC Line Sweep",
+   "Transition",
+   "1.2"
+  ],
+  [
+   "CC Mr. Mercury",
+   "CC Mr. Mercury",
+   "Simulation",
+   "1.11"
+  ],
+  [
+   "CC Mr. Smoothie",
+   "CC Mr. Smoothie",
+   "Stylize",
+   "1.6.1"
+  ],
+  [
+   "CC Overbrights",
+   "CC Overbrights",
+   "Utility",
+   "1.3"
+  ],
+  [
+   "CC Page Turn",
+   "CC Page Turn",
+   "Distort",
+   "2.4"
+  ],
+  [
+   "CC PS Classic",
+   "CC PS Classic (obsolete)",
+   "_Obsolete",
+   "1.7"
+  ],
+  [
+   "CC Particle Systems II",
+   "CC Particle Systems II",
+   "Simulation",
+   "2.2"
+  ],
+  [
+   "CC PS LE Classic",
+   "CC PS LE Classic (obsolete)",
+   "_Obsolete",
+   "1.7"
+  ],
+  [
+   "CC Pixel Polly",
+   "CC Pixel Polly",
+   "Simulation",
+   "1.11"
+  ],
+  [
+   "CC Plastic",
+   "CC Plastic",
+   "Stylize",
+   "1.5.2"
+  ],
+  [
+   "CC Power Pin",
+   "CC Power Pin",
+   "Distort",
+   "1.13"
+  ],
+  [
+   "CC Particle World",
+   "CC Particle World",
+   "Simulation",
+   "1.14"
+  ],
+  [
+   "CC Radial Blur",
+   "CC Radial Blur",
+   "Blur & Sharpen",
+   "1.7"
+  ],
+  [
+   "CC Radial Fast Blur",
+   "CC Radial Fast Blur",
+   "Blur & Sharpen",
+   "1.7"
+  ],
+  [
+   "CC Radial ScaleWipe",
+   "CC Radial ScaleWipe",
+   "Transition",
+   "1.10"
+  ],
+  [
+   "CC Rain",
+   "CC Rain (obsolete)",
+   "_Obsolete",
+   "2.2"
+  ],
+  [
+   "CSRainfall",
+   "CC Rainfall",
+   "Simulation",
+   "1.3"
+  ],
+  [
+   "CC RepeTile",
+   "CC RepeTile",
+   "Stylize",
+   "1.10"
+  ],
+  [
+   "CC Ripple Pulse",
+   "CC Ripple Pulse",
+   "Distort",
+   "1.8"
+  ],
+  [
+   "CC Scale Wipe",
+   "CC Scale Wipe",
+   "Transition",
+   "1.8"
+  ],
+  [
+   "CC Scatterize",
+   "CC Scatterize",
+   "Simulation",
+   "1.10"
+  ],
+  [
+   "CC Simple Wire Removal",
+   "CC Simple Wire Removal",
+   "Keying",
+   "1.10"
+  ],
+  [
+   "CC Slant",
+   "CC Slant",
+   "Distort",
+   "2.2"
+  ],
+  [
+   "CC Smear",
+   "CC Smear",
+   "Distort",
+   "1.11"
+  ],
+  [
+   "CC Snow",
+   "CC Snow (obsolete)",
+   "_Obsolete",
+   "2.2"
+  ],
+  [
+   "CSSnowfall",
+   "CC Snowfall",
+   "Simulation",
+   "1.3"
+  ],
+  [
+   "CC Sphere",
+   "CC Sphere",
+   "Perspective",
+   "2.5"
+  ],
+  [
+   "CC Split",
+   "CC Split",
+   "Distort",
+   "1.6"
+  ],
+  [
+   "CC Split 2",
+   "CC Split 2",
+   "Distort",
+   "1.10"
+  ],
+  [
+   "CC Spotlight",
+   "CC Spotlight",
+   "Perspective",
+   "1.10"
+  ],
+  [
+   "CC Star Burst",
+   "CC Star Burst",
+   "Simulation",
+   "2.4"
+  ],
+  [
+   "CS Threads",
+   "CC Threads",
+   "Generate",
+   "1.2"
+  ],
+  [
+   "CC Threshold",
+   "CC Threshold",
+   "Stylize",
+   "1.8"
+  ],
+  [
+   "CC Threshold RGB",
+   "CC Threshold RGB",
+   "Stylize",
+   "1.8"
+  ],
+  [
+   "CC Tiler",
+   "CC Tiler",
+   "Distort",
+   "1.9"
+  ],
+  [
+   "CC Time Blend",
+   "CC Time Blend",
+   "_Obsolete",
+   "1.8"
+  ],
+  [
+   "CC Time Blend FX",
+   "CC Time Blend FX",
+   "_Obsolete",
+   "1.7"
+  ],
+  [
+   "CC Toner",
+   "CC Toner",
+   "Color Correction",
+   "1.7"
+  ],
+  [
+   "CC Twister",
+   "CC Twister",
+   "Transition",
+   "1.8"
+  ],
+  [
+   "CC Vector Blur",
+   "CC Vector Blur",
+   "Blur & Sharpen",
+   "1.7.1"
+  ],
+  [
+   "CS Vignette",
+   "CC Vignette",
+   "Stylize",
+   "1.3"
+  ],
+  [
+   "CC WarpoMatic",
+   "CC WarpoMatic",
+   "Transition",
+   "1.5.1"
+  ],
+  [
+   "CC Wide Time",
+   "CC Wide Time",
+   "Time",
+   "1.9"
+  ],
+  [
+   "Keylight 906",
+   "Keylight (1.2)",
+   "Keying",
+   "1.2"
+  ],
+  [
+   "ISL MochaShapeImporter",
+   "mocha shape",
+   "Obsolete",
+   "1.0x1"
+  ],
+  [
+   "mochaAECC",
+   "Mocha AE",
+   "Boris FX Mocha",
+   "12.2.1"
+  ],
+  [
+   "Red Giant GrowBounds",
+   "Grow Bounds",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "RG_MB_ParamCurve_AE",
+   "Parametric Curve",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "RG MB COLORISTA IV",
+   "Colorista V",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "RG Cosmo_II",
+   "Cosmo II",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "RG Denoiser3",
+   "Denoiser III",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "Magic_Bullet_Mojo_II",
+   "Mojo II",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "Magic_Bullet_Renoiser",
+   "Renoiser",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "Magic_Bullet_Suite_Magic_Bullet",
+   "Film",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "MB LookSuite3",
+   "Magic Bullet Looks",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "Universe_Blur_Blur_Premium",
+   "uni.Blur",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Blur_Box_Bokeh",
+   "uni.Bokeh",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Compound_Blur_Premium",
+   "uni.Compound Blur",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Blur_Spot_Blur",
+   "uni.Spot Blur",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_CrumplePop_Finisher",
+   "uni.Finisher",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "Universe_CrumplePop_Fisheye_Fix",
+   "uni.Fisheye Fixer",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "Universe_CrumplePop_Grain16",
+   "uni.Grain16",
+   "RG Color",
+   "26.2"
+  ],
+  [
+   "Universe_CrumplePop_OverLight",
+   "uni.OverLight",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_CrumplePop_ShrinkRay",
+   "uni.ShrinkRay",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_Camera_Shake_P",
+   "uni.Camera Shake",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_Chromatic_Aber",
+   "uni.Chromatic Aberration",
+   "RG Distortions",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_Heatwave",
+   "uni.Heatwave",
+   "RG Distortions",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_Picture_in_Pic",
+   "uni.Picture in Picture",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_Prism_Displace",
+   "uni.Prism Displacement",
+   "RG Distortions",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_RGB_Separation",
+   "uni.RGB Separation",
+   "RG Distortions",
+   "26.2"
+  ],
+  [
+   "Universe_Generators_Custom_Dith",
+   "uni.Custom Dither",
+   "RG Generators",
+   "26.2"
+  ],
+  [
+   "Universe_Generators_Fractal_Bac",
+   "uni.Fractal Background",
+   "RG Generators",
+   "26.2"
+  ],
+  [
+   "Universe_Generators_Gradient_Ra",
+   "uni.Gradient Ramp",
+   "RG Generators",
+   "26.2"
+  ],
+  [
+   "Universe_Generators_Soft_Gradie",
+   "uni.Soft Gradient Background",
+   "RG Generators",
+   "26.2"
+  ],
+  [
+   "Universe_Generators_Spectralici",
+   "uni.Spectralicious",
+   "RG Generators",
+   "26.2"
+  ],
+  [
+   "Universe_Glow_Chromatic_Glow",
+   "uni.Chromatic Glow",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Glow_Edge_Glow_Premium",
+   "uni.Edge Glow",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Glow_Glimmer",
+   "uni.Glimmer",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Glow_Glow",
+   "uni.Glow",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Glow_Glo_Fi_Premium",
+   "uni.Glo Fi",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Glow_Point_Zoom",
+   "uni.Point Zoom",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Glow_Quantum",
+   "uni.Quantum",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_M_G_Array_Gun",
+   "uni.Array Gun",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "Universe_Visualizations_HUD_Com",
+   "uni.HUD Components",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "Universe_Motion_Graphics_Draw_P",
+   "uni.Line",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "Universe_M_G_Progresso",
+   "uni.Progresso",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "RG_UNI_M_G_Reframe",
+   "uni.Reframe",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "Universe_Generators_TurNoise",
+   "uni.Turbulence Noise",
+   "RG Generators",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Stylize_Analog",
+   "uni.Analog",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Carousel",
+   "uni.Carousel",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Chromatown",
+   "uni.ChromaTown",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Stylize_Electrify",
+   "uni.Electrify",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Error_Diffuse_",
+   "uni.Error Diffuse Dither",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Glitch",
+   "uni.Glitch",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Halftone_Dithe",
+   "uni.Halftone Dither",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Distort_Holomatrix",
+   "uni.Holomatrix II",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Knoll_Light_Factory_EZ",
+   "uni.Knoll Light Factory EZ",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Misfire_Premium",
+   "uni.MisFire",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Stylize_Multitone",
+   "uni.Multitone",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Noir_Moderne",
+   "uni.Noir",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Ordered_Dither",
+   "uni.Ordered Dither",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_CrumplePop_RetroGrade",
+   "uni.RetroGrade",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Sketchify",
+   "uni.Sketchify",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Symbol_Mapper",
+   "uni.Symbol Mapper",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Texturize",
+   "uni.Texturize",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "MX_UNI_Stylize_Texturize_Motion",
+   "uni.Texturize Motion",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_Threshold_Dith",
+   "uni.Threshold Dither",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Stylize_VHS",
+   "uni.VHS",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Text_AV_Club",
+   "uni.AV Club",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Ecto",
+   "uni.Ecto",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Glo_Fi_II",
+   "uni.Glo Fi II",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Hacker_Text",
+   "uni.Hacker Text",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Long_Shadow",
+   "uni.Long Shadow",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Luster",
+   "uni.Luster",
+   "RG Stylize",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Numbers",
+   "uni.Numbers",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Screen_Text",
+   "uni.Screen Text",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Text_Tile",
+   "uni.Text Tile",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Utilities_Title_Motion",
+   "uni.Title Motion",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Type_Cast",
+   "uni.Type Cast",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Text_Type_On",
+   "uni.Type On",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Text_Typographic",
+   "uni.Typographic",
+   "RG Text",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Blinds",
+   "uni.Blinds",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Bokeh",
+   "uni.Bokeh Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Camera_Sha",
+   "uni.Camera Shake Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Carousel_T",
+   "uni.Carousel Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Channel_Bl",
+   "uni.Channel Blur",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Channel_Su",
+   "uni.Channel Surf",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Clock_Wipe",
+   "uni.Clock Wipe",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Color_Mosa",
+   "uni.Color Mosaic Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Color_Stri",
+   "uni.Color Stripe",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Cube",
+   "uni.Cube",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Diamond_Wa",
+   "uni.Diamond Wave",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Dolly_Fade",
+   "uni.Dolly Fade",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Exposure_Blur_Premium",
+   "uni.Exposure Blur",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Film_Trans",
+   "uni.Film Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Flicker_Cu",
+   "uni.Flicker Cut",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Fold",
+   "uni.Fold",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Glitch_Tra",
+   "uni.Glitch Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_HalfLight",
+   "uni.HalfLight",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Inside_Cub",
+   "uni.Inside Cube",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Knoll_Ligh",
+   "uni.Knoll Light Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Linear_Wip",
+   "uni.Linear Wipe",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_RetroGrade",
+   "uni.RetroGrade Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Rubics_Cub",
+   "uni.Rubix Cube",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Shape_Wipe",
+   "uni.Shape Wipe",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Slide",
+   "uni.Slide",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Soft_Edge_Wipe_Premium",
+   "uni.Soft Edge Wipe",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Spectralic",
+   "uni.Spectralicious Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Transition_Stretch",
+   "uni.Stretch",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Swish_Pan_Premium",
+   "uni.Swish Pan",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Triangle_W",
+   "uni.Triangle Wave",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Turbulence",
+   "uni.Turbulence Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_Unfold",
+   "uni.Unfold",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Transitions_VHS_Transi",
+   "uni.VHS Transition",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Transition_Warp",
+   "uni.Warp",
+   "RG Transitions",
+   "26.2"
+  ],
+  [
+   "Universe_Utilities_Logo_Motion",
+   "uni.Logo Motion",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Utilities_Modes",
+   "uni.Modes",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "Universe_Utilities_Palettes",
+   "uni.Palettes",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "RG_UNI_Utilities_Socialize",
+   "uni.Socialize",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "Universe_Utilities_Unmult_Premi",
+   "uni.Unmult",
+   "RG Utilities",
+   "26.2"
+  ],
+  [
+   "rgBang",
+   "Bang",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "RG_VFX_ChromaDisp_AE",
+   "Chromatic Displacement",
+   "RG Distortions",
+   "26.2"
+  ],
+  [
+   "RG_VFX_Depth_Generator_AE",
+   "Depth Generator",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "RG_KingPin_Tracker",
+   "King Pin Tracker",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "RG_Lens_Distortion",
+   "Lens Distortion Matcher",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "MX_Lens_Flare",
+   "Real Lens Flares",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "RG_VFX_OpticalGlow_AE",
+   "Optical Glow",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "Photron Primatte6",
+   "Primatte Keyer 6",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "rg.vfx.reflection",
+   "Reflection",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "rg.vfx.shadow",
+   "Shadow",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "RG_VFX_SpotClone_Tracker_AE",
+   "Spot Clone Tracker",
+   "RG VFX",
+   "26.2"
+  ],
+  [
+   "RG_VFX_Supernova_AE",
+   "Supercomp",
+   "RG VFX",
+   "26.2x0"
+  ],
+  [
+   "tc 3DStrokePath",
+   "3D Stroke",
+   "RG Motion Graphics",
+   "26.2"
+  ],
+  [
+   "tc Shine",
+   "Shine",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "tc Starglow",
+   "Starglow",
+   "RG Blurs and Glows",
+   "26.2"
+  ],
+  [
+   "ADBE 3D Tracker",
+   "3D Camera Tracker",
+   "Perspective",
+   "26.5"
+  ],
+  [
+   "ADBE 3D Glasses2",
+   "3D Glasses",
+   "Perspective",
+   "26.5"
+  ],
+  [
+   "ADBE 3D Glasses",
+   "3D Glasses (Obsolete)",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "VISINF Grain Implant",
+   "Add Grain",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Alpha Levels2",
+   "Alpha Levels",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Alpha Levels3",
+   "Alpha Levels",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Apply Color LUT2",
+   "Apply Color LUT",
+   "Utility",
+   "26.5"
+  ],
+  [
+   "ADBE Apply Color LUT",
+   "Apply Color LUT",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Arithmetic",
+   "Arithmetic",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE AudSpect",
+   "Audio Spectrum",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE AudWave",
+   "Audio Waveform",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Aud BT",
+   "Bass & Treble",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Compressor",
+   "Compressor",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Delay",
+   "Delay",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Distortion",
+   "Distortion",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud_Flange",
+   "Flange & Chorus",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Gate",
+   "Gate",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud HiLo",
+   "High-Low Pass",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Stereo Mixer",
+   "Stereo Mixer",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Modulator",
+   "Modulator",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Param EQ",
+   "Parametric EQ",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Reverb",
+   "Reverb",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Reverse",
+   "Backwards",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE Aud Tone",
+   "Tone",
+   "Audio",
+   "26.5"
+  ],
+  [
+   "ADBE AutoColor",
+   "Auto Color",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE AutoContrast",
+   "Auto Contrast",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE AutoLevels",
+   "Auto Levels",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE AUX CHANNEL EXTRACT",
+   "3D Channel Extract",
+   "3D Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Brightness & Contrast",
+   "Brightness & Contrast",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Basic 3D",
+   "Basic 3D",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Basic Text2",
+   "Basic Text",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Laser",
+   "Beam",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Bevel Alpha",
+   "Bevel Alpha",
+   "Perspective",
+   "26.5"
+  ],
+  [
+   "ADBE Bevel Edges",
+   "Bevel Edges",
+   "Perspective",
+   "26.5"
+  ],
+  [
+   "ADBE BEZMESH",
+   "Bezier Warp",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Bilateral",
+   "Bilateral Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Blend",
+   "Blend",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Block Dissolve",
+   "Block Dissolve",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "ADBE Box Blur2",
+   "Fast Box Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Box Blur",
+   "Box Blur",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Broadcast Colors",
+   "Broadcast Colors",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Brush Strokes",
+   "Brush Strokes",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Bulge",
+   "Bulge",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Calculations",
+   "Calculations",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE WRPMESH",
+   "Warp",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "APC CardDanceCam",
+   "Card Dance",
+   "Simulation",
+   "26.5"
+  ],
+  [
+   "APC CardWipeCam",
+   "Card Wipe",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "ADBE Cartoonify",
+   "Cartoon",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "APC Caustics",
+   "Caustics",
+   "Simulation",
+   "26.5"
+  ],
+  [
+   "ADBE Cell Pattern",
+   "Cell Pattern",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Change To Color",
+   "Change to Color",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Change Color",
+   "Change Color",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Channel Combiner",
+   "Channel Combiner",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Channel Blur",
+   "Channel Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE CHANNEL MIXER",
+   "Channel Mixer",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Checkerboard",
+   "Checkerboard",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Cineon Converter",
+   "Cineon Converter",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Cineon Converter2",
+   "Cineon Converter",
+   "Utility",
+   "26.5"
+  ],
+  [
+   "ADBE Circle",
+   "Circle",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Color Link",
+   "Color Link",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Color Balance",
+   "Color Balance",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Color Balance 2",
+   "Color Balance",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Color Difference Key",
+   "Color Difference Key",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Color Emboss",
+   "Color Emboss",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Color Balance (HLS)",
+   "Color Balance (HLS)",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Color Key",
+   "Color Key",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Color Range",
+   "Color Range",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "APC Colorama",
+   "Colorama",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE 4ColorGradient",
+   "4-Color Gradient",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Compound Arithmetic",
+   "Compound Arithmetic",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Compound Blur",
+   "Compound Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Corner Pin",
+   "Corner Pin",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Curl Noise",
+   "Curl Noise",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE CurvesCustom",
+   "Curves",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE CameraShakeDeblur",
+   "Camera-Shake Deblur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Deflicker",
+   "Color Stabilizer",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE DEPTH FIELD",
+   "Depth of Field",
+   "3D Channel",
+   "26.5"
+  ],
+  [
+   "ADBE DEPTH MATTE",
+   "Depth Matte",
+   "3D Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Difference Matte2",
+   "Difference Matte",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Difference",
+   "Time Difference",
+   "Time",
+   "26.5"
+  ],
+  [
+   "ADBE Motion Blur",
+   "Directional Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Displacement Map",
+   "Displacement Map",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Drop Shadow",
+   "Drop Shadow",
+   "Perspective",
+   "26.5"
+  ],
+  [
+   "ADBE Dust & Scratches",
+   "Dust & Scratches",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Echo",
+   "Echo",
+   "Time",
+   "26.5"
+  ],
+  [
+   "ADBE ELLIPSE",
+   "Ellipse",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Emboss",
+   "Emboss",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Equalize",
+   "Equalize",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Compander",
+   "HDR Compander",
+   "Utility",
+   "26.5"
+  ],
+  [
+   "ADBE Exposure2",
+   "Exposure",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Exposure",
+   "Exposure",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Checkbox Control",
+   "Checkbox Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Slider Control",
+   "Slider Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Layer Control",
+   "Layer Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Color Control",
+   "Color Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Point3D Control",
+   "3D Point Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Point Control",
+   "Point Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Angle Control",
+   "Angle Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Dropdown Control",
+   "Dropdown Menu Control",
+   "Expression Controls",
+   "26.5"
+  ],
+  [
+   "ADBE Extract",
+   "Extract",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Eyedropper Fill",
+   "Eyedropper Fill",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Fast Blur",
+   "Fast Blur (Legacy)",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Reduce Interlace Flicker",
+   "Reduce Interlace Flicker",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Fill",
+   "Fill",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Find Edges",
+   "Find Edges",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "APC Foam",
+   "Foam",
+   "Simulation",
+   "26.5"
+  ],
+  [
+   "ADBE FOG_3D",
+   "Fog 3D",
+   "3D Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Fractal",
+   "Fractal",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Fractal Noise",
+   "Fractal Noise",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Gaussian Blur",
+   "Gaussian Blur (Legacy)",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Gaussian Blur 2",
+   "Gaussian Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Glo2",
+   "Glow",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Gamma/Pedestal/Gain2",
+   "Gamma/Pedestal/Gain",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Gradient Wipe",
+   "Gradient Wipe",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "ADBE Grid",
+   "Grid",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE GROW BOUNDS",
+   "Grow Bounds",
+   "Utility",
+   "26.5"
+  ],
+  [
+   "ADBE HUE SATURATION",
+   "Hue/Saturation",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE ID MATTE",
+   "ID Matte",
+   "3D Channel",
+   "26.5"
+  ],
+  [
+   "ADBE ATG Extract",
+   "Inner/Outer Key",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Invert",
+   "Invert",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE IRIS_WIPE",
+   "Iris Wipe",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "ADBE KeyCleaner",
+   "Key Cleaner",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Leave Color",
+   "Leave Color",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Lens Flare",
+   "Lens Flare",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Easy Levels",
+   "Levels",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Easy Levels2",
+   "Levels",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Pro Levels2",
+   "Levels (Individual Controls)",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Pro Levels",
+   "Levels (Individual Controls)",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Lightning",
+   "Lightning",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Lightning 2",
+   "Advanced Lightning",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Linear Color Key2",
+   "Linear Color Key",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Linear Wipe",
+   "Linear Wipe",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "ADBE LIQUIFY",
+   "Liquify",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Luma Key",
+   "Luma Key",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Lumetri",
+   "Lumetri Color",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Magnify",
+   "Magnify",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "VISINF Grain Duplication",
+   "Match Grain",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Matte Choker",
+   "Matte Choker",
+   "Matte",
+   "26.5"
+  ],
+  [
+   "ADBE Median",
+   "Median (Legacy)",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Minimax",
+   "Minimax",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Mirror",
+   "Mirror",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Mosaic",
+   "Mosaic",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE MESH WARP",
+   "Mesh Warp",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Noise2",
+   "Noise",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Noise",
+   "Noise",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Noise Alpha2",
+   "Noise Alpha",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Noise Alpha",
+   "Noise Alpha",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Noise HLS",
+   "Noise HLS",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Noise HLS2",
+   "Noise HLS",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Noise HLS Auto2",
+   "Noise HLS Auto",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Noise HLS Auto",
+   "Noise HLS Auto",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Numbers2",
+   "Numbers",
+   "Text",
+   "26.5"
+  ],
+  [
+   "ADBE OCIO CDL Transform",
+   "OCIO CDL Transform",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE OCIO Color Space Transform",
+   "OCIO Color Space Transform",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE OCIO Display Transform",
+   "OCIO Display Transform",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE OCIO FILE Transform",
+   "OCIO File Transform",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE OCIO Look Transform",
+   "OCIO Look Transform",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Offset",
+   "Offset",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Optics Compensation",
+   "Optics Compensation",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE PhotoFilterPS",
+   "Photo Filter",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE SelectiveColor",
+   "Selective Color",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Vibrance",
+   "Vibrance",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Brightness & Contrast 2",
+   "Brightness & Contrast",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE PS Median",
+   "Median",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Black&White",
+   "Black & White",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE PSL Bevel Emboss",
+   "Photoshop Bevel And Emboss",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE PSL Drop Shadow",
+   "Photoshop Drop Shadow",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE PSL Inner Glow",
+   "Photoshop Inner Glow",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE PSL Inner Shadow",
+   "Photoshop Inner Shadow",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE PSL Outer Glow",
+   "Photoshop Outer Glow",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE PSL Solid Fill",
+   "Photoshop Solid Fill",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE PS Arbitrary Map",
+   "PS Arbitrary Map",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Paint Bucket",
+   "Paint Bucket",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Playgnd",
+   "Particle Playground",
+   "Simulation",
+   "26.5"
+  ],
+  [
+   "ADBE Path Text",
+   "Path Text",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Photo Filter",
+   "Photo Filter",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Polar Coordinates",
+   "Polar Coordinates",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Posterize",
+   "Posterize",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Posterize Time",
+   "Posterize Time",
+   "Time",
+   "26.5"
+  ],
+  [
+   "ADBE ProfileToProfile",
+   "Color Profile Converter",
+   "Utility",
+   "26.5"
+  ],
+  [
+   "ADBE HDR ToneMap",
+   "HDR Highlight Compression",
+   "Utility",
+   "26.5"
+  ],
+  [
+   "ADBE Radial Shadow",
+   "Radial Shadow",
+   "Perspective",
+   "26.5"
+  ],
+  [
+   "ADBE Radial Blur",
+   "Radial Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Radial Wipe",
+   "Radial Wipe",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "APC Radio Waves",
+   "Radio Waves",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Ramp",
+   "Gradient Ramp",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "VISINF Grain Removal",
+   "Remove Grain",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE RESHAPE",
+   "Reshape",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Ripple",
+   "Ripple",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE OFMotionBlur",
+   "Pixel Motion Blur",
+   "Time",
+   "26.5"
+  ],
+  [
+   "ADBE Rolling Shutter",
+   "Rolling Shutter Repair",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Timewarp",
+   "Timewarp",
+   "Time",
+   "26.5"
+  ],
+  [
+   "ADBE Roughen Edges",
+   "Roughen Edges",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Scatter",
+   "Scatter",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Scribble Fill",
+   "Scribble",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Set Channels",
+   "Set Channels",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Set Matte3",
+   "Set Matte",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Set Matte2",
+   "Set Matte",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE ShadowHighlight",
+   "Shadow/Highlight",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Camera Lens Blur",
+   "Camera Lens Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Sharpen",
+   "Sharpen",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "APC Shatter",
+   "Shatter",
+   "Simulation",
+   "26.5"
+  ],
+  [
+   "ADBE Shift Channels",
+   "Shift Channels",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Simple Choker",
+   "Simple Choker",
+   "Matte",
+   "26.5"
+  ],
+  [
+   "ADBE Smart Blur",
+   "Smart Blur",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE SCHMEAR",
+   "Smear",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Solid Composite",
+   "Solid Composite",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Spherize",
+   "Spherize",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Spill Suppressor",
+   "Spill Suppressor",
+   "Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Spill2",
+   "Advanced Spill Suppressor",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE SubspaceStabilizer",
+   "Warp Stabilizer",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Strobe",
+   "Strobe Light",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Stroke",
+   "Stroke",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Texturize",
+   "Texturize",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Three-Way Color Corrector",
+   "Three-Way Color Corrector",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Threshold",
+   "Threshold",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Threshold2",
+   "Threshold",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Tile",
+   "Motion Tile",
+   "Stylize",
+   "26.5"
+  ],
+  [
+   "ADBE Time Displacement",
+   "Time Displacement",
+   "Time",
+   "26.5"
+  ],
+  [
+   "ADBE Timecode",
+   "Timecode",
+   "Text",
+   "26.5"
+  ],
+  [
+   "ADBE Tint",
+   "Tint",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Geometry",
+   "Transform",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Geometry2",
+   "Transform",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Tritone",
+   "Tritone",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "ADBE Turbulent Displace",
+   "Turbulent Displace",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE AIF Perlin Noise 3D",
+   "Turbulent Noise",
+   "Noise & Grain",
+   "26.5"
+  ],
+  [
+   "ADBE Twirl",
+   "Twirl (Legacy)",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Unmult",
+   "Unmult",
+   "Keying",
+   "26.5"
+  ],
+  [
+   "ADBE Remove Color Matting",
+   "Remove Color Matting",
+   "Channel",
+   "26.5"
+  ],
+  [
+   "ADBE Unsharp Mask2",
+   "Unsharp Mask",
+   "Blur & Sharpen",
+   "26.5"
+  ],
+  [
+   "ADBE Unsharp Mask",
+   "Unsharp Mask",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Upscale",
+   "Detail-preserving Upscale",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Chromatic Aberrat",
+   "VR Chromatic Aberrations",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Color Gradients",
+   "VR Color Gradients",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Converter",
+   "VR Converter",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Denoise",
+   "VR De-Noise",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Digital Glitch",
+   "VR Digital Glitch",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Fractal Noise",
+   "VR Fractal Noise",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Blur",
+   "VR Blur",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Glow",
+   "VR Glow",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Project 2D",
+   "VR Plane to Sphere",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Rotate Sphere",
+   "VR Rotate Sphere",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Sharpen",
+   "VR Sharpen",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "Mettle SkyBox Viewer",
+   "VR Sphere To Plane",
+   "Immersive Video",
+   "26.5"
+  ],
+  [
+   "APC Vegas",
+   "Vegas",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Venetian Blinds",
+   "Venetian Blinds",
+   "Transition",
+   "26.5"
+  ],
+  [
+   "ADBE DigitalVideoLimiter",
+   "Video Limiter",
+   "Color Correction",
+   "26.5"
+  ],
+  [
+   "APC Wave World",
+   "Wave World",
+   "Simulation",
+   "26.5"
+  ],
+  [
+   "ADBE Wave Warp",
+   "Wave Warp",
+   "Distort",
+   "26.5"
+  ],
+  [
+   "ADBE Write-on",
+   "Write-on",
+   "Generate",
+   "26.5"
+  ],
+  [
+   "ADBE Samurai",
+   "Roto Brush & Refine Edge",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE Paint",
+   "Paint",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE FreePin3",
+   "Puppet",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE RefineRBMatte",
+   "Refine Hard Matte",
+   "Matte",
+   "26.5"
+  ],
+  [
+   "ADBE RefineMatte",
+   "Refine Matte",
+   "_Obsolete",
+   "26.5"
+  ],
+  [
+   "ADBE RefineMatte2",
+   "Refine Soft Matte",
+   "Matte",
+   "26.5"
+  ],
+  [
+   "ADBE Color Swirl",
+   "Color Swirl",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE Getting Jiggy",
+   "Getting Jiggy",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE Separate XYZ Position",
+   "Separate XYZ Position",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE Separate XYZ Scale",
+   "Separate XYZ Scale",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM InsetVideoFramed",
+   "Inset Video - framed",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM InsetVideoTorn",
+   "Inset Video - torn edges",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM MoodLightAmorph",
+   "Mood Lighting - amorphous",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM MoodLightDigital",
+   "Mood Lighting - digital",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM MoodLightStreaks",
+   "Mood Lighting - streaks",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM CrackedTiles",
+   "Cracked Tiles",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM LightLeaksMarkers",
+   "Light Leaks - layer markers",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM LightLeaksRandom",
+   "Light Leaks - random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM OpacityFlashMarkers",
+   "Opacity Flash - layer markers",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM OpacityFlashRandom",
+   "Opacity Flash - random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM CropEdges",
+   "Crop Edges",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM AutoscrollHorizontal",
+   "Autoscroll - horizontal",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM AutoscrollVertical",
+   "Autoscroll - vertical",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Throw",
+   "Drift Over Time",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM FadeInOutFrames",
+   "Fade In+Out - frames",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM FadeInOutmsec",
+   "Fade In+Out - msec",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Spin",
+   "Rotate Over Time",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM ScaleBounceMarkers",
+   "Scale Bounce - layer markers",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM ScaleBounceRandom",
+   "Scale Bounce - random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM WiggleGelatin",
+   "Wiggle - gelatin",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM WigglePosition",
+   "Wiggle - position",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM WiggleRotation",
+   "Wiggle - rotation",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM WiggleScale",
+   "Wiggle - scale",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM WiggleShear",
+   "Wiggle - shear",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Wigglerama",
+   "Wigglerama",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM DissolveUnmelt",
+   "Dissolve - unmelt",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Zoom2DSpin",
+   "Zoom - 2D spin",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Zoom3DTumble",
+   "Zoom - 3D tumble",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM ZoomWobble",
+   "Zoom - wobble",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM ZoomBubble",
+   "Zoom - bubble",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM ZoomSpiral",
+   "Zoom - spiral",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM SlideVariable",
+   "Slide - variable",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM FlyToInset",
+   "Fly to Inset",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM CornerReveal",
+   "Corner Reveal",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM GridWipe",
+   "Grid Wipe",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransComplete",
+   "Transition Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransStretch",
+   "Stretch Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransDissolve",
+   "Dissolve Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransFade",
+   "Fade Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransFadeMask",
+   "Mask Fade Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransWipe",
+   "Wipe Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransWipeFeath",
+   "Wipe Master Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransCard",
+   "Card Wipe Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransSlide",
+   "Slide Master Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransCorner",
+   "Stretch Master Control(corner)",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransDirection",
+   "Stretch Master Control (edge)",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransIris",
+   "Iris Wipe Master Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM TransRadial",
+   "Radial Wipe Master Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Jiggle",
+   "Jiggle",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Jiggle At Marker",
+   "Jiggle At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Jiggle On Beat",
+   "Jiggle On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Jiggle Random",
+   "Jiggle Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pulse",
+   "Pulse",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pulse At Marker",
+   "Pulse At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pulse On Beat",
+   "Pulse On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pulse Random",
+   "Pulse Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Bounce",
+   "Bounce",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Bounce At Marker",
+   "Bounce At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Bounce On Beat",
+   "Bounce On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Bounce Random",
+   "Bounce Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Opacity Pulse",
+   "Opacity Pulse",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Opacity Pulse At Marker",
+   "Opacity Pulse At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Opacity Pulse On Beat",
+   "Opacity Pulse On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Opacity Pulse Random",
+   "Opacity Pulse Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Oscillate",
+   "Oscillate",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Oscillate At Marker",
+   "Oscillate At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Oscillate On Beat",
+   "Oscillate On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Oscillate Random",
+   "Oscillate Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pendulum",
+   "Pendulum",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pendulum At Marker",
+   "Pendulum At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pendulum On Beat",
+   "Pendulum On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Pendulum Random",
+   "Pendulum Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Swarm",
+   "Swarm",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Follow",
+   "Follow",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Orbit",
+   "Orbit",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Orbit 3D",
+   "Orbit 3D",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Motion 1D",
+   "Random Motion 1D",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Motion",
+   "Random Motion",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Rotation",
+   "Random Rotation",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Rotation 3D",
+   "Random Rotation 3D",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Opacity",
+   "Random Opacity",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Scale",
+   "Random Scale",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Random Fill Color",
+   "Random Fill Color",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Z Spring",
+   "Z Spring",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Z Spring At Marker",
+   "Z Spring At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Wobble Bounce",
+   "Wobble Bounce",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Wobble Bounce At Marker",
+   "Wobble Bounce At Marker",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Wobble Bounce On Beat",
+   "Wobble Bounce On Beat",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE DE Wobble Bounce Random",
+   "Wobble Bounce Random",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Animated Shape Control",
+   "Animated Shape Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Animated Shape 2",
+   "Chaser Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE CM Animated Shape 3",
+   "Animated Shape Control",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE Sample Image",
+   "Sample Image",
+   "",
+   "0.0x0"
+  ],
+  [
+   "ADBE Stereo 3D Controls",
+   "Stereo 3D Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Animal Head66",
+   "Face Track Points",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Animal Head14",
+   "Face Measurements",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Trace Path",
+   "Trace Path",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Pattern Template",
+   "Pattern Template",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Counter Controls",
+   "Counter Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Currency Controls",
+   "Currency Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Percentage Controls",
+   "Percentage Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE Timer Controls",
+   "Timer Controls",
+   "",
+   "0.0x0"
+  ],
+  [
+   "Pseudo/ADBE 2D Text Box",
+   "2D Text Box",
+   "",
+   "0.0x0"
+  ]
+ ],
+ "cmds": {
+  "Convert Expression to Keyframes": 2639,
+  "Create Shapes from Vector Layer": 3973,
+  "Pre-compose...": 2071,
+  "Easy Ease": 2509,
+  "Easy Ease In": 2510,
+  "Easy Ease Out": 2511,
+  "Sequence Layers...": 4217,
+  "Convert to Editable Text": 3799,
+  "Center Anchor Point in Layer Content": 10312,
+  "Toggle Hold Keyframe": 2226,
+  "Keyframe Velocity...": 2228,
+  "Fit to Comp": 2156,
+  "Create Masks from Text": 2933,
+  "Create Shapes from Text": 3781,
+  "Auto-trace...": 3044,
+  "Reverse Keyframes": 0,
+  "Time-Reverse Keyframes": 3693,
+  "Save Animation Preset...": 3075,
+  "Separate Dimensions": 3764,
+  "Add Keyframe": 2518,
+  "Convert Audio to Keyframes": 4218,
+  "Track Camera": 3983,
+  "Create Nulls from Paths": 0,
+  "Set Matte...": 0
+ }
+}

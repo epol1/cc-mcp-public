@@ -1,22 +1,26 @@
 # Progress
 
-> On resume: read `GOAL.md`, then this file, then `docs/DECISIONS.md`. Continue from **Next**. Never start over.
+> On resume: read `GOAL.md`, then this file, then `docs/DECISIONS.md` and `docs/AGENT_GUIDE.md`. Continue from **Next**. Never start over.
+> Roadmap and dashboard: `status/systems.json` → `status/index.html` (`node status/build.mjs`). Release: `node scripts/release.mjs "msg"`.
 
 ## Current phase
-**Phase 0: environment discovery and human checklist.** Waiting for the user to complete the checklist and say "done".
+**Phase 3: Build.** Phases 0–2 are done (environment, research, architecture).
 
 ## Done
-- Environment discovered (see `docs/ENVIRONMENT.md`): Windows 11, AE 2026 (26.5), aerender, CEP 12, Node 22, pnpm, ffmpeg, ImageMagick, RTX 3080.
-- CEP bridge extension written (`packages/bridge-cep/extension`) and installed via junction into `%APPDATA%\Adobe\CEP\extensions\com.aecompose` before AE launch.
-- User constraint recorded: vanilla AE only, no third-party plugins (D2, D3).
-- Git initialized.
+- **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.
+- **Phase 1**: research reports in `docs/research/` (toolchain, prior art, Remotion/Lottie/easing) and the AE 26.5 API verification summary in `docs/RESEARCH.md` §1 (raw dumps in `docs/research/ae-verify/`).
+- **Phase 2**: `docs/ARCHITECTURE.md`, with agent-first as principle zero; decisions D21–D28.
+- Dialog watchdog prototype (`scratch/p1/aewin.ps1`) verified on the full crash → relaunch → Crash Repair flow.
+- Status dashboard and release flow (`status/`, `scripts/release.mjs`). Private GitHub repo `epol1/ae-compose`.
 
-## Next
-1. After "done": verify that the CEP bridge auto-starts (`GET http://127.0.0.1:47811/health`), then run a hello-world eval.
-2. Test the fallback backend `AfterFX.com -r <file.jsx>` with a JSON result file. Measure latency of both backends.
-3. Confirm the scripting file/network pref by an actual file write from ExtendScript.
-4. Save the dev project to `scratch/aec-dev.aep`.
-5. Commit Phase 0, then start Phase 1 research (parallel subagents) and AE API verification scripts.
+## Next (Phase 3 build order, GOAL §5)
+1. Package scaffold: `package.json`, pnpm, TS config, vitest, Babel/Rollup ES3 runtime build + post-pass.
+2. Bridge client in TS (CEP + AfterFX backends, dialog watchdog module, recovery), then `aec doctor` and hello world through the real pipeline.
+3. IR schema, then runtime core (`ensure`, `json`, undo wrapper, safety fence), then codegen skeleton.
+4. Core layers and transforms, keys and **eases verified numerically with `valueAtTime`**.
+5. Text (incl. animators/selectors), shapes (pen, ops, gradients via `.ffx`), footage.
+6. Effects catalog + generated types. Then controls, variants, layout, 3D, particles, inspector, edits, visual, CLI/MCP/skill, watch.
 
 ## Open issues
-- Unknown until AE launches: does AE 26.5 honor `StartOn` for the invisible `Custom` extension? Fallback: the docked panel hosts the bridge.
+- AE crashes `(0 :: 42)` from shape-gradient internals: fenced (D15). One crash with no script running happened while the `Blue Dwarf V0` dev plugins were installed; they have since been removed (D18). No crashes since.
+- Renderer quality settings are not scriptable (documented limitation).

@@ -1,0 +1,2569 @@
+{
+ "renderers": {
+  "ADBE Advanced 3d": {
+   "solidMaterial": {
+    "n": "Material Options",
+    "m": "ADBE Material Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Light Transmission",
+      "m": "ADBE Light Transmission",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Accepts Shadows",
+      "m": "ADBE Accepts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Lights",
+      "m": "ADBE Accepts Lights",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Color",
+      "m": "ADBE Shadow Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "noExpr": true,
+      "spatial": true
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Appears in Reflections",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Ambient",
+      "m": "ADBE Ambient Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Diffuse",
+      "m": "ADBE Diffuse Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Intensity",
+      "m": "ADBE Specular Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Shininess",
+      "m": "ADBE Shininess Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 5,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Metal",
+      "m": "ADBE Metal Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Intensity",
+      "m": "ADBE Reflection Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Sharpness",
+      "m": "ADBE Glossiness Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Rolloff",
+      "m": "ADBE Fresnel Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency",
+      "m": "ADBE Transparency Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency Rolloff",
+      "m": "ADBE Transp Rolloff",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Index of Refraction",
+      "m": "ADBE Index of Refraction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 5,
+      "noExpr": true
+     }
+    ]
+   },
+   "textGeometry": {
+    "n": "Geometry Options",
+    "m": "ADBE Extrsn Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Bevel Style",
+      "m": "ADBE Bevel Styles",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 4,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Direction",
+      "m": "ADBE Bevel Direction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 2,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Depth",
+      "m": "ADBE Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 2,
+      "min": 0,
+      "max": 1000,
+      "noExpr": true
+     },
+     {
+      "n": "Hole Bevel Depth",
+      "m": "ADBE Hole Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Extrusion Depth",
+      "m": "ADBE Extrsn Depth",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 10000,
+      "noExpr": true
+     }
+    ]
+   },
+   "textMaterial": {
+    "n": "Material Options",
+    "m": "ADBE Material Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Light Transmission",
+      "m": "ADBE Light Transmission",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Accepts Shadows",
+      "m": "ADBE Accepts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Lights",
+      "m": "ADBE Accepts Lights",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Color",
+      "m": "ADBE Shadow Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "noExpr": true,
+      "spatial": true
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Appears in Reflections",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Ambient",
+      "m": "ADBE Ambient Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Diffuse",
+      "m": "ADBE Diffuse Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Intensity",
+      "m": "ADBE Specular Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Shininess",
+      "m": "ADBE Shininess Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 5,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Metal",
+      "m": "ADBE Metal Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Intensity",
+      "m": "ADBE Reflection Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Sharpness",
+      "m": "ADBE Glossiness Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Rolloff",
+      "m": "ADBE Fresnel Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency",
+      "m": "ADBE Transparency Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency Rolloff",
+      "m": "ADBE Transp Rolloff",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Index of Refraction",
+      "m": "ADBE Index of Refraction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 5,
+      "noExpr": true
+     }
+    ]
+   },
+   "shapeGeometry": {
+    "n": "Geometry Options",
+    "m": "ADBE Extrsn Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Bevel Style",
+      "m": "ADBE Bevel Styles",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 4,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Direction",
+      "m": "ADBE Bevel Direction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 2,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Depth",
+      "m": "ADBE Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 2,
+      "min": 0,
+      "max": 1000,
+      "noExpr": true
+     },
+     {
+      "n": "Hole Bevel Depth",
+      "m": "ADBE Hole Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Extrusion Depth",
+      "m": "ADBE Extrsn Depth",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 10000,
+      "noExpr": true
+     }
+    ]
+   },
+   "solidTopGroups": [
+    "ADBE Marker",
+    "ADBE Time Remapping",
+    "ADBE MTrackers",
+    "ADBE Mask Parade",
+    "ADBE Effect Parade",
+    "ADBE Transform Group",
+    "ADBE Layer Styles",
+    "ADBE Plane Options Group",
+    "ADBE Extrsn Options Group",
+    "ADBE Material Options Group",
+    "ADBE Audio Group",
+    "ADBE Data Group",
+    "ADBE Layer Overrides",
+    "ADBE Layer Sets",
+    "ADBE Source Options Group"
+   ],
+   "textTopGroups": [
+    "ADBE Marker",
+    "ADBE Text Properties",
+    "ADBE Mask Parade",
+    "ADBE Effect Parade",
+    "ADBE Transform Group",
+    "ADBE Layer Styles",
+    "ADBE Extrsn Options Group",
+    "ADBE Material Options Group",
+    "ADBE Audio Group",
+    "ADBE Layer Sets"
+   ],
+   "transform3D": {
+    "n": "Transform",
+    "m": "ADBE Transform Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Anchor Point",
+      "m": "ADBE Anchor Point",
+      "t": "P",
+      "vt": null,
+      "v": [
+       200,
+       200,
+       0
+      ],
+      "spatial": true
+     },
+     {
+      "n": "Position",
+      "m": "ADBE Position",
+      "t": "P",
+      "vt": null,
+      "v": [
+       960,
+       540,
+       0
+      ],
+      "spatial": true
+     },
+     {
+      "n": "X Position",
+      "m": "ADBE Position_0",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Y Position",
+      "m": "ADBE Position_1",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Z Position",
+      "m": "ADBE Position_2",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Scale",
+      "m": "ADBE Scale",
+      "t": "P",
+      "vt": null,
+      "v": [
+       100,
+       100,
+       100
+      ]
+     },
+     {
+      "n": "Orientation",
+      "m": "ADBE Orientation",
+      "t": "P",
+      "vt": null,
+      "v": [
+       0,
+       0,
+       0
+      ],
+      "spatial": true
+     },
+     {
+      "n": "X Rotation",
+      "m": "ADBE Rotate X",
+      "t": "P",
+      "vt": null,
+      "v": 0
+     },
+     {
+      "n": "Y Rotation",
+      "m": "ADBE Rotate Y",
+      "t": "P",
+      "vt": null,
+      "v": 0
+     },
+     {
+      "n": "Z Rotation",
+      "m": "ADBE Rotate Z",
+      "t": "P",
+      "vt": null,
+      "v": 0
+     },
+     {
+      "n": "Opacity",
+      "m": "ADBE Opacity",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Envir Appear in Reflect",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     }
+    ]
+   }
+  },
+  "ADBE Calder": {
+   "solidMaterial": {
+    "n": "Material Options",
+    "m": "ADBE Material Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Light Transmission",
+      "m": "ADBE Light Transmission",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Shadows",
+      "m": "ADBE Accepts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Lights",
+      "m": "ADBE Accepts Lights",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Color",
+      "m": "ADBE Shadow Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Appears in Reflections",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Ambient",
+      "m": "ADBE Ambient Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Diffuse",
+      "m": "ADBE Diffuse Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Intensity",
+      "m": "ADBE Specular Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Shininess",
+      "m": "ADBE Shininess Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 5,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Metal",
+      "m": "ADBE Metal Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Intensity",
+      "m": "ADBE Reflection Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Sharpness",
+      "m": "ADBE Glossiness Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Rolloff",
+      "m": "ADBE Fresnel Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency",
+      "m": "ADBE Transparency Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency Rolloff",
+      "m": "ADBE Transp Rolloff",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Index of Refraction",
+      "m": "ADBE Index of Refraction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 5,
+      "noExpr": true
+     }
+    ]
+   },
+   "textGeometry": {
+    "n": "Geometry Options",
+    "m": "ADBE Extrsn Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Bevel Style",
+      "m": "ADBE Bevel Styles",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 4,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Direction",
+      "m": "ADBE Bevel Direction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 2,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Depth",
+      "m": "ADBE Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 2,
+      "min": 0,
+      "max": 1000
+     },
+     {
+      "n": "Hole Bevel Depth",
+      "m": "ADBE Hole Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Extrusion Depth",
+      "m": "ADBE Extrsn Depth",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 10000
+     }
+    ]
+   },
+   "textMaterial": {
+    "n": "Material Options",
+    "m": "ADBE Material Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Light Transmission",
+      "m": "ADBE Light Transmission",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Shadows",
+      "m": "ADBE Accepts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Lights",
+      "m": "ADBE Accepts Lights",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Color",
+      "m": "ADBE Shadow Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Appears in Reflections",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Ambient",
+      "m": "ADBE Ambient Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Diffuse",
+      "m": "ADBE Diffuse Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Intensity",
+      "m": "ADBE Specular Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Shininess",
+      "m": "ADBE Shininess Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 5,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Metal",
+      "m": "ADBE Metal Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Intensity",
+      "m": "ADBE Reflection Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Sharpness",
+      "m": "ADBE Glossiness Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Reflection Rolloff",
+      "m": "ADBE Fresnel Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency",
+      "m": "ADBE Transparency Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency Rolloff",
+      "m": "ADBE Transp Rolloff",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Index of Refraction",
+      "m": "ADBE Index of Refraction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 5,
+      "noExpr": true
+     }
+    ]
+   },
+   "shapeGeometry": {
+    "n": "Geometry Options",
+    "m": "ADBE Extrsn Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Bevel Style",
+      "m": "ADBE Bevel Styles",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 4,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Direction",
+      "m": "ADBE Bevel Direction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 2,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Depth",
+      "m": "ADBE Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 2,
+      "min": 0,
+      "max": 1000
+     },
+     {
+      "n": "Hole Bevel Depth",
+      "m": "ADBE Hole Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Extrusion Depth",
+      "m": "ADBE Extrsn Depth",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 10000
+     }
+    ]
+   },
+   "solidTopGroups": [
+    "ADBE Marker",
+    "ADBE Time Remapping",
+    "ADBE MTrackers",
+    "ADBE Mask Parade",
+    "ADBE Effect Parade",
+    "ADBE Transform Group",
+    "ADBE Layer Styles",
+    "ADBE Plane Options Group",
+    "ADBE Extrsn Options Group",
+    "ADBE Material Options Group",
+    "ADBE Audio Group",
+    "ADBE Data Group",
+    "ADBE Layer Overrides",
+    "ADBE Layer Sets",
+    "ADBE Source Options Group"
+   ],
+   "textTopGroups": [
+    "ADBE Marker",
+    "ADBE Text Properties",
+    "ADBE Mask Parade",
+    "ADBE Effect Parade",
+    "ADBE Transform Group",
+    "ADBE Layer Styles",
+    "ADBE Extrsn Options Group",
+    "ADBE Material Options Group",
+    "ADBE Audio Group",
+    "ADBE Layer Sets"
+   ]
+  },
+  "ADBE Ernst": {
+   "solidMaterial": {
+    "n": "Material Options",
+    "m": "ADBE Material Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Light Transmission",
+      "m": "ADBE Light Transmission",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Shadows",
+      "m": "ADBE Accepts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Lights",
+      "m": "ADBE Accepts Lights",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Color",
+      "m": "ADBE Shadow Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "noExpr": true,
+      "spatial": true
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Appears in Reflections",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Ambient",
+      "m": "ADBE Ambient Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Diffuse",
+      "m": "ADBE Diffuse Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Intensity",
+      "m": "ADBE Specular Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Shininess",
+      "m": "ADBE Shininess Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 5,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Metal",
+      "m": "ADBE Metal Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Intensity",
+      "m": "ADBE Reflection Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Sharpness",
+      "m": "ADBE Glossiness Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Rolloff",
+      "m": "ADBE Fresnel Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Transparency",
+      "m": "ADBE Transparency Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency Rolloff",
+      "m": "ADBE Transp Rolloff",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Index of Refraction",
+      "m": "ADBE Index of Refraction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 5,
+      "noExpr": true
+     }
+    ]
+   },
+   "textGeometry": {
+    "n": "Geometry Options",
+    "m": "ADBE Extrsn Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Bevel Style",
+      "m": "ADBE Bevel Styles",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 4,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Direction",
+      "m": "ADBE Bevel Direction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 2,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Depth",
+      "m": "ADBE Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 2,
+      "min": 0,
+      "max": 1000
+     },
+     {
+      "n": "Hole Bevel Depth",
+      "m": "ADBE Hole Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Extrusion Depth",
+      "m": "ADBE Extrsn Depth",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 10000
+     }
+    ]
+   },
+   "textMaterial": {
+    "n": "Material Options",
+    "m": "ADBE Material Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Light Transmission",
+      "m": "ADBE Light Transmission",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Shadows",
+      "m": "ADBE Accepts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Accepts Lights",
+      "m": "ADBE Accepts Lights",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Color",
+      "m": "ADBE Shadow Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "noExpr": true,
+      "spatial": true
+     },
+     {
+      "n": "Appears in Reflections",
+      "m": "ADBE Appears in Reflections",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Ambient",
+      "m": "ADBE Ambient Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Diffuse",
+      "m": "ADBE Diffuse Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Intensity",
+      "m": "ADBE Specular Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Specular Shininess",
+      "m": "ADBE Shininess Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 5,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Metal",
+      "m": "ADBE Metal Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Intensity",
+      "m": "ADBE Reflection Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Sharpness",
+      "m": "ADBE Glossiness Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Reflection Rolloff",
+      "m": "ADBE Fresnel Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Transparency",
+      "m": "ADBE Transparency Coefficient",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Transparency Rolloff",
+      "m": "ADBE Transp Rolloff",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Index of Refraction",
+      "m": "ADBE Index of Refraction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 5,
+      "noExpr": true
+     }
+    ]
+   },
+   "shapeGeometry": {
+    "n": "Geometry Options",
+    "m": "ADBE Extrsn Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Bevel Style",
+      "m": "ADBE Bevel Styles",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 4,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Direction",
+      "m": "ADBE Bevel Direction",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 2,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Bevel Depth",
+      "m": "ADBE Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 2,
+      "min": 0,
+      "max": 1000
+     },
+     {
+      "n": "Hole Bevel Depth",
+      "m": "ADBE Hole Bevel Depth",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Extrusion Depth",
+      "m": "ADBE Extrsn Depth",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 10000
+     }
+    ]
+   },
+   "solidTopGroups": [
+    "ADBE Marker",
+    "ADBE Time Remapping",
+    "ADBE MTrackers",
+    "ADBE Mask Parade",
+    "ADBE Effect Parade",
+    "ADBE Transform Group",
+    "ADBE Layer Styles",
+    "ADBE Plane Options Group",
+    "ADBE Extrsn Options Group",
+    "ADBE Material Options Group",
+    "ADBE Audio Group",
+    "ADBE Data Group",
+    "ADBE Layer Overrides",
+    "ADBE Layer Sets",
+    "ADBE Source Options Group"
+   ],
+   "textTopGroups": [
+    "ADBE Marker",
+    "ADBE Text Properties",
+    "ADBE Mask Parade",
+    "ADBE Effect Parade",
+    "ADBE Transform Group",
+    "ADBE Layer Styles",
+    "ADBE Extrsn Options Group",
+    "ADBE Material Options Group",
+    "ADBE Audio Group",
+    "ADBE Layer Sets"
+   ]
+  }
+ },
+ "camera": {
+  "tree": {
+   "n": "Camera Options",
+   "m": "ADBE Camera Options Group",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Zoom",
+     "m": "ADBE Camera Zoom",
+     "t": "P",
+     "vt": null,
+     "v": 2666.6666666,
+     "min": 1
+    },
+    {
+     "n": "Depth of Field",
+     "m": "ADBE Camera Depth of Field",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Focus Distance",
+     "m": "ADBE Camera Focus Distance",
+     "t": "P",
+     "vt": null,
+     "v": 2666.6666666,
+     "min": 0
+    },
+    {
+     "n": "Aperture",
+     "m": "ADBE Camera Aperture",
+     "t": "P",
+     "vt": null,
+     "v": 25.3093363329584,
+     "min": 0
+    },
+    {
+     "n": "Blur Level",
+     "m": "ADBE Camera Blur Level",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": 0
+    },
+    {
+     "n": "Focus Area Width",
+     "m": "ADBE Camera Focus Area Width",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "noExpr": true
+    },
+    {
+     "n": "Near, Far Blur Level",
+     "m": "ADBE Camera Split Blur Level",
+     "t": "P",
+     "vt": null,
+     "v": [
+      100,
+      100
+     ],
+     "min": 0,
+     "noExpr": true
+    },
+    {
+     "n": "Iris Shape",
+     "m": "ADBE Iris Shape",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 10
+    },
+    {
+     "n": "Iris Rotation",
+     "m": "ADBE Iris Rotation",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Iris Roundness",
+     "m": "ADBE Iris Roundness",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "Iris Aspect Ratio",
+     "m": "ADBE Iris Aspect Ratio",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 0.00999999977648,
+     "max": 100
+    },
+    {
+     "n": "Iris Diffraction Fringe",
+     "m": "ADBE Iris Diffraction Fringe",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "max": 500
+    },
+    {
+     "n": "Highlight Gain",
+     "m": "ADBE Iris Highlight Gain",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "Highlight Threshold",
+     "m": "ADBE Iris Highlight Threshold",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 0,
+     "max": 1
+    },
+    {
+     "n": "Highlight Saturation",
+     "m": "ADBE Iris Hightlight Saturation",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  "transform": {
+   "n": "Transform",
+   "m": "ADBE Transform Group",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Point of Interest",
+     "m": "ADBE Anchor Point",
+     "t": "P",
+     "vt": null,
+     "v": [
+      960,
+      540,
+      0
+     ],
+     "spatial": true
+    },
+    {
+     "n": "Position",
+     "m": "ADBE Position",
+     "t": "P",
+     "vt": null,
+     "v": [
+      0,
+      0,
+      -2666.6666666
+     ],
+     "spatial": true
+    },
+    {
+     "n": "X Position",
+     "m": "ADBE Position_0",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "noExpr": true
+    },
+    {
+     "n": "Y Position",
+     "m": "ADBE Position_1",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "noExpr": true
+    },
+    {
+     "n": "Z Position",
+     "m": "ADBE Position_2",
+     "t": "P",
+     "vt": null,
+     "v": 0,
+     "noExpr": true
+    },
+    {
+     "n": "Scale",
+     "m": "ADBE Scale",
+     "t": "P",
+     "vt": null,
+     "v": [
+      100,
+      100,
+      100
+     ],
+     "noExpr": true
+    },
+    {
+     "n": "Orientation",
+     "m": "ADBE Orientation",
+     "t": "P",
+     "vt": null,
+     "v": [
+      0,
+      0,
+      0
+     ],
+     "spatial": true
+    },
+    {
+     "n": "X Rotation",
+     "m": "ADBE Rotate X",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Y Rotation",
+     "m": "ADBE Rotate Y",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Z Rotation",
+     "m": "ADBE Rotate Z",
+     "t": "P",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "n": "Opacity",
+     "m": "ADBE Opacity",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": 0,
+     "max": 100,
+     "noExpr": true
+    },
+    {
+     "n": "Appears in Reflections",
+     "m": "ADBE Envir Appear in Reflect",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "static": true,
+     "noExpr": true
+    }
+   ]
+  },
+  "autoOrient": 4214
+ },
+ "camTop": [
+  "ADBE Marker | Marker",
+  "ADBE Transform Group | Transform",
+  "ADBE Camera Options Group | Camera Options"
+ ],
+ "lights": {
+  "PARALLEL": {
+   "opts": {
+    "n": "Light Options",
+    "m": "ADBE Light Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Source",
+      "m": "ADBE Light Env Atom",
+      "t": "NG",
+      "c": []
+     },
+     {
+      "n": "Background Visible",
+      "m": "ADBE Light Backgd Visible",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Background Opacity",
+      "m": "ADBE Light Backgd Opacity",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Background Blur",
+      "m": "ADBE Light Backgd Blur",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Intensity",
+      "m": "ADBE Light Intensity",
+      "t": "P",
+      "vt": null,
+      "v": 100
+     },
+     {
+      "n": "Color",
+      "m": "ADBE Light Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Cone Angle",
+      "m": "ADBE Light Cone Angle",
+      "t": "P",
+      "vt": null,
+      "v": 90,
+      "min": 0,
+      "max": 180,
+      "noExpr": true
+     },
+     {
+      "n": "Cone Feather",
+      "m": "ADBE Light Cone Feather 2",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff",
+      "m": "ADBE Light Falloff Type",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 3
+     },
+     {
+      "n": "Radius",
+      "m": "ADBE Light Falloff Start",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff Distance",
+      "m": "ADBE Light Falloff Distance",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Darkness",
+      "m": "ADBE Light Shadow Darkness",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0
+     },
+     {
+      "n": "Shadow Diffusion",
+      "m": "ADBE Light Shadow Diffusion",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "noExpr": true
+     }
+    ]
+   },
+   "lightType": 4412,
+   "lightSource": null
+  },
+  "SPOT": {
+   "opts": {
+    "n": "Light Options",
+    "m": "ADBE Light Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Source",
+      "m": "ADBE Light Env Atom",
+      "t": "NG",
+      "c": []
+     },
+     {
+      "n": "Background Visible",
+      "m": "ADBE Light Backgd Visible",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Background Opacity",
+      "m": "ADBE Light Backgd Opacity",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Background Blur",
+      "m": "ADBE Light Backgd Blur",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Intensity",
+      "m": "ADBE Light Intensity",
+      "t": "P",
+      "vt": null,
+      "v": 100
+     },
+     {
+      "n": "Color",
+      "m": "ADBE Light Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Cone Angle",
+      "m": "ADBE Light Cone Angle",
+      "t": "P",
+      "vt": null,
+      "v": 90,
+      "min": 0,
+      "max": 180
+     },
+     {
+      "n": "Cone Feather",
+      "m": "ADBE Light Cone Feather 2",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100
+     },
+     {
+      "n": "Falloff",
+      "m": "ADBE Light Falloff Type",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 3
+     },
+     {
+      "n": "Radius",
+      "m": "ADBE Light Falloff Start",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff Distance",
+      "m": "ADBE Light Falloff Distance",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Darkness",
+      "m": "ADBE Light Shadow Darkness",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0
+     },
+     {
+      "n": "Shadow Diffusion",
+      "m": "ADBE Light Shadow Diffusion",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0
+     }
+    ]
+   },
+   "lightType": 4413,
+   "lightSource": null
+  },
+  "POINT": {
+   "opts": {
+    "n": "Light Options",
+    "m": "ADBE Light Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Source",
+      "m": "ADBE Light Env Atom",
+      "t": "NG",
+      "c": []
+     },
+     {
+      "n": "Background Visible",
+      "m": "ADBE Light Backgd Visible",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Background Opacity",
+      "m": "ADBE Light Backgd Opacity",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Background Blur",
+      "m": "ADBE Light Backgd Blur",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Intensity",
+      "m": "ADBE Light Intensity",
+      "t": "P",
+      "vt": null,
+      "v": 100
+     },
+     {
+      "n": "Color",
+      "m": "ADBE Light Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Cone Angle",
+      "m": "ADBE Light Cone Angle",
+      "t": "P",
+      "vt": null,
+      "v": 90,
+      "min": 0,
+      "max": 180,
+      "noExpr": true
+     },
+     {
+      "n": "Cone Feather",
+      "m": "ADBE Light Cone Feather 2",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff",
+      "m": "ADBE Light Falloff Type",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 3
+     },
+     {
+      "n": "Radius",
+      "m": "ADBE Light Falloff Start",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff Distance",
+      "m": "ADBE Light Falloff Distance",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Darkness",
+      "m": "ADBE Light Shadow Darkness",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0
+     },
+     {
+      "n": "Shadow Diffusion",
+      "m": "ADBE Light Shadow Diffusion",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0
+     }
+    ]
+   },
+   "lightType": 4414,
+   "lightSource": null
+  },
+  "AMBIENT": {
+   "opts": {
+    "n": "Light Options",
+    "m": "ADBE Light Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Source",
+      "m": "ADBE Light Env Atom",
+      "t": "NG",
+      "c": []
+     },
+     {
+      "n": "Background Visible",
+      "m": "ADBE Light Backgd Visible",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Background Opacity",
+      "m": "ADBE Light Backgd Opacity",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Background Blur",
+      "m": "ADBE Light Backgd Blur",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Intensity",
+      "m": "ADBE Light Intensity",
+      "t": "P",
+      "vt": null,
+      "v": 100
+     },
+     {
+      "n": "Color",
+      "m": "ADBE Light Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Cone Angle",
+      "m": "ADBE Light Cone Angle",
+      "t": "P",
+      "vt": null,
+      "v": 90,
+      "min": 0,
+      "max": 180,
+      "noExpr": true
+     },
+     {
+      "n": "Cone Feather",
+      "m": "ADBE Light Cone Feather 2",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff",
+      "m": "ADBE Light Falloff Type",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 3,
+      "noExpr": true
+     },
+     {
+      "n": "Radius",
+      "m": "ADBE Light Falloff Start",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff Distance",
+      "m": "ADBE Light Falloff Distance",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Darkness",
+      "m": "ADBE Light Shadow Darkness",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Diffusion",
+      "m": "ADBE Light Shadow Diffusion",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "noExpr": true
+     }
+    ]
+   },
+   "lightType": 4415,
+   "lightSource": null
+  },
+  "ENVIRONMENT": {
+   "opts": {
+    "n": "Light Options",
+    "m": "ADBE Light Options Group",
+    "t": "NG",
+    "c": [
+     {
+      "n": "Source",
+      "m": "ADBE Light Env Atom",
+      "t": "NG",
+      "c": []
+     },
+     {
+      "n": "Background Visible",
+      "m": "ADBE Light Backgd Visible",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Background Opacity",
+      "m": "ADBE Light Backgd Opacity",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Background Blur",
+      "m": "ADBE Light Backgd Blur",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Intensity",
+      "m": "ADBE Light Intensity",
+      "t": "P",
+      "vt": null,
+      "v": 100
+     },
+     {
+      "n": "Color",
+      "m": "ADBE Light Color",
+      "t": "P",
+      "vt": "COLOR",
+      "v": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "min": -3921568.62745098,
+      "max": 3921568.62745098,
+      "spatial": true
+     },
+     {
+      "n": "Cone Angle",
+      "m": "ADBE Light Cone Angle",
+      "t": "P",
+      "vt": null,
+      "v": 90,
+      "min": 0,
+      "max": 180,
+      "noExpr": true
+     },
+     {
+      "n": "Cone Feather",
+      "m": "ADBE Light Cone Feather 2",
+      "t": "P",
+      "vt": null,
+      "v": 50,
+      "min": 0,
+      "max": 100,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff",
+      "m": "ADBE Light Falloff Type",
+      "t": "P",
+      "vt": null,
+      "v": 1,
+      "min": 1,
+      "max": 3,
+      "noExpr": true
+     },
+     {
+      "n": "Radius",
+      "m": "ADBE Light Falloff Start",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Falloff Distance",
+      "m": "ADBE Light Falloff Distance",
+      "t": "P",
+      "vt": null,
+      "v": 500,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Casts Shadows",
+      "m": "ADBE Casts Shadows",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "static": true,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Darkness",
+      "m": "ADBE Light Shadow Darkness",
+      "t": "P",
+      "vt": null,
+      "v": 100,
+      "min": 0,
+      "noExpr": true
+     },
+     {
+      "n": "Shadow Diffusion",
+      "m": "ADBE Light Shadow Diffusion",
+      "t": "P",
+      "vt": null,
+      "v": 0,
+      "min": 0,
+      "noExpr": true
+     }
+    ]
+   },
+   "lightType": 4415,
+   "lightSource": null
+  }
+ },
+ "compReflect": "activeCamera,bgColor,comment,counters,displayStartFrame,displayStartTime,draft3d,dropFrame,duration,dynamicLinkGUID,footageMissing,frameBlending,frameDuration,frameRate,frameTime,genAIFootagePathsInWorkArea,guides,hasAudio,hasVideo,height,hideShyLayers,id,isMediaReplacementCompatible,label,layers,markerProperty,motionBlur,motionBlurAdaptiveSampleLimit,motionBlurSamplesPerFrame,motionGraphicsTemplateControllerCount,motionGraphicsTemplateName,name,numLayers,parentFolder,pixelAspect,preserveNestedFrameRate,preserveNestedResolution,proxySource,renderer,renderers,resolutionFactor,selected,selectedLayers,selectedProperties,shutterAngle,shutterPhase,time,typeName,useProxy,usedIn,width,workAreaDuration,workAreaStart,__proto__",
+ "layerReflect": "active,adjustmentLayer,autoOrient,canSetEnabled,comment,containingComp,elided,enabled,environmentLayer,guides,hasVideo,id,inPoint,index,isEffect,isMask,isModified,isNameSet,label,lightSource,lightType,locked,matchName,name,nullLayer,numProperties,outPoint,parent,parentProperty,propertyDepth,propertyType,selected,selectedProperties,shy,solo,startTime,stretch,time,__proto__",
+ "autoOrientTypes": {
+  "NO_AUTO_ORIENT": 4212,
+  "ALONG_PATH": 4213,
+  "CAMERA_OR_POINT_OF_INTEREST": 4214,
+  "CHARACTERS_TOWARD_CAMERA": 4215
+ }
+}

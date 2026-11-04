@@ -14,6 +14,8 @@ assets/footage/*
 assets/handmade/*
 assets/logo/*
 assets/downloads/*
+assets/3d/*
+assets/hdri/*
 !assets/**/.gitkeep
 
 # AE autosaves and lock files

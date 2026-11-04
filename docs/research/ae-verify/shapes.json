@@ -1,0 +1,740 @@
+{
+ "ops": {
+  "ADBE Vector Shape - Rect": {
+   "m": "ADBE Vector Shape - Rect",
+   "c": [
+    {
+     "m": "ADBE Vector Shape Direction",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Rect Size",
+     "vt": null,
+     "v": [
+      100,
+      100
+     ]
+    },
+    {
+     "m": "ADBE Vector Rect Position",
+     "vt": null,
+     "v": [
+      0,
+      0
+     ]
+    },
+    {
+     "m": "ADBE Vector Rect Roundness",
+     "vt": null,
+     "v": 0
+    }
+   ]
+  },
+  "ADBE Vector Shape - Ellipse": {
+   "m": "ADBE Vector Shape - Ellipse",
+   "c": [
+    {
+     "m": "ADBE Vector Shape Direction",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Ellipse Size",
+     "vt": null,
+     "v": [
+      100,
+      100
+     ]
+    },
+    {
+     "m": "ADBE Vector Ellipse Position",
+     "vt": null,
+     "v": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  "ADBE Vector Shape - Star": {
+   "m": "ADBE Vector Shape - Star",
+   "c": [
+    {
+     "m": "ADBE Vector Shape Direction",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Star Type",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Star Points",
+     "vt": null,
+     "v": 5
+    },
+    {
+     "m": "ADBE Vector Star Position",
+     "vt": null,
+     "v": [
+      0,
+      0
+     ]
+    },
+    {
+     "m": "ADBE Vector Star Rotation",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Star Inner Radius",
+     "vt": null,
+     "v": 50
+    },
+    {
+     "m": "ADBE Vector Star Outer Radius",
+     "vt": null,
+     "v": 100
+    },
+    {
+     "m": "ADBE Vector Star Inner Roundess",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Star Outer Roundess",
+     "vt": null,
+     "v": 0
+    }
+   ]
+  },
+  "ADBE Vector Graphic - Fill": {
+   "m": "ADBE Vector Graphic - Fill",
+   "c": [
+    {
+     "m": "ADBE Vector Blend Mode",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Composite Order",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Fill Rule",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Fill Color",
+     "vt": "COLOR",
+     "v": [
+      1,
+      0,
+      0,
+      1
+     ]
+    },
+    {
+     "m": "ADBE Vector Fill Opacity",
+     "vt": null,
+     "v": 100
+    }
+   ]
+  },
+  "ADBE Vector Graphic - Stroke": {
+   "m": "ADBE Vector Graphic - Stroke",
+   "c": [
+    {
+     "m": "ADBE Vector Blend Mode",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Composite Order",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Stroke Color",
+     "vt": "COLOR",
+     "v": [
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "m": "ADBE Vector Stroke Opacity",
+     "vt": null,
+     "v": 100
+    },
+    {
+     "m": "ADBE Vector Stroke Width",
+     "vt": null,
+     "v": 2
+    },
+    {
+     "m": "ADBE Vector Stroke Line Cap",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Stroke Line Join",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Stroke Miter Limit",
+     "vt": null,
+     "v": 4
+    },
+    {
+     "m": "ADBE Vector Stroke Dashes",
+     "c": [
+      {
+       "m": "ADBE Vector Stroke Dash 1",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Stroke Gap 1",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Stroke Dash 2",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Stroke Gap 2",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Stroke Dash 3",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Stroke Gap 3",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Stroke Offset",
+       "vt": null,
+       "v": 0
+      }
+     ]
+    },
+    {
+     "m": "ADBE Vector Stroke Taper",
+     "c": [
+      {
+       "m": "ADBE Vector Taper Length Units",
+       "vt": null,
+       "v": 1
+      },
+      {
+       "m": "ADBE Vector Taper Start Length",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper End Length",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper StartWidthPx",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper EndWidthPx",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper Start Width",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper End Width",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper Start Ease",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper End Ease",
+       "vt": null,
+       "v": 0
+      }
+     ]
+    },
+    {
+     "m": "ADBE Vector Stroke Wave",
+     "c": [
+      {
+       "m": "ADBE Vector Taper Wave Amount",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Taper Wave Units",
+       "vt": null,
+       "v": 1
+      },
+      {
+       "m": "ADBE Vector Taper Wavelength",
+       "vt": null,
+       "v": 100
+      },
+      {
+       "m": "ADBE Vector Taper Wave Cycles",
+       "vt": null,
+       "v": 10
+      },
+      {
+       "m": "ADBE Vector Taper Wave Phase",
+       "vt": null,
+       "v": 0
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Vector Filter - Merge": {
+   "m": "ADBE Vector Filter - Merge",
+   "c": [
+    {
+     "m": "ADBE Vector Merge Type",
+     "vt": null,
+     "v": 1
+    }
+   ]
+  },
+  "ADBE Vector Filter - Offset": {
+   "m": "ADBE Vector Filter - Offset",
+   "c": [
+    {
+     "m": "ADBE Vector Offset Amount",
+     "vt": null,
+     "v": 10
+    },
+    {
+     "m": "ADBE Vector Offset Line Join",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Offset Miter Limit",
+     "vt": null,
+     "v": 4
+    },
+    {
+     "m": "ADBE Vector Offset Copies",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Offset Copy Offset",
+     "vt": null,
+     "v": 1
+    }
+   ]
+  },
+  "ADBE Vector Filter - PB": {
+   "m": "ADBE Vector Filter - PB",
+   "c": [
+    {
+     "m": "ADBE Vector PuckerBloat Amount",
+     "vt": null,
+     "v": 10
+    }
+   ]
+  },
+  "ADBE Vector Filter - Repeater": {
+   "m": "ADBE Vector Filter - Repeater",
+   "c": [
+    {
+     "m": "ADBE Vector Repeater Copies",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Repeater Offset",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Repeater Order",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Repeater Transform",
+     "c": [
+      {
+       "m": "ADBE Vector Repeater Anchor",
+       "vt": null,
+       "v": [
+        0,
+        0
+       ]
+      },
+      {
+       "m": "ADBE Vector Repeater Position",
+       "vt": null,
+       "v": [
+        0,
+        0
+       ]
+      },
+      {
+       "m": "ADBE Vector Repeater Scale",
+       "vt": null,
+       "v": [
+        100,
+        100
+       ]
+      },
+      {
+       "m": "ADBE Vector Repeater Rotation",
+       "vt": null,
+       "v": 0
+      },
+      {
+       "m": "ADBE Vector Repeater Opacity 1",
+       "vt": null,
+       "v": 100
+      },
+      {
+       "m": "ADBE Vector Repeater Opacity 2",
+       "vt": null,
+       "v": 100
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Vector Filter - RC": {
+   "m": "ADBE Vector Filter - RC",
+   "c": [
+    {
+     "m": "ADBE Vector RoundCorner Radius",
+     "vt": null,
+     "v": 10
+    }
+   ]
+  },
+  "ADBE Vector Filter - Trim": {
+   "m": "ADBE Vector Filter - Trim",
+   "c": [
+    {
+     "m": "ADBE Vector Trim Start",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Trim End",
+     "vt": null,
+     "v": 100
+    },
+    {
+     "m": "ADBE Vector Trim Offset",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Trim Type",
+     "vt": null,
+     "v": 1
+    }
+   ]
+  },
+  "ADBE Vector Filter - Twist": {
+   "m": "ADBE Vector Filter - Twist",
+   "c": [
+    {
+     "m": "ADBE Vector Twist Angle",
+     "vt": null,
+     "v": 10
+    },
+    {
+     "m": "ADBE Vector Twist Center",
+     "vt": null,
+     "v": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  "ADBE Vector Filter - Roughen": {
+   "m": "ADBE Vector Filter - Roughen",
+   "c": [
+    {
+     "m": "ADBE Vector Roughen Size",
+     "vt": null,
+     "v": 10
+    },
+    {
+     "m": "ADBE Vector Roughen Detail",
+     "vt": null,
+     "v": 10
+    },
+    {
+     "m": "ADBE Vector Roughen Points",
+     "vt": null,
+     "v": 1
+    },
+    {
+     "m": "ADBE Vector Temporal Freq",
+     "vt": null,
+     "v": 2
+    },
+    {
+     "m": "ADBE Vector Correlation",
+     "vt": null,
+     "v": 50
+    },
+    {
+     "m": "ADBE Vector Temporal Phase",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Spatial Phase",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Random Seed",
+     "vt": null,
+     "v": 0
+    }
+   ]
+  },
+  "ADBE Vector Filter - Wiggler": {
+   "m": "ADBE Vector Filter - Wiggler",
+   "c": [
+    {
+     "m": "ADBE Vector Xform Temporal Freq",
+     "vt": null,
+     "v": 2
+    },
+    {
+     "m": "ADBE Vector Correlation",
+     "vt": null,
+     "v": 50
+    },
+    {
+     "m": "ADBE Vector Temporal Phase",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Spatial Phase",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Random Seed",
+     "vt": null,
+     "v": 0
+    },
+    {
+     "m": "ADBE Vector Wiggler Transform",
+     "c": [
+      {
+       "m": "ADBE Vector Wiggler Anchor",
+       "vt": null,
+       "v": [
+        0,
+        0
+       ]
+      },
+      {
+       "m": "ADBE Vector Wiggler Position",
+       "vt": null,
+       "v": [
+        0,
+        0
+       ]
+      },
+      {
+       "m": "ADBE Vector Wiggler Scale",
+       "vt": null,
+       "v": [
+        0,
+        0
+       ]
+      },
+      {
+       "m": "ADBE Vector Wiggler Rotation",
+       "vt": null,
+       "v": 0
+      }
+     ]
+    }
+   ]
+  },
+  "ADBE Vector Filter - Zigzag": {
+   "m": "ADBE Vector Filter - Zigzag",
+   "c": [
+    {
+     "m": "ADBE Vector Zigzag Size",
+     "vt": null,
+     "v": 5
+    },
+    {
+     "m": "ADBE Vector Zigzag Detail",
+     "vt": null,
+     "v": 10
+    },
+    {
+     "m": "ADBE Vector Zigzag Points",
+     "vt": null,
+     "v": 1
+    }
+   ]
+  }
+ },
+ "pathReadback": {
+  "v": [
+   [
+    0,
+    0
+   ],
+   [
+    200,
+    -100
+   ],
+   [
+    400,
+    0
+   ],
+   [
+    200,
+    150
+   ]
+  ],
+  "i": [
+   [
+    0,
+    0
+   ],
+   [
+    -79.9999847412109,
+    0
+   ],
+   [
+    0,
+    -60
+   ],
+   [
+    80,
+    0
+   ]
+  ],
+  "o": [
+   [
+    0,
+    0
+   ],
+   [
+    80,
+    0
+   ],
+   [
+    0,
+    60
+   ],
+   [
+    -79.9999847412109,
+    0
+   ]
+  ],
+  "closed": true
+ },
+ "pathKeys": 2,
+ "dashes": {
+  "m": "ADBE Vector Stroke Dashes",
+  "c": [
+   {
+    "m": "ADBE Vector Stroke Dash 1",
+    "vt": null,
+    "v": 10
+   },
+   {
+    "m": "ADBE Vector Stroke Gap 1",
+    "vt": null,
+    "v": 10
+   },
+   {
+    "m": "ADBE Vector Stroke Dash 2",
+    "vt": null,
+    "v": 10
+   },
+   {
+    "m": "ADBE Vector Stroke Gap 2",
+    "vt": null,
+    "v": 10
+   },
+   {
+    "m": "ADBE Vector Stroke Dash 3",
+    "vt": null,
+    "v": 10
+   },
+   {
+    "m": "ADBE Vector Stroke Gap 3",
+    "vt": null,
+    "v": 10
+   },
+   {
+    "m": "ADBE Vector Stroke Offset",
+    "vt": null,
+    "v": 0
+   }
+  ]
+ },
+ "mask": {
+  "m": "ADBE Mask Atom",
+  "c": [
+   {
+    "m": "ADBE Mask Shape",
+    "vt": "SHAPE"
+   },
+   {
+    "m": "ADBE Mask Feather",
+    "vt": null,
+    "v": [
+     0,
+     0
+    ]
+   },
+   {
+    "m": "ADBE Mask Opacity",
+    "vt": null,
+    "v": 100
+   },
+   {
+    "m": "ADBE Mask Offset",
+    "vt": null,
+    "v": 0
+   }
+  ]
+ }
+}

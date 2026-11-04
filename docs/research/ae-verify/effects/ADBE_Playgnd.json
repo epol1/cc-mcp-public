@@ -1,0 +1,1152 @@
+{
+ "n": "Particle Playground",
+ "m": "ADBE Playgnd",
+ "t": "NG",
+ "c": [
+  {
+   "n": "Cannon",
+   "m": "ADBE Playgnd-0100",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Position",
+   "m": "ADBE Playgnd-0101",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Barrel Radius",
+   "m": "ADBE Playgnd-0102",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -4000,
+   "max": 4000
+  },
+  {
+   "n": "Particles Per Second",
+   "m": "ADBE Playgnd-0103",
+   "t": "P",
+   "vt": null,
+   "v": 60,
+   "min": 0,
+   "max": 30000
+  },
+  {
+   "n": "Direction",
+   "m": "ADBE Playgnd-0105",
+   "t": "P",
+   "vt": null,
+   "v": 0
+  },
+  {
+   "n": "Direction Random Spread",
+   "m": "ADBE Playgnd-0106",
+   "t": "P",
+   "vt": null,
+   "v": 20,
+   "min": 0,
+   "max": 360
+  },
+  {
+   "n": "Velocity",
+   "m": "ADBE Playgnd-0107",
+   "t": "P",
+   "vt": null,
+   "v": 130,
+   "min": 0,
+   "max": 30000
+  },
+  {
+   "n": "Velocity Random Spread",
+   "m": "ADBE Playgnd-0108",
+   "t": "P",
+   "vt": null,
+   "v": 20,
+   "min": 0,
+   "max": 20000
+  },
+  {
+   "n": "Color",
+   "m": "ADBE Playgnd-0104",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    0,
+    0,
+    0
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Particle Radius",
+   "m": "ADBE Playgnd-0110",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0109",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Grid",
+   "m": "ADBE Playgnd-0130",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Position",
+   "m": "ADBE Playgnd-0131",
+   "t": "P",
+   "vt": null,
+   "v": [
+    960,
+    540
+   ],
+   "spatial": true
+  },
+  {
+   "n": "Width",
+   "m": "ADBE Playgnd-0132",
+   "t": "P",
+   "vt": null,
+   "v": 100,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Height",
+   "m": "ADBE Playgnd-0133",
+   "t": "P",
+   "vt": null,
+   "v": 100,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Particles Across",
+   "m": "ADBE Playgnd-0134",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Particles Down",
+   "m": "ADBE Playgnd-0135",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Color",
+   "m": "ADBE Playgnd-0137",
+   "t": "P",
+   "vt": "COLOR",
+   "v": [
+    1,
+    0,
+    0,
+    0
+   ],
+   "min": -3921568.62745098,
+   "max": 3921568.62745098,
+   "spatial": true
+  },
+  {
+   "n": "Particle Radius",
+   "m": "ADBE Playgnd-0136",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0138",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Layer Exploder",
+   "m": "ADBE Playgnd-0200",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Explode Layer",
+   "m": "ADBE Playgnd-0201",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Radius of New Particles",
+   "m": "ADBE Playgnd-0202",
+   "t": "P",
+   "vt": null,
+   "v": 2,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Velocity Dispersion",
+   "m": "ADBE Playgnd-0204",
+   "t": "P",
+   "vt": null,
+   "v": 20,
+   "min": 0,
+   "max": 30000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0203",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particle Exploder",
+   "m": "ADBE Playgnd-0230",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Radius of New Particles",
+   "m": "ADBE Playgnd-0231",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Velocity Dispersion",
+   "m": "ADBE Playgnd-0233",
+   "t": "P",
+   "vt": null,
+   "v": 20,
+   "min": 0,
+   "max": 30000
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0250",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0252",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Selection Map",
+   "m": "ADBE Playgnd-0253",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0254",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0255",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0256",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0251",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0232",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Layer Map",
+   "m": "ADBE Playgnd-0280",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Use Layer",
+   "m": "ADBE Playgnd-0281",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Time Offset Type",
+   "m": "ADBE Playgnd-0284",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Time Offset",
+   "m": "ADBE Playgnd-0282",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0300",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0302",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Selection Map",
+   "m": "ADBE Playgnd-0303",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0304",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0305",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0306",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0301",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0283",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Gravity",
+   "m": "ADBE Playgnd-0330",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Force",
+   "m": "ADBE Playgnd-0331",
+   "t": "P",
+   "vt": null,
+   "v": 120,
+   "min": -10000,
+   "max": 10000
+  },
+  {
+   "n": "Force Random Spread",
+   "m": "ADBE Playgnd-0332",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 4000
+  },
+  {
+   "n": "Direction",
+   "m": "ADBE Playgnd-0333",
+   "t": "P",
+   "vt": null,
+   "v": 180
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0350",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0352",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Selection Map",
+   "m": "ADBE Playgnd-0353",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0354",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0355",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0356",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0351",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0334",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Repel",
+   "m": "ADBE Playgnd-0380",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Force",
+   "m": "ADBE Playgnd-0382",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -2000,
+   "max": 2000
+  },
+  {
+   "n": "Force Radius",
+   "m": "ADBE Playgnd-0381",
+   "t": "P",
+   "vt": null,
+   "v": 10,
+   "min": 0,
+   "max": 10000
+  },
+  {
+   "n": "Repeller",
+   "m": "ADBE Playgnd-0420",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0402",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Selection Map",
+   "m": "ADBE Playgnd-0403",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0404",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0405",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0406",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0401",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0400",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0422",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Selection Map",
+   "m": "ADBE Playgnd-0423",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0424",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0425",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0426",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0421",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0383",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Wall",
+   "m": "ADBE Playgnd-0450",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Boundary",
+   "m": "ADBE Playgnd-0453",
+   "t": "P",
+   "vt": "MASK_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0470",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0472",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0474",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0475",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0471",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0452",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Persistent Property Mapper",
+   "m": "ADBE Playgnd-0500",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Use Layer As Map",
+   "m": "ADBE Playgnd-0501",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0515",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0517",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0519",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0520",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0521",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0516",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Map Red to",
+   "m": "ADBE Playgnd-0502",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 27
+  },
+  {
+   "n": "Min",
+   "m": "ADBE Playgnd-0504",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Max",
+   "m": "ADBE Playgnd-0505",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Map Green to",
+   "m": "ADBE Playgnd-0506",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 27
+  },
+  {
+   "n": "Min",
+   "m": "ADBE Playgnd-0508",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Max",
+   "m": "ADBE Playgnd-0509",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Map Blue to",
+   "m": "ADBE Playgnd-0510",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 27
+  },
+  {
+   "n": "Min",
+   "m": "ADBE Playgnd-0512",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Max",
+   "m": "ADBE Playgnd-0513",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0514",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Ephemeral Property Mapper",
+   "m": "ADBE Playgnd-0550",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Use Layer As Map",
+   "m": "ADBE Playgnd-0551",
+   "t": "P",
+   "vt": "LAYER_INDEX",
+   "v": 0,
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Affects",
+   "m": "ADBE Playgnd-0565",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Particles from",
+   "m": "ADBE Playgnd-0567",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 16
+  },
+  {
+   "n": "Characters",
+   "m": "ADBE Playgnd-0569",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 4
+  },
+  {
+   "n": "Older/Younger than",
+   "m": "ADBE Playgnd-0570",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -30000,
+   "max": 30000
+  },
+  {
+   "n": "Age Feather",
+   "m": "ADBE Playgnd-0571",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": 0,
+   "max": 60000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0566",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Map Red to",
+   "m": "ADBE Playgnd-0552",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Operator",
+   "m": "ADBE Playgnd-0553",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 7
+  },
+  {
+   "n": "Min",
+   "m": "ADBE Playgnd-0554",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Max",
+   "m": "ADBE Playgnd-0555",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Map Green to",
+   "m": "ADBE Playgnd-0556",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Operator",
+   "m": "ADBE Playgnd-0557",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 7
+  },
+  {
+   "n": "Min",
+   "m": "ADBE Playgnd-0558",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Max",
+   "m": "ADBE Playgnd-0559",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Map Blue to",
+   "m": "ADBE Playgnd-0560",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 19
+  },
+  {
+   "n": "Operator",
+   "m": "ADBE Playgnd-0561",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": 1,
+   "max": 7
+  },
+  {
+   "n": "Min",
+   "m": "ADBE Playgnd-0562",
+   "t": "P",
+   "vt": null,
+   "v": 0,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "Max",
+   "m": "ADBE Playgnd-0563",
+   "t": "P",
+   "vt": null,
+   "v": 1,
+   "min": -200000,
+   "max": 200000
+  },
+  {
+   "n": "",
+   "m": "ADBE Playgnd-0564",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "static": true,
+   "noExpr": true
+  },
+  {
+   "n": "Compositing Options",
+   "m": "ADBE Effect Built In Params",
+   "t": "NG",
+   "c": [
+    {
+     "n": "Masks",
+     "m": "ADBE Effect Mask Parade",
+     "t": "IG",
+     "c": []
+    },
+    {
+     "n": "Effect Opacity",
+     "m": "ADBE Effect Mask Opacity",
+     "t": "P",
+     "vt": null,
+     "v": 100,
+     "min": 0,
+     "max": 100
+    },
+    {
+     "n": "GPU Rendering",
+     "m": "ADBE Force CPU GPU",
+     "t": "P",
+     "vt": null,
+     "v": 1,
+     "min": 1,
+     "max": 3,
+     "static": true,
+     "noExpr": true
+    }
+   ]
+  }
+ ],
+ "layerRefs": [
+  "ADBE Playgnd-0201=Explode Layer",
+  "ADBE Playgnd-0253=Selection Map",
+  "ADBE Playgnd-0281=Use Layer",
+  "ADBE Playgnd-0303=Selection Map",
+  "ADBE Playgnd-0353=Selection Map",
+  "ADBE Playgnd-0403=Selection Map",
+  "ADBE Playgnd-0423=Selection Map",
+  "ADBE Playgnd-0501=Use Layer As Map",
+  "ADBE Playgnd-0551=Use Layer As Map"
+ ]
+}

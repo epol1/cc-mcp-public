@@ -15,4 +15,5 @@
 | `hdri/studio_kontrast_04_1k.hdr` | (my own project files, not included) | Poly Haven studio, 1k |
 | `hdri/docklands_02_2k.exr` | `E:\Projects\Legacy\WorbsWorld\3dapp-test\assets\3d\` | Poly Haven outdoor, 2k |
 | `hdri/controller_studio_1k.hdr` | (my own project files, not included) | 1024×512 studio |
-| `handmade/` | (pending) | a self-contained, collected hand-built AE project |
+| `handmade/languages_proj/` | (a client project, not included) | **Primary hand-built fixture.** Collected project (with `(Footage)`), 7.3 MB `.aep`: many text/title comps plus a "Modern Fresh Titles" imported project. Only built-in effects (Color Balance HLS, Fill, Find Edges, Gaussian Blur, Grow Bounds, Levels, Roughen Edges, Tint, Turbulent Displace), Classic 3D. Font: Basic Sans SemiBold It (may be missing; AE substitutes). Always opened from a copy. |
+| `handmade/latinidad graphic proj/` | (a client project, not included) | **Excluded by default:** uses Red Giant `uni.Grain16` (third-party, expired license; D2). |

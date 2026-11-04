@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.aep binary
+*.mp4 binary
+*.mov binary
+*.glb binary
+*.hdr binary
+*.exr binary
