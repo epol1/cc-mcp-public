@@ -4,6 +4,11 @@ import type { BuildOpts, IrProject } from './build';
 import { stringify } from './json';
 import { snapshotComp } from './snapshot';
 import { findTaggedComp } from './project';
+import { inspectComp, inspectProject } from './inspect';
+import type { InspectOpts } from './inspect';
+import { edit } from './edit';
+import type { EditOp } from './edit';
+import { contactFrames, describeEffect, importFile } from './tools';
 
 function guard(fn: () => any): string {
   try {
@@ -17,6 +22,13 @@ const AEC: any = {
   version: '__AEC_RUNTIME_VERSION__',
   ping: function () { return guard(() => ({ ok: true, version: AEC.version, ae: app.version, project: app.project.file ? app.project.file.fsName : null, items: app.project.numItems, bpc: app.project.bitsPerChannel })); },
   build: function (project: IrProject, opts: BuildOpts) { return guard(() => build(project, opts || {})); },
+  inspect: function (target: any, opts: InspectOpts) { return guard(() => (target === 'project' ? inspectProject() : inspectComp(target && target.comp !== undefined ? target.comp : target, opts || {}))); },
+  edit: function (target: any, ops: EditOp[], opts: any) { return guard(() => edit(target || {}, ops || [], opts || {})); },
+  /** Edit > Undo (command 16): used by tests to prove each build/edit undoes in one step. */
+  describeEffect: function (mn: string) { return guard(() => describeEffect(mn)); },
+  importFile: function (path: string, folder?: string) { return guard(() => importFile(path, folder)); },
+  contactFrames: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => contactFrames(ref, n, dir, times)); },
+  undo: function () { return guard(() => { app.executeCommand(16); return { ok: true }; }); },
   snapshot: function (compRef: { id?: string; name?: string }, times: number[], dir: string) {
     return guard(() => {
       let comp: CompItem | null = compRef.id ? findTaggedComp(compRef.id) : null;

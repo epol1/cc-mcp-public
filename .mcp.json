@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ae-compose": {
+      "command": "node",
+      "args": ["E:/Projects/ae-mcp/bin/aec-mcp.mjs"]
+    }
+  }
+}

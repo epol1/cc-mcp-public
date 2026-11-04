@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.005**: 36.24% weighted, 54/147 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.006**: 50.43% weighted, 74/149 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -14,16 +14,17 @@
 - [x] Status dashboard + release flow
 - [x] README status image (SVG/PNG)
 
-## Bridge & Execution (67%)
+## Bridge & Execution (85%)
 - [x] CEP extension (hot reload) _(w2)_
 - [x] Eval wrapping, structured errors
 - [x] Backend interface (TS client)
 - [x] CEP HTTP backend
 - [x] AfterFX.com fallback backend
-- [~] Dialog watchdog _(w2)_
+- [x] Dialog watchdog _(w2)_
 - [~] Crash recovery + relaunch _(w2)_
 - [ ] Large result spill to file
-- [ ] aec doctor
+- [x] aec doctor
+- [x] Non-blocking watchdog (no UIA on busy AE)
 
 ## ES3 Runtime Core (100%)
 - [x] Babel/Rollup ES3 build _(w2)_
@@ -83,12 +84,13 @@
 - [~] Masks + track mattes
 - [x] SVG path parser (M/L/C/S/Q/T/A/Z)
 
-## Effects & Catalog (42%)
+## Effects & Catalog (64%)
 - [x] Effects + typed params
 - [~] Discovery (vanilla filter)
-- [ ] Param harvest (ranges, popups) _(w2)_
+- [~] Param harvest (ranges, popups) _(w2)_
 - [ ] Generated TS types
 - [x] Fuzzy name resolution
+- [x] describe_effect with popup labels
 
 ## Controls & Variants (38%)
 - [x] Controls null, all control types
@@ -127,38 +129,38 @@
 - [ ] Presets (7) _(w3)_
 - [ ] Seeds + determinism
 
-## Inspector (0%)
-- [ ] Project/comp/layer walk _(w2)_
-- [ ] Keys, eases, tangents _(w2)_
-- [ ] Effect trees
-- [ ] Text, shapes, masks _(w2)_
+## Inspector (75%)
+- [x] Project/comp/layer walk _(w2)_
+- [x] Keys, eases, tangents _(w2)_
+- [x] Effect trees
+- [x] Text, shapes, masks _(w2)_
 - [ ] 3D + particles
 - [ ] .aepx gradient parse _(w2)_
-- [ ] Compact agent outline _(w2)_
+- [x] Compact agent outline _(w2)_
 
-## Edit Operations (0%)
-- [ ] Property/keys/easing ops _(w2)_
-- [ ] Curve reshaping _(w2)_
-- [ ] Effect add/remove/reorder/params
-- [ ] Retime + replace footage
-- [ ] Text/shape/path edits _(w2)_
+## Edit Operations (92%)
+- [x] Property/keys/easing ops _(w2)_
+- [x] Curve reshaping _(w2)_
+- [x] Effect add/remove/reorder/params
+- [x] Retime + replace footage
+- [x] Text/shape/path edits _(w2)_
 - [ ] 3D + particle edits
-- [ ] addControls/variant/precompose _(w2)_
-- [ ] One-step undo verified
+- [x] addControls/variant/precompose _(w2)_
+- [x] One-step undo verified
 
-## Visual Feedback (36%)
+## Visual Feedback (71%)
 - [x] Snapshot (+32bpc fix)
 - [x] Contact sheets
-- [ ] aerender preview MP4/GIF _(w2)_
+- [x] aerender preview MP4/GIF _(w2)_
 - [ ] Lint checks _(w2)_
-- [~] Auto-attach to results
+- [x] Auto-attach to results
 
-## Interfaces (0%)
-- [ ] CLI (aec) _(w2)_
-- [ ] MCP server (15 tools) _(w3)_
-- [ ] watch mode
+## Interfaces (67%)
+- [x] CLI (aec) _(w2)_
+- [x] MCP server (15 tools) _(w3)_
+- [~] watch mode
 - [ ] Claude skill + CLAUDE.md _(w2)_
-- [ ] Claude Code registration
+- [~] Claude Code registration
 
 ## Testing (8%)
 - [~] Unit tests _(w2)_

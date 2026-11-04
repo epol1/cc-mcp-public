@@ -93,7 +93,7 @@
         {
           "id": "dialogs",
           "name": "Dialog watchdog",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
@@ -111,7 +111,13 @@
         {
           "id": "doctor",
           "name": "aec doctor",
-          "status": "todo",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "watchdog-nonblocking",
+          "name": "Non-blocking watchdog (no UIA on busy AE)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -447,7 +453,7 @@
         {
           "id": "fx-harvest",
           "name": "Param harvest (ranges, popups)",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
@@ -459,6 +465,12 @@
         {
           "id": "fx-fuzzy",
           "name": "Fuzzy name resolution",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "fx-describe",
+          "name": "describe_effect with popup labels",
           "status": "done",
           "weight": 1
         }
@@ -669,25 +681,25 @@
         {
           "id": "insp-walk",
           "name": "Project/comp/layer walk",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "insp-keys",
           "name": "Keys, eases, tangents",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "insp-fx",
           "name": "Effect trees",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "insp-text-shape",
           "name": "Text, shapes, masks",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -705,7 +717,7 @@
         {
           "id": "insp-outline",
           "name": "Compact agent outline",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         }
       ]
@@ -717,31 +729,31 @@
         {
           "id": "ed-props",
           "name": "Property/keys/easing ops",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "ed-curves",
           "name": "Curve reshaping",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "ed-fx",
           "name": "Effect add/remove/reorder/params",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "ed-time",
           "name": "Retime + replace footage",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "ed-text-shape",
           "name": "Text/shape/path edits",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -753,13 +765,13 @@
         {
           "id": "ed-structure",
           "name": "addControls/variant/precompose",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "ed-undo",
           "name": "One-step undo verified",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -783,7 +795,7 @@
         {
           "id": "preview",
           "name": "aerender preview MP4/GIF",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -795,7 +807,7 @@
         {
           "id": "auto-attach",
           "name": "Auto-attach to results",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -807,19 +819,19 @@
         {
           "id": "cli",
           "name": "CLI (aec)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "mcp",
           "name": "MCP server (15 tools)",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "watch",
           "name": "watch mode",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
@@ -831,7 +843,7 @@
         {
           "id": "mcp-register",
           "name": "Claude Code registration",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         }
       ]
@@ -1076,6 +1088,11 @@
     {
       "area": "AE API",
       "text": "Renderer quality options not scriptable",
+      "status": "open"
+    },
+    {
+      "area": "AE API",
+      "text": "project.serializeToXML needs an undocumented enum; .aepx gradient read uses saved copies instead",
       "status": "open"
     }
   ]

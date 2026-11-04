@@ -36,7 +36,11 @@ export function curveKnots(curve: EasingCurve, T: number, fps: number, tolNorm: 
     const seed = curve.knots.map((k) => ({ t: k.t * T, p: k.p, dl: k.dl / T, dr: k.dr / T }));
     return bake(fn, T, { fps, tol: tolNorm, seed, frameSnap: false });
   }
-  return bake(fn, T, { fps, tol: tolNorm });
+  const knots = bake(fn, T, { fps, tol: tolNorm });
+  // Curves that settle asymptotically (springs) end on the exact target, at rest, so nothing is left at 99.6 %.
+  const last = knots[knots.length - 1];
+  if (Math.abs(last.p - 1) < 0.02) { last.p = 1; last.dl = 0; last.dr = 0; }
+  return knots;
 }
 
 /** Converts normalized knots into keys for a from→to animation starting at `start` seconds. */
