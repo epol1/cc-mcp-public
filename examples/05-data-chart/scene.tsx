@@ -36,7 +36,7 @@ export default scene({ name: 'DataChart', width: W, height: H, fps: 30, duration
       </Text>
       {/* gridlines */}
       {[0, 35, 70, 105, 140].map((v, k) => (
-        <Shape name={`Grid ${v}`} id={`grid${k}`} opacity={k === 0 ? 60 : 14}>
+        <Shape name={`Grid ${v}`} id={`grid${k}`} space="comp" opacity={k === 0 ? 60 : 14}>
           <Path points={[{ p: [CHART.left - 30, CHART.base - hOf(v)] }, { p: [CHART.right + 30, CHART.base - hOf(v)] }]} closed={false} />
           <Trim end={tween({ from: 0, to: 100, duration: '0.9s', delay: 0.15 + k * 0.06, easing: 'easeInOutCubic' })} />
           <Stroke color="#ffffff" width={k === 0 ? 3 : 2} />
@@ -67,7 +67,7 @@ export default scene({ name: 'DataChart', width: W, height: H, fps: 30, duration
         </Text>
       ))}
       {/* trend line through the bar tops, then dots */}
-      <Shape name="Trend" id="trend">
+      <Shape name="Trend" id="trend" space="comp">
         <Path points={pts.map((p) => ({ p }))} closed={false} />
         <Trim end={tween({ from: 0, to: 100, duration: '1.4s', delay: 1.6, easing: 'easeInOutCubic' })} />
         <Stroke color={lineColor} width={6} cap="round" join="round" />

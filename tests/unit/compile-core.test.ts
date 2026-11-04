@@ -320,7 +320,7 @@ describe('controls', () => {
   it('a control on a <Text> color drives the fill through the Source Text expression', () => {
     const r = build({}, () => h(Composition, {}, h(Text, { id: 't', color: control('Title Color', '#00ff00') }, 'Hi')));
     expect(layer(r, 't').text.fill).toEqual([0, 1, 0]);
-    expect(prop(layer(r, 't'), 'ADBE Text Properties/ADBE Text Document').expr).toBe('style.setFillColor((thisComp.layer("Controls").effect("Title Color")(1)).slice(0, 3));');
+    expect(prop(layer(r, 't'), 'ADBE Text Properties/ADBE Text Document').expr).toBe('var c = thisComp.layer("Controls").effect("Title Color")(1); style.setFillColor([c[0], c[1], c[2]]);');
   });
   it('controls are exposed as Essential Graphics props (unless eg: false)', () => {
     const r = build({ name: 'Promo' }, () => h(Composition, {}, h(Solid, { opacity: control('Fade', 50), rotation: control('Hidden Spin', 0, { eg: false }) })));

@@ -42,8 +42,8 @@ export interface LayerProps {
   /** Layer start/end inside its Sequence (seconds or "1.2s"). */
   from?: Time;
   duration?: Time;
-  /** Use another layer as track matte. */
-  matte?: { layer: string; type?: 'alpha' | 'alphaInverted' | 'luma' | 'lumaInverted' };
+  /** Use another layer as track matte. AE hides the matte layer; `showSource: true` keeps it visible (e.g. a shine matted to a logo). */
+  matte?: { layer: string; type?: 'alpha' | 'alphaInverted' | 'luma' | 'lumaInverted'; showSource?: boolean };
   hidden?: boolean;
   shy?: boolean;
   guide?: boolean;
@@ -75,6 +75,8 @@ export interface CompositionProps {
   /** Comp motion blur switch, or { shutterAngle, shutterPhase, samples, adaptiveLimit }. */
   motionBlur?: boolean | { enabled?: boolean; shutterAngle?: number; shutterPhase?: number; samples?: number; adaptiveLimit?: number };
   shutterAngle?: number;
+  /** Comp markers (cues for expressions, e.g. a particle burst at { marker: 'hit' }); with `duration` they are scenes. */
+  markers?: { t: Time; comment: string; duration?: Time }[];
   children?: Children;
 }
 export const Composition = prim<CompositionProps>('composition');
@@ -130,7 +132,14 @@ export interface TextProps extends LayerProps {
 }
 export const Text = prim<TextProps>('text');
 
-export interface ShapeProps extends LayerProps {}
+export interface ShapeProps extends LayerProps {
+  /**
+   * Coordinate space of the contents. "layer" (default): path/shape coordinates are relative to the layer's
+   * position (default comp centre), so <Rect> at [0, 0] is centred. "comp": coordinates are comp pixels (top-left
+   * 0,0, like SVG); use it for paths drawn at absolute positions (rules, charts, guides).
+   */
+  space?: 'layer' | 'comp';
+}
 /** Shape layer. Children: Rect, Ellipse, Star, Path, Group, Fill, Stroke, Trim, Repeater, Merge, ... (AE Contents order). */
 export const Shape = prim<ShapeProps>('shape');
 

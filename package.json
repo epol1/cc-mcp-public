@@ -19,7 +19,9 @@
     "test:ae": "vitest run tests/integration --no-file-parallelism",
     "status": "node status/build.mjs",
     "aec": "node bin/aec.mjs",
-    "mcp": "node bin/aec-mcp.mjs"
+    "mcp": "node bin/aec-mcp.mjs",
+    "postinstall": "node build/runtime.mjs",
+    "install:cep": "node scripts/install-cep.mjs"
   },
   "engines": {
     "node": ">=22"

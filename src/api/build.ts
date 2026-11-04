@@ -125,8 +125,8 @@ async function buildCompare(irs: { ir: any; label?: string; params?: Record<stri
     const cx = (i % cols + 0.5) * cellW, cy = (Math.floor(i / cols) + 0.5) * cellH;
     const imgH = (H * s) / 100;
     layers.push({ id: `compare.${m.comp.id}`, type: 'precomp', name: m.comp.name, precomp: { comp: m.comp.id }, in: 0, out: Math.max(...mains.map((x) => x.comp.dur)), props: [{ p: 'ADBE Transform Group/ADBE Position', v: [cx, cy - label * 0.8] }, { p: 'ADBE Transform Group/ADBE Scale', v: [s, s, 100] }] });
-    const desc = differing.map((k) => `${k} ${short(m.params[k])}`).join(' · ');
-    layers.push({ id: `compare.label.${m.comp.id}`, type: 'text', name: `Label ${m.label}`, in: 0, out: Math.max(...mains.map((x) => x.comp.dur)), text: { text: `${m.label}${desc ? '   ' + desc : ''}`, font: 'Inter-SemiBold', size: label * 0.62, fill: [0.85, 0.87, 0.9], justify: 'center' }, anchorBox: [0.5, 0.5], props: [{ p: 'ADBE Transform Group/ADBE Position', v: [cx, cy - label * 0.8 + imgH / 2 + label * 0.75] }] });
+    const desc = differing.filter((k) => m.params[k] !== undefined).map((k) => `${k} ${short(m.params[k])}`).join(' · ');
+    layers.push({ id: `compare.label.${m.comp.id}`, type: 'text', name: `Label ${m.label}`, in: 0, out: Math.max(...mains.map((x) => x.comp.dur)), text: { text: `${m.label}${desc ? '\r' + desc : ''}`, font: 'Inter-SemiBold', size: label * 0.5, fill: [0.85, 0.87, 0.9], justify: 'center', box: { w: cellW * 0.92, h: label * 2.6 } }, anchorBox: [0.5, 0.5], props: [{ p: 'ADBE Transform Group/ADBE Position', v: [cx, cy - label * 0.8 + imgH / 2 + label * 0.75] }] });
   });
   const scene = irs[0].ir.scene;
   const ir = { irVersion: 1, scene, comps: [{ id: `${first.id.split('-')[0]}-compare`, name: `${first.name.replace(/_[^_]+$/, '')}_Compare`, w: W, h: H, fps: first.fps, dur: Math.max(...mains.map((x) => x.comp.dur)), bg: [0.06, 0.07, 0.09], layers }] };

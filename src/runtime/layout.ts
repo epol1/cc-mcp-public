@@ -1,6 +1,8 @@
 // Layout in AE: measure leaf layers with real metrics, run the shared solver, record slot centres.
 import type { Ctx } from './ctx';
+import { contentRect } from './layers';
 import { warn } from './ctx';
+import { errText } from './util';
 import { frameCenter, solveLayout } from '../shared/es3/layout';
 import type { IrLayer } from './layers';
 
@@ -23,12 +25,12 @@ export function measureLeaf(ctx: Ctx, layer: Layer, L: IrLayer, sizes: { [id: st
   let w = 0, h = 0;
   try {
     if (L.type === 'text' || L.type === 'shape') {
-      const r = (layer as any).sourceRectAtTime(L.in !== undefined ? L.in : 0, false);
+      const r = contentRect(layer, L.in !== undefined ? L.in : 0);
       w = r.width; h = r.height;
     } else {
       w = (layer as any).width; h = (layer as any).height;
     }
-  } catch (e) { warn(ctx, 'could not measure layer for layout: ' + e); }
+  } catch (e) { warn(ctx, 'could not measure layer for layout: ' + errText(e)); }
   sizes[L.id] = [w * Math.abs(sc[0]), h * Math.abs(sc[1])];
 }
 

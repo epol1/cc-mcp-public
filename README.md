@@ -1,6 +1,24 @@
 # ae-compose
 
-**Code-first motion design for After Effects.** Claude writes Remotion-style TSX, and ae-compose compiles it into **native, fully editable After Effects comps**: real layers, eased keyframes, text animators, shape layers, effects, expression-control rigs, variants, the 3D system and particles. It also inspects and edits existing AE projects. It runs on stock After Effects 2026 with no third-party plugins. A live CEP bridge, an MCP server, a CLI (`aec`) and a Claude skill drive it.
+**Code-first motion design for After Effects.** Claude writes Remotion-style TSX, and ae-compose compiles it into **native, fully editable After Effects comps**: real layers, eased keyframes, text animators, shape layers, effects, expression-control rigs, variants, the 3D system and particles. It also inspects and edits existing AE projects, including ripple edits, keying and placing project media. It runs on stock After Effects 2026 with no third-party plugins. A live CEP bridge, an MCP server, a CLI (`aec`) and a Claude skill drive it.
+
+```tsx
+import { scene, Composition, Solid, Text, Column, spring, perWord, control } from 'ae-compose';
+
+export default scene({ name: 'Hello', duration: '4s', bg: '#0b0d12' }, () => (
+  <Composition>
+    <Solid color="#0b0d12" />
+    <Column gap={30}>
+      <Text font="Inter-Black" size={160} color="#eef1f6"
+        animate={{ text: perWord({ from: { y: 120, opacity: 0 }, spring: { damping: control('Bounce', 12) } }) }}>
+        MAKE IT MOVE
+      </Text>
+    </Column>
+  </Composition>
+));
+```
+
+`aec build hello.tsx` produces a comp `Hello_v001` in your open project. Every layer and keyframe is ordinary AE that you can grab and edit. "Bounce" is a live slider on a Controls layer and in Essential Graphics. A contact sheet comes back automatically.
 
 ## Status
 
@@ -8,12 +26,181 @@
 
 The image is regenerated on every release by `scripts/release.mjs` from [`status/systems.json`](status/systems.json). Interactive version: [`status/index.html`](status/index.html). Task list: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
+## Install
+
+Requirements:
+- Windows 10/11;
+- After Effects 2026 (26.x);
+- Node 22+;
+- pnpm (or npm);
+- optional: ffmpeg on PATH (MP4/GIF previews, keying from video files).
+
+```bash
+git clone https://github.com/epol1/ae-compose && cd ae-compose
+```
+
+```bash
+pnpm install
+```
+
+`pnpm install` also builds the ES3 runtime that runs inside AE (`dist/runtime/aec-runtime.jsx`).
+
+```bash
+node scripts/install-cep.mjs
+```
+
+That links the bridge extension into `%APPDATA%\Adobe\CEP\extensions`. Then enable unsigned CEP extensions once for your user:
+
+```bash
+reg add "HKCU\Software\Adobe\CSXS.12" /v PlayerDebugMode /t REG_SZ /d 1 /f
+```
+
+Restart After Effects, open a project, and check everything:
+
+```bash
+node bin/aec.mjs doctor
+```
+
+### Setup checklist (what `aec doctor` verifies)
+- [ ] After Effects 2026 found, and running with a project open
+- [ ] CEP bridge extension installed (junction) and **PlayerDebugMode=1**
+- [ ] Bridge reachable at `127.0.0.1:47811`. The token in `~/.ae-compose/bridge.json` is created by the extension, and requests with a browser `Origin` header are refused.
+- [ ] ES3 runtime built and loading in AE
+- [ ] No modal dialog blocking AE (if one is, `aec dialogs` shows it; answer it with `aec dialogs --answer <hwnd> <button>`)
+- [ ] Project bit depth 8 or 16 bpc
+- [ ] Inter font installed (the default font in examples; any installed font works with `font="PostScriptName"`)
+- [ ] ffmpeg (optional) and sharp
+
+If the CEP bridge isn't available, ae-compose falls back to `AfterFX.com -r` (slower, about 1 s per call).
+
+## CLI
+
+```text
+aec doctor                                   environment + bridge checks with fixes
+aec build <scene.tsx> [--variant A] [--frames 8] [--param k=v] [--reset-controls]
+aec watch <scene.tsx>                        rebuild on save (keeps live control values)
+aec inspect [comp] [--full]                  readable outline of a comp (works on hand-built comps)
+aec edit <ops.json> [--comp name]            apply edit ops (atomic, one undo step)
+aec undo                                     undo the last ae-compose build/edit
+aec snapshot [comp] --times 1,2.5            exact frames as PNG
+aec sheet [comp] [--frames 12]               contact sheet
+aec preview [comp] [--gif]                   short low-res MP4/GIF
+aec effects [query]                          search the vanilla effect catalog (391 effects with params)
+aec import <file>                            import footage into the project
+aec dialogs [--answer <hwnd> <button>]       list/answer AE modal dialogs
+aec eval "<extendscript>"                    escape hatch
+```
+
+All commands accept `--json`.
+
+## MCP server (Claude Code, Claude Desktop)
+
+The server is stdio: `node bin/aec-mcp.mjs`. This repo's `.mcp.json` registers it for Claude Code automatically:
+
+```json
+{ "mcpServers": { "ae-compose": { "command": "node", "args": ["E:/Projects/ae-mcp/bin/aec-mcp.mjs"] } } }
+```
+
+Elsewhere, register it with an absolute path:
+
+```bash
+claude mcp add ae-compose -- node "E:/Projects/ae-mcp/bin/aec-mcp.mjs"
+```
+
+For **Claude Desktop**, add the same `command`/`args` under `mcpServers` in `claude_desktop_config.json`, then restart the app.
+
+The server has 18 tools. Images come back as JPEG of at most 1600 px.
+
+| Area | Tools |
+|---|---|
+| Build | `build_scene`, `create_variants` |
+| Look | `snapshot`, `contact_sheet`, `render_preview` |
+| Inspect | `inspect_project`, `list_project_items`, `preview_item`, `inspect_comp` |
+| Edit | `apply_edits` (ops include `ripple`, `place` and `key`), `undo` |
+| Effects | `list_effects`, `describe_effect` |
+| Media | `import_footage` |
+| AE health | `doctor`, `list_dialogs`, `answer_dialog` |
+| Escape hatch | `run_extendscript` |
+
+### Claude skill
+[`skills/ae-compose/SKILL.md`](skills/ae-compose/SKILL.md) (with [`recipes.md`](skills/ae-compose/recipes.md)) teaches Claude the workflow (build → look → fix → variants → edits) and motion-design rules. Use it in one of two ways:
+- copy the folder to `~/.claude/skills/ae-compose/` for Claude Code;
+- zip it and upload it as a skill on claude.ai.
+
+## 5-minute quickstart
+
+1. Run `aec doctor`: all green (AE open with a project).
+2. Build a showcase:
+
+   ```bash
+   node bin/aec.mjs build examples/01-kinetic-type/scene.tsx
+   ```
+
+   The comp opens in AE. The CLI prints the contact sheet path (`~/.ae-compose/out/KineticType/contact_main.png`).
+3. In AE, select the **Controls** layer and drag **Word Stagger** or **Accent Color**. The animation changes live, with no rebuild.
+4. Edit the TSX (for example, change a beat's `duration`) and rebuild: the comp updates in place. Your control tweaks are kept, and controls you didn't touch take the new defaults from code. Later beats ripple automatically because they're in a `<Series>`.
+5. Edit any comp, even one you built by hand:
+
+   ```bash
+   node bin/aec.mjs inspect KineticType_v001
+   ```
+
+   Then apply ops, for example `[{"op":"ease","layer":"MOVE","prop":"scale","easing":"easeOutBack"}]` or `[{"op":"ripple","scene":"Beat 2","by":1}]`, with `aec edit` or the `apply_edits` MCP tool. Each batch is one undo step, and it's rolled back entirely if any op fails.
+6. Ask Claude (with the MCP server and skill), for example: *"make the scene at 0:03 a bit slower so we can read the text"*, or *"I greenscreened this element, add it to this comp with the controller still behind it and animate it in"*.
+
+## Showcases
+
+Each scene in [`examples/`](examples) is built from your own assets and exposes live controls.
+
+| # | Scene | Shows |
+|---|---|---|
+| 01 | [Kinetic typography](examples/01-kinetic-type/scene.tsx) | per-word/char springs, tracking reveal, `<Series>` beats, end-anchored exits |
+| 02 | [Logo reveal](examples/02-logo-reveal/scene.tsx) | SVG → shape layers, trim-path draw-on, glow, matted shine |
+| 03 | [Lower third](examples/03-lower-third/scene.tsx) | Essential Graphics text fields, safe-area layout, footage push-in |
+| 04 | [Product promo](examples/04-product-promo/scene.tsx) | footage shots, masked card, layout, end card |
+| 05 | [Data chart](examples/05-data-chart/scene.tsx) | data-driven bars, count-up labels, trend line draw-on, `plus()` staggers |
+| 06 | [Vertical social ad](examples/06-vertical-social/scene.tsx) | 1080×1920 column layout, looping footage card, CTA pulse |
+| 07 | [Transition pack](examples/07-transition-pack/scene.tsx) | reusable transition precomps (bar wipe, iris, slices) |
+| 08 | [Variants](examples/08-variants/scene.tsx) | 3 variants + Compare comp |
+| 09 | [Edit a hand-built project](examples/09-edit-existing/run.ts) | inspect, re-ease, effect, ripple, one-step undo |
+| 10 | [3D product hero](examples/10-3d-product-hero/scene.tsx) | Advanced 3D, glTF model, HDRI, shadows, extrusion, orbit camera, DOF |
+| 11 | [3D fly-through](examples/11-3d-flythrough/scene.tsx) | Classic 3D dolly, DOF, motion blur |
+| 12 | [Particle logo reveal](examples/12-particle-logo-reveal/scene.tsx) | particle trail following a null, wipe, spark burst synced to a marker |
+| 13 | [Ambient 3D particles](examples/13-ambient-3d-particles/scene.tsx) | bokeh dust following the camera, 3D carousel |
+| 14 | [Particle Playground](examples/14-particle-playground/scene.tsx) | cannon fountain with gravity and live physics controls |
+
 ## Docs
+- [docs/DSL.md](docs/DSL.md): the full DSL and edit-op reference
 - [GOAL.md](GOAL.md): the full spec and Definition of Done
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): how it works (agent-first design, IR, ES3 runtime, bridge, 3D, particles)
 - [docs/DECISIONS.md](docs/DECISIONS.md): every non-obvious decision, with rationale
 - [docs/RESEARCH.md](docs/RESEARCH.md): verified AE 26.5 scripting facts and research summaries
+- [docs/REPORT.md](docs/REPORT.md): what was built, what was verified, limits
 - [docs/PROGRESS.md](docs/PROGRESS.md): current phase, next steps, open issues
 - [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md): rules for agents developing this repo
 
-Install, setup checklist, CLI usage, MCP setup and a 5-minute quickstart will land here as those parts are built.
+## Tests
+
+```bash
+pnpm test:unit
+```
+
+That runs the unit and codegen tests (253, Node only).
+
+The checks below need After Effects running:
+
+```bash
+npx tsx tests/integration/roundtrip.ts
+```
+
+```bash
+npx tsx tests/integration/ripple.ts
+```
+
+```bash
+npx tsx tests/integration/livecontrols.ts
+```
+
+```bash
+npx tsx tests/integration/ease-verify.ts
+```

@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+// Installs the ae-compose CEP bridge for After Effects (Windows): links
+// %APPDATA%\Adobe\CEP\extensions\com.aecompose → packages/bridge-cep/extension (a directory junction, so edits to
+// the repo are live; the bridge hot-reloads its server code).
+//
+//   node scripts/install-cep.mjs            create the junction (idempotent)
+//   node scripts/install-cep.mjs --remove   remove it
+//
+// Unsigned extensions also need CEP debug mode, a per-user setting you enable once yourself:
+//   reg add "HKCU\Software\Adobe\CSXS.12" /v PlayerDebugMode /t REG_SZ /d 1 /f
+// Then restart After Effects. `aec doctor` checks both.
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const src = path.join(repo, 'packages', 'bridge-cep', 'extension');
+if (process.platform !== 'win32') {
+  console.error('ae-compose bridge install is Windows-only for now (macOS: symlink the folder into ~/Library/Application Support/Adobe/CEP/extensions).');
+  process.exit(1);
+}
+const dir = path.join(process.env.APPDATA ?? '', 'Adobe', 'CEP', 'extensions');
+const dst = path.join(dir, 'com.aecompose');
+
+if (process.argv.includes('--remove')) {
+  if (fs.existsSync(dst)) { fs.rmSync(dst, { recursive: false, force: true }); console.log('removed', dst); }
+  else console.log('not installed');
+  process.exit(0);
+}
+if (!fs.existsSync(path.join(src, 'CSXS', 'manifest.xml'))) { console.error('extension not found at', src); process.exit(1); }
+fs.mkdirSync(dir, { recursive: true });
+if (fs.existsSync(dst)) {
+  const real = fs.realpathSync(dst);
+  if (path.resolve(real) === path.resolve(src)) { console.log('already installed:', dst, '→', src); process.exit(0); }
+  console.error(`${dst} exists and points elsewhere (${real}); remove it first (node scripts/install-cep.mjs --remove)`);
+  process.exit(1);
+}
+execFileSync('cmd', ['/c', 'mklink', '/J', dst, src], { stdio: 'inherit' });
+console.log('installed:', dst, '→', src);
+let dbg = null;
+try { dbg = execFileSync('reg', ['query', 'HKCU\\Software\\Adobe\\CSXS.12', '/v', 'PlayerDebugMode'], { encoding: 'utf8' }).match(/REG_SZ\s+(\S+)/)?.[1] ?? null; } catch { /* unset */ }
+if (dbg !== '1') console.log('\nCEP debug mode is not enabled yet. Enable it once (per user), then restart After Effects:\n  reg add "HKCU\\Software\\Adobe\\CSXS.12" /v PlayerDebugMode /t REG_SZ /d 1 /f');
+else console.log('CEP debug mode: on. Restart After Effects, then run: aec doctor');

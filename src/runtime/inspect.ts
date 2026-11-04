@@ -3,8 +3,9 @@
 import { isCrashy, isCrashyParent, isOpaqueValueType } from './safety';
 import { tagOf } from './layers';
 import { findTaggedComp } from './project';
+import { raw } from './json';
 
-export interface InspectOpts { detail?: 'outline' | 'full'; layers?: (string | number)[]; maxChars?: number; time?: number }
+export interface InspectOpts { detail?: 'outline' | 'full'; layers?: (string | number)[]; maxChars?: number; time?: number; /** Report post-expression values (slow: AE evaluates every expression). */ evalExpressions?: boolean }
 
 const VT: { [k: number]: string } = {};
 (function () {
@@ -51,9 +52,12 @@ function textVal(td: any, maxChars: number): any {
   return o;
 }
 
-function readValue(p: Property, maxChars: number, t?: number): any {
+function readValue(p: Property, maxChars: number, t?: number, preExpression?: boolean): any {
   const vt = p.propertyValueType;
-  const v = t !== undefined ? p.valueAtTime(t, false) : p.value;
+  // With an expression, read the PRE-expression value unless asked otherwise: reading .value makes AE evaluate
+  // the expression (per character for text selectors), which made a cold full inspect of a 35-layer chart take
+  // minutes. The expression text is reported anyway.
+  const v = preExpression ? p.valueAtTime(t !== undefined ? t : 0, true) : t !== undefined ? p.valueAtTime(t, false) : p.value;
   if (vt === PropertyValueType.SHAPE) return shapeVal(v);
   if (vt === PropertyValueType.TEXT_DOCUMENT) return textVal(v, maxChars);
   return arr(v);
@@ -108,7 +112,7 @@ function walk(g: any, opts: InspectOpts, depth: number): any {
     else {
       try {
         if (animated) o.keys = keyData(p, maxChars);
-        else o.v = readValue(p, maxChars);
+        else o.v = readValue(p, maxChars, opts.time, hasExpr && opts.evalExpressions !== true);
       } catch (e) { o.err = String(e); }
     }
     if (hasExpr) { o.expr = p.expression; if (!p.expressionEnabled) o.exprOff = true; if (p.expressionError) o.exprErr = p.expressionError; }
@@ -203,7 +207,7 @@ export function inspectComp(ref: any, opts: InspectOpts): any {
   const c = findComp(ref);
   if (!c) return { ok: false, error: 'comp not found: ' + ref };
   const o: any = { ok: true, comp: { name: c.name, itemId: c.id, id: tagOf(c), w: c.width, h: c.height, fps: c.frameRate, dur: c.duration, par: c.pixelAspect, bg: arr(c.bgColor), renderer: c.renderer, motionBlur: c.motionBlur, shutterAngle: c.shutterAngle, numLayers: c.numLayers, workArea: [c.workAreaStart, c.workAreaDuration] } };
-  try { if (c.motionGraphicsTemplateName) o.comp.mgt = c.motionGraphicsTemplateName; } catch (e) {}
+  try { if (c.motionGraphicsTemplateName && c.motionGraphicsTemplateName !== 'Untitled') o.comp.mgt = c.motionGraphicsTemplateName; } catch (e) {}
   try { const mk = (c as any).markerProperty; if (mk && mk.numKeys) { o.comp.markers = []; for (let k = 1; k <= mk.numKeys; k++) { const mv: any = mk.keyValue(k); o.comp.markers.push({ t: mk.keyTime(k), comment: mv.comment, dur: mv.duration }); } } } catch (e) {}
   o.layers = [];
   for (let i = 1; i <= c.numLayers; i++) {
@@ -213,7 +217,7 @@ export function inspectComp(ref: any, opts: InspectOpts): any {
       for (let j = 0; j < opts.layers.length; j++) { const w = opts.layers[j]; if (w === i || w === L.name || w === tagOf(L)) want = true; }
       if (!want) continue;
     }
-    o.layers.push(layerInfo(L, opts));
+    o.layers.push(raw(layerInfo(L, opts))); // serialized right away (see json.ts raw)
   }
   return o;
 }

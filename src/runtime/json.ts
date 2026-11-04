@@ -24,9 +24,18 @@ function quote(s: string, out: string[]): void {
   out[out.length] = '"';
 }
 
+/**
+ * Already-serialized JSON, emitted verbatim. Big results (a full comp inspect) serialize each part as soon as it
+ * is built: ExtendScript's GC cost grows with the live object graph, so holding the whole tree made inspecting
+ * 20 layers take ~2 minutes instead of seconds (measured: 5 → 10 → 20 layers = 2.7 → 19 → 117 s).
+ */
+export interface RawJson { $rawJson: string }
+export function raw(v: any): RawJson { return { $rawJson: stringify(v) }; }
+
 function write(v: any, out: string[], depth: number): void {
   if (depth > 64) { out[out.length] = 'null'; return; }
   if (v === null || v === undefined) { out[out.length] = 'null'; return; }
+  if (typeof v === 'object' && typeof v.$rawJson === 'string') { out[out.length] = v.$rawJson; return; }
   const t = typeof v;
   if (t === 'number') { out[out.length] = isFinite(v) ? String(v) : 'null'; return; }
   if (t === 'boolean') { out[out.length] = v ? 'true' : 'false'; return; }

@@ -6,7 +6,7 @@ import { fail, warn } from './ctx';
 import type { IrKey } from './keys';
 import { applyKeys } from './keys';
 import { byIndexPath, indexPath, mustResolve, setExpression, setStatic } from './props';
-import { each } from './util';
+import { each, errText } from './util';
 
 export interface PropSpec {
   p: string; // path relative to the owner (layer or group)
@@ -51,7 +51,7 @@ function setAttrs(ctx: Ctx, g: any, attrs: { [k: string]: any }): void {
       if (en[v] === undefined) fail(ctx, 'unknown ' + k + ' "' + v + '"');
       v = en[v];
     }
-    try { g[k] = v; } catch (e) { warn(ctx, 'cannot set attribute ' + k + ': ' + e); }
+    try { g[k] = v; } catch (e) { warn(ctx, 'cannot set attribute ' + k + ': ' + errText(e)); }
   }
 }
 

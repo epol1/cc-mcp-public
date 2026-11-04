@@ -163,6 +163,7 @@ export class Compiler {
         if (p.renderer) ctx.comp.rendererReq = p.renderer;
         if (p.motionBlur !== undefined) applyCompMB(ctx.comp, p.motionBlur);
         if (p.shutterAngle !== undefined) ctx.comp.shutterAngle = p.shutterAngle;
+        if (p.markers) for (const mk of p.markers) (ctx.comp.markers ??= []).push({ t: parseTime(mk.t, ctx.comp.fps), comment: mk.comment, dur: mk.duration !== undefined ? parseTime(mk.duration, ctx.comp.fps) : undefined });
         this.walk(p.children, ctx);
         return;
       case 'sequence': {
@@ -312,7 +313,7 @@ export class Compiler {
     if (p.guide) L.guide = true;
     if (p.label !== undefined) L.label = p.label;
     if (p.parent) L.parent = p.parent;
-    if (p.matte) L.matte = { layer: p.matte.layer, type: p.matte.type ?? 'alpha' };
+    if (p.matte) L.matte = { layer: p.matte.layer, type: p.matte.type ?? 'alpha', ...(p.matte.showSource ? { showSource: true } : {}) };
     if (p.markers) L.markers = p.markers.map((m: any) => ({ t: inT + parseTime(m.t, fps), comment: m.comment, dur: m.duration !== undefined ? parseTime(m.duration, fps) : undefined }));
     const vctx: ValueCtx = { fps, t0: inT, controls: ctx.comp.controls, seed: ctx.seed };
     const anim: Record<string, any> = { ...(p.animate ?? {}) };
@@ -332,7 +333,8 @@ export class Compiler {
         L.text = textDoc(p, text);
         if (p.eg) ((ctx.comp as any).egText ??= []).push({ layer: id, p: 'ADBE Text Properties/ADBE Text Document', name: p.eg === true ? L.name : String(p.eg) });
         if (p.perCharacter3D) { L.threeD = true; L.threeDPerChar = true; }
-        if (isControl(p.color)) props.push({ p: 'ADBE Text Properties/ADBE Text Document', expr: `style.setFillColor((${ctx.comp.controls.use(p.color)}).slice(0, 3));` });
+        // (Property values in expressions are array-like, not Arrays: index them, don't call .slice.)
+        if (isControl(p.color)) props.push({ p: 'ADBE Text Properties/ADBE Text Document', expr: `var c = ${ctx.comp.controls.use(p.color)}; style.setFillColor([c[0], c[1], c[2]]);` });
         const ab = anchorBox(p.anchor, 'center');
         if (ab) L.anchorBox = ab;
         for (const ta of textAnims) {
@@ -416,7 +418,9 @@ export class Compiler {
     // Transform
     const isCam = kind === 'camera';
     const camInfo = isCam ? cameraProps(p, vctx, ctx.comp.w, ctx.comp.h) : null;
-    const rest = { x: ctx.comp.w / 2, y: ctx.comp.h / 2, z: isCam ? camInfo!.restZ : kind === 'light' ? -600 : 0 };
+    // <Shape space="comp">: contents are drawn in comp pixels (like SVG/Remotion), so the layer sits at 0,0.
+    const compSpace = kind === 'shape' && p.space === 'comp';
+    const rest = { x: compSpace ? 0 : ctx.comp.w / 2, y: compSpace ? 0 : ctx.comp.h / 2, z: isCam ? camInfo!.restZ : kind === 'light' ? -600 : 0 };
     if (ctx.inLayout) { rest.x = 0; rest.y = 0; } // laid-out layers: position is an offset from the solved slot
     for (const k of ['x', 'y', 'z'] as const) if (typeof p[k] === 'number') rest[k] = p[k];
     if (Array.isArray(p.position)) { rest.x = p.position[0]; rest.y = p.position[1]; rest.z = p.position[2] ?? rest.z; }

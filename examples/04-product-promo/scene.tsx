@@ -17,12 +17,14 @@ export default scene({ name: 'ProductPromo', width: 1920, height: 1080, fps: 30,
         <Series.Sequence duration="3s" name="Hero">
           <Footage src="../../assets/footage/cc.mp4" trim={['1.5s', '4.8s']} fit="cover" muted
             animate={{ scale: tween({ from: 100, to: 109, duration: '3s', easing: 'easeOutSine' }) }} />
+          {/* The UI footage is bright: dim it a little and add a deep gradient where the copy sits. */}
+          <Solid name="Dim" color="#05070b" opacity={30} />
           <Shape name="Bottom Shade">
             <Rect size={[1920, 1080]} />
-            <GradientFill start={[0, -100]} end={[0, 540]} stops={[{ offset: 0, color: '#000000', opacity: 0 }, { offset: 1, color: '#000000', opacity: 0.85 }]} />
+            <GradientFill start={[0, -80]} end={[0, 540]} stops={[{ offset: 0, color: '#05070b', opacity: 0 }, { offset: 1, color: '#05070b', opacity: 0.95 }]} />
           </Shape>
-          <Column gap={10} offset={[0, 300]}>
-            <Text font="Inter-SemiBold" size={34} color={accent} tracking={300}
+          <Column gap={26} offset={[0, 290]}>
+            <Text font="Inter-SemiBold" size={34} color="#9cc3ee" tracking={300}
               animate={{ text: textPresets.trackingIn({ delay: copyDelay }) }}>
               CUSTOM CONTROLLERZ
             </Text>

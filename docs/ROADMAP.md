@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.010**: 73.20% weighted, 115/162 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.011**: 89.04% weighted, 141/163 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -14,7 +14,7 @@
 - [x] Status dashboard + release flow
 - [x] README status image (SVG/PNG)
 
-## Bridge & Execution (86%)
+## Bridge & Execution (93%)
 - [x] CEP extension (hot reload) _(w2)_
 - [x] Eval wrapping, structured errors
 - [x] Backend interface (TS client)
@@ -22,7 +22,7 @@
 - [x] AfterFX.com fallback backend
 - [x] Dialog watchdog _(w2)_
 - [~] Crash recovery + relaunch _(w2)_
-- [ ] Large result spill to file
+- [x] Large results (eager serialization; 500 KB verified)
 - [x] aec doctor
 - [x] Non-blocking watchdog (no UIA on busy AE)
 - [x] Auto-cancel dialogs opened by probes
@@ -45,46 +45,46 @@
 - [x] Stable ids + source locations
 - [x] Units/time/color normalization
 
-## TSX DSL (85%)
+## TSX DSL (92%)
 - [x] JSX runtime (jsxDEV sources)
 - [x] Scene loader (esbuild)
 - [x] Composition/Sequence/Series _(w2)_
 - [x] Solid/Null/Adjustment/Precomp
-- [~] Footage (fit/crop/trim) _(w2)_
+- [x] Footage (fit/crop/trim) _(w2)_
 - [x] Text primitive
 - [x] Shape primitives _(w2)_
 - [x] Effect/Mask/TrackMatte
 - [ ] Brand tokens/theme helpers
 - [x] Exits anchored to layer end (ripple-friendly)
 
-## Animation & Easing (94%)
+## Animation & Easing (97%)
 - [x] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
 - [x] valueAtTime verification in AE _(w2)_
 - [x] Easing presets (Remotion set)
 - [x] Remotion-exact spring
 - [x] Curve baking + key reduction _(w3)_
 - [x] tween/keys/interpolate
-- [~] stagger/loop/wiggle
+- [x] stagger/loop/wiggle
 - [~] (t)=>value escape hatch
 - [x] Color ease calibration (255 units)
 - [x] Motion blur: comp/layer/forced (CC Force MB, Pixel MB) _(w2)_
 
-## Text Animation (55%)
+## Text Animation (64%)
 - [x] Full TextDocument + style runs _(w2)_
 - [ ] Range-selector animators _(w2)_
 - [x] Expression-selector per char/word/line _(w3)_
-- [~] Text presets (riseIn, typewriter…) _(w2)_
+- [x] Text presets (riseIn, typewriter…) _(w2)_
 - [ ] 3D per-character
 - [ ] Text on path
 
-## Shapes & Paths (81%)
+## Shapes & Paths (85%)
 - [x] Rect/Ellipse/Star/Group
 - [x] Pen paths + SVG d _(w2)_
 - [x] Fill/Stroke/dashes/taper
 - [x] Trim/Repeater/Merge/Offset/… _(w2)_
 - [x] Gradients via .ffx _(w3)_
 - [ ] SVG/AI → shape layers _(w2)_
-- [~] Masks + track mattes
+- [x] Masks + track mattes
 - [x] SVG path parser (M/L/C/S/Q/T/A/Z)
 
 ## Effects & Catalog (100%)
@@ -95,12 +95,12 @@
 - [x] Fuzzy name resolution
 - [x] describe_effect with popup labels
 
-## Controls & Variants (83%)
+## Controls & Variants (100%)
 - [x] Controls null, all control types
 - [x] Static value linking
-- [~] Retimable-keys rig _(w3)_
+- [x] Retimable-keys rig _(w3)_
 - [x] Expression rigs (spring/orbit) _(w2)_
-- [~] Essential Graphics
+- [x] Essential Graphics
 - [x] Sticky controls on rebuild
 - [x] Variants _(w2)_
 - [x] Compare comp
@@ -124,19 +124,19 @@
 - [x] 3D layout helpers _(w2)_
 - [x] Correct renderer IDs from AE strings
 
-## Particles (84%)
+## Particles (94%)
 - [x] Catalog coverage (9 systems)
 - [x] Typed components _(w2)_
 - [x] Layer-ref source precomps _(w2)_
 - [x] Emitter linking _(w2)_
 - [x] Marker-synced bursts
 - [x] Camera integration _(w2)_
-- [~] Presets (7) _(w3)_
+- [x] Presets (7) _(w3)_
 - [x] Seeds + determinism
 - [x] Producer unit + camera calibration
 - [ ] Multi-color confetti (layered)
 
-## Inspector (86%)
+## Inspector (87%)
 - [x] Project/comp/layer walk _(w2)_
 - [x] Keys, eases, tangents _(w2)_
 - [x] Effect trees
@@ -146,6 +146,7 @@
 - [x] Compact agent outline _(w2)_
 - [x] Project media search + preview_item
 - [x] Scenes (named Sequences → comp marker ranges)
+- [x] Fast full inspect (pre-expression reads)
 
 ## Edit Operations (97%)
 - [x] Property/keys/easing ops _(w2)_
@@ -175,33 +176,33 @@
 - [~] Claude skill + CLAUDE.md _(w2)_
 - [~] Claude Code registration
 
-## Testing (25%)
+## Testing (67%)
 - [x] Unit tests _(w2)_
 - [x] Codegen snapshots + ES3 parse
-- [ ] Inspector round-trip (real AE) _(w3)_
-- [ ] Edit-op tests + undo _(w2)_
+- [x] Inspector round-trip (real AE) _(w3)_
+- [x] Edit-op tests + undo _(w2)_
 - [ ] Seed determinism
 - [ ] Remotion quality bar _(w2)_
 - [ ] Independent final review
 
-## Showcase Scenes (4%)
-- [~] 01 Kinetic typography _(w2)_
-- [ ] 02 Logo reveal _(w2)_
-- [ ] 03 Lower third
-- [ ] 04 Product promo (footage) _(w2)_
-- [ ] 05 Data chart _(w2)_
-- [ ] 06 Vertical social ad _(w2)_
-- [ ] 07 Transition pack _(w2)_
-- [ ] 08 Variants demo
-- [ ] 09 Edit demo (hand-built) _(w2)_
-- [ ] 10 3D product hero _(w3)_
-- [ ] 11 3D fly-through _(w2)_
-- [ ] 12 Particle logo reveal _(w2)_
-- [ ] 13 Ambient 3D particles _(w2)_
-- [ ] 14 Particle Playground _(w2)_
+## Showcase Scenes (100%)
+- [x] 01 Kinetic typography _(w2)_
+- [x] 02 Logo reveal _(w2)_
+- [x] 03 Lower third
+- [x] 04 Product promo (footage) _(w2)_
+- [x] 05 Data chart _(w2)_
+- [x] 06 Vertical social ad _(w2)_
+- [x] 07 Transition pack _(w2)_
+- [x] 08 Variants demo
+- [x] 09 Edit demo (hand-built) _(w2)_
+- [x] 10 3D product hero _(w3)_
+- [x] 11 3D fly-through _(w2)_
+- [x] 12 Particle logo reveal _(w2)_
+- [x] 13 Ambient 3D particles _(w2)_
+- [x] 14 Particle Playground _(w2)_
 
-## Docs (40%)
-- [ ] README + quickstart
+## Docs (60%)
+- [x] README + quickstart
 - [x] DSL reference _(w2)_
 - [ ] AGENT_GUIDE.md
 - [ ] REPORT.md

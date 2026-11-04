@@ -104,8 +104,8 @@
         },
         {
           "id": "spill",
-          "name": "Large result spill to file",
-          "status": "todo",
+          "name": "Large results (eager serialization; 500 KB verified)",
+          "status": "done",
           "weight": 1
         },
         {
@@ -255,7 +255,7 @@
         {
           "id": "footage",
           "name": "Footage (fit/crop/trim)",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
@@ -333,7 +333,7 @@
         {
           "id": "stagger",
           "name": "stagger/loop/wiggle",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -381,7 +381,7 @@
         {
           "id": "text-presets",
           "name": "Text presets (riseIn, typewriter…)",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
@@ -441,7 +441,7 @@
         {
           "id": "masks-mattes",
           "name": "Masks + track mattes",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -513,7 +513,7 @@
         {
           "id": "ctl-retime",
           "name": "Retimable-keys rig",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
@@ -525,7 +525,7 @@
         {
           "id": "ctl-eg",
           "name": "Essential Graphics",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -693,7 +693,7 @@
         {
           "id": "p-presets",
           "name": "Presets (7)",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
@@ -771,6 +771,12 @@
         {
           "id": "insp-scenes",
           "name": "Scenes (named Sequences → comp marker ranges)",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "insp-perf",
+          "name": "Fast full inspect (pre-expression reads)",
           "status": "done",
           "weight": 1
         }
@@ -945,13 +951,13 @@
         {
           "id": "t-roundtrip",
           "name": "Inspector round-trip (real AE)",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "t-edits",
           "name": "Edit-op tests + undo",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -981,85 +987,85 @@
         {
           "id": "s01",
           "name": "01 Kinetic typography",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s02",
           "name": "02 Logo reveal",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s03",
           "name": "03 Lower third",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "s04",
           "name": "04 Product promo (footage)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s05",
           "name": "05 Data chart",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s06",
           "name": "06 Vertical social ad",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s07",
           "name": "07 Transition pack",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s08",
           "name": "08 Variants demo",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "s09",
           "name": "09 Edit demo (hand-built)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s10",
           "name": "10 3D product hero",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "s11",
           "name": "11 3D fly-through",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s12",
           "name": "12 Particle logo reveal",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s13",
           "name": "13 Ambient 3D particles",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "s14",
           "name": "14 Particle Playground",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         }
       ]
@@ -1071,7 +1077,7 @@
         {
           "id": "readme",
           "name": "README + quickstart",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {

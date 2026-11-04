@@ -35,7 +35,7 @@ export interface IrLayer {
   light?: { kind: 'parallel' | 'spot' | 'point' | 'ambient' | 'environment'; source?: string };
   groups?: { at: string; items: GroupSpec[] }[];
   props?: PropSpec[];
-  matte?: { layer: string; type: 'alpha' | 'alphaInverted' | 'luma' | 'lumaInverted' };
+  matte?: { layer: string; type: 'alpha' | 'alphaInverted' | 'luma' | 'lumaInverted'; showSource?: boolean };
   markers?: { t: number; comment?: string; dur?: number; label?: number }[];
   /** Anchor at a fraction of the layer's content box (sourceRectAtTime), e.g. [0.5, 0.5] = center. */
   anchorBox?: number[];
@@ -51,10 +51,29 @@ function hasProp(L: IrLayer, suffix: string): boolean {
   return false;
 }
 
+/**
+ * The layer's content box for layout/anchors: for shape layers, the FULLY DRAWN shape (Trim Paths are switched
+ * off while measuring; a draw-on starting at 0 % would otherwise measure as a sliver).
+ */
+export function contentRect(layer: Layer, t: number): { left: number; top: number; width: number; height: number } {
+  const trims: PropertyGroup[] = [];
+  const walk = (g: PropertyGroup) => {
+    for (let i = 1; i <= g.numProperties; i++) {
+      const p: any = g.property(i);
+      if (p.matchName === 'ADBE Vector Filter - Trim') { if (p.enabled) trims.push(p); continue; }
+      if (p.propertyType !== PropertyType.PROPERTY && (p.matchName === 'ADBE Root Vectors Group' || p.matchName === 'ADBE Vector Group' || p.matchName === 'ADBE Vectors Group')) walk(p);
+    }
+  };
+  const root = layer.property('ADBE Root Vectors Group') as PropertyGroup;
+  if (root) walk(root);
+  for (let i = 0; i < trims.length; i++) trims[i].enabled = false;
+  try { return (layer as any).sourceRectAtTime(t, false); } finally { for (let i = 0; i < trims.length; i++) trims[i].enabled = true; }
+}
+
 /** Sets the anchor point to a fraction of the content box (text/shape). Call before animators/keys. */
 export function applyAnchorBox(layer: Layer, L: IrLayer): void {
   if (!L.anchorBox) return;
-  const r = (layer as any).sourceRectAtTime(L.in !== undefined ? L.in : 0, false);
+  const r = contentRect(layer, L.in !== undefined ? L.in : 0);
   const ap = layer.property('ADBE Transform Group').property('ADBE Anchor Point') as Property;
   const x = r.left + r.width * L.anchorBox[0];
   const y = r.top + r.height * L.anchorBox[1];
@@ -69,17 +88,49 @@ export function applyFootage(ctx: Ctx, layer: Layer, comp: CompItem, L: IrLayer)
     av.timeRemapEnabled = true;
     const tr = layer.property('ADBE Time Remapping') as Property;
     tr.expression = 'loopOut("cycle")';
+    // The out point was clamped to the source length before time remapping existed: extend it now.
+    if (L.out !== undefined) layer.outPoint = L.out;
   }
-  if (!L.fit || L.fit === 'none' || hasProp(L, 'ADBE Scale')) return;
+  const f = fitFactors(ctx, layer, comp, L);
+  if (!f || hasProp(L, 'ADBE Scale')) return; // an authored Scale is applied relative to the fit (fitScale, after props)
+  const sc = layer.property('ADBE Transform Group').property('ADBE Scale') as Property;
+  sc.setValue([f[0] * 100, f[1] * 100, 100]);
+}
+
+function fitFactors(ctx: Ctx, layer: Layer, comp: CompItem, L: IrLayer): number[] | null {
+  if (!L.fit || L.fit === 'none') return null;
+  const av = layer as any;
   const sw = av.source ? av.source.width : av.width, sh = av.source ? av.source.height : av.height;
-  if (!sw || !sh) { warn(ctx, 'cannot fit: source has no size'); return; }
+  if (!sw || !sh) { warn(ctx, 'cannot fit: source has no size'); return null; }
   let fx = comp.width / sw, fy = comp.height / sh;
   if (L.fit === 'cover') fx = fy = Math.max(fx, fy);
   else if (L.fit === 'contain') fx = fy = Math.min(fx, fy);
   else if (L.fit === 'width') fy = fx;
   else if (L.fit === 'height') fx = fy;
+  return [fx, fy];
+}
+
+/**
+ * Footage with a fit AND an authored Scale (e.g. a slow push-in 100 → 108): the authored values are relative
+ * to the fitted size (100 = exactly covering/containing), so the keys/value are multiplied by the fit factors.
+ * Runs after props (pass 4).
+ */
+export function fitScale(ctx: Ctx, layer: Layer, comp: CompItem, L: IrLayer): void {
+  if ((L.type !== 'footage' && L.type !== 'model') || !hasProp(L, 'ADBE Scale')) return;
+  const f = fitFactors(ctx, layer, comp, L);
+  if (!f) return;
   const sc = layer.property('ADBE Transform Group').property('ADBE Scale') as Property;
-  sc.setValue([fx * 100, fy * 100, 100]);
+  const mul = (v: any) => [v[0] * f[0], v[1] * f[1], v.length > 2 ? v[2] : 100];
+  if (sc.numKeys === 0) { sc.setValue(mul(sc.value)); return; }
+  for (let k = 1; k <= sc.numKeys; k++) sc.setValueAtKey(k, mul(sc.keyValue(k)));
+  // Eases are in %/s per dimension: scale them with the values.
+  for (let k = 1; k <= sc.numKeys; k++) {
+    const ie = sc.keyInTemporalEase(k), oe = sc.keyOutTemporalEase(k);
+    const sIn: KeyframeEase[] = [], sOut: KeyframeEase[] = [];
+    for (let d = 0; d < ie.length; d++) { sIn[d] = new KeyframeEase(ie[d].speed * (d < 2 ? f[d] : 1), ie[d].influence); sOut[d] = new KeyframeEase(oe[d].speed * (d < 2 ? f[d] : 1), oe[d].influence); }
+    const it = sc.keyInInterpolationType(k), ot = sc.keyOutInterpolationType(k);
+    if (it === KeyframeInterpolationType.BEZIER || ot === KeyframeInterpolationType.BEZIER) { (sc as any).setTemporalEaseAtKey(k, sIn, sOut); sc.setInterpolationTypeAtKey(k, it, ot); }
+  }
 }
 
 const LIGHT: { [k: string]: string } = { parallel: 'PARALLEL', spot: 'SPOT', point: 'POINT', ambient: 'AMBIENT', environment: 'ENVIRONMENT' };
@@ -184,6 +235,8 @@ export function wireLayer(ctx: Ctx, layer: Layer, L: IrLayer): void {
     const m = ctx.layers[L.matte.layer];
     if (!m) fail(ctx, 'matte layer not found: ' + L.matte.layer);
     (layer as any).setTrackMatte(m, (TrackMatteType as any)[MATTE[L.matte.type]]);
+    // AE switches the matte source's video off; keep it visible when asked (it still works as the matte).
+    if (L.matte.showSource) m.enabled = true;
   }
   if (L.light && L.light.source) {
     const src = ctx.layers[L.light.source];

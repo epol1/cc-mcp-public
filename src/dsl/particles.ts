@@ -39,8 +39,12 @@ export interface ParticleProps extends Omit<LayerProps, 'children'> {
   textureSize?: [number, number];
   /** Producer follows another layer (its anchor in world space), e.g. an animated null or a logo. */
   emitter?: { follow: string };
-  /** Emit only in a burst: birth rate jumps to `rate` at `at` for `duration`. */
-  burst?: { at: Time; duration?: Time; rate?: number };
+  /**
+   * Emit only in a burst: birth rate jumps to `rate` at `at` for `duration`. `at: { marker: 'hit' }` fires at the
+   * comp marker with that comment (an expression reads it, so moving the marker in AE, or a ripple edit, retimes
+   * the burst; named <Sequence>s and <Composition markers> create markers).
+   */
+  burst?: { at: Time | { marker: string }; duration?: Time; rate?: number };
   /** Expose the preset's key parameters as live controls (default true). */
   controls?: boolean;
 }
@@ -101,7 +105,13 @@ export function ParticleWorld(p: ParticleProps & { preset?: ParticlePreset; widt
     const br = params['Birth Rate'];
     const rate = p.burst.rate ?? (typeof br === 'number' ? br : br && typeof br === 'object' && typeof br.default === 'number' ? br.default : 8);
     const at = p.burst.at, dur = p.burst.duration ?? '0.15s';
-    params['Birth Rate'] = keys({ t: 0, v: 0, hold: true }, { t: at, v: rate, hold: true }, { t: addTime(at, dur), v: 0, hold: true });
+    if (typeof at === 'object' && at !== null && 'marker' in at) {
+      const d = typeof dur === 'number' ? String(dur) : /f$/.test(String(dur).trim()) ? `framesToTime(${parseFloat(String(dur))})` : /ms$/.test(String(dur).trim()) ? String(parseFloat(String(dur)) / 1000) : String(parseFloat(String(dur)));
+      exprs['Birth Rate'] = `// ae-compose rig: burst at marker "${at.marker}" (reads the marker live; ripple edits move the marker, not this)
+var m = thisComp.marker.key(${JSON.stringify(at.marker)}).time;
+(time >= m && time < m + ${d}) ? ${rate} : 0;`;
+      delete params['Birth Rate'];
+    } else params['Birth Rate'] = keys({ t: 0, v: 0, hold: true }, { t: at, v: rate, hold: true }, { t: addTime(at, dur), v: 0, hold: true });
   }
   const fxParams: Record<string, any> = {};
   for (const [k, v] of Object.entries(params)) fxParams[k] = exprs[k] ? expr(exprs[k]) : v;

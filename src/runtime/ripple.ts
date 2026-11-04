@@ -9,7 +9,7 @@ import { fail, warn } from './ctx';
 import type { IrKey } from './keys';
 import { applyKeys, captureKeys } from './keys';
 import { isCrashy, isCrashyParent, isOpaqueValueType } from './safety';
-import { trim } from './util';
+import { errText, trim } from './util';
 
 const EPS = 1e-6;
 
@@ -82,7 +82,7 @@ function zeroEase(e: { speed: number; influence: number }[] | undefined): any {
  * Segment speeds rescale by old/new segment length (influence is a percentage, so curve shapes are kept).
  */
 function remapKeys(ctx: Ctx, p: Property, m: TimeMap): number {
-  const ks = captureKeys(p);
+  const ks = splitLinearAt(p, captureKeys(p), m);
   const n = ks.length;
   if (!n) return 0;
   const arr: number[] = [], dep: number[] = [];
@@ -111,8 +111,37 @@ function remapKeys(ctx: Ctx, p: Property, m: TimeMap): number {
       push(out, first); push(out, second);
     } else { key.t = arr[k]; push(out, key); }
   }
-  applyKeys(ctx, p, out);
+  try { applyKeys(ctx, p, out, true); }
+  catch (e) { throw new Error('could not move the keys of ' + p.name + ' (' + p.matchName + '): ' + errText(e)); }
   return n;
+}
+
+/**
+ * Insert edits: a LINEAR segment that spans the insert point gets an exact key at that point (so it holds for the
+ * inserted time instead of stretching), e.g. a time-remapped precomp keeps playing at speed, pauses, resumes.
+ */
+function splitLinearAt(p: Property, ks: IrKey[], m: TimeMap): IrKey[] {
+  if (!isInsert(m) || ks.length < 2) return ks;
+  const vt = p.propertyValueType;
+  if (vt === PropertyValueType.SHAPE || vt === PropertyValueType.TEXT_DOCUMENT) return ks;
+  for (let k = 0; k < ks.length - 1; k++) {
+    const a = ks[k], b = ks[k + 1];
+    if (!(a.t < m.a - EPS && b.t > m.a + EPS) || a.o !== 'linear' || b.i !== 'linear') continue;
+    if (a.sp && ((a.sp.to && (a.sp.to[0] || a.sp.to[1])) || (b.sp && b.sp.ti && (b.sp.ti[0] || b.sp.ti[1])))) continue; // curved spatial path
+    const f = (m.a - a.t) / (b.t - a.t);
+    let v: any;
+    if (typeof a.v === 'number') v = a.v + (b.v - a.v) * f;
+    else { v = []; for (let d = 0; d < a.v.length; d++) v[d] = a.v[d] + (b.v[d] - a.v[d]) * f; }
+    const mid: IrKey = { t: m.a, v: v, i: 'linear', o: 'linear' };
+    if (a.ie) { mid.ie = scaleEase(a.oe, 1); mid.oe = scaleEase(a.oe, 1); }
+    if (a.sp) mid.sp = { ti: zeros(a.sp.ti ? a.sp.ti.length : 2), to: zeros(a.sp.to ? a.sp.to.length : 2), cont: false, auto: false };
+    const out: IrKey[] = [];
+    for (let j = 0; j <= k; j++) out[out.length] = ks[j];
+    out[out.length] = mid;
+    for (let j = k + 1; j < ks.length; j++) out[out.length] = ks[j];
+    return out;
+  }
+  return ks;
 }
 
 function zeros(n: number): number[] { const z: number[] = []; for (let i = 0; i < n; i++) z[i] = 0; return z; }
@@ -124,7 +153,7 @@ function push(out: IrKey[], k: IrKey): void {
   out[out.length] = k;
 }
 
-function remapMarkers(mp: Property, m: TimeMap): number {
+function remapMarkers(mp: Property, m: TimeMap, ctx?: Ctx, owner?: string): number {
   const n = mp.numKeys;
   if (!n) return 0;
   const list: { t: number; v: MarkerValue }[] = [];
@@ -135,9 +164,41 @@ function remapMarkers(mp: Property, m: TimeMap): number {
     const t2 = mapT(m, it.t);
     const e2 = d > 0 ? mapT(m, it.t + d, true) : t2;
     if (d > 0) (it.v as any).duration = Math.max(0, e2 - t2);
-    mp.setValueAtTime(t2, it.v);
+    if (!placeMarker(mp, t2, it.v) && ctx) warn(ctx, (owner || 'marker') + ': a protected-region marker on a time-stretched layer could not keep its exact length (AE couples them); check it');
   }
   return n;
+}
+
+/**
+ * Adds a marker at comp time t. AE repositions protected-region markers on time-stretched layers (set at 3.82 s,
+ * lands at 3.37 s), so read back where it landed and correct the request until it lands on t.
+ */
+function placeMarker(mp: Property, t: number, v: MarkerValue): boolean {
+  let x = t;
+  const wantDur = (v as any).duration || 0;
+  for (let iter = 0; iter < 8; iter++) {
+    const before: number[] = [];
+    for (let k = 1; k <= mp.numKeys; k++) before[before.length] = mp.keyTime(k);
+    mp.setValueAtTime(x, v);
+    let landed = -1, idx = -1;
+    for (let k = 1; k <= mp.numKeys; k++) {
+      const kt = mp.keyTime(k);
+      let old = false;
+      for (let j = 0; j < before.length; j++) if (Math.abs(before[j] - kt) < 1e-6) { old = true; break; }
+      if (!old) { landed = kt; idx = k; break; }
+    }
+    if (idx < 0) return true;
+    if (Math.abs(landed - t) < 1e-4) {
+      // AE also rescales protected-region durations on stretched layers (start and length are coupled there):
+      // the start is exact; report a length that differs.
+      const gotDur = (mp.keyValue(idx) as any).duration || 0;
+      return wantDur <= 0 || Math.abs(gotDur - wantDur) < 1e-3;
+    }
+    mp.removeKey(idx);
+    x += t - landed;
+  }
+  mp.setValueAtTime(x, v);
+  return false;
 }
 
 // ---------- expressions ----------
@@ -183,6 +244,12 @@ function fixExpression(p: Property, m: TimeMap, spanning: boolean, oldIn: number
   st.exprs++;
 }
 
+/** AE refuses to set keys on properties hidden in the current state (e.g. 3D-only options on a 2D layer). Probe with a no-op write. */
+function settable(p: Property): boolean {
+  // setValueAtKey succeeds on hidden properties while "set value at times" does not: probe with the latter.
+  try { p.setValueAtTime(p.keyTime(1), p.keyValue(1)); return true; } catch (e) { return false; }
+}
+
 // ---------- layers ----------
 
 function isFootageLike(L: Layer): boolean {
@@ -213,7 +280,11 @@ function rippleLayer(ctx: Ctx, comp: CompItem, L: Layer, m: TimeMap, deep: boole
   let markers: Property | null = null;
   walk(L, (p) => {
     if (p.matchName === 'ADBE Marker') { markers = p; return; }
-    if (p.numKeys > 0) { if (isOpaqueValueType(p.propertyValueType)) warn(ctx, L.name + ': keys on ' + p.name + ' cannot be moved by scripts'); else keyed[keyed.length] = p; }
+    if (p.numKeys > 0) {
+      if (isOpaqueValueType(p.propertyValueType)) warn(ctx, L.name + ': keys on ' + p.name + ' cannot be moved by scripts');
+      else if (!settable(p)) warn(ctx, L.name + ': ' + p.name + ' is hidden in the current state; its keys were not moved');
+      else keyed[keyed.length] = p;
+    }
     try { if (p.expression) exprs[exprs.length] = p; } catch (e) {}
   }, skipped);
   if (skipped.length) warn(ctx, L.name + ': gradient fill/stroke keys are not remapped (' + skipped.join(', ') + ')');
@@ -234,7 +305,7 @@ function rippleLayer(ctx: Ctx, comp: CompItem, L: Layer, m: TimeMap, deep: boole
   // The layer start moves only when its in point is inside a stretched span.
   const ni = isInsert(m) ? i : mapT(m, i);
   for (let k = 0; k < keyed.length; k++) st.keys += remapKeys(ctx, keyed[k], m);
-  if (markers) st.markers += remapMarkers(markers, m);
+  if (markers) st.markers += remapMarkers(markers, m, ctx, L.name);
   if (Math.abs(ni - i) > EPS) {
     // Moving startTime would move the keys again: they are already at their final comp times, so shift the
     // layer through its in point for non-footage layers, and through startTime (then re-place keys) for footage.
@@ -242,14 +313,17 @@ function rippleLayer(ctx: Ctx, comp: CompItem, L: Layer, m: TimeMap, deep: boole
       const keep: { p: Property; keys: IrKey[] }[] = [];
       for (let k = 0; k < keyed.length; k++) keep[keep.length] = { p: keyed[k], keys: captureKeys(keyed[k]) };
       L.startTime = L.startTime + (ni - i);
-      for (let k = 0; k < keep.length; k++) applyKeys(ctx, keep[k].p, keep[k].keys);
+      for (let k = 0; k < keep.length; k++) applyKeys(ctx, keep[k].p, keep[k].keys, true);
     }
     L.inPoint = ni;
   }
   let no = mapT(m, o, true);
   if (isFootageLike(L) && !remapped) {
     const lim = sourceLimit(L);
-    if (no > lim + EPS) { warn(ctx, L.name + ': footage is too short to extend to ' + no.toFixed(2) + 's; it ends at ' + lim.toFixed(2) + 's (enable time remapping to hold the last frame)'); no = lim; }
+    if (no > lim + EPS) {
+      if (lim < comp.duration - EPS) warn(ctx, L.name + ': footage is too short to extend to ' + no.toFixed(2) + 's; it ends at ' + lim.toFixed(2) + 's (enable time remapping to hold the last frame)');
+      no = lim;
+    }
   }
   if (no - L.inPoint < comp.frameDuration) no = L.inPoint + comp.frameDuration;
   L.outPoint = no;

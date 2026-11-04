@@ -6,7 +6,7 @@ import { AecError, newCtx, warn } from './ctx';
 import type { IrAsset } from './project';
 import { ensureFolder, findTaggedComp, importAsset } from './project';
 import type { IrLayer } from './layers';
-import { applyAnchorBox, applyFootage, createLayer, lockIfNeeded, setLayerAttrs, tagOf, TAG, wireLayer } from './layers';
+import { applyAnchorBox, applyFootage, createLayer, fitScale, lockIfNeeded, setLayerAttrs, tagOf, TAG, wireLayer } from './layers';
 import type { Pending } from './groups';
 import { applyProps, buildGroups, flushExpressions } from './groups';
 import { setTextDocument } from './text';
@@ -63,7 +63,61 @@ function isControl(fx: PropertyGroup): boolean {
   return CONTROL_MN[fx.matchName] === true || fx.matchName.indexOf('Pseudo/') === 0;
 }
 
-/** Reads current control values on tagged layers so a rebuild can re-apply them (sticky controls). */
+/** Build-time default of each control, stored in the layer comment after the tag ("aec:<id>;d=<json>"). */
+function storedDefaults(L: Layer): { [name: string]: any } {
+  const c = L.comment || '';
+  const i = c.indexOf(';d=');
+  if (i < 0) return {};
+  // Format: name=v[,v...] entries separated by  (values are numbers or number arrays).
+  const out: { [name: string]: any } = {};
+  const parts = c.substring(i + 3).split('');
+  for (let k = 0; k < parts.length; k++) {
+    const eq = parts[k].lastIndexOf('=');
+    if (eq <= 0) continue;
+    const vs = parts[k].substring(eq + 1).split(',');
+    const nums: number[] = [];
+    for (let j = 0; j < vs.length; j++) nums[j] = parseFloat(vs[j]);
+    out[parts[k].substring(0, eq)] = nums.length === 1 ? nums[0] : nums;
+  }
+  return out;
+}
+
+function sameValue(a: any, b: any): boolean {
+  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) < 1e-6;
+  if (a && b && a.length !== undefined && b.length !== undefined && a.length === b.length) {
+    for (let i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > 1e-6) return false;
+    return true;
+  }
+  return a === b;
+}
+
+/** Records the code defaults of a layer's controls (called right after the build sets them). */
+function stampDefaults(L: Layer): void {
+  const fxp = L.property('ADBE Effect Parade') as PropertyGroup;
+  if (!fxp) return;
+  const d: string[] = [];
+  let any = false;
+  for (let k = 1; k <= fxp.numProperties; k++) {
+    const fx = fxp.property(k) as PropertyGroup;
+    if (!isControl(fx)) continue;
+    const p = fx.property(1) as Property;
+    if (!p || p.numKeys > 0 || p.propertyValueType === PropertyValueType.CUSTOM_VALUE) continue;
+    const v: any = p.value;
+    if (typeof v !== 'number' && !(v && v.length !== undefined)) continue;
+    const vals: string[] = [];
+    if (typeof v === 'number') vals[0] = String(v); else for (let j = 0; j < v.length; j++) vals[j] = String(v[j]);
+    d[d.length] = fx.name + '=' + vals.join(',');
+    any = true;
+  }
+  if (!any) return;
+  const tag = tagOf(L);
+  if (tag) L.comment = TAG + tag + ';d=' + d.join('');
+}
+
+/**
+ * Reads control values that were changed IN AE (they differ from the default the previous build wrote), so a
+ * rebuild keeps those tweaks (sticky controls) while untouched controls pick up new defaults from the code.
+ */
 function captureControls(comp: CompItem): { [key: string]: any } {
   const out: { [key: string]: any } = {};
   for (let i = 1; i <= comp.numLayers; i++) {
@@ -72,11 +126,13 @@ function captureControls(comp: CompItem): { [key: string]: any } {
     if (!tag) continue;
     const fxp = L.property('ADBE Effect Parade') as PropertyGroup;
     if (!fxp) continue;
+    const defaults = storedDefaults(L);
     for (let k = 1; k <= fxp.numProperties; k++) {
       const fx = fxp.property(k) as PropertyGroup;
       if (!isControl(fx)) continue;
       const p = fx.property(1) as Property;
       if (!p || p.numKeys > 0 || p.propertyValueType === PropertyValueType.CUSTOM_VALUE) continue;
+      if (defaults[fx.name] !== undefined && sameValue(defaults[fx.name], p.value)) continue; // untouched in AE
       out[tag + '|' + fx.name] = p.value;
     }
   }
@@ -139,7 +195,7 @@ function setupComp(ctx: Ctx, c: IrComp, folder: FolderItem, parts: FolderItem, r
   return comp;
 }
 
-function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Property; id: string }[]): void {
+function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Property; id: string }[], deferred: Pending): void {
   ctx.layers = {};
   const pending: Pending = { exprs: [] };
   const sizes: { [id: string]: number[] } = {};
@@ -177,10 +233,10 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
   each(c.layers, (L) => { if (L.anchorBox) anchors[L.id] = L.anchorBox; });
   const slots = c.layouts && c.layouts.length ? solveComp(ctx, c.layouts, sizes, anchors) : {};
   // Pass 4: values and keyframes.
-  each(c.layers, (L) => { ctx.cur = L.id; (ctx as any).layoutBase = slots[L.id] || null; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); });
+  each(c.layers, (L) => { ctx.cur = L.id; (ctx as any).layoutBase = slots[L.id] || null; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); fitScale(ctx, ctx.layers[L.id], comp, L); });
   (ctx as any).layoutBase = null;
   // Pass 5: expressions (all targets exist now).
-  flushExpressions(ctx, pending, exprsOut);
+  // Comp markers before expressions: expressions may read them (thisComp.marker.key("reveal")).
   if (c.markers) {
     each(c.markers, (mk) => {
       const mv = new MarkerValue(mk.comment || '');
@@ -188,6 +244,10 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
       (comp as any).markerProperty.setValueAtTime(mk.t, mv);
     });
   }
+  // Precomps are built before the main comp, but their control expressions read comp("<main>"): apply those
+  // once every comp of the build exists.
+  if (c.part) { each(pending.exprs, (x) => { deferred.exprs.push(x); }); pending.exprs = []; }
+  else flushExpressions(ctx, pending, exprsOut);
   if (c.mgt) {
     comp.motionGraphicsTemplateName = c.mgt.name;
     each(c.mgt.props, (m) => {
@@ -212,15 +272,18 @@ export function build(project: IrProject, opts: BuildOpts): any {
     const parts = ensureFolder(['ae-compose', project.scene, '_parts']);
     const assetsFolder = ensureFolder(['ae-compose', project.scene, '_assets']);
     each(project.assets || [], (a) => { ctx.cur = a.id; ctx.items[a.id] = importAsset(ctx, a, assetsFolder); });
+    const deferred: Pending = { exprs: [] };
     for (let i = 0; i < project.comps.length; i++) {
       const c = project.comps[i];
       ctx.cur = c.id;
       const comp = setupComp(ctx, c, folder, parts, opts.replace === true, saved);
       ctx.comps[c.id] = comp;
-      buildComp(ctx, c, comp, exprs);
+      buildComp(ctx, c, comp, exprs, deferred);
+      for (let li = 1; li <= comp.numLayers; li++) stampDefaults(comp.layer(li));
       if (opts.keepControls !== false && saved[c.id]) result.restoredControls += restoreControls(ctx, comp, saved[c.id]);
       result.comps.push({ id: c.id, name: comp.name, itemId: comp.id, layers: comp.numLayers });
     }
+    flushExpressions(ctx, deferred, exprs);
     each(exprs, (x) => {
       const err = x.prop.expressionError;
       if (err) result.exprErrors.push({ node: x.id, prop: x.prop.matchName, error: err });

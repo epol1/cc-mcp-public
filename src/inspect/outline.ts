@@ -74,6 +74,11 @@ function propLines(node: any, prefix: string, out: string[], depth: number): voi
   }
   if (/^ADBE Position_\d$/.test(node.m) && !node.keys && !node.expr) return; // hidden separated dims
   if (node.skipped) { out.push(`${prefix}${label}: (${node.skipped})`); return; }
+  if (node.m === 'ADBE Marker') {
+    // Layer markers: list them, or nothing when there are none.
+    if (node.markers?.length) out.push(`${prefix}Markers: ${node.markers.map((m: any) => `${fmt(m.t)}s${m.comment ? ` "${m.comment}"` : ''}${m.dur ? ` (${fmt(m.dur)}s)` : ''}`).join(', ')}`);
+    return;
+  }
   let s = `${prefix}${label}: `;
   if (node.keys) s += describeKeys(node.keys);
   else s += fv(node.v);

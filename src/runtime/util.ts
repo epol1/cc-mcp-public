@@ -58,3 +58,13 @@ export function startsWith(s: string, p: string): boolean {
 export function clamp(x: number, lo: number, hi: number): number {
   return x < lo ? lo : x > hi ? hi : x;
 }
+
+/**
+ * Message of a caught error. Never write `'text' + e` in the runtime: in AE's ExtendScript, concatenating an
+ * Error object throws "Object of type Error found where a Number, Array, or Property is needed".
+ */
+export function errText(e: any): string {
+  if (e === null || e === undefined) return String(e);
+  if (typeof e === 'object' && e.message !== undefined) return String(e.message);
+  return String(e);
+}

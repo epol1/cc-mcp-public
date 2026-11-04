@@ -2,7 +2,7 @@
 // Paths are "/"-separated segments relative to a layer (or group): matchName, display name, or "#<index>".
 import type { Ctx } from './ctx';
 import { fail, warn } from './ctx';
-import { isArray } from './util';
+import { errText, isArray } from './util';
 import { isCrashy, isOpaqueValueType } from './safety';
 
 export function child(g: PropertyGroup | Layer, seg: string): PropertyBase | null {
@@ -114,7 +114,7 @@ export function setStatic(ctx: Ctx, prop: Property, v: any): void {
   } catch (e) {
     // AE hides some properties depending on renderer/light/layer state; report, don't abort the build.
     if (String(e).indexOf('hidden') >= 0) { warn(ctx, prop.name + ' (' + prop.matchName + ') is hidden in the current renderer/state and was not set'); return; }
-    fail(ctx, 'cannot set ' + prop.name + ' (' + prop.matchName + '): ' + e);
+    fail(ctx, 'cannot set ' + prop.name + ' (' + prop.matchName + '): ' + errText(e));
   }
 }
 

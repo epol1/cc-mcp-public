@@ -46,13 +46,25 @@ function isSpatial(prop: Property): boolean {
   return vt === PropertyValueType.TwoD_SPATIAL || vt === PropertyValueType.ThreeD_SPATIAL;
 }
 
-export function applyKeys(ctx: Ctx, prop: Property, keys: IrKey[]): void {
-  for (let k = prop.numKeys; k >= 1; k--) prop.removeKey(k);
-  if (!keys.length) return;
+/**
+ * Replaces a property's keys. `addFirst` sets the new keys before removing stale ones, so the property is never
+ * empty in between: required for Time Remap (removing its last key switches remapping off and hides it).
+ */
+export function applyKeys(ctx: Ctx, prop: Property, keys: IrKey[], addFirst?: boolean): void {
+  if (!addFirst) for (let k = prop.numKeys; k >= 1; k--) prop.removeKey(k);
+  if (!keys.length) { for (let k = prop.numKeys; k >= 1; k--) prop.removeKey(k); return; }
   const times = map(keys, (k) => k.t);
   const values = map(keys, (k) => coerce(ctx, prop, k.v));
   if (keys.length === 1) prop.setValueAtTime(times[0], values[0]);
   else prop.setValuesAtTimes(times, values);
+  if (addFirst) {
+    for (let k = prop.numKeys; k >= 1; k--) {
+      const t = prop.keyTime(k);
+      let keep = false;
+      for (let i = 0; i < times.length; i++) if (Math.abs(times[i] - t) < 1e-4) { keep = true; break; }
+      if (!keep) prop.removeKey(k);
+    }
+  }
   const dims = easeDims(prop);
   const spatial = isSpatial(prop);
   const isText = prop.propertyValueType === PropertyValueType.TEXT_DOCUMENT;
