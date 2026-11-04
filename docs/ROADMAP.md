@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.009**: 66.95% weighted, 98/154 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.010**: 73.20% weighted, 115/162 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -14,7 +14,7 @@
 - [x] Status dashboard + release flow
 - [x] README status image (SVG/PNG)
 
-## Bridge & Execution (85%)
+## Bridge & Execution (86%)
 - [x] CEP extension (hot reload) _(w2)_
 - [x] Eval wrapping, structured errors
 - [x] Backend interface (TS client)
@@ -25,6 +25,7 @@
 - [ ] Large result spill to file
 - [x] aec doctor
 - [x] Non-blocking watchdog (no UIA on busy AE)
+- [x] Auto-cancel dialogs opened by probes
 
 ## ES3 Runtime Core (100%)
 - [x] Babel/Rollup ES3 build _(w2)_
@@ -44,7 +45,7 @@
 - [x] Stable ids + source locations
 - [x] Units/time/color normalization
 
-## TSX DSL (83%)
+## TSX DSL (85%)
 - [x] JSX runtime (jsxDEV sources)
 - [x] Scene loader (esbuild)
 - [x] Composition/Sequence/Series _(w2)_
@@ -54,6 +55,7 @@
 - [x] Shape primitives _(w2)_
 - [x] Effect/Mask/TrackMatte
 - [ ] Brand tokens/theme helpers
+- [x] Exits anchored to layer end (ripple-friendly)
 
 ## Animation & Easing (94%)
 - [x] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
@@ -85,21 +87,21 @@
 - [~] Masks + track mattes
 - [x] SVG path parser (M/L/C/S/Q/T/A/Z)
 
-## Effects & Catalog (64%)
+## Effects & Catalog (100%)
 - [x] Effects + typed params
-- [~] Discovery (vanilla filter)
-- [~] Param harvest (ranges, popups) _(w2)_
-- [ ] Generated TS types
+- [x] Discovery (vanilla filter)
+- [x] Param harvest (ranges, popups) _(w2)_
+- [x] Generated TS types
 - [x] Fuzzy name resolution
 - [x] describe_effect with popup labels
 
-## Controls & Variants (63%)
+## Controls & Variants (83%)
 - [x] Controls null, all control types
 - [x] Static value linking
 - [~] Retimable-keys rig _(w3)_
-- [ ] Expression rigs (spring/orbit) _(w2)_
+- [x] Expression rigs (spring/orbit) _(w2)_
 - [~] Essential Graphics
-- [~] Sticky controls on rebuild
+- [x] Sticky controls on rebuild
 - [x] Variants _(w2)_
 - [x] Compare comp
 
@@ -110,7 +112,7 @@
 - [x] Safe areas + aspect presets
 - [x] Solver in runtime + DSL containers _(w3)_
 
-## 3D System (74%)
+## 3D System (85%)
 - [x] 3D layers + transforms
 - [x] Renderer control + feature table _(w2)_
 - [x] Cameras + DOF _(w2)_
@@ -119,7 +121,7 @@
 - [x] Material options
 - [x] Extrusion + bevel
 - [~] 3D models + animations _(w2)_
-- [ ] 3D layout helpers _(w2)_
+- [x] 3D layout helpers _(w2)_
 - [x] Correct renderer IDs from AE strings
 
 ## Particles (84%)
@@ -134,7 +136,7 @@
 - [x] Producer unit + camera calibration
 - [ ] Multi-color confetti (layered)
 
-## Inspector (83%)
+## Inspector (86%)
 - [x] Project/comp/layer walk _(w2)_
 - [x] Keys, eases, tangents _(w2)_
 - [x] Effect trees
@@ -142,8 +144,10 @@
 - [x] 3D + particles
 - [ ] .aepx gradient parse _(w2)_
 - [x] Compact agent outline _(w2)_
+- [x] Project media search + preview_item
+- [x] Scenes (named Sequences → comp marker ranges)
 
-## Edit Operations (96%)
+## Edit Operations (97%)
 - [x] Property/keys/easing ops _(w2)_
 - [x] Curve reshaping _(w2)_
 - [x] Effect add/remove/reorder/params
@@ -152,6 +156,10 @@
 - [~] 3D + particle edits
 - [x] addControls/variant/precompose _(w2)_
 - [x] One-step undo verified
+- [x] Ripple edits (insert/remove/stretch time, scenes, quiet-point holds) _(w3)_
+- [x] Place project media / files as layers
+- [x] Chroma key op (Keylight + Spill, auto screen color) _(w2)_
+- [x] Atomic edit batches (rollback on failure)
 
 ## Visual Feedback (71%)
 - [x] Snapshot (+32bpc fix)
@@ -160,16 +168,16 @@
 - [ ] Lint checks _(w2)_
 - [x] Auto-attach to results
 
-## Interfaces (67%)
+## Interfaces (78%)
 - [x] CLI (aec) _(w2)_
-- [x] MCP server (15 tools) _(w3)_
+- [x] MCP server (18 tools) _(w3)_
 - [~] watch mode
-- [ ] Claude skill + CLAUDE.md _(w2)_
+- [~] Claude skill + CLAUDE.md _(w2)_
 - [~] Claude Code registration
 
-## Testing (8%)
-- [~] Unit tests _(w2)_
-- [ ] Codegen snapshots + ES3 parse
+## Testing (25%)
+- [x] Unit tests _(w2)_
+- [x] Codegen snapshots + ES3 parse
 - [ ] Inspector round-trip (real AE) _(w3)_
 - [ ] Edit-op tests + undo _(w2)_
 - [ ] Seed determinism
@@ -192,9 +200,9 @@
 - [ ] 13 Ambient 3D particles _(w2)_
 - [ ] 14 Particle Playground _(w2)_
 
-## Docs (0%)
+## Docs (40%)
 - [ ] README + quickstart
-- [ ] DSL reference _(w2)_
+- [x] DSL reference _(w2)_
 - [ ] AGENT_GUIDE.md
 - [ ] REPORT.md
 

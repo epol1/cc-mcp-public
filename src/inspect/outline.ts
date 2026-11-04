@@ -89,6 +89,10 @@ export function outlineComp(j: any): string {
   if (!j.ok) return `error: ${j.error}`;
   const c = j.comp;
   const lines = [`Comp "${c.name}" (item ${c.itemId}${c.id ? `, aec:${c.id}` : ''}) ${c.w}×${c.h} ${fmt(c.fps)}fps ${fmt(c.dur)}s, ${c.numLayers} layers, renderer ${({ 'ADBE Calder': 'Advanced 3D', 'ADBE Ernst': 'Cinema 4D', 'ADBE Advanced 3d': 'Classic 3D' } as Record<string, string>)[c.renderer] ?? c.renderer}${c.motionBlur ? ', motion blur' : ''}${c.mgt ? `, EG "${c.mgt}"` : ''}`];
+  const scenes = (c.markers ?? []).filter((m: any) => m.dur > 0);
+  const cues = (c.markers ?? []).filter((m: any) => !(m.dur > 0));
+  if (scenes.length) lines.push(`Scenes (ripple targets): ${scenes.map((m: any) => `"${m.comment}" ${fmt(m.t)}–${fmt(m.t + m.dur)}s`).join(', ')}`);
+  if (cues.length) lines.push(`Markers: ${cues.map((m: any) => `${fmt(m.t)}s${m.comment ? ` "${m.comment}"` : ''}`).join(', ')}`);
   for (const L of j.layers) {
     const flags = [L.threeD && '3D', L.enabled === false && 'hidden', L.locked && 'locked', L.solo && 'solo', L.motionBlur && 'mb', L.blend && `blend ${L.blend}`, L.isMatte && 'is matte', L.matte && `matte←"${L.matte.layer}"`, L.parent && `parent "${L.parent.name}"`].filter(Boolean).join(', ');
     lines.push(`${L.index}. [${L.type}] "${L.name}"${L.id ? ` aec:${L.id}` : ''} ${fmt(L.in)}–${fmt(L.out)}s${flags ? ` (${flags})` : ''}${L.source && !['text', 'shape', 'camera', 'light', 'null'].includes(L.type) ? ` src "${L.source.name}"${L.source.w ? ` ${L.source.w}×${L.source.h}` : ''}` : ''}`);

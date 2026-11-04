@@ -30,7 +30,7 @@ const params = () => {
 const HELP = `aec — ae-compose CLI (native After Effects from TSX)
 
   aec doctor                         check the whole environment
-  aec build <scene.tsx> [--no-variants] [--variant A] [--version 3] [--frames 8] [--param k=v,..]
+  aec build <scene.tsx> [--no-variants] [--variant A] [--version 3] [--frames 8] [--param k=v,..] [--reset-controls]
   aec watch <scene.tsx>              rebuild in place on save (keeps live control values)
   aec inspect [comp] [--full] [--project] [--layers 1,2]
   aec edit <ops.json> [--comp name]  apply agent edit ops (one undo step)
@@ -54,7 +54,7 @@ async function main() {
     }
     case 'build': {
       if (!pos[0]) throw new Error('usage: aec build <scene.tsx>');
-      const r = await buildScene({ file: pos[0] }, { variants: flags['no-variants'] ? false : flags.variant ? String(flags.variant).split(',') : true, version: flags.version ? +flags.version : undefined, frames: flags.frames !== undefined ? +flags.frames : 8, params: params() });
+      const r = await buildScene({ file: pos[0] }, { variants: flags['no-variants'] ? false : flags.variant ? String(flags.variant).split(',') : true, version: flags.version ? +flags.version : undefined, frames: flags.frames !== undefined ? +flags.frames : 8, params: params(), resetControls: !!flags['reset-controls'] });
       out(`${r.ok ? '✔' : '✘'} ${r.scene}: ${r.comps.map((c) => `${c.name} (${c.layers} layers)`).join(', ')} in ${r.ms} ms${r.error ? `\n  error: ${r.error}` : ''}${r.warnings.length ? '\n  warnings:\n    ' + r.warnings.join('\n    ') : ''}${r.exprErrors.length ? '\n  expression errors:\n    ' + r.exprErrors.map((e) => `${e.node} ${e.prop}${e.src ? ` (${e.src})` : ''}: ${e.error}`).join('\n    ') : ''}${r.contactSheets.length ? `\n  contact sheet: ${r.contactSheets.join(', ')}` : ''}`, r);
       process.exitCode = r.ok ? 0 : 1;
       break;

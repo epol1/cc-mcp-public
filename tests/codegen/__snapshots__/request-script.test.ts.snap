@@ -1,0 +1,354 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`IR snapshots > small scene IR 1`] = `
+{
+  "assets": [],
+  "comps": [
+    {
+      "bg": [
+        0.062745,
+        0.070588,
+        0.086275,
+      ],
+      "dur": 3,
+      "fps": 30,
+      "h": 720,
+      "id": "snap",
+      "layers": [
+        {
+          "enabled": false,
+          "groups": [
+            {
+              "at": "ADBE Effect Parade",
+              "items": [
+                {
+                  "mn": "ADBE Color Control",
+                  "name": "Accent",
+                  "props": [
+                    {
+                      "p": "#1",
+                      "v": [
+                        0.27451,
+                        0.513725,
+                        0.768627,
+                        1,
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          "id": "snap.controls",
+          "label": 2,
+          "name": "Controls",
+          "shy": false,
+          "type": "null",
+        },
+        {
+          "anchorBox": [
+            0.5,
+            0.5,
+          ],
+          "groups": [
+            {
+              "at": "ADBE Text Properties/ADBE Text Animators",
+              "items": [
+                {
+                  "kids": [
+                    {
+                      "at": "ADBE Text Animator Properties",
+                      "items": [
+                        {
+                          "mn": "ADBE Text Position 3D",
+                          "set": {
+                            "v": [
+                              0,
+                              40,
+                              0,
+                            ],
+                          },
+                        },
+                        {
+                          "mn": "ADBE Text Opacity",
+                          "set": {
+                            "v": 0,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      "at": "ADBE Text Selectors",
+                      "items": [
+                        {
+                          "mn": "ADBE Text Expressible Selector",
+                          "props": [
+                            {
+                              "p": "ADBE Text Range Type2",
+                              "v": 3,
+                            },
+                            {
+                              "expr": "function bz(x1, y1, x2, y2, x) { if (x <= 0) return 0; if (x >= 1) return 1; var u = x, i, cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by; for (i = 0; i < 8; i++) { var xu = ((ax * u + bx) * u + cx) * u - x, d = (3 * ax * u + 2 * bx) * u + cx; if (Math.abs(xu) < 1e-6 || Math.abs(d) < 1e-6) break; u -= xu / d; } var lo = 0, hi = 1; if (Math.abs(((ax * u + bx) * u + cx) * u - x) > 1e-4) { for (i = 0; i < 30; i++) { u = (lo + hi) / 2; if (((ax * u + bx) * u + cx) * u < x) lo = u; else hi = u; } } return ((ay * u + by) * u + cy) * u; }
+// ae-compose: per-word reveal; each/duration/delay may be live controls
+var each = 0.06, dur = Math.max(0.5, 0.0001), delay = 0;
+var i = textIndex - 1;
+var t = time - inPoint - 0.000000 - delay - i * each;
+var p = bz(0.25, 1, 0.5, 1, t / dur);
+var a = (1 - p) * 100;
+[a, a, a];",
+                              "p": "ADBE Text Expressible Amount",
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                  "mn": "ADBE Text Animator",
+                  "name": "Reveal (words)",
+                },
+              ],
+            },
+          ],
+          "id": "title",
+          "in": 0,
+          "name": "Hello Snapshot",
+          "out": 3,
+          "props": [
+            {
+              "p": "ADBE Transform Group/ADBE Position",
+              "v": [
+                640,
+                320,
+              ],
+            },
+            {
+              "keys": [
+                {
+                  "ie": [
+                    {
+                      "influence": 16.666667,
+                      "speed": -0,
+                    },
+                  ],
+                  "oe": [
+                    {
+                      "influence": 33.333333,
+                      "speed": -0,
+                    },
+                  ],
+                  "t": 2.5,
+                  "v": 100,
+                },
+                {
+                  "ie": [
+                    {
+                      "influence": 33.333333,
+                      "speed": -600,
+                    },
+                  ],
+                  "oe": [
+                    {
+                      "influence": 16.666667,
+                      "speed": -0,
+                    },
+                  ],
+                  "t": 3,
+                  "v": 0,
+                },
+              ],
+              "p": "ADBE Transform Group/ADBE Opacity",
+            },
+          ],
+          "text": {
+            "fill": [
+              1,
+              1,
+              1,
+            ],
+            "font": "Inter-Bold",
+            "justify": "center",
+            "leading": "auto",
+            "size": 96,
+            "text": "Hello Snapshot",
+            "tracking": 0,
+          },
+          "type": "text",
+        },
+        {
+          "groups": [
+            {
+              "at": "ADBE Root Vectors Group",
+              "items": [
+                {
+                  "mn": "ADBE Vector Shape - Rect",
+                  "props": [
+                    {
+                      "p": "ADBE Vector Rect Size",
+                      "v": [
+                        400,
+                        8,
+                      ],
+                    },
+                    {
+                      "p": "ADBE Vector Rect Roundness",
+                      "v": 4,
+                    },
+                  ],
+                },
+                {
+                  "mn": "ADBE Vector Graphic - Fill",
+                  "props": [
+                    {
+                      "expr": "thisComp.layer("Controls").effect("Accent")(1)",
+                      "p": "ADBE Vector Fill Color",
+                      "v": [
+                        0.27451,
+                        0.513725,
+                        0.768627,
+                        1,
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          "id": "bar",
+          "in": 0,
+          "name": "Shape",
+          "out": 3,
+          "props": [
+            {
+              "p": "ADBE Transform Group/ADBE Position",
+              "v": [
+                640,
+                420,
+              ],
+            },
+            {
+              "keys": [
+                {
+                  "ie": [
+                    {
+                      "influence": 16.666667,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 16.666667,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 16.666667,
+                      "speed": 0,
+                    },
+                  ],
+                  "oe": [
+                    {
+                      "influence": 33.333333,
+                      "speed": 600,
+                    },
+                    {
+                      "influence": 33.333333,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 33.333333,
+                      "speed": 0,
+                    },
+                  ],
+                  "t": 0,
+                  "v": [
+                    0,
+                    100,
+                    100,
+                  ],
+                },
+                {
+                  "ie": [
+                    {
+                      "influence": 33.333333,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 33.333333,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 33.333333,
+                      "speed": 0,
+                    },
+                  ],
+                  "oe": [
+                    {
+                      "influence": 16.666667,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 16.666667,
+                      "speed": 0,
+                    },
+                    {
+                      "influence": 16.666667,
+                      "speed": 0,
+                    },
+                  ],
+                  "t": 0.5,
+                  "v": [
+                    100,
+                    100,
+                    100,
+                  ],
+                },
+              ],
+              "p": "ADBE Transform Group/ADBE Scale",
+            },
+          ],
+          "type": "shape",
+        },
+        {
+          "id": "bg",
+          "in": 0,
+          "name": "BG",
+          "out": 3,
+          "props": [
+            {
+              "p": "ADBE Transform Group/ADBE Position",
+              "v": [
+                640,
+                360,
+              ],
+            },
+          ],
+          "solid": {
+            "color": [
+              0.062745,
+              0.070588,
+              0.086275,
+            ],
+            "h": 720,
+            "w": 1280,
+          },
+          "type": "solid",
+        },
+      ],
+      "mgt": {
+        "name": "Snap",
+        "props": [
+          {
+            "layer": "snap.controls",
+            "name": "Accent",
+            "p": "ADBE Effect Parade/Accent/#1",
+          },
+        ],
+      },
+      "name": "Snap_v001",
+      "w": 1280,
+    },
+  ],
+  "irVersion": 1,
+  "main": "snap",
+  "scene": "Snap",
+}
+`;
+
+exports[`IR snapshots > small scene request payload 1`] = `"{"irVersion":1,"scene":"Snap","assets":[],"comps":[{"id":"snap-b","name":"Snap_v004_B","w":1280,"h":720,"fps":30,"dur":3,"bg":[0.062745,0.070588,0.086275],"layers":[{"id":"snap-b.controls","type":"null","name":"Controls","enabled":false,"shy":false,"label":2,"groups":[{"at":"ADBE Effect Parade","items":[{"mn":"ADBE Color Control","name":"Accent","props":[{"p":"#1","v":[0.27451,0.513725,0.768627,1]}]}]}]},{"id":"title","type":"text","name":"Hello Snapshot","in":0,"out":3,"text":{"text":"Hello Snapshot","font":"Inter-Bold","size":96,"fill":[1,1,1],"tracking":0,"leading":"auto","justify":"center"},"anchorBox":[0.5,0.5],"groups":[{"at":"ADBE Text Properties/ADBE Text Animators","items":[{"mn":"ADBE Text Animator","name":"Reveal (words)","kids":[{"at":"ADBE Text Animator Properties","items":[{"mn":"ADBE Text Position 3D","set":{"v":[0,40,0]}},{"mn":"ADBE Text Opacity","set":{"v":0}}]},{"at":"ADBE Text Selectors","items":[{"mn":"ADBE Text Expressible Selector","props":[{"p":"ADBE Text Range Type2","v":3},{"p":"ADBE Text Expressible Amount","expr":"function bz(x1, y1, x2, y2, x) { if (x <= 0) return 0; if (x >= 1) return 1; var u = x, i, cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by; for (i = 0; i < 8; i++) { var xu = ((ax * u + bx) * u + cx) * u - x, d = (3 * ax * u + 2 * bx) * u + cx; if (Math.abs(xu) < 1e-6 || Math.abs(d) < 1e-6) break; u -= xu / d; } var lo = 0, hi = 1; if (Math.abs(((ax * u + bx) * u + cx) * u - x) > 1e-4) { for (i = 0; i < 30; i++) { u = (lo + hi) / 2; if (((ax * u + bx) * u + cx) * u < x) lo = u; else hi = u; } } return ((ay * u + by) * u + cy) * u; }\\n// ae-compose: per-word reveal; each/duration/delay may be live controls\\nvar each = 0.06, dur = Math.max(0.5, 0.0001), delay = 0;\\nvar i = textIndex - 1;\\nvar t = time - inPoint - 0.000000 - delay - i * each;\\nvar p = bz(0.25, 1, 0.5, 1, t / dur);\\nvar a = (1 - p) * 100;\\n[a, a, a];"}]}]}]}]}],"props":[{"p":"ADBE Transform Group/ADBE Position","v":[640,320]},{"p":"ADBE Transform Group/ADBE Opacity","keys":[{"t":2.5,"v":100,"ie":[{"speed":0,"influence":16.666667}],"oe":[{"speed":0,"influence":33.333333}]},{"t":3,"v":0,"ie":[{"speed":-600,"influence":33.333333}],"oe":[{"speed":0,"influence":16.666667}]}]}]},{"id":"bar","type":"shape","name":"Shape","in":0,"out":3,"groups":[{"at":"ADBE Root Vectors Group","items":[{"mn":"ADBE Vector Shape - Rect","props":[{"p":"ADBE Vector Rect Size","v":[400,8]},{"p":"ADBE Vector Rect Roundness","v":4}]},{"mn":"ADBE Vector Graphic - Fill","props":[{"p":"ADBE Vector Fill Color","v":[0.27451,0.513725,0.768627,1],"expr":"thisComp.layer(\\"Controls\\").effect(\\"Accent\\")(1)"}]}]}],"props":[{"p":"ADBE Transform Group/ADBE Position","v":[640,420]},{"p":"ADBE Transform Group/ADBE Scale","keys":[{"t":0,"v":[0,100,100],"ie":[{"speed":0,"influence":16.666667},{"speed":0,"influence":16.666667},{"speed":0,"influence":16.666667}],"oe":[{"speed":600,"influence":33.333333},{"speed":0,"influence":33.333333},{"speed":0,"influence":33.333333}]},{"t":0.5,"v":[100,100,100],"ie":[{"speed":0,"influence":33.333333},{"speed":0,"influence":33.333333},{"speed":0,"influence":33.333333}],"oe":[{"speed":0,"influence":16.666667},{"speed":0,"influence":16.666667},{"speed":0,"influence":16.666667}]}]}]},{"id":"bg","type":"solid","name":"BG","in":0,"out":3,"solid":{"color":[0.062745,0.070588,0.086275],"w":1280,"h":720},"props":[{"p":"ADBE Transform Group/ADBE Position","v":[640,360]}]}],"mgt":{"name":"Snap","props":[{"layer":"snap-b.controls","p":"ADBE Effect Parade/Accent/#1","name":"Accent"}]}}],"main":"snap-b"}"`;

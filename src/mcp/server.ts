@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { buildScene, inspect, applyEdits, contactSheet, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo } from '../api/index.ts';
+import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo } from '../api/index.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
 
@@ -37,9 +37,10 @@ server.registerTool('build_scene', {
     variants: z.union([z.boolean(), z.array(z.string())]).optional().describe('false = only the default build; or a list of variant keys'),
     frames: z.number().int().min(0).max(24).optional().describe('contact sheet frames (default 8; 0 = none)'),
     times: z.array(z.number()).optional().describe('extra exact snapshot times (seconds)'),
+    resetControls: z.boolean().optional().describe('rebuild with the control values written in the code (default: keep values tweaked in AE)'),
   },
 }, async (a) => wrap(async () => {
-  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times });
+  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls });
   const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.scene} → ${r.comps.map((c) => `"${c.name}" (${c.layers} layers)`).join(', ')} in ${r.ms} ms`];
   if (r.error) lines.push(`error: ${r.error}`);
   if (r.warnings.length) lines.push('warnings:', ...r.warnings.map((w) => `- ${w}`));
@@ -58,13 +59,30 @@ server.registerTool('inspect_project', {
 }, async () => wrap(async () => [text((await inspect({ project: true })).outline)]));
 
 server.registerTool('list_project_items', {
-  title: 'List project items (alias)',
-  description: 'Same as inspect_project, optionally filtered by type ("Composition", "Footage", "Folder") or name substring.',
-  inputSchema: { type: z.string().optional(), name: z.string().optional() },
+  title: 'Find project media',
+  description: 'Search the open project\'s Project panel: comps, footage (video/stills/audio), solids, folders, with size, fps, duration, alpha, file path, folder and how often each is used. Filter by type ("Composition", "Footage", "Folder"), kind ("video", "still", "audio", "comp", "solid") or a name/file substring. Pair with preview_item to look at a clip before placing it (apply_edits {op:"place"}).',
+  inputSchema: { type: z.string().optional(), kind: z.enum(['video', 'still', 'audio', 'comp', 'solid']).optional(), name: z.string().optional().describe('substring of the item name or file path') },
 }, async (a) => wrap(async () => {
   const r = await inspect({ project: true });
-  const items = r.json.items.filter((it: any) => (!a.type || it.type === a.type) && (!a.name || String(it.name).toLowerCase().includes(a.name.toLowerCase())));
-  return [text(items.map((it: any) => `${it.type} "${it.name}" #${it.id}${it.w ? ` ${it.w}×${it.h}` : ''}${it.dur ? ` ${it.dur}s` : ''}${it.aec ? ` aec:${it.aec}` : ''}`).join('\n') || 'no matching items')];
+  const kindOf = (it: any) => (it.type === 'Composition' ? 'comp' : it.solid ? 'solid' : it.audioOnly ? 'audio' : it.still ? 'still' : it.type === 'Footage' ? 'video' : it.type.toLowerCase());
+  const q = a.name?.toLowerCase();
+  const items = r.json.items.filter((it: any) => (!a.type || it.type === a.type) && (!a.kind || kindOf(it) === a.kind) && (!q || String(it.name).toLowerCase().includes(q) || String(it.file ?? '').toLowerCase().includes(q)));
+  const line = (it: any) => {
+    const k = kindOf(it);
+    const bits = [`${k} "${it.name}" #${it.id}`, it.w ? `${it.w}×${it.h}` : '', it.fps ? `${+it.fps.toFixed(3)}fps` : '', it.dur && k !== 'still' ? `${+it.dur.toFixed(2)}s` : '', it.alpha ? 'alpha' : '', it.audio && k !== 'audio' ? 'audio' : '', it.missing ? 'MISSING' : '', it.folder ? `[${it.folder}]` : '', it.usedIn !== undefined ? `used ${it.usedIn}×` : '', it.aec ? `aec:${it.aec}` : '', it.file ? `← ${it.file}` : ''];
+    return bits.filter(Boolean).join(' ');
+  };
+  return [text(items.map(line).join('\n') || 'no matching items')];
+}));
+
+server.registerTool('preview_item', {
+  title: 'Look at a project item',
+  description: 'Contact sheet of any project item — footage clip, still or comp — without adding it anywhere (e.g. to find the greenscreen clip or the right background). Item: name, unique name/file substring, or item id from list_project_items.',
+  inputSchema: { item: z.union([z.string(), z.number()]), frames: z.number().int().min(1).max(16).optional().describe('default 6 (stills: 1)'), times: z.array(z.number()).optional().describe('exact item-local times (seconds)') },
+}, async (a) => wrap(async () => {
+  const r = await previewItem(a.item, a.frames ?? 6, a.times);
+  const i = r.info;
+  return [text(`"${i.item ?? i.comp}" #${i.id ?? ''} ${i.w}×${i.h}${i.still ? ' still' : ` ${i.fps}fps ${i.dur}s`} → ${r.sheet}`), await image(r.sheet)];
 }));
 
 server.registerTool('inspect_comp', {
@@ -85,7 +103,7 @@ server.registerTool('inspect_comp', {
 
 server.registerTool('apply_edits', {
   title: 'Edit a comp (batched, one undo step)',
-  description: 'Apply a batch of edit ops to an existing comp (generated or hand-built) in ONE undo group, then return what changed plus a contact sheet. Ops (see SKILL.md): set {layer, prop, value|keys|expr}; ease {layer, prop, easing: "easeOutBack"|[x1,y1,x2,y2]|"bounce"|"elastic", keys?}; easeKey {layer, prop, key, side, speed?, influence?}; interpolation; retime {layer, shift?, scale?}; layerTiming; addEffect {layer, effect: "Glow", params}; setEffect {layer, effect, params, enabled?}; removeEffect; moveEffect; text {layer, text?, font?, size?, color?}; path {layer, prop, d|points}; layer {layer, set:{parent, blend, matte, threeD, index...}}; addLayer {spec: IR layer}; removeLayer; duplicateLayer; comp {set:{renderer, bg, duration...}}; precompose {layers, name}; duplicateComp {name}; addControls {layer, prop, delay?, speed?}. Layers are aec ids, names or 1-based indices; props are friendly names (position, x, y, scale, rotation, opacity, anchor) or AE paths ("Effects/Glow/Glow Radius").',
+  description: 'Apply a batch of edit ops to an existing comp (generated or hand-built) in ONE undo group, then return what changed plus a contact sheet. Ops (see SKILL.md): set {layer, prop, value|keys|expr}; ease {layer, prop, easing: "easeOutBack"|[x1,y1,x2,y2]|"bounce"|"elastic", keys?}; easeKey {layer, prop, key, side, speed?, influence?}; interpolation; retime {layer, shift?, scale?}; layerTiming; addEffect {layer, effect: "Glow", params}; setEffect {layer, effect, params, enabled?}; removeEffect; moveEffect; text {layer, text?, font?, size?, color?}; path {layer, prop, d|points}; layer {layer, set:{parent, blend, matte, threeD, index...}}; addLayer {spec: IR layer}; removeLayer; duplicateLayer; comp {set:{renderer, bg, duration...}}; precompose {layers, name}; duplicateComp {name}; addControls {layer, prop, delay?, speed?}; place {item | file, below?, above?, start?, fit?} — add project media (list_project_items) as a layer, e.g. a background below a keyed subject; key {layer, color?: "auto", strength?} — chroma key (Keylight + Advanced Spill Suppressor, screen color sampled automatically; cleanup: true adds Key Cleaner for hair/soft edges); ripple {at, by} | {scene: "Beat 2" | {at: "1:02"}, by | scale | duration} | {span: [a, b], scale | by} — ripple edit: adds/removes/stretches time and shifts everything after it (layers, keys, markers, comp length, precomps), e.g. "make the scene at 1:02 slower so the text can be read" = {op: "ripple", scene: {at: "1:02"}, by: 1.5} (hold added at its quietest moment). Layers are aec ids, names or 1-based indices; props are friendly names (position, x, y, scale, rotation, opacity, anchor) or AE paths ("Effects/Glow/Glow Radius").',
   inputSchema: {
     comp: z.union([z.string(), z.number()]).optional(),
     ops: z.array(z.record(z.string(), z.any())).min(1),

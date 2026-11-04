@@ -117,6 +117,12 @@ export interface TextUnitsAnim {
   seed?: number;
   /** "in" (default) animates from → rest; "out" animates rest → from starting at `delay`. */
   direction?: 'in' | 'out';
+  /**
+   * What `delay` counts from: "start" (default) = the layer's in point; "end" = BEFORE the layer's out point,
+   * e.g. an exit with { direction: 'out', anchor: 'end', delay: 0.6 } starts 0.6 s before the layer ends and
+   * follows the end when a Sequence gets longer or a ripple edit moves it.
+   */
+  anchor?: 'start' | 'end';
   name?: string;
 }
 

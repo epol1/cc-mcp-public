@@ -123,6 +123,8 @@ export interface TextProps extends LayerProps {
   runs?: TextStyleRun[];
   /** The text (alternatively as JSX children). */
   text?: string;
+  /** Expose this text in Essential Graphics (editable in the EG panel / Premiere); true = layer name. */
+  eg?: boolean | string;
   /** Animate each letter in 3D (needed for rotationX/Y text animation). */
   perCharacter3D?: boolean;
 }
@@ -296,5 +298,5 @@ export interface MotionBlurProps { mode?: 'force' | 'pixel'; samples?: number; s
  * Adjustment layer that forces motion blur on everything below it (CC Force Motion Blur by default,
  * or Pixel Motion Blur). Use when layer motion blur has no effect (particles, effects, Advanced 3D comps).
  */
-export const MotionBlur = (p: MotionBlurProps) => ({ $$aec: 'element', type: Adjustment, props: { name: p.name ?? 'Force Motion Blur', id: p.id, from: p.from, duration: p.duration, motionBlur: { mode: p.mode ?? 'force', samples: p.samples, shutterAngle: p.shutterAngle, shutterPhase: p.shutterPhase } } });
+export const MotionBlur = (p: MotionBlurProps) => ({ $$aec: 'element' as const, type: Adjustment, props: { name: p.name ?? 'Force Motion Blur', id: p.id, from: p.from, duration: p.duration, motionBlur: { mode: p.mode ?? 'force', samples: p.samples, shutterAngle: p.shutterAngle, shutterPhase: p.shutterPhase } } });
 (MotionBlur as any).displayName = 'MotionBlur';

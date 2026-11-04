@@ -36,8 +36,16 @@ export function curveKnots(curve: EasingCurve, T: number, fps: number, tolNorm: 
     const seed = curve.knots.map((k) => ({ t: k.t * T, p: k.p, dl: k.dl / T, dr: k.dr / T }));
     return bake(fn, T, { fps, tol: tolNorm, seed, frameSnap: false });
   }
-  const knots = bake(fn, T, { fps, tol: tolNorm });
-  // Curves that settle asymptotically (springs) end on the exact target, at rest, so nothing is left at 99.6 %.
+  let knots = bake(fn, T, { fps, tol: tolNorm });
+  // Curves that settle asymptotically (springs) must end on the exact target, at rest, so nothing is left at
+  // 99.6 %. Snapping a key that is still visibly short would bend the last segment off the curve, so first run
+  // the curve on (whole frames) until the remaining distance is within tolerance, then snap.
+  if ((curve as any).asymptotic && Math.abs(knots[knots.length - 1].p - 1) > tolNorm) {
+    let T2 = T;
+    const step = Math.max(1 / fps, Math.ceil((T * 0.05) * fps) / fps);
+    for (let i = 0; i < 200 && (Math.abs(fn(T2) - 1) > tolNorm * 0.5 || Math.abs(fn(T2 - 1 / fps) - 1) > tolNorm * 0.5); i++) T2 += step;
+    knots = bake(fn, T2, { fps, tol: tolNorm });
+  }
   const last = knots[knots.length - 1];
   if (Math.abs(last.p - 1) < 0.02) { last.p = 1; last.dl = 0; last.dr = 0; }
   return knots;

@@ -8,6 +8,40 @@ import { parseSvgPath } from '../shared/svgpath.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
 import { curveKnots, knotsToKeys } from '../compile/keys.ts';
 import { callRuntime } from '../bridge/index.ts';
+import { sampleScreenColor } from '../visual/keycolor.ts';
+import type { ScreenSample } from '../visual/keycolor.ts';
+import os from 'node:os';
+import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+
+const toHex = (c: number[]) => '#' + c.map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
+
+/** Samples the key color from a project item (middle frame) or a file on disk (images directly, videos via ffmpeg). */
+async function sampleSource(item?: string | number, file?: string): Promise<ScreenSample | null> {
+  const dir = path.join(os.tmpdir(), 'ae-compose', 'key-' + Date.now());
+  if (file) {
+    if (/\.(png|jpe?g|tiff?|webp|bmp)$/i.test(file)) return sampleScreenColor(file);
+    fs.mkdirSync(dir, { recursive: true });
+    const out = path.join(dir, 'frame.png');
+    const dur = parseFloat(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', file], { encoding: 'utf8' })) || 0;
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(dur / 2), '-i', file, '-frames:v', '1', out]);
+    return sampleScreenColor(out);
+  }
+  const r = await callRuntime('previewItem', [item, 1, dir.replace(/\\/g, '/'), null], { timeoutMs: 120_000, cancelDialogs: true });
+  if (!r.ok) throw new Error(r.error);
+  const f = r.frames.find((x: any) => x.ok);
+  return f ? sampleScreenColor(f.file) : null;
+}
+
+/** Samples the key color from the layer's source frame (not the comp, so other layers don't interfere). */
+async function sampleLayerScreen(comp: any, layer: any, t?: number): Promise<ScreenSample | null> {
+  const dir = path.join(os.tmpdir(), 'ae-compose', 'key-' + Date.now()).replace(/\\/g, '/');
+  const r = await callRuntime('layerSourceFrame', [comp ?? null, layer, t ?? null, dir], { timeoutMs: 120_000 });
+  if (!r.ok) throw new Error(r.error);
+  const f = r.frames.find((x: any) => x.ok);
+  return f ? sampleScreenColor(f.file) : null;
+}
 
 const TG = 'ADBE Transform Group';
 export const PROP_ALIASES: Record<string, string> = {
@@ -20,6 +54,7 @@ const propPath = (p: string) => PROP_ALIASES[p] ?? p.replace(/^Effects\//, 'ADBE
 
 const Layer = z.union([z.string(), z.number().int().positive()]).describe('layer aec id, name, or 1-based index');
 const Easing = z.union([z.string(), z.tuple([z.number(), z.number(), z.number(), z.number()])]);
+const TimeV = z.union([z.number(), z.string()]).describe('seconds, "1.5s", "12f", "1:02"');
 const Key = z.object({ t: z.union([z.number(), z.string()]), v: z.any(), easing: Easing.optional(), hold: z.boolean().optional() });
 
 export const AgentOp = z.discriminatedUnion('op', [
@@ -43,10 +78,43 @@ export const AgentOp = z.discriminatedUnion('op', [
   z.object({ op: z.literal('precompose'), layers: z.array(Layer), name: z.string() }),
   z.object({ op: z.literal('duplicateComp'), name: z.string() }),
   z.object({ op: z.literal('addControls'), layer: Layer, prop: z.string(), delay: z.string().optional().describe('slider name for a live delay'), speed: z.string().optional().describe('slider name for live speed (%)') }),
+  z.object({
+    op: z.literal('ripple'),
+    at: TimeV.optional().describe('insert (by > 0) or remove (by < 0) time starting here'),
+    span: z.tuple([TimeV, TimeV]).optional().describe('[start, end] to stretch (scale/duration/by)'),
+    scene: z.union([z.string(), z.object({ at: TimeV })]).optional().describe('a scene by name, or { at: "1:02" } for the scene containing that time (scenes = named Sequences / comp markers with a duration)'),
+    by: TimeV.optional().describe('seconds to add (negative removes); with a scene: added as hold time at its quietest moment'),
+    scale: z.number().positive().optional().describe('stretch the span/scene: 1.25 = 25% slower, 0.8 = faster'),
+    duration: TimeV.optional().describe('new length of the span/scene'),
+    where: z.union([z.enum(['quiet', 'start', 'end']), TimeV]).optional().describe('with scene + by: where the hold goes (default quiet)'),
+    deep: z.boolean().optional().describe('ripple inside precomps that span the edit (default true)'),
+  }).describe('Ripple edit: everything after the change shifts (layers, keys, markers, comp length); nothing needs retiming by hand'),
+  z.object({
+    op: z.literal('place'),
+    item: z.union([z.string(), z.number()]).optional().describe('existing project item: name, unique name/file substring, or item id (list_project_items)'),
+    file: z.string().optional().describe('or import this file first'),
+    name: z.string().optional(),
+    below: Layer.optional().describe('put the new layer directly under this layer (e.g. a background behind a keyed subject)'),
+    above: Layer.optional(),
+    index: z.number().int().positive().optional(),
+    start: TimeV.optional().describe('comp time where the clip starts'),
+    in: TimeV.optional(), out: TimeV.optional(),
+    fit: z.enum(['cover', 'contain', 'fill', 'none', 'width', 'height']).optional().describe('default none (native size, centered)'),
+    muted: z.boolean().optional(), loop: z.boolean().optional(),
+  }).describe('Add project media (footage, still, comp) or a file to the comp as a layer'),
+  z.object({
+    op: z.literal('key'),
+    layer: Layer,
+    color: z.string().optional().describe('"auto" (default: sampled from the footage), "green", "blue" or a hex color'),
+    strength: z.enum(['soft', 'normal', 'hard']).optional().describe('matte clipping/choke preset (default normal)'),
+    at: TimeV.optional().describe('comp time of the frame to sample (default: middle of the layer)'),
+    cleanup: z.boolean().optional().describe('add Key Cleaner for hair / soft edges (default false: it softens solid foregrounds)'),
+    spill: z.boolean().optional().describe('add Advanced Spill Suppressor (default true)'),
+  }).describe('Chroma key a greenscreen/bluescreen layer: Keylight + Advanced Spill Suppressor (+ Key Cleaner with cleanup: true), all built into AE'),
   z.object({ op: z.literal('raw'), runtime: z.any().describe('a runtime op passed through as-is') }),
 ]);
 export type AgentOp = z.infer<typeof AgentOp>;
-export interface EditInput { comp?: string | number; ops: AgentOp[] }
+export interface EditInput { comp?: string | number; ops: AgentOp[]; /** Comp frame rate if known (skips a lookup). */ fps?: number }
 
 const RENDER = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' }; // D36
 
@@ -78,26 +146,44 @@ async function keysFor(comp: any, layer: any, prop: string): Promise<any[]> {
 }
 
 /** Validates agent ops and compiles them to runtime ops (may read keys from AE for non-bezier re-easing). */
-export async function compileEditOps(input: EditInput): Promise<any[]> {
+export async function compileEditOps(input: EditInput, notes?: string[]): Promise<any[]> {
   const out: any[] = [];
   input.ops.forEach((raw, i) => {
     const r = AgentOp.safeParse(raw);
     if (!r.success) throw new Error(`op #${i + 1} (${(raw as any)?.op}): ${r.error.issues.map((x) => `${x.path.join('.')}: ${x.message}`).join('; ')}`);
   });
-  for (const op of input.ops.map((o) => AgentOp.parse(o))) {
+  // The comp's frame rate (for "12f"-style times and frame-accurate curve fitting), read once when needed.
+  let fps: number | null = null;
+  const getFps = async (): Promise<number> => {
+    if (fps === null && input.fps) fps = input.fps;
+    if (fps === null) {
+      try {
+        const j = await callRuntime('inspect', [{ comp: input.comp }, { detail: 'outline', layers: ['__aec_no_layer__'] }], { timeoutMs: 60_000 });
+        fps = j?.comp?.fps ?? 30;
+      } catch { fps = 30; }
+    }
+    return fps!;
+  };
+  const parsed = input.ops.map((o) => AgentOp.parse(o));
+  for (let idx = 0; idx < parsed.length; idx++) {
+    const op = parsed[idx];
+    try {
     switch (op.op) {
       case 'set': {
         const path = propPath(op.prop);
         const ro: any = { op: 'setProperty', layer: op.layer, path, removeExpr: op.removeExpr };
         if (op.keys) {
-          const ks = op.keys.map((k) => ({ t: parseTime(k.t, 30), v: conv(k.v), easing: k.easing, hold: k.hold }));
+          // fps matters only for frame/timecode times and baked (non-bezier) curves: skip the AE round trip otherwise.
+          const needFps = op.keys.some((k) => (typeof k.t === 'string' && /f$|:/.test(k.t.trim())) || (k.easing !== undefined && !resolveEasing(k.easing as any).bezier));
+          const fr = needFps ? await getFps() : 30;
+          const ks = op.keys.map((k) => ({ t: parseTime(k.t, fr), v: conv(k.v), easing: k.easing, hold: k.hold }));
           const lists: any[] = [];
           for (let i = 0; i < ks.length - 1; i++) {
             const a = ks[i], b = ks[i + 1];
             const from = Array.isArray(a.v) ? a.v : [a.v], to = Array.isArray(b.v) ? b.v : [b.v];
             if (a.hold) { lists.push([{ t: a.t, v: a.v, o: 'hold' }, { t: b.t, v: b.v }]); continue; }
             const range = Math.max(...to.map((x: number, d: number) => Math.abs(x - from[d])), 1e-9);
-            const seg = knotsToKeys(curveKnots(resolveEasing(a.easing ?? 'easeInOutCubic'), b.t - a.t, 30, Math.min(0.01, 0.06 / range)), from, to, a.t, from.length === 1 ? 'oneD' : 'multi');
+            const seg = knotsToKeys(curveKnots(resolveEasing(a.easing ?? 'easeInOutCubic'), b.t - a.t, fr, Math.min(0.01, 0.06 / range)), from, to, a.t, from.length === 1 ? 'oneD' : 'multi');
             if (from.length === 1) seg.forEach((k) => (k.v = (k.v as number[])[0] ?? k.v));
             lists.push(seg);
           }
@@ -113,6 +199,7 @@ export async function compileEditOps(input: EditInput): Promise<any[]> {
         const c = resolveEasing(op.easing as any);
         if (c.bezier) { out.push({ op: 'setEasing', layer: op.layer, path: propPath(op.prop), bezier: [...c.bezier], keys: op.keys }); break; }
         // Non-bezier curve (spring/bounce/elastic): rebuild the selected segments as baked keys.
+        const fr = await getFps();
         const keys = await keysFor(input.comp, op.layer, op.prop);
         const sel = op.keys ?? keys.map((_: any, i: number) => i + 1);
         const rebuilt: any[] = [];
@@ -122,7 +209,7 @@ export async function compileEditOps(input: EditInput): Promise<any[]> {
             const a = k, b = keys[i + 1];
             const from = Array.isArray(a.v) ? a.v : [a.v], to = Array.isArray(b.v) ? b.v : [b.v];
             const range = Math.max(...to.map((x: number, d: number) => Math.abs(x - from[d])), 1e-9);
-            const seg = knotsToKeys(curveKnots(c, b.t - a.t, 30, Math.min(0.01, 0.06 / range)), from, to, a.t, from.length === 1 ? 'oneD' : 'multi');
+            const seg = knotsToKeys(curveKnots(c, b.t - a.t, fr, Math.min(0.01, 0.06 / range)), from, to, a.t, from.length === 1 ? 'oneD' : 'multi');
             if (from.length === 1) seg.forEach((s) => (s.v = (s.v as number[])[0] ?? s.v));
             const last = rebuilt[rebuilt.length - 1];
             if (last && Math.abs(last.t - seg[0].t) < 1e-6) { last.oe = seg[0].oe; seg.shift(); }
@@ -198,9 +285,51 @@ export async function compileEditOps(input: EditInput): Promise<any[]> {
       case 'addControls':
         out.push({ op: 'rigTiming', layer: op.layer, path: propPath(op.prop), delayName: op.delay, speedName: op.speed });
         break;
+      case 'ripple': {
+        const { op: _o, ...rest } = op;
+        out.push({ op: 'ripple', ...rest });
+        break;
+      }
+      case 'place': {
+        // Times stay as given: the runtime parses them with the comp's own fps.
+        const t = (v: any) => v;
+        if (op.item === undefined && !op.file) throw new Error('place needs item or file');
+        out.push({ op: 'placeItem', item: op.item, file: op.file, name: op.name, below: op.below, above: op.above, index: op.index, start: t(op.start), in: t(op.in), out: t(op.out), fit: op.fit, muted: op.muted, loop: op.loop });
+        break;
+      }
+      case 'key': {
+        let color: number[] | null = null;
+        const c = op.color ?? 'auto';
+        if (c === 'green') color = [0.2, 0.75, 0.3];
+        else if (c === 'blue') color = [0.1, 0.25, 0.85];
+        else if (c !== 'auto') color = parseColor(c).slice(0, 3);
+        else {
+          // The layer may be placed earlier in this same batch: sample that op's item/file instead of the comp.
+          const placed = parsed.slice(0, idx).reverse().find((o: any) => o.op === 'place' && (o.name === op.layer || (!o.name && (o.item === op.layer || (o.file && path.basename(o.file) === op.layer))))) as any;
+          const s = placed
+            ? await sampleSource(placed.item, placed.file)
+            : await sampleLayerScreen(input.comp, op.layer, op.at === undefined ? undefined : parseTime(op.at, await getFps()));
+          if (!s) throw new Error(`could not find a green/blue screen in layer ${op.layer}; pass color: "green" | "blue" | "#hex"`);
+          color = s.color;
+          notes?.push(`key: sampled ${s.screen} screen ${toHex(s.color)} (${Math.round(s.coverage * 100)}% of the frame)`);
+        }
+        const P = { soft: [5, 95, 0, 1], normal: [10, 90, -0.5, 0.5], hard: [20, 80, -1.5, 0.3] }[op.strength ?? 'normal'];
+        out.push({ op: 'addEffect', layer: op.layer, effect: { mn: 'Keylight 906', props: [
+          { p: 'Keylight 906-0004', v: [...color, 1] }, { p: 'Keylight 906-0012', v: P[0] }, { p: 'Keylight 906-0013', v: P[1] },
+          { p: 'Keylight 906-0015', v: P[2] }, { p: 'Keylight 906-0016', v: P[3] },
+        ] } });
+        // Key Cleaner is opt-in: on solid foregrounds it softens the matte into a speckled, semi-transparent one
+        // (verified in AE 26.5); it helps on hair and motion-blurred edges with a small radius.
+        if (op.cleanup === true) out.push({ op: 'addEffect', layer: op.layer, effect: { mn: 'ADBE KeyCleaner', props: [{ p: 'ADBE KeyCleaner-0006', v: 3 }] } });
+        if (op.spill !== false) out.push({ op: 'addEffect', layer: op.layer, effect: { mn: 'ADBE Spill2', props: [{ p: 'ADBE Spill2-0003', v: [...color, 1] }] } });
+        break;
+      }
       case 'raw':
         out.push(op.runtime);
         break;
+    }
+    } catch (e: any) {
+      throw new Error(`op #${idx + 1} (${op.op}): ${e.message}`);
     }
   }
   return out;

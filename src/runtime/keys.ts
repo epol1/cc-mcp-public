@@ -87,3 +87,27 @@ export function applyKeys(ctx: Ctx, prop: Property, keys: IrKey[]): void {
     }
   }
 }
+
+/** Reads keys into IR form so they can be re-applied after time transforms. */
+export function captureKeys(p: Property): IrKey[] {
+  const out: IrKey[] = [];
+  const vt = p.propertyValueType;
+  const spatial = vt === PropertyValueType.TwoD_SPATIAL || vt === PropertyValueType.ThreeD_SPATIAL;
+  const I = (t: KeyframeInterpolationType) => (t === KeyframeInterpolationType.LINEAR ? 'linear' : t === KeyframeInterpolationType.HOLD ? 'hold' : 'bezier');
+  for (let k = 1; k <= p.numKeys; k++) {
+    let v: any = p.keyValue(k);
+    if (vt === PropertyValueType.SHAPE) v = { v: v.vertices, i: v.inTangents, o: v.outTangents, c: v.closed };
+    const key: any = { t: p.keyTime(k), v: v, i: I(p.keyInInterpolationType(k)), o: I(p.keyOutInterpolationType(k)) };
+    if (vt !== PropertyValueType.TEXT_DOCUMENT) {
+      const ie = p.keyInTemporalEase(k), oe = p.keyOutTemporalEase(k);
+      key.ie = []; key.oe = [];
+      for (let d = 0; d < ie.length; d++) key.ie[d] = { speed: ie[d].speed, influence: ie[d].influence };
+      for (let d = 0; d < oe.length; d++) key.oe[d] = { speed: oe[d].speed, influence: oe[d].influence };
+      key.tc = p.keyTemporalContinuous(k);
+    }
+    if (spatial) key.sp = { ti: p.keyInSpatialTangent(k), to: p.keyOutSpatialTangent(k), cont: p.keySpatialContinuous(k), auto: p.keySpatialAutoBezier(k) };
+    try { const lb = (p as any).keyLabel(k); if (lb) key.label = lb; } catch (e) { /* older AE */ }
+    out.push(key);
+  }
+  return out;
+}

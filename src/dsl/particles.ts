@@ -1,7 +1,7 @@
 // Particle systems as DSL components (built from Solid/Adjustment/Precomp/Effect + expressions).
 // Calibrated in AE 26.5: CC Particle World producer units = host layer width (x, y, z), +y down; it follows
 // the comp camera automatically when one exists (D41). Seeds are always explicit (default: hash of id).
-import { jsx, childrenOf, isElement } from './jsx-runtime.ts';
+import { Fragment, jsx, childrenOf, isElement } from './jsx-runtime.ts';
 import type { AecElement } from './jsx-runtime.ts';
 import { Adjustment, Effect, Precomp, Solid } from './primitives.ts';
 import type { LayerProps } from './primitives.ts';
@@ -10,6 +10,16 @@ import type { ControlRef } from './control.ts';
 import { expr, keys } from './anim.ts';
 import type { Time } from '../shared/units.ts';
 import { parseColor } from '../shared/units.ts';
+
+// Default ids: the first ParticleWorld is "particles", the next "particles-2", ... (reset per compile), so two
+// systems without explicit ids don't collide. Give ids anyway when you want stable seeds across edits.
+const autoIds = new Map<string, number>();
+export function resetAutoIds(): void { autoIds.clear(); }
+function autoId(base: string): string {
+  const n = (autoIds.get(base) ?? 0) + 1;
+  autoIds.set(base, n);
+  return n === 1 ? base : `${base}-${n}`;
+}
 
 export function seedFrom(id: string): number {
   let h = 2166136261;
@@ -61,7 +71,7 @@ export type ParticlePreset = keyof typeof particlePresets;
  * `preset` gives a polished starting point whose key params are live controls named "<name> Birth Rate", etc.
  */
 export function ParticleWorld(p: ParticleProps & { preset?: ParticlePreset; width?: number; height?: number }) {
-  const id = p.id ?? 'particles';
+  const id = p.id ?? autoId('particles');
   const name = p.name ?? (p.preset ? p.preset.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()) : 'Particle World');
   const preset = p.preset ? particlePresets[p.preset] : undefined;
   const params: Record<string, any> = { ...(preset ? controlsFor(name, preset.live as any, p.controls !== false) : {}), ...(preset ? preset.fixed : {}) };
@@ -88,7 +98,8 @@ export function ParticleWorld(p: ParticleProps & { preset?: ParticlePreset; widt
     exprs['Position Z'] = `var t = ${t}; var w = t.toWorld(t.anchorPoint); (w.length > 2 ? w[2] : 0) / thisLayer.width;`;
   }
   if (p.burst) {
-    const rate = p.burst.rate ?? (typeof params['Birth Rate'] === 'number' ? params['Birth Rate'] : 8);
+    const br = params['Birth Rate'];
+    const rate = p.burst.rate ?? (typeof br === 'number' ? br : br && typeof br === 'object' && typeof br.default === 'number' ? br.default : 8);
     const at = p.burst.at, dur = p.burst.duration ?? '0.15s';
     params['Birth Rate'] = keys({ t: 0, v: 0, hold: true }, { t: at, v: rate, hold: true }, { t: addTime(at, dur), v: 0, hold: true });
   }
@@ -97,23 +108,24 @@ export function ParticleWorld(p: ParticleProps & { preset?: ParticlePreset; widt
   for (const [k, e] of Object.entries(exprs)) if (!(k in fxParams)) fxParams[k] = expr(e);
   const { params: _pp, preset: _pr, texture: _t, textureSize: _ts, emitter: _e, burst: _b, seed: _s, controls: _c, width, height, ...layer } = p as any;
   out.push(jsx(Solid, { ...layer, id, name, color: '#000000', width: width, height: height, children: jsx(Effect, { name: PW, params: fxParams }) }));
-  return out;
+  return jsx(Fragment, { children: out });
 }
 
-function addTime(a: Time, b: Time): string {
-  const s = (t: Time) => (typeof t === 'number' ? t : /ms$/.test(t) ? parseFloat(t) / 1000 : /f$/.test(t) ? `${t}` : parseFloat(t));
-  const sa = s(a), sb = s(b);
-  if (typeof sa === 'string' || typeof sb === 'string') return `${a}`; // frames: compiler can't add here; caller should use seconds
-  return `${sa + sb}s`;
+/** a + b without knowing the fps: numbers add; anything else becomes a sum string parseTime understands ("12f+6f"). */
+function addTime(a: Time, b: Time): Time {
+  if (typeof a === 'number' && typeof b === 'number') return a + b;
+  return `${a}+${b}`;
 }
+
+const SYSTEM_NAMES: Record<string, string> = { 'ADBE Playgnd': 'Particle Playground', CSRainfall: 'Rainfall', CSSnowfall: 'Snowfall' };
 
 function hostLayer(system: string, defaults: Record<string, any>, kind: 'solid' | 'adjustment') {
   return (p: ParticleProps & { width?: number; height?: number }) => {
-    const id = p.id ?? system.replace(/\W+/g, '').toLowerCase();
+    const id = p.id ?? autoId(system.replace(/\W+/g, '').toLowerCase());
     const params = { ...defaults, ...(p.params ?? {}) };
     if ('Random Seed' in defaults || p.seed !== undefined) params['Random Seed'] = p.seed ?? seedFrom(id);
     const { params: _pp, seed: _s, controls: _c, texture: _t, emitter: _e, burst: _b, ...layer } = p as any;
-    return jsx(kind === 'solid' ? Solid : Adjustment, { ...layer, id, name: p.name ?? system.replace(/^(CC |CS|APC |ADBE )/, ''), color: '#000000', children: jsx(Effect, { name: system, params }) });
+    return jsx(kind === 'solid' ? Solid : Adjustment, { ...layer, id, name: p.name ?? SYSTEM_NAMES[system] ?? system.replace(/^(CC |CS|APC |ADBE )/, ''), color: '#000000', children: jsx(Effect, { name: system, params }) });
   };
 }
 

@@ -4,6 +4,7 @@ import path from 'node:path';
 import type { AecElement, SourceLoc } from '../dsl/jsx-runtime.ts';
 import { childrenOf, isElement } from '../dsl/jsx-runtime.ts';
 import type { SceneDef } from '../dsl/scene.ts';
+import { resetAutoIds } from '../dsl/particles.ts';
 import { isAnim } from '../dsl/anim.ts';
 import type { TextUnitsAnim } from '../dsl/anim.ts';
 import { isControl } from '../dsl/control.ts';
@@ -16,6 +17,7 @@ import { anchorBox, lowerTransform } from './transform.ts';
 import { textDoc, unitAnimator } from './text.ts';
 import { shapeItems, pointsToShape } from './shapes.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
+import { popupIndex } from '../catalog/harvest.ts';
 import { cameraProps, featuresOf, geometryProps, lightProps, materialProps } from './threed.ts';
 import type { Feature, RendererKey } from './renderers.ts';
 import { chooseRenderer, RENDERER_ID, RENDERER_NAME } from './renderers.ts';
@@ -27,7 +29,7 @@ export interface CompileOpts { version?: number; variant?: string; params?: Reco
 export interface CompileResult { ir: any; warnings: string[]; sources: Record<string, SourceLoc | undefined> }
 
 interface CompBuild { id: string; name: string; w: number; h: number; fps: number; dur: number; bg?: number[]; renderer?: string; rendererReq?: RendererKey; features: Set<Feature>; has3D?: boolean; shutterPhase?: number; samples?: number; adaptive?: number; motionBlur?: boolean; shutterAngle?: number; part?: boolean; layers: any[]; controls: ControlRegistry; markers?: any[] }
-interface Ctx { comp: CompBuild; start: number; end: number; path: string; seed: number; scene: SceneDef; sceneDir: string; counters: Map<string, number>; threeD: boolean; inLayout?: boolean }
+interface Ctx { comp: CompBuild; start: number; end: number; path: string; seed: number; scene: SceneDef<any>; sceneDir: string; counters: Map<string, number>; threeD: boolean; inLayout?: boolean }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'x';
 
@@ -38,8 +40,10 @@ export class Compiler {
   assets = new Map<string, { id: string; path?: string; item?: string }>();
   ids = new Set<string>();
   sceneName = '';
+  /** Name of the main comp (precomps read controls from its Controls null). */
+  mainName = '';
 
-  constructor(private def: SceneDef, private opts: CompileOpts = {}) {}
+  constructor(private def: SceneDef<any>, private opts: CompileOpts = {}) {}
 
   compile(): CompileResult {
     const cfg = this.def.config;
@@ -56,7 +60,10 @@ export class Compiler {
       bg: cfg.bg ? rgb(cfg.bg) : undefined, renderer: undefined, motionBlur: undefined,
       layers: [], controls: new ControlRegistry(), features: new Set(), rendererReq: cfg.renderer,
     };
+    this.mainName = compName;
     if (cfg.motionBlur !== undefined) applyCompMB(comp, cfg.motionBlur);
+    (globalThis as any).__AEC_SCENE_DIR__ = this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd();
+    resetAutoIds();
     const root = this.def.render({ ...params, seed });
     const ctx: Ctx = { comp, start: 0, end: comp.dur, path: mainId, seed, scene: this.def, sceneDir: this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd(), counters: new Map(), threeD: false };
     this.walk(root, ctx);
@@ -105,6 +112,8 @@ export class Compiler {
       const eg = c.controls.egProps(ctlId);
       if (eg.length && !c.part) (c as any).mgt = { name: mgtName, props: eg };
     }
+    const egText = (c as any).egText as any[] | undefined;
+    if (egText?.length && !c.part) (c as any).mgt = { name: mgtName, props: [...egText, ...(((c as any).mgt?.props) ?? [])] };
   }
 
   /** Precomps: renderer selection + layer-ref resolution (controls stay on the main comp). */
@@ -131,7 +140,7 @@ export class Compiler {
   }
 
   private walk(node: any, ctx: Ctx): void {
-    for (const c of Array.isArray(node) ? childrenOf(node) : isElement(node) ? [node] : childrenOf(node)) {
+    for (const c of childrenOf(node)) { // flattens arrays and fragments (components may return either)
       if (typeof c === 'string') { if (c.trim()) this.warnings.push(`stray text "${c.trim().slice(0, 40)}" outside <Text> was ignored`); continue; }
       this.element(c, ctx);
     }
@@ -159,7 +168,9 @@ export class Compiler {
       case 'sequence': {
         const start = ctx.start + parseTime(p.from, ctx.comp.fps, 0);
         const end = p.duration !== undefined ? start + parseTime(p.duration, ctx.comp.fps) : ctx.end;
-        this.walk(p.children, { ...ctx, start, end: Math.min(end, Math.max(end, start)), path: p.name ? `${ctx.path}.${slug(p.name)}` : ctx.path });
+        const clipped = Math.max(start, Math.min(end, ctx.end));
+        this.sceneMarker(ctx, p.name, start, clipped);
+        this.walk(p.children, { ...ctx, start, end: clipped, path: p.name ? `${ctx.path}.${slug(p.name)}` : ctx.path });
         return;
       }
       case 'series': {
@@ -169,6 +180,7 @@ export class Compiler {
           if (s.type?.aec !== 'series.sequence') throw new Error('<Series> children must be <Series.Sequence duration="...">');
           const start = cursor + parseTime(s.props.offset, ctx.comp.fps, 0);
           const end = start + parseTime(s.props.duration, ctx.comp.fps);
+          this.sceneMarker(ctx, s.props.name, start, end);
           this.walk(s.props.children, { ...ctx, start, end, path: s.props.name ? `${ctx.path}.${slug(s.props.name)}` : ctx.path });
           cursor = end;
         }
@@ -232,7 +244,9 @@ export class Compiler {
       case 'sequence': {
         const start = ctx.start + parseTime(p.from, ctx.comp.fps, 0);
         const end = p.duration !== undefined ? start + parseTime(p.duration, ctx.comp.fps) : ctx.end;
-        const sub = { ...ctx, start, end };
+        const clipped = Math.max(start, Math.min(end, ctx.end));
+        this.sceneMarker(ctx, p.name, start, clipped);
+        const sub = { ...ctx, start, end: clipped };
         const out: any[] = [];
         for (const c of childrenOf(p.children)) if (typeof c !== 'string') out.push(...this.layoutNodes(c, sub));
         return out;
@@ -253,13 +267,22 @@ export class Compiler {
     }
   }
 
+  /** Named Sequences become comp markers with a duration ("scenes"): visible in AE's timeline, listed by the
+   *  inspector, and the handle for ripple edits ({ op: 'ripple', scene: 'Beat 2', by: 1 }). */
+  private sceneMarker(ctx: Ctx, name: string | undefined, start: number, end: number): void {
+    if (!name) return;
+    const e = Math.min(end, ctx.comp.dur);
+    if (!(e > start)) return;
+    (ctx.comp.markers ??= []).push({ t: start, comment: name, dur: e - start });
+  }
+
   private precomp(el: AecElement, ctx: Ctx): void {
     const p = el.props;
     const id = this.uid(ctx, 'precomp', p.id);
     const fps = ctx.comp.fps;
     const sub: CompBuild = {
       id, name: p.name ?? `${this.sceneName}_${id.split('.').pop()}`, w: p.width ?? ctx.comp.w, h: p.height ?? ctx.comp.h, fps,
-      dur: p.compDuration !== undefined ? parseTime(p.compDuration, fps) : ctx.end - ctx.start, bg: p.bg ? rgb(p.bg) : undefined, part: true, layers: [], controls: ctx.comp.controls, features: new Set(),
+      dur: p.compDuration !== undefined ? parseTime(p.compDuration, fps) : ctx.end - ctx.start, bg: p.bg ? rgb(p.bg) : undefined, part: true, layers: [], controls: ctx.comp.controls.scoped(this.mainName), features: new Set(),
     };
     // Precomps share the parent's control registry: controls live on the main comp's Controls null
     // and expressions inside precomps reach it with comp("<main>").layer("Controls").
@@ -307,6 +330,7 @@ export class Compiler {
         const text = p.text ?? childrenOf(p.children).filter((c) => typeof c === 'string').join('');
         if (!text) this.warnings.push(`[${id}] <Text> has no text`);
         L.text = textDoc(p, text);
+        if (p.eg) ((ctx.comp as any).egText ??= []).push({ layer: id, p: 'ADBE Text Properties/ADBE Text Document', name: p.eg === true ? L.name : String(p.eg) });
         if (p.perCharacter3D) { L.threeD = true; L.threeDPerChar = true; }
         if (isControl(p.color)) props.push({ p: 'ADBE Text Properties/ADBE Text Document', expr: `style.setFillColor((${ctx.comp.controls.use(p.color)}).slice(0, 3));` });
         const ab = anchorBox(p.anchor, 'center');
@@ -351,6 +375,8 @@ export class Compiler {
       }
       case 'precomp':
         L.precomp = { comp: extra.precompId };
+        // Like Remotion: the nested comp's frame 0 plays at the Sequence/layer start.
+        L.start = inT;
         if (p.collapse) L.collapse = true;
         break;
       case 'null':
@@ -453,10 +479,19 @@ export class Compiler {
   private effect(el: AecElement, vctx: ValueCtx, layerId: string): any {
     const p = el.props;
     const { mn, name } = resolveEffect(p.name);
+    if (mn === 'ADBE Numbers2') throw new Error('the Numbers effect opens a modal options dialog when applied from a script; use a <Text> layer with a sourceText expression for counters (docs/DSL.md "stat count-up")');
     const props: PropSpec[] = [];
     for (const [k, v] of Object.entries(p.params ?? {})) {
       if (v && typeof v === 'object' && 'layer' in (v as any) && !isAnim(v) && !isControl(v)) { props.push({ p: k, v }); continue; }
       const val: any = v;
+      if (typeof val === 'string' && !/^(#|rgb|hsl)/i.test(val)) {
+        // Popup label ("Screen") → index from the harvested catalog; otherwise it must be a color name.
+        const ix = popupIndex(mn, k, val);
+        if (ix !== undefined) { props.push({ p: k, v: ix }); continue; }
+        let isColor = true;
+        try { parseColor(val); } catch { isColor = false; }
+        if (!isColor) throw new Error(`${name}: "${val}" is not an option of "${k}" (use describe_effect to list options, or pass the number)`);
+      }
       const isColorish = typeof val === 'string' || (isControl(val) && val.kind === 'color');
       const dims = isColorish ? 4 : Array.isArray(val) ? val.length : isAnim(val) && Array.isArray((val as any).to ?? (val as any).from) ? ((val as any).to ?? (val as any).from).length : 1;
       const s = lowerValue(val, { path: k, rest: Array(dims).fill(0), dims, tol: TOL.generic, conv: isColorish ? (c: any) => parseColor(c) : undefined }, vctx);
@@ -474,7 +509,17 @@ export class Compiler {
     else if (p.points) shape = pointsToShape(p.points, true);
     else if (p.rect) {
       const { x, y, width: w, height: h } = p.rect;
-      shape = { v: [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], i: [[0, 0], [0, 0], [0, 0], [0, 0]], o: [[0, 0], [0, 0], [0, 0], [0, 0]], c: true };
+      const r = Math.max(0, Math.min(p.rect.roundness ?? 0, w / 2, h / 2));
+      if (r > 0) {
+        // Rounded rectangle: 8 vertices, corner tangents at the circle-approximation constant.
+        const k = r * 0.5523;
+        shape = {
+          v: [[x + r, y], [x + w - r, y], [x + w, y + r], [x + w, y + h - r], [x + w - r, y + h], [x + r, y + h], [x, y + h - r], [x, y + r]],
+          i: [[-k, 0], [0, 0], [0, -k], [0, 0], [k, 0], [0, 0], [0, k], [0, 0]],
+          o: [[0, 0], [k, 0], [0, 0], [0, k], [0, 0], [-k, 0], [0, 0], [0, -k]],
+          c: true,
+        };
+      } else shape = { v: [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], i: [[0, 0], [0, 0], [0, 0], [0, 0]], o: [[0, 0], [0, 0], [0, 0], [0, 0]], c: true };
     } else throw new Error('<Mask> needs path, points or rect');
     const props: PropSpec[] = [{ p: 'ADBE Mask Shape', v: shape }];
     if (p.feather !== undefined) { const s = lowerValue(p.feather, { path: 'ADBE Mask Feather', rest: [0, 0], dims: 2, tol: TOL.px, conv: (v: any) => (typeof v === 'number' ? [v, v] : v) }, vctx); if (s) props.push(s); }
@@ -489,7 +534,7 @@ export class Compiler {
       const t = (p.text ?? childrenOf(p.children).filter((c: any) => typeof c === 'string').join('')).replace(/\s+/g, ' ').trim();
       return t.length > 28 ? t.slice(0, 27) + '…' : t || 'Text';
     }
-    const base: Record<string, string> = { solid: 'Solid', null: 'Null', adjustment: 'Adjustment', shape: 'Shape', footage: 'Footage', precomp: 'Precomp' };
+    const base: Record<string, string> = { solid: 'Solid', null: 'Null', adjustment: 'Adjustment', shape: 'Shape', footage: 'Footage', precomp: 'Precomp', camera: 'Camera', light: 'Light', model: 'Model' };
     return `${base[kind] ?? kind} ${id.split('.').pop()?.replace(/^\D+/, '') ?? ''}`.trim();
   }
 }
@@ -504,6 +549,6 @@ function applyCompMB(c: CompBuild, mb: any): void {
   if (mb.adaptiveLimit !== undefined) c.adaptive = mb.adaptiveLimit;
 }
 
-export function compileScene(def: SceneDef, opts: CompileOpts = {}): CompileResult {
+export function compileScene(def: SceneDef<any>, opts: CompileOpts = {}): CompileResult {
   return new Compiler(def, opts).compile();
 }

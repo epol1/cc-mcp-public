@@ -13,6 +13,16 @@ export const CONTROLS_ID_SUFFIX = 'controls';
 
 export class ControlRegistry {
   private map = new Map<string, ControlRef>();
+  /** Expression prefix for the comp that holds the Controls null: thisComp, or comp("<main>") inside precomps. */
+  private host = 'thisComp';
+
+  /** A view of this registry for a precomp: same controls, read from the main comp's Controls null. */
+  scoped(mainComp: string): ControlRegistry {
+    const r = Object.create(ControlRegistry.prototype) as ControlRegistry;
+    r.map = this.map;
+    r.host = `comp(${JSON.stringify(mainComp)})`;
+    return r;
+  }
 
   use(c: ControlRef): string {
     const prev = this.map.get(c.name);
@@ -23,7 +33,7 @@ export class ControlRegistry {
 
   /** Expression that reads the control's current value (clamped when min/max are given). */
   ref(name: string, c?: ControlRef): string {
-    const e = `thisComp.layer(${JSON.stringify(CONTROLS_LAYER)}).effect(${JSON.stringify(name)})(1)`;
+    const e = `${this.host}.layer(${JSON.stringify(CONTROLS_LAYER)}).effect(${JSON.stringify(name)})(1)`;
     const cc = c ?? this.map.get(name);
     if (cc && cc.kind === 'slider' && (cc.min !== undefined || cc.max !== undefined)) return `clamp(${e}, ${cc.min ?? -1e9}, ${cc.max ?? 1e9})`;
     if (cc && cc.kind === 'checkbox') return `(${e} ? 1 : 0)`;

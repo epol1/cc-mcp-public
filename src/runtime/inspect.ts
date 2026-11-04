@@ -204,7 +204,7 @@ export function inspectComp(ref: any, opts: InspectOpts): any {
   if (!c) return { ok: false, error: 'comp not found: ' + ref };
   const o: any = { ok: true, comp: { name: c.name, itemId: c.id, id: tagOf(c), w: c.width, h: c.height, fps: c.frameRate, dur: c.duration, par: c.pixelAspect, bg: arr(c.bgColor), renderer: c.renderer, motionBlur: c.motionBlur, shutterAngle: c.shutterAngle, numLayers: c.numLayers, workArea: [c.workAreaStart, c.workAreaDuration] } };
   try { if (c.motionGraphicsTemplateName) o.comp.mgt = c.motionGraphicsTemplateName; } catch (e) {}
-  try { const mk = (c as any).markerProperty; if (mk && mk.numKeys) { o.comp.markers = []; for (let k = 1; k <= mk.numKeys; k++) o.comp.markers.push({ t: mk.keyTime(k), comment: mk.keyValue(k).comment }); } } catch (e) {}
+  try { const mk = (c as any).markerProperty; if (mk && mk.numKeys) { o.comp.markers = []; for (let k = 1; k <= mk.numKeys; k++) { const mv: any = mk.keyValue(k); o.comp.markers.push({ t: mk.keyTime(k), comment: mv.comment, dur: mv.duration }); } } } catch (e) {}
   o.layers = [];
   for (let i = 1; i <= c.numLayers; i++) {
     const L = c.layer(i);
@@ -224,7 +224,14 @@ export function inspectProject(): any {
     const it: any = app.project.item(i);
     const o: any = { id: it.id, name: it.name, type: it.typeName, folder: it.parentFolder && it.parentFolder !== app.project.rootFolder ? it.parentFolder.name : undefined };
     if (it instanceof CompItem) { o.w = it.width; o.h = it.height; o.fps = it.frameRate; o.dur = it.duration; o.layers = it.numLayers; const t = tagOf(it); if (t) o.aec = t; }
-    else if (it instanceof FootageItem) { o.w = it.width; o.h = it.height; o.dur = it.duration; try { o.file = it.file ? it.file.fsName : undefined; } catch (e) {} if (it.footageMissing) o.missing = true; }
+    else if (it instanceof FootageItem) {
+      o.w = it.width; o.h = it.height; o.dur = it.duration;
+      try { o.file = it.file ? it.file.fsName : undefined; } catch (e) {}
+      if (it.footageMissing) o.missing = true;
+      try { const ms: any = it.mainSource; if (ms.isStill) o.still = true; else if (it.hasVideo) o.fps = it.frameRate; if (ms.hasAlpha) o.alpha = true; if (ms instanceof SolidSource) o.solid = true; } catch (e) {}
+      try { if (it.hasAudio) o.audio = true; if (!it.hasVideo) o.audioOnly = true; } catch (e) {}
+    }
+    try { if (it.usedIn) o.usedIn = it.usedIn.length; } catch (e) {}
     items.push(o);
   }
   const active: any = app.project.activeItem;

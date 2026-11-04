@@ -8,7 +8,17 @@ import { inspectComp, inspectProject } from './inspect';
 import type { InspectOpts } from './inspect';
 import { edit } from './edit';
 import type { EditOp } from './edit';
-import { contactFrames, describeEffect, importFile } from './tools';
+import { contactFrames, describeEffect, importFile, layerSourceFrame, previewItem } from './tools';
+
+/**
+ * Read-only tools that need a temporary comp (effect description, footage previews) leave a no-op undo group
+ * behind; count them so AEC.undo() still undoes the last real build/edit in one call.
+ */
+function noopGroup(name: string, fn: () => any): any {
+  app.beginUndoGroup('ae-compose: ' + name);
+  try { return fn(); } finally { app.endUndoGroup(); $.global.__aecNoopUndos = ($.global.__aecNoopUndos || 0) + 1; }
+}
+function realChange(fn: () => any): any { $.global.__aecNoopUndos = 0; return fn(); }
 
 function guard(fn: () => any): string {
   try {
@@ -21,14 +31,23 @@ function guard(fn: () => any): string {
 const AEC: any = {
   version: '__AEC_RUNTIME_VERSION__',
   ping: function () { return guard(() => ({ ok: true, version: AEC.version, ae: app.version, project: app.project.file ? app.project.file.fsName : null, items: app.project.numItems, bpc: app.project.bitsPerChannel })); },
-  build: function (project: IrProject, opts: BuildOpts) { return guard(() => build(project, opts || {})); },
+  build: function (project: IrProject, opts: BuildOpts) { return guard(() => realChange(() => build(project, opts || {}))); },
   inspect: function (target: any, opts: InspectOpts) { return guard(() => (target === 'project' ? inspectProject() : inspectComp(target && target.comp !== undefined ? target.comp : target, opts || {}))); },
-  edit: function (target: any, ops: EditOp[], opts: any) { return guard(() => edit(target || {}, ops || [], opts || {})); },
+  edit: function (target: any, ops: EditOp[], opts: any) { return guard(() => realChange(() => edit(target || {}, ops || [], opts || {}))); },
   /** Edit > Undo (command 16): used by tests to prove each build/edit undoes in one step. */
-  describeEffect: function (mn: string) { return guard(() => describeEffect(mn)); },
+  describeEffect: function (mn: string) { return guard(() => noopGroup('describe effect', () => describeEffect(mn))); },
   importFile: function (path: string, folder?: string) { return guard(() => importFile(path, folder)); },
   contactFrames: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => contactFrames(ref, n, dir, times)); },
-  undo: function () { return guard(() => { app.executeCommand(16); return { ok: true }; }); },
+  previewItem: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => noopGroup('preview', () => previewItem(ref, n, dir, times))); },
+  layerSourceFrame: function (comp: any, layer: any, t: number, dir: string) { return guard(() => noopGroup('sample frame', () => layerSourceFrame(comp, layer, t, dir))); },
+  undo: function () {
+    return guard(() => {
+      const extra = $.global.__aecNoopUndos || 0;
+      for (let i = 0; i <= extra; i++) app.executeCommand(16);
+      $.global.__aecNoopUndos = 0;
+      return { ok: true, steps: extra + 1 };
+    });
+  },
   snapshot: function (compRef: { id?: string; name?: string }, times: number[], dir: string) {
     return guard(() => {
       let comp: CompItem | null = compRef.id ? findTaggedComp(compRef.id) : null;

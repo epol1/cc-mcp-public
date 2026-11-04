@@ -5,12 +5,14 @@ import { AecError, fail, newCtx, warn } from './ctx';
 import type { GroupSpec, Pending, PropSpec } from './groups';
 import { applyProps, buildGroups, flushExpressions } from './groups';
 import type { IrKey } from './keys';
-import { applyKeys } from './keys';
+import { applyKeys, captureKeys } from './keys';
 import { mustResolve, resolve, setStatic } from './props';
 import type { IrLayer } from './layers';
-import { createLayer, setLayerAttrs, tagOf, wireLayer } from './layers';
-import { makeTextDocument } from './text';
+import { applyAnchorBox, applyFootage, createLayer, setLayerAttrs, tagOf, wireLayer } from './layers';
+import { findItem, importFile, itemCandidates } from './tools';
+import { makeTextDocument, setTextDocument } from './text';
 import { findComp } from './inspect';
+import { parseT, ripple } from './ripple';
 import { clamp, each, now } from './util';
 
 export interface EditOp { op: string; layer?: any; [k: string]: any }
@@ -24,29 +26,6 @@ function findLayer(ctx: Ctx, comp: CompItem, ref: any): Layer {
   if (matches.length === 1) return matches[0];
   if (matches.length > 1) fail(ctx, 'layer name "' + s + '" is ambiguous (' + matches.length + ' layers); use the index or aec id');
   return fail(ctx, 'layer not found: "' + s + '"');
-}
-
-/** Reads keys into IR form so they can be re-applied after time transforms. */
-function captureKeys(p: Property): IrKey[] {
-  const out: IrKey[] = [];
-  const vt = p.propertyValueType;
-  const spatial = vt === PropertyValueType.TwoD_SPATIAL || vt === PropertyValueType.ThreeD_SPATIAL;
-  const I = (t: KeyframeInterpolationType) => (t === KeyframeInterpolationType.LINEAR ? 'linear' : t === KeyframeInterpolationType.HOLD ? 'hold' : 'bezier');
-  for (let k = 1; k <= p.numKeys; k++) {
-    let v: any = p.keyValue(k);
-    if (vt === PropertyValueType.SHAPE) v = { v: v.vertices, i: v.inTangents, o: v.outTangents, c: v.closed };
-    const key: any = { t: p.keyTime(k), v: v, i: I(p.keyInInterpolationType(k)), o: I(p.keyOutInterpolationType(k)) };
-    if (vt !== PropertyValueType.TEXT_DOCUMENT) {
-      const ie = p.keyInTemporalEase(k), oe = p.keyOutTemporalEase(k);
-      key.ie = []; key.oe = [];
-      for (let d = 0; d < ie.length; d++) key.ie[d] = { speed: ie[d].speed, influence: ie[d].influence };
-      for (let d = 0; d < oe.length; d++) key.oe[d] = { speed: oe[d].speed, influence: oe[d].influence };
-      key.tc = p.keyTemporalContinuous(k);
-    }
-    if (spatial) key.sp = { ti: p.keyInSpatialTangent(k), to: p.keyOutSpatialTangent(k), cont: p.keySpatialContinuous(k), auto: p.keySpatialAutoBezier(k) };
-    out.push(key);
-  }
-  return out;
 }
 
 function vlen(a: any): number {
@@ -123,7 +102,7 @@ function prop(ctx: Ctx, L: Layer, path: string): Property {
 }
 
 function runOp(ctx: Ctx, comp: CompItem, op: EditOp, pending: Pending, changes: any[]): void {
-  const L = op.op === 'addLayer' || op.op === 'setComp' || op.op === 'precompose' || op.op === 'duplicateComp' ? null : findLayer(ctx, comp, op.layer);
+  const L = op.op === 'addLayer' || op.op === 'placeItem' || op.op === 'ripple' || op.op === 'setComp' || op.op === 'precompose' || op.op === 'duplicateComp' ? null : findLayer(ctx, comp, op.layer);
   switch (op.op) {
     case 'setProperty': {
       const p = prop(ctx, L!, op.path);
@@ -247,8 +226,12 @@ function runOp(ctx: Ctx, comp: CompItem, op: EditOp, pending: Pending, changes: 
       const nl = createLayer(ctx, comp, spec);
       ctx.layers[spec.id] = nl;
       setLayerAttrs(ctx, nl, spec);
+      // Same passes as a build: text document (font/size/style) and anchor box before contents and props.
+      if (spec.text) setTextDocument(ctx, nl as TextLayer, spec.text);
+      if (spec.type === 'footage' || spec.type === 'model') applyFootage(ctx, nl, comp, spec);
       wireLayer(ctx, nl, spec);
       if (spec.groups) for (let g = 0; g < spec.groups.length; g++) buildGroups(ctx, nl, nl, spec.groups[g].at, spec.groups[g].items, pending);
+      applyAnchorBox(nl, spec);
       applyProps(ctx, nl, nl, spec.props, pending);
       if (op.index) nl.moveBefore(comp.layer(Math.min(op.index, comp.numLayers)));
       changes.push({ added: nl.name, index: nl.index });
@@ -310,6 +293,30 @@ function runOp(ctx: Ctx, comp: CompItem, op: EditOp, pending: Pending, changes: 
       changes.push({ layer: L!.name, path: op.path, controls: [dn, sn] });
       break;
     }
+    case 'placeItem': {
+      // Existing project media (or a file imported now) as a new layer: footage, stills, comps.
+      let it: any = null;
+      if (op.file) { const r = importFile(op.file, op.folder); if (!r.ok) fail(ctx, r.error); it = app.project.itemByID(r.id); }
+      else it = findItem(op.item);
+      if (!it) fail(ctx, 'no unique project item for "' + op.item + '"; matches: ' + itemCandidates(op.item) + ' (use the #id, or list_project_items)');
+      if (!(it instanceof CompItem) && !(it instanceof FootageItem)) fail(ctx, '"' + it.name + '" is a ' + it.typeName + ' and cannot be a layer');
+      if (it === comp) fail(ctx, 'cannot place a comp inside itself');
+      const nl = comp.layers.add(it);
+      if (op.name) nl.name = op.name;
+      const fr = comp.frameRate;
+      if (op.start !== undefined && op.start !== null) nl.startTime = parseT(op.start, fr);
+      if (op.in !== undefined && op.in !== null) nl.inPoint = parseT(op.in, fr);
+      if (op.out !== undefined && op.out !== null) nl.outPoint = parseT(op.out, fr);
+      if (op.below !== undefined) nl.moveAfter(findLayer(ctx, comp, op.below));
+      else if (op.above !== undefined) nl.moveBefore(findLayer(ctx, comp, op.above));
+      else if (op.index) nl.moveBefore(comp.layer(Math.min(op.index, comp.numLayers)));
+      applyFootage(ctx, nl, comp, { fit: op.fit || 'none', muted: op.muted, loop: op.loop } as any);
+      changes.push({ placed: it.name, itemId: it.id, layer: nl.name, index: nl.index, in: nl.inPoint, out: nl.outPoint });
+      break;
+    }
+    case 'ripple':
+      changes.push({ ripple: ripple(ctx, comp, op) });
+      break;
     default:
       fail(ctx, 'unknown op "' + op.op + '"');
   }
@@ -328,7 +335,7 @@ function ensureControls(comp: CompItem): Layer {
   return n;
 }
 
-export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: string }): any {
+export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: string; keepPartial?: boolean }): any {
   const ctx = newCtx('edit');
   const t0 = now();
   const changes: any[] = [];
@@ -339,15 +346,27 @@ export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: s
   const pending: Pending = { exprs: [] };
   const exprs: { prop: Property; id: string }[] = [];
   app.beginUndoGroup(opts.undoName || 'ae-compose: edit (' + ops.length + ' ops)');
+  // Sentinel change (net zero) so the undo group is never empty: a failed batch can then be rolled back with
+  // one Undo without ever undoing something older.
+  const c0 = comp.comment;
+  comp.comment = c0 + ' ';
+  comp.comment = c0;
+  let failed = false;
   try {
     for (let i = 0; i < ops.length; i++) { ctx.cur = 'op' + (i + 1) + ':' + ops[i].op; runOp(ctx, comp, ops[i], pending, changes); }
     flushExpressions(ctx, pending, exprs);
     each(exprs, (x) => { if (x.prop.expressionError) res.exprErrors.push({ node: x.id, prop: x.prop.matchName, error: x.prop.expressionError }); });
   } catch (e) {
+    failed = true;
     res.ok = false;
     if (e instanceof AecError) { res.error = e.message; res.at = e.node; } else { res.error = String(e); res.at = ctx.cur; res.line = (e as any).line; }
   } finally {
     app.endUndoGroup();
+  }
+  // All or nothing: a batch that fails part-way is undone, so the project is exactly as before the call.
+  if (failed && opts.keepPartial !== true) {
+    try { app.executeCommand(16); res.rolledBack = true; } catch (e2) { res.rolledBack = false; }
+    res.changes = [];
   }
   res.comp = comp.name;
   res.itemId = comp.id;

@@ -40,23 +40,29 @@ export function lowerTransform(inp: TransformInput, ctx: ValueCtx): PropSpec[] {
   } else {
     push({ p: `${TG}/ADBE Position`, v: rest.slice(0, dims) });
   }
+  // A static prop next to an animation of the same prop is its rest value: scale={50} + animate.scale ends at 50.
+  const staticRest = (k: string, def: number[], conv?: (v: any) => number[]): number[] => {
+    const v = p[k];
+    if (anim[k] === undefined || v === undefined || isAnim(v) || (v && v.$control)) return def;
+    return conv ? conv(v) : typeof v === 'number' ? [v] : [...v];
+  };
   const sc = get('scale');
   if (sc !== undefined) {
     const conv = (v: any) => (typeof v === 'number' ? [v, v, inp.threeD ? v : 100] : [v[0], v[1] ?? v[0], v[2] ?? (inp.threeD ? v[0] : 100)]);
-    push(lowerValue(sc, { path: `${TG}/ADBE Scale`, rest: [100, 100, 100], tol: TOL.scale, dims: 3, conv }, ctx));
+    push(lowerValue(sc, { path: `${TG}/ADBE Scale`, rest: staticRest('scale', [100, 100, 100], conv), tol: TOL.scale, dims: 3, conv }, ctx));
   }
   const rot = get('rotation');
-  if (rot !== undefined) push(lowerValue(rot, { path: `${TG}/ADBE Rotate Z`, rest: [0], tol: TOL.deg, dims: 1 }, ctx));
+  if (rot !== undefined) push(lowerValue(rot, { path: `${TG}/ADBE Rotate Z`, rest: staticRest('rotation', [0]), tol: TOL.deg, dims: 1 }, ctx));
   if (inp.threeD) {
     for (const [k, mn] of [['rotationX', 'ADBE Rotate X'], ['rotationY', 'ADBE Rotate Y']] as const) {
       const v = get(k);
-      if (v !== undefined) push(lowerValue(v, { path: `${TG}/${mn}`, rest: [0], tol: TOL.deg, dims: 1 }, ctx));
+      if (v !== undefined) push(lowerValue(v, { path: `${TG}/${mn}`, rest: staticRest(k, [0]), tol: TOL.deg, dims: 1 }, ctx));
     }
     const ori = get('orientation');
-    if (ori !== undefined) push(lowerValue(ori, { path: `${TG}/ADBE Orientation`, rest: [0, 0, 0], tol: TOL.deg, dims: 3 }, ctx));
+    if (ori !== undefined) push(lowerValue(ori, { path: `${TG}/ADBE Orientation`, rest: staticRest('orientation', [0, 0, 0]), tol: TOL.deg, dims: 3 }, ctx));
   }
   const op = get('opacity');
-  if (op !== undefined) push(lowerValue(op, { path: `${TG}/ADBE Opacity`, rest: [100], tol: TOL.opacity, dims: 1 }, ctx));
+  if (op !== undefined) push(lowerValue(op, { path: `${TG}/ADBE Opacity`, rest: staticRest('opacity', [100]), tol: TOL.opacity, dims: 1 }, ctx));
   if (Array.isArray(p.anchor)) push({ p: `${TG}/ADBE Anchor Point`, v: inp.threeD ? [p.anchor[0], p.anchor[1], p.anchor[2] ?? 0] : [p.anchor[0], p.anchor[1]] });
   return out;
 }

@@ -1,5 +1,5 @@
 // Camera rigs built from parented nulls + expressions (all speeds/angles can be live controls).
-import { jsx } from './jsx-runtime.ts';
+import { Fragment, jsx } from './jsx-runtime.ts';
 import { Camera, Null } from './primitives.ts';
 import type { CameraProps } from './primitives.ts';
 import { expr } from './anim.ts';
@@ -29,12 +29,14 @@ export interface OrbitCameraProps extends Omit<CameraProps, 'position' | 'pointO
 export function OrbitCamera(p: OrbitCameraProps) {
   const id = p.id ?? 'orbitCam';
   const rig = `${id}.rig`;
-  const target = p.target ?? [960, 540, 0];
+  const target = p.target;
   const rot = `${num(p.startAngle, 0)} + Math.max(0, time - ${p.delay ?? 0}) * ${num(p.speed, 15)}`;
   const refs = [p.speed, p.startAngle].filter(isControl) as ControlRef[];
   const { target: _t, radius, speed: _s, startAngle: _a, height, delay: _d, ...cam } = p;
-  return [
-    jsx(Null, { id: rig, name: `${p.name ?? 'Camera'} Rig`, threeD: true, position: target, rotationY: expr(rot, refs) }),
+  // No target: the comp centre (read in AE, so any comp size works).
+  const rigPos = target ?? expr('[thisComp.width / 2, thisComp.height / 2, 0]');
+  return jsx(Fragment, { children: [
+    jsx(Null, { id: rig, name: `${p.name ?? 'Camera'} Rig`, threeD: true, position: rigPos, rotationY: expr(rot, refs) }),
     jsx(Camera, { ...cam, id, name: p.name ?? 'Camera', parent: rig, position: [0, -(height ?? 0), -(radius ?? 1400)], pointOfInterest: [0, 0, 0] }),
-  ];
+  ] });
 }

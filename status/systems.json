@@ -119,6 +119,12 @@
           "name": "Non-blocking watchdog (no UIA on busy AE)",
           "status": "done",
           "weight": 1
+        },
+        {
+          "id": "dlg-cancel",
+          "name": "Auto-cancel dialogs opened by probes",
+          "status": "done",
+          "weight": 1
         }
       ]
     },
@@ -274,6 +280,12 @@
           "id": "brand",
           "name": "Brand tokens/theme helpers",
           "status": "todo",
+          "weight": 1
+        },
+        {
+          "id": "dsl-exit-end",
+          "name": "Exits anchored to layer end (ripple-friendly)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -453,19 +465,19 @@
         {
           "id": "fx-discover",
           "name": "Discovery (vanilla filter)",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "fx-harvest",
           "name": "Param harvest (ranges, popups)",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "fx-types",
           "name": "Generated TS types",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
@@ -507,7 +519,7 @@
         {
           "id": "ctl-expr",
           "name": "Expression rigs (spring/orbit)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -519,7 +531,7 @@
         {
           "id": "ctl-sticky",
           "name": "Sticky controls on rebuild",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         },
         {
@@ -627,7 +639,7 @@
         {
           "id": "layout3d",
           "name": "3D layout helpers",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
@@ -749,6 +761,18 @@
           "name": "Compact agent outline",
           "status": "done",
           "weight": 2
+        },
+        {
+          "id": "insp-media",
+          "name": "Project media search + preview_item",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "insp-scenes",
+          "name": "Scenes (named Sequences → comp marker ranges)",
+          "status": "done",
+          "weight": 1
         }
       ]
     },
@@ -803,6 +827,30 @@
           "name": "One-step undo verified",
           "status": "done",
           "weight": 1
+        },
+        {
+          "id": "ed-ripple",
+          "name": "Ripple edits (insert/remove/stretch time, scenes, quiet-point holds)",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "ed-place",
+          "name": "Place project media / files as layers",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "ed-key",
+          "name": "Chroma key op (Keylight + Spill, auto screen color)",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "ed-atomic",
+          "name": "Atomic edit batches (rollback on failure)",
+          "status": "done",
+          "weight": 1
         }
       ]
     },
@@ -854,7 +902,7 @@
         },
         {
           "id": "mcp",
-          "name": "MCP server (15 tools)",
+          "name": "MCP server (18 tools)",
           "status": "done",
           "weight": 3
         },
@@ -867,7 +915,7 @@
         {
           "id": "skill",
           "name": "Claude skill + CLAUDE.md",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
@@ -885,13 +933,13 @@
         {
           "id": "t-unit",
           "name": "Unit tests",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "t-codegen",
           "name": "Codegen snapshots + ES3 parse",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
@@ -1029,7 +1077,7 @@
         {
           "id": "dsl-ref",
           "name": "DSL reference",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {

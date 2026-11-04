@@ -14,6 +14,8 @@ export const OUT_ROOT = path.join(os.homedir(), '.ae-compose', 'out');
 export interface BuildOptions {
   /** Rebuild in place (same ids → same comps), keeping live control values (default true). */
   replace?: boolean;
+  /** On a rebuild, reset live controls to the values in the code instead of keeping the ones tweaked in AE. */
+  resetControls?: boolean;
   /** Build variants declared in the scene (default true); or a subset by key. */
   variants?: boolean | string[];
   params?: Record<string, any>;
@@ -49,7 +51,7 @@ function sheetTimes(dur: number, fps: number, n: number): number[] {
   return Array.from({ length: n }, (_, i) => Math.round(((last * i) / (n - 1)) * fps) / fps);
 }
 
-export async function buildScene(input: { file?: string; source?: string; def?: SceneDef; ir?: any; cwd?: string }, opts: BuildOptions = {}): Promise<BuildReport> {
+export async function buildScene(input: { file?: string; source?: string; def?: SceneDef<any>; ir?: any; cwd?: string }, opts: BuildOptions = {}): Promise<BuildReport> {
   const t0 = Date.now();
   const report: BuildReport = { ok: true, scene: '', comps: [], warnings: [], exprErrors: [], contactSheets: [], frames: [], restoredControls: 0, ms: 0 };
   let irs: { ir: any; sources: Record<string, SourceLoc | undefined>; label?: string; params?: Record<string, any> }[] = [];
@@ -79,7 +81,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     const times = nFrames > 0 ? [...sheetTimes(main.dur, main.fps, nFrames), ...(opts.times ?? [])] : opts.times ?? [];
     const snapDir = path.join(outDir, 'frames', label ?? 'main').replace(/\\/g, '/');
     fs.rmSync(snapDir, { recursive: true, force: true });
-    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined }], { timeoutMs: 300_000 });
+    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined }], { timeoutMs: 300_000 });
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;
     for (const e of r.exprErrors ?? []) report.exprErrors.push({ ...e, src: loc(sources[e.node]) });

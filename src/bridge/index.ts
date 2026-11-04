@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CepBackend } from './cep.ts';
 import { AfterFxBackend } from './afterfx.ts';
-import { aeWindows, autoAnswerKnown } from './dialogs.ts';
+import { aeWindows, autoAnswerKnown, pressDialog } from './dialogs.ts';
 import type { Backend, EvalResult } from './types.ts';
 import { es3String, toEs3Literal } from '../codegen/literal.ts';
 
@@ -41,9 +41,31 @@ export function ensurePreamble(): string {
 }
 
 /** Raw eval with watchdog: on a timeout we look for dialogs and attach them (with captures) to the error. */
-export async function evalAE(script: string, opts: { timeoutMs?: number } = {}): Promise<EvalResult> {
+/**
+ * Runs a script in AE. `cancelDialogs` (for read-only probes such as effect description): any modal dialog that
+ * opens while the script runs (a LUT file picker, an effect's options dialog) is cancelled within seconds instead
+ * of blocking AE until a human closes it.
+ */
+export async function evalAE(script: string, opts: { timeoutMs?: number; cancelDialogs?: boolean } = {}): Promise<EvalResult> {
   const b = await getBackend();
-  const r = await b.eval(script, opts);
+  let running = true;
+  const cancelled: string[] = [];
+  const watcher = opts.cancelDialogs
+    ? (async () => {
+        while (running) {
+          await new Promise((res) => setTimeout(res, 3000));
+          if (!running) break;
+          try {
+            const w = await aeWindows();
+            for (const d of w.dialogs) { const pr = await pressDialog(d.hwnd, 'Cancel'); if (pr.pressed) cancelled.push(d.title); }
+          } catch { /* best-effort */ }
+        }
+      })()
+    : null;
+  let r: EvalResult;
+  try { r = await b.eval(script, opts); } finally { running = false; }
+  void watcher;
+  if (cancelled.length) (r as any).cancelledDialogs = cancelled;
   if (!r.ok && (r.timedOut || /bridge request failed/.test(r.error))) {
     try {
       const w = await aeWindows({ capture: true });
@@ -59,7 +81,7 @@ export async function evalAE(script: string, opts: { timeoutMs?: number } = {}):
 }
 
 /** Calls AEC.<fn>(...args) in AE and parses the JSON it returns. */
-export async function callRuntime<T = any>(fn: string, args: unknown[], opts: { timeoutMs?: number } = {}): Promise<T> {
+export async function callRuntime<T = any>(fn: string, args: unknown[], opts: { timeoutMs?: number; cancelDialogs?: boolean } = {}): Promise<T> {
   const script = ensurePreamble() + `AEC.${fn}(${args.map((a) => toEs3Literal(a)).join(', ')});`;
   const r = await evalAE(script, opts);
   if (!r.ok) {
@@ -68,7 +90,9 @@ export async function callRuntime<T = any>(fn: string, args: unknown[], opts: { 
     throw err;
   }
   try {
-    return JSON.parse(r.result) as T;
+    const j = JSON.parse(r.result);
+    if ((r as any).cancelledDialogs && j && typeof j === 'object') j.cancelledDialogs = (r as any).cancelledDialogs;
+    return j as T;
   } catch {
     throw new Error(`runtime returned non-JSON: ${r.result.slice(0, 300)}`);
   }

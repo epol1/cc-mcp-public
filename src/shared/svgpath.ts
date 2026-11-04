@@ -36,13 +36,30 @@ function arcToCubics(x1: number, y1: number, rx: number, ry: number, phi: number
 }
 
 export function parseSvgPath(d: string, opts: { scale?: number; offset?: [number, number] } = {}): AeShape[] {
-  const toks = d.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?/g) ?? [];
+  // Scanner, not a token list: arc flags are single digits and minifiers drop the separators ("a10 10 0 0110 10").
+  const NUM = /[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?/y;
+  let p = 0;
+  const ws = () => { while (p < d.length && /[\s,]/.test(d[p])) p++; };
   const sc = opts.scale ?? 1, [ox, oy] = opts.offset ?? [0, 0];
   const shapes: AeShape[] = [];
   let cur: AeShape | null = null;
   let x = 0, y = 0, sx = 0, sy = 0, lastC: [number, number] | null = null, lastQ: [number, number] | null = null;
-  let i = 0, cmd = '';
-  const n = () => parseFloat(toks[i++]);
+  let cmd = '';
+  const n = () => {
+    ws();
+    NUM.lastIndex = p;
+    const m = NUM.exec(d);
+    if (!m) throw new Error(`invalid SVG path data near "${d.slice(p, p + 16)}"`);
+    p = NUM.lastIndex;
+    return parseFloat(m[0]);
+  };
+  const flag = () => {
+    ws();
+    const c = d[p];
+    if (c !== '0' && c !== '1') throw new Error(`invalid SVG arc flag near "${d.slice(p, p + 16)}"`);
+    p++;
+    return +c;
+  };
   const P = (px: number, py: number) => [(px + ox) * sc, (py + oy) * sc];
   const moveTo = (px: number, py: number) => {
     if (cur && cur.v.length) shapes.push(cur);
@@ -60,8 +77,11 @@ export function parseSvgPath(d: string, opts: { scale?: number; offset?: [number
     x = px; y = py;
   };
   const lineTo = (px: number, py: number) => { if (!cur) moveTo(x, y); const c = cur as AeShape; c.v.push(P(px, py)); c.i.push([0, 0]); c.o.push([0, 0]); x = px; y = py; };
-  while (i < toks.length) {
-    if (/[a-zA-Z]/.test(toks[i])) cmd = toks[i++];
+  for (;;) {
+    ws();
+    if (p >= d.length) break;
+    if (/[a-zA-Z]/.test(d[p])) cmd = d[p++];
+    else if (!cmd) throw new Error(`SVG path must start with a command, got "${d.slice(p, p + 16)}"`);
     const rel = cmd === cmd.toLowerCase();
     const C = cmd.toUpperCase();
     const bx = rel ? x : 0, by = rel ? y : 0;
@@ -74,7 +94,7 @@ export function parseSvgPath(d: string, opts: { scale?: number; offset?: [number
       case 'S': { const r = lastC ? [2 * x - lastC[0], 2 * y - lastC[1]] : [x, y]; const a = [bx + n(), by + n(), bx + n(), by + n()]; cubicTo(r[0], r[1], a[0], a[1], a[2], a[3]); lastC = [a[0], a[1]]; lastQ = null; break; }
       case 'Q': { const q = [bx + n(), by + n()], e = [bx + n(), by + n()]; cubicTo(x + (2 / 3) * (q[0] - x), y + (2 / 3) * (q[1] - y), e[0] + (2 / 3) * (q[0] - e[0]), e[1] + (2 / 3) * (q[1] - e[1]), e[0], e[1]); lastQ = [q[0], q[1]]; lastC = null; break; }
       case 'T': { const q: number[] = lastQ ? [2 * x - lastQ[0], 2 * y - lastQ[1]] : [x, y]; const e = [bx + n(), by + n()]; cubicTo(x + (2 / 3) * (q[0] - x), y + (2 / 3) * (q[1] - y), e[0] + (2 / 3) * (q[0] - e[0]), e[1] + (2 / 3) * (q[1] - e[1]), e[0], e[1]); lastQ = [q[0], q[1]]; lastC = null; break; }
-      case 'A': { const rx = n(), ry = n(), rot = (n() * Math.PI) / 180, fa = n(), fs = n(), ex = bx + n(), ey = by + n(); for (const s of arcToCubics(x, y, rx, ry, rot, fa, fs, ex, ey)) cubicTo(s[0], s[1], s[2], s[3], s[4], s[5]); lastC = lastQ = null; break; }
+      case 'A': { const rx = n(), ry = n(), rot = (n() * Math.PI) / 180, fa = flag(), fs = flag(), ex = bx + n(), ey = by + n(); for (const s of arcToCubics(x, y, rx, ry, rot, fa, fs, ex, ey)) cubicTo(s[0], s[1], s[2], s[3], s[4], s[5]); lastC = lastQ = null; break; }
       case 'Z': {
         if (cur) {
           const c = cur as AeShape;

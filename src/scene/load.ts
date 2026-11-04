@@ -13,7 +13,7 @@ const DSL = path.join(ROOT, 'src/dsl/index.ts');
 const JSX = path.join(ROOT, 'src/dsl/jsx-runtime.ts');
 const CACHE = path.join(os.tmpdir(), 'ae-compose-scenes');
 
-export interface LoadedScene { def: SceneDef; file: string }
+export interface LoadedScene { def: SceneDef<any>; file: string }
 
 export async function loadScene(input: { file?: string; source?: string; cwd?: string }): Promise<LoadedScene> {
   let file = input.file ? path.resolve(input.file) : '';

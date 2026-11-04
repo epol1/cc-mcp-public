@@ -37,7 +37,7 @@ const SPRING_FN = 'function su(f, fps, c, k, m) { if (f <= 0) return 0; var st =
 
 function timeRef(v: any, ctx: ValueCtx, def: number): string {
   if (v === undefined) return String(def);
-  if (isControl(v)) return ctx.controls.use(v);
+  if (isControl(v)) return v.plus ? `(${ctx.controls.use(v)} + ${v.plus})` : ctx.controls.use(v);
   return String(parseTime(v, ctx.fps));
 }
 function numRef(v: any, ctx: ValueCtx, def: number): string {
@@ -62,7 +62,7 @@ export function unitAmountExpr(a: TextUnitsAnim, ctx: ValueCtx, layerStartOffset
     `// ae-compose: per-${a.by} ${a.direction === 'out' ? 'exit' : 'reveal'}; each/duration/delay may be live controls`,
     `var each = ${each}, dur = Math.max(${dur}, 0.0001), delay = ${delay};`,
     `var i = ${order[a.order ?? 'start']};`,
-    `var t = time - inPoint - ${layerStartOffset.toFixed(6)} - delay - i * each;`,
+    a.anchor === 'end' ? `var t = time - outPoint + delay - i * each;` : `var t = time - inPoint - ${layerStartOffset.toFixed(6)} - delay - i * each;`,
   ];
   if (a.spring) {
     lines.unshift(SPRING_FN);

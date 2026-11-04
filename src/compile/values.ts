@@ -36,9 +36,10 @@ export interface PropTarget {
   dims: number;
 }
 
-const toArr = (v: any, dims: number): number[] => {
+/** Number/array → `dims` components. Short arrays pad with `pad` (0: a 2D position gets z = 0), or repeat their last value ('last': scale). */
+const toArr = (v: any, dims: number, pad: number | 'last' = 'last'): number[] => {
   if (typeof v === 'number') return Array(dims).fill(v);
-  if (Array.isArray(v)) return v.length >= dims ? v.slice(0, dims) : [...v, ...Array(dims - v.length).fill(v[v.length - 1] ?? 0)];
+  if (Array.isArray(v)) return v.length >= dims ? v.slice(0, dims) : [...v, ...Array(dims - v.length).fill(pad === 'last' ? v[v.length - 1] ?? 0 : pad)];
   throw new Error(`expected a number or array, got ${JSON.stringify(v)}`);
 };
 
@@ -54,7 +55,7 @@ function num(v: any, ctx: ValueCtx, what: string, rig: RigParts, slot: keyof Rig
   if (isControl(v)) {
     const def = isTime ? parseTime(v.default, ctx.fps) : Number(v.default);
     rig[slot] = { ref: ctx.controls.use(v), def };
-    return def;
+    return def + (v.plus ?? 0);
   }
   return isTime ? parseTime(v, ctx.fps) : Number(v);
 }
@@ -111,7 +112,8 @@ function curveFor(a: TweenAnim | SpringAnim, dur: number, ctx: ValueCtx, rig: Ri
   const cfg = { stiffness: num(a.stiffness, ctx, 'stiffness', {}, 'amp', 100, false), damping: num(a.damping, ctx, 'damping', {}, 'amp', 10, false), mass: num(a.mass, ctx, 'mass', {}, 'amp', 1, false), overshootClamping: a.overshootClamping };
   const stretched = a.duration !== undefined ? num(a.duration, ctx, 'duration', rig, 'dur', 0, true) : undefined;
   const sp = springProgress({ ...cfg, durationInFrames: stretched !== undefined ? stretched * ctx.fps : undefined }, ctx.fps);
-  return { curve: { name: 'spring', fn: (t: number) => sp.fn(t * sp.settleSec) }, dur: sp.settleSec };
+  // Natural springs settle asymptotically (curveKnots runs them on until within tolerance); stretched ones jump to 1 at `duration` like Remotion.
+  return { curve: { name: 'spring', fn: (t: number) => sp.fn(t * sp.settleSec), asymptotic: stretched === undefined } as EasingCurve, dur: sp.settleSec };
 }
 
 /** Keys for a single tween/spring starting at absolute time `start`. */
@@ -123,7 +125,8 @@ function segmentKeys(a: TweenAnim | SpringAnim, target: PropTarget, ctx: ValueCt
   const knots = curveKnots(curve, Math.max(dur, 1 / ctx.fps), ctx.fps, tolNorm(target, from, to));
   const keys = knotsToKeys(knots, from, to, start + delay, target.dims === 1 ? 'oneD' : 'multi');
   if (target.dims === 1) for (const k of keys) if (Array.isArray(k.v)) k.v = k.v[0];
-  return { keys, end: start + delay + dur, to };
+  // A spring may run past its nominal settle time (see curveKnots): the animation ends at its last key.
+  return { keys, end: Math.max(start + delay + dur, keys[keys.length - 1].t), to };
 }
 
 /** Merges consecutive key lists: a key that starts a part at the same time as the previous end takes the previous in-ease. */
@@ -143,13 +146,19 @@ function lowerAnim(a: Anim, target: PropTarget, ctx: ValueCtx, start: number): {
   switch (a.$anim) {
     case 'tween':
     case 'spring': {
-      if (a.$anim === 'spring' && a.rig === 'expression') return springExpression(a, target, ctx, start);
+      if (a.$anim === 'spring') {
+        // Live physics (a control on stiffness/damping/mass) needs the closed-form expression: fitted keys can't follow it.
+        const livePhysics = [a.stiffness, a.damping, a.mass].some(isControl);
+        if (livePhysics && a.rig === 'keys') throw new Error('spring stiffness/damping/mass controls need rig: "expression" (keys are fitted once at build time)');
+        if (a.rig === 'expression' || livePhysics) return springExpression(a, target, ctx, start);
+      }
       const r = segmentKeys(a, target, ctx, start, rig);
       return { keys: r.keys, expr: rigExpression(rig, start + (rig.delay?.def ?? 0), r.to, target.dims), end: r.end };
     }
     case 'keys': {
       const conv = target.conv ?? ((v: any) => toArr(v, target.dims));
-      const ks = a.keys.map((k) => ({ t: start + num(k.t, ctx, 't', rig, 'delay', 0, true), v: conv(isControl(k.v) ? (k.v as ControlRef).default : k.v), easing: k.easing, hold: k.hold }));
+      for (const k of a.keys) if (isControl(k.t) || isControl(k.v)) throw new Error(`keys(): controls can't drive individual key ${isControl(k.t) ? 'times' : 'values'}; use tween/spring with a control on delay/duration/from, or seq()`);
+      const ks = a.keys.map((k) => ({ t: start + num(k.t, ctx, 't', rig, 'delay', 0, true), v: conv(k.v), easing: k.easing, hold: k.hold }));
       ks.sort((x, y) => x.t - y.t);
       const lists: IrKey[][] = [];
       for (let i = 0; i < ks.length - 1; i++) {
@@ -197,6 +206,7 @@ function lowerAnim(a: Anim, target: PropTarget, ctx: ValueCtx, start: number): {
       return { expr: code };
     }
     case 'fn': {
+      if (a.as === 'expression') throw new Error('sample({ as: "expression" }) is not supported: a JS function cannot run in AE; omit `as` to bake it into keys, or write expr(...)');
       const dur = parseTime(a.duration as any, ctx.fps);
       const delay = parseTime(a.delay as any, ctx.fps, 0);
       const v0 = toArr(a.fn(0), target.dims);
@@ -246,10 +256,15 @@ function springExpression(a: SpringAnim, target: PropTarget, ctx: ValueCtx, star
  */
 export function lowerValue(value: any, target: PropTarget, ctx: ValueCtx): PropSpec | null {
   if (value === undefined) return null;
-  const conv = target.conv ?? ((v: any) => toArr(v, target.dims));
+  const conv = target.conv ?? ((v: any) => toArr(v, target.dims, /Position|Point of Interest|Anchor/.test(target.path) ? 0 : 'last'));
   if (isControl(value)) {
     const ref = ctx.controls.use(value);
-    const def = value.kind === 'color' ? conv(value.default) : conv(value.default);
+    if (value.kind === 'checkbox') {
+      // Checkbox → on/off value: opacity 100/0, anything else 1/0.
+      const on = /Opacity$/.test(target.path) ? 100 : 1;
+      return { p: target.path, v: out(target, toArr(value.default ? on : 0, target.dims)), expr: on === 1 ? ref : `(${ref}) * ${on}` };
+    }
+    const def = conv(value.default);
     const expr = value.kind === 'point' && target.dims === 3 ? `var p = ${ref}; [p[0], p[1], value[2]];` : value.kind === 'color' ? ref : target.dims > 1 && (value.kind === 'slider' || value.kind === 'angle') ? `var s = ${ref}; [${Array.from({ length: target.dims }, (_, i) => (target.path.endsWith('Scale') && i === 2 ? '100' : 's')).join(', ')}];` : ref;
     return { p: target.path, v: out(target, def), expr };
   }

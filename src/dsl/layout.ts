@@ -26,8 +26,8 @@ export interface StackProps extends Common {
 }
 /** Vertical (default) or horizontal stack with gaps. */
 export const Stack = prim<StackProps>('layout.stack');
-export const Column = (p: Omit<StackProps, 'direction'>) => ({ $$aec: 'element', type: Stack, props: { ...p, direction: 'column' } });
-export const Row = (p: Omit<StackProps, 'direction'>) => ({ $$aec: 'element', type: Stack, props: { ...p, direction: 'row' } });
+export const Column = (p: Omit<StackProps, 'direction'>) => ({ $$aec: 'element' as const, type: Stack, props: { ...p, direction: 'column' } });
+export const Row = (p: Omit<StackProps, 'direction'>) => ({ $$aec: 'element' as const, type: Stack, props: { ...p, direction: 'row' } });
 (Column as any).displayName = 'Column';
 (Row as any).displayName = 'Row';
 
@@ -39,7 +39,7 @@ export interface AlignProps extends Common { at: At }
 /** Places its child at a side/corner of the available area (comp, safe area, or parent cell). */
 export const Align = prim<AlignProps>('layout.align');
 /** Centres its child in the available area. */
-export const Center = (p: Common) => ({ $$aec: 'element', type: Align, props: { ...p, at: 'center' } });
+export const Center = (p: Common) => ({ $$aec: 'element' as const, type: Align, props: { ...p, at: 'center' } });
 (Center as any).displayName = 'Center';
 
 export const Padding = prim<Common>('layout.padding');

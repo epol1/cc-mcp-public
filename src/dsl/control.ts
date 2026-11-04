@@ -16,6 +16,8 @@ export interface ControlRef {
   /** Expose in Essential Graphics (default true). */
   eg?: boolean;
   group?: string; // optional grouping prefix for organization
+  /** Constant added to the control's value where it is used (see plus()). */
+  plus?: number;
 }
 
 export function isControl(x: any): x is ControlRef {
@@ -45,4 +47,12 @@ export function control(name: string, value: number | boolean | ColorSpec | read
     }
   }
   return { $control: true, name, kind, default: def, min: opts.min, max: opts.max, items, eg: opts.eg ?? true, group: opts.group };
+}
+
+/**
+ * The control's value plus a constant, for staggering: delay: plus(control('Chart Delay', 0.5), i * 0.09)
+ * makes every bar start 0.09 s after the previous one while the one slider shifts them all live.
+ */
+export function plus(c: ControlRef, n: number): ControlRef {
+  return { ...c, plus: (c.plus ?? 0) + n };
 }
