@@ -27,6 +27,8 @@ export interface GroupSpec {
   kids?: { at: string; items: GroupSpec[] }[];
   /** Dropdown Menu Control items (setPropertyParameters). */
   menu?: string[];
+  /** .ffx preset applied to this property right after it is added (shape gradient stops, D47). */
+  ffx?: string;
   id?: string; // IR id for attribution
 }
 
@@ -99,6 +101,24 @@ export function flushExpressions(ctx: Ctx, pending: Pending, out: { prop: Proper
   pending.exprs = [];
 }
 
+/**
+ * Applies an animation preset to one property: clear the comp selection, select only that property,
+ * layer.applyPreset (the AEUX technique for gradient stops). Never reads the gradient Colors property.
+ */
+function applyPresetToProperty(ctx: Ctx, layer: Layer, path: number[], file: string): void {
+  const comp = layer.containingComp;
+  const f = new File(file);
+  if (!f.exists) fail(ctx, 'preset file missing: ' + file);
+  try { const sp = comp.selectedProperties; for (let i = sp.length - 1; i >= 0; i--) { try { (sp[i] as any).selected = false; } catch (e) {} } } catch (e) {}
+  try { const sl = comp.selectedLayers; for (let i = sl.length - 1; i >= 0; i--) sl[i].selected = false; } catch (e) {}
+  const target = byIndexPath(layer, path);
+  target.selected = true;
+  try { (layer as any).applyPreset(f); }
+  catch (e) { warn(ctx, 'gradient preset could not be applied: ' + e); }
+  try { byIndexPath(layer, path).selected = false; } catch (e) {}
+  layer.selected = false;
+}
+
 /** Adds `items` under the indexed group at `at` (path relative to `owner`). */
 export function buildGroups(ctx: Ctx, layer: Layer, owner: any, at: string, items: GroupSpec[], pending: Pending): void {
   const parent0 = mustResolve(ctx, owner, at) as PropertyGroup;
@@ -115,6 +135,7 @@ export function buildGroups(ctx: Ctx, layer: Layer, owner: any, at: string, item
     if (spec.name) { g.name = spec.name; g = byIndexPath(layer, path); }
     if (spec.attrs) setAttrs(ctx, g, spec.attrs);
     if (spec.menu) { (g.property(1) as any).setPropertyParameters(spec.menu); g = byIndexPath(layer, path); }
+    if (spec.ffx) { applyPresetToProperty(ctx, layer, path, spec.ffx); g = byIndexPath(layer, path); }
     if (spec.kids) {
       for (let k = 0; k < spec.kids.length; k++) {
         buildGroups(ctx, layer, byIndexPath(layer, path), spec.kids[k].at, spec.kids[k].items, pending);

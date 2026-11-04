@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.008**: 64.44% weighted, 95/154 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.009**: 66.95% weighted, 98/154 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -75,12 +75,12 @@
 - [ ] 3D per-character
 - [ ] Text on path
 
-## Shapes & Paths (58%)
+## Shapes & Paths (81%)
 - [x] Rect/Ellipse/Star/Group
 - [x] Pen paths + SVG d _(w2)_
 - [x] Fill/Stroke/dashes/taper
 - [x] Trim/Repeater/Merge/Offset/… _(w2)_
-- [ ] Gradients via .ffx _(w3)_
+- [x] Gradients via .ffx _(w3)_
 - [ ] SVG/AI → shape layers _(w2)_
 - [~] Masks + track mattes
 - [x] SVG path parser (M/L/C/S/Q/T/A/Z)
@@ -93,15 +93,15 @@
 - [x] Fuzzy name resolution
 - [x] describe_effect with popup labels
 
-## Controls & Variants (38%)
+## Controls & Variants (63%)
 - [x] Controls null, all control types
 - [x] Static value linking
 - [~] Retimable-keys rig _(w3)_
 - [ ] Expression rigs (spring/orbit) _(w2)_
 - [~] Essential Graphics
 - [~] Sticky controls on rebuild
-- [ ] Variants _(w2)_
-- [ ] Compare comp
+- [x] Variants _(w2)_
+- [x] Compare comp
 
 ## Layout (100%)
 - [x] Shared layout solver _(w3)_

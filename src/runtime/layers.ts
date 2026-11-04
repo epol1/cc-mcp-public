@@ -3,6 +3,7 @@ import type { Ctx } from './ctx';
 import { fail, warn } from './ctx';
 import type { GroupSpec, PropSpec } from './groups';
 import type { TextDocSpec } from './text';
+import { findTaggedComp } from './project';
 
 export interface IrLayer {
   id: string;
@@ -124,7 +125,8 @@ export function createLayer(ctx: Ctx, comp: CompItem, L: IrLayer): Layer {
       break;
     }
     case 'precomp': {
-      const c = L.precomp ? ctx.comps[L.precomp.comp] : null;
+      let c: CompItem | null = L.precomp ? ctx.comps[L.precomp.comp] : null;
+      if (!c && L.precomp) c = findTaggedComp(L.precomp.comp); // comps built by an earlier request (variants → Compare)
       if (!c) fail(ctx, 'precomp not built yet: ' + (L.precomp ? L.precomp.comp : '(none)'));
       layer = layers.add(c as CompItem);
       break;

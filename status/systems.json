@@ -417,7 +417,7 @@
         {
           "id": "gradients",
           "name": "Gradients via .ffx",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
@@ -525,13 +525,13 @@
         {
           "id": "variants",
           "name": "Variants",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "compare",
           "name": "Compare comp",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -1107,7 +1107,7 @@
   "issues": [
     {
       "area": "AE stability",
-      "text": "Shape-gradient internals crash AE (0 :: 42); fenced (D15)",
+      "text": "Shape-gradient Colors property crashes AE when read; writes go through .ffx presets (D47)",
       "status": "mitigated"
     },
     {
