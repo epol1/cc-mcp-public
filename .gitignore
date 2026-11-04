@@ -1,0 +1,21 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.vitest-cache/
+coverage/
+
+# Scratch output, captures and renders
+scratch/
+out/
+.ae-compose-cache/
+
+# User media and downloaded assets (large / personal)
+assets/footage/*
+assets/handmade/*
+assets/logo/*
+assets/downloads/*
+!assets/**/.gitkeep
+
+# AE autosaves and lock files
+*.aep.lock
+Adobe After Effects Auto-Save/

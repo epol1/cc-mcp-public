@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ae-compose CEP bridge manifest.
+  KEEP THIS FILE STABLE: CEP only reads manifests at AE launch. All behavior lives in
+  loader.js / server.js, which are hot-reloaded without restarting AE.
+-->
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.aecompose" ExtensionBundleVersion="0.1.0" ExtensionBundleName="ae-compose" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.aecompose.bridge" Version="0.1.0"/>
+    <Extension Id="com.aecompose.panel" Version="0.1.0"/>
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="AEFT" Version="[18.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="9.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <!-- Invisible background extension: starts with AE and hosts the HTTP bridge. -->
+    <Extension Id="com.aecompose.bridge">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./bridge.html</MainPath>
+          <ScriptPath>./host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+          <StartOn>
+            <Event>com.adobe.csxs.events.ApplicationActivate</Event>
+            <Event>applicationActivate</Event>
+            <Event>com.adobe.csxs.events.ApplicationInitialized</Event>
+          </StartOn>
+        </Lifecycle>
+        <UI>
+          <Type>Custom</Type>
+          <Geometry>
+            <Size>
+              <Height>1</Height>
+              <Width>1</Width>
+            </Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- Visible status panel (Window > Extensions > ae-compose). Also hosts the bridge if the background one is not running. -->
+    <Extension Id="com.aecompose.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel.html</MainPath>
+          <ScriptPath>./host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>ae-compose</Menu>
+          <Geometry>
+            <Size>
+              <Height>320</Height>
+              <Width>360</Width>
+            </Size>
+            <MinSize>
+              <Height>120</Height>
+              <Width>200</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>
