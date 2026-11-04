@@ -16,13 +16,17 @@ import { anchorBox, lowerTransform } from './transform.ts';
 import { textDoc, unitAnimator } from './text.ts';
 import { shapeItems, pointsToShape } from './shapes.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
+import { cameraProps, featuresOf, geometryProps, lightProps, materialProps } from './threed.ts';
+import type { Feature, RendererKey } from './renderers.ts';
+import { chooseRenderer, RENDERER_ID, RENDERER_NAME } from './renderers.ts';
 
-const RENDERERS = { advanced3d: 'ADBE Advanced 3d', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Calder' } as const;
+// Internal names verified from AE's localized UI strings (D36): Calder = Advanced 3D; 'ADBE Advanced 3d' is the legacy ID of Classic 3D.
+const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' } as const;
 
 export interface CompileOpts { version?: number; variant?: string; params?: Record<string, any>; sceneFile?: string }
 export interface CompileResult { ir: any; warnings: string[]; sources: Record<string, SourceLoc | undefined> }
 
-interface CompBuild { id: string; name: string; w: number; h: number; fps: number; dur: number; bg?: number[]; renderer?: string; motionBlur?: boolean; shutterAngle?: number; part?: boolean; layers: any[]; controls: ControlRegistry; markers?: any[] }
+interface CompBuild { id: string; name: string; w: number; h: number; fps: number; dur: number; bg?: number[]; renderer?: string; rendererReq?: RendererKey; features: Set<Feature>; has3D?: boolean; motionBlur?: boolean; shutterAngle?: number; part?: boolean; layers: any[]; controls: ControlRegistry; markers?: any[] }
 interface Ctx { comp: CompBuild; start: number; end: number; path: string; seed: number; scene: SceneDef; sceneDir: string; counters: Map<string, number>; threeD: boolean }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'x';
@@ -49,8 +53,8 @@ export class Compiler {
     const mainId = slug(cfg.name) + (this.opts.variant ? '-' + slug(this.opts.variant) : '');
     const comp: CompBuild = {
       id: mainId, name: compName, w: cfg.width ?? 1920, h: cfg.height ?? 1080, fps, dur: parseTime(cfg.duration, fps),
-      bg: cfg.bg ? rgb(cfg.bg) : undefined, renderer: cfg.renderer ? RENDERERS[cfg.renderer] : undefined, motionBlur: cfg.motionBlur,
-      layers: [], controls: new ControlRegistry(),
+      bg: cfg.bg ? rgb(cfg.bg) : undefined, renderer: undefined, motionBlur: cfg.motionBlur,
+      layers: [], controls: new ControlRegistry(), features: new Set(), rendererReq: cfg.renderer,
     };
     const root = this.def.render({ ...params, seed });
     const ctx: Ctx = { comp, start: 0, end: comp.dur, path: mainId, seed, scene: this.def, sceneDir: this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd(), counters: new Map(), threeD: false };
@@ -74,6 +78,25 @@ export class Compiler {
   /** Reverses JSX order (later = on top) into AE order (index 0 = top) and adds the Controls null. */
   private finishComp(c: CompBuild, mgtName: string): void {
     c.layers.reverse();
+    if (c.has3D || c.rendererReq) {
+      const r = chooseRenderer(c.features, c.rendererReq);
+      if (r.errors.length) throw new Error(`comp "${c.name}": ${r.errors.join('; ')}`);
+      this.warnings.push(...r.warnings.map((w) => `[${c.name}] ${w}`));
+      if (r.auto && r.key !== 'classic3d') this.warnings.push(`[${c.name}] renderer set to ${RENDERER_NAME[RENDERER_ID[r.key]]} (needed for: ${[...c.features].join(', ')})`);
+      c.renderer = RENDERER_ID[r.key];
+    }
+    // Resolve __AEC_LAYER(id)__ placeholders in expressions to thisComp.layer("<name>").
+    const names = new Map<string, string>(c.layers.map((L: any) => [L.id, L.name]));
+    const seen = new Map<string, number>();
+    for (const L of c.layers) seen.set(L.name, (seen.get(L.name) ?? 0) + 1);
+    const fix = (e: string) => e.replace(/__AEC_LAYER\(([^)]+)\)__/g, (_m, id) => {
+      const n = names.get(id);
+      if (!n) throw new Error(`expression references unknown layer id "${id}"`);
+      if ((seen.get(n) ?? 0) > 1) throw new Error(`layer name "${n}" (id ${id}) is not unique, but an expression references it; give it a unique name`);
+      return `thisComp.layer(${JSON.stringify(n)})`;
+    });
+    const walkFix = (o: any): void => { if (!o || typeof o !== 'object') return; if (Array.isArray(o)) { o.forEach(walkFix); return; } for (const k of Object.keys(o)) { if (k === 'expr' && typeof o[k] === 'string') o[k] = fix(o[k]); else walkFix(o[k]); } };
+    walkFix(c.layers);
     const ctlId = `${c.id}.${'controls'}`;
     const ctl = c.controls.layer(ctlId);
     if (ctl) {
@@ -81,6 +104,14 @@ export class Compiler {
       const eg = c.controls.egProps(ctlId);
       if (eg.length && !c.part) (c as any).mgt = { name: mgtName, props: eg };
     }
+  }
+
+  /** Precomps: renderer selection + layer-ref resolution (controls stay on the main comp). */
+  private finishPrecomp(c: CompBuild): void {
+    const reg = c.controls;
+    c.controls = new ControlRegistry();
+    this.finishComp(c, c.name);
+    c.controls = reg;
   }
 
   private uid(ctx: Ctx, kind: string, explicit?: string): string {
@@ -119,7 +150,7 @@ export class Compiler {
     switch (kind) {
       case 'composition':
         if (p.bg) ctx.comp.bg = rgb(p.bg);
-        if (p.renderer) ctx.comp.renderer = (RENDERERS as any)[p.renderer];
+        if (p.renderer) ctx.comp.rendererReq = p.renderer;
         if (p.motionBlur !== undefined) ctx.comp.motionBlur = p.motionBlur;
         if (p.shutterAngle !== undefined) ctx.comp.shutterAngle = p.shutterAngle;
         this.walk(p.children, ctx);
@@ -161,13 +192,13 @@ export class Compiler {
     const fps = ctx.comp.fps;
     const sub: CompBuild = {
       id, name: p.name ?? `${this.sceneName}_${id.split('.').pop()}`, w: p.width ?? ctx.comp.w, h: p.height ?? ctx.comp.h, fps,
-      dur: p.compDuration !== undefined ? parseTime(p.compDuration, fps) : ctx.end - ctx.start, bg: p.bg ? rgb(p.bg) : undefined, part: true, layers: [], controls: ctx.comp.controls,
+      dur: p.compDuration !== undefined ? parseTime(p.compDuration, fps) : ctx.end - ctx.start, bg: p.bg ? rgb(p.bg) : undefined, part: true, layers: [], controls: ctx.comp.controls, features: new Set(),
     };
     // Precomps share the parent's control registry: controls live on the main comp's Controls null
     // and expressions inside precomps reach it with comp("<main>").layer("Controls").
     const subCtx: Ctx = { ...ctx, comp: sub, start: 0, end: sub.dur, path: id, counters: new Map() };
     this.walk(p.children, subCtx);
-    sub.layers.reverse();
+    this.finishPrecomp(sub);
     this.comps.push(sub);
     this.layer('precomp', el, ctx, { precompId: id, id });
   }
@@ -255,22 +286,67 @@ export class Compiler {
         break;
       case 'null':
         break;
+      case 'camera': {
+        L.camera = { twoNode: !p.oneNode };
+        L.threeD = true;
+        break;
+      }
+      case 'light': {
+        L.light = { kind: p.kind ?? 'point' };
+        L.threeD = true;
+        if (p.hdri) {
+          if ((p.kind ?? 'point') !== 'environment') throw new Error(`[${id}] hdri= is only valid on <Light kind="environment">`);
+          const abs = path.isAbsolute(p.hdri) ? p.hdri : path.resolve(ctx.sceneDir, p.hdri);
+          const asset = this.assets.get(abs) ?? { id: 'asset.' + slug(path.basename(abs)), path: abs };
+          this.assets.set(abs, asset);
+          const srcId = `${id}.hdri`;
+          // The environment source layer: an HDRI footage layer the light points at (AE flags it as environment).
+          ctx.comp.layers.push({ id: srcId, type: 'footage', name: `${L.name} HDRI`, in: inT, out: outT, footage: { asset: asset.id }, fit: 'none' }); // AE flags it as environment when the light's source is set (verified)
+          L.light.source = srcId;
+        }
+        break;
+      }
+      case 'model': {
+        if (!p.src) throw new Error(`[${id}] <Model> needs src (.glb/.gltf/.obj)`);
+        const abs = path.isAbsolute(p.src) ? p.src : path.resolve(ctx.sceneDir, p.src);
+        const asset = this.assets.get(abs) ?? { id: 'asset.' + slug(path.basename(abs)), path: abs };
+        this.assets.set(abs, asset);
+        L.footage = { asset: asset.id };
+        L.threeD = true;
+        break;
+      }
       default:
         throw new Error(`<${el.type?.displayName ?? kind}> is not a layer`);
     }
     // Transform
-    const rest = { x: ctx.comp.w / 2, y: ctx.comp.h / 2, z: 0 };
+    const isCam = kind === 'camera';
+    const camInfo = isCam ? cameraProps(p, vctx, ctx.comp.w, ctx.comp.h) : null;
+    const rest = { x: ctx.comp.w / 2, y: ctx.comp.h / 2, z: isCam ? camInfo!.restZ : kind === 'light' ? -600 : 0 };
     for (const k of ['x', 'y', 'z'] as const) if (typeof p[k] === 'number') rest[k] = p[k];
-    if (Array.isArray(p.position)) { rest.x = p.position[0]; rest.y = p.position[1]; rest.z = p.position[2] ?? 0; }
+    if (Array.isArray(p.position)) { rest.x = p.position[0]; rest.y = p.position[1]; rest.z = p.position[2] ?? rest.z; }
     const tProps = { ...p };
     if (typeof p.x === 'number' && !anim.x) delete (tProps as any).x;
     if (typeof p.y === 'number' && !anim.y) delete (tProps as any).y;
     if (typeof p.z === 'number' && !anim.z) delete (tProps as any).z;
     if (Array.isArray(p.position) && !anim.position) delete (tProps as any).position;
-    props.unshift(...lowerTransform({ props: tProps, anim, rest, threeD: !!L.threeD }, vctx));
+    if (isCam || kind === 'light') delete (tProps as any).anchor; // camera/light anchor is the point of interest
+    // Ambient and environment lights have no transform in AE (writing it fails).
+    const noTransform = kind === 'light' && (p.kind === 'ambient' || p.kind === 'environment');
+    if (!noTransform) props.unshift(...lowerTransform({ props: tProps, anim, rest, threeD: !!L.threeD }, vctx));
+    if (camInfo) props.push(...camInfo.props);
+    if (kind === 'light') props.push(...lightProps(p, vctx, ctx.comp.w, ctx.comp.h));
+    if (L.threeD && kind !== 'camera' && kind !== 'light') {
+      props.push(...materialProps(p.material, vctx, kind === 'model'));
+      props.push(...geometryProps(p.geometry, vctx, kind));
+    }
+    if (p.autoOrient) L.autoOrient = { none: 'NO_AUTO_ORIENT', path: 'ALONG_PATH', camera: 'CAMERA_OR_POINT_OF_INTEREST', characters: 'CHARACTERS_TOWARD_CAMERA' }[p.autoOrient as string];
+    if (L.threeD) ctx.comp.has3D = true;
+    const hasFxChildren = (p.effects ?? []).length > 0 || childrenOf(kind === 'precomp' ? [] : p.children).some((c) => typeof c !== 'string' && (c.type?.aec === 'effect' || c.type?.aec === 'mask'));
+    for (const f of featuresOf(kind, p, !!L.threeD, hasFxChildren)) ctx.comp.features.add(f);
+    if (p.motionBlur && ctx.comp.motionBlur !== false && L.threeD) ctx.comp.features.add('motionBlur');
     // Children: effects and masks
     const fx: any[] = [], masks: any[] = [];
-    for (const c of childrenOf(p.children)) {
+    for (const c of [...(kind === 'precomp' ? [] : childrenOf(p.children)), ...childrenOf(p.effects ?? [])]) {
       if (typeof c === 'string') continue;
       const ck = c.type?.aec;
       if (ck === 'effect') fx.push(this.effect(c, vctx, id));

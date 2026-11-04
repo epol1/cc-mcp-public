@@ -79,6 +79,8 @@ export function applyKeys(ctx: Ctx, prop: Property, keys: IrKey[]): void {
     prop.setTemporalContinuousAtKey(idx, k.tc === true);
     if (it === KeyframeInterpolationType.BEZIER || ot === KeyframeInterpolationType.BEZIER) {
       (prop as any).setTemporalEaseAtKey(idx, eases(k.ie, dims, cs), eases(k.oe, dims, cs));
+      // Setting eases turns HOLD/LINEAR sides back into BEZIER (verified): re-apply the interpolation.
+      if (it !== KeyframeInterpolationType.BEZIER || ot !== KeyframeInterpolationType.BEZIER) prop.setInterpolationTypeAtKey(idx, it, ot);
     }
     if (k.label) {
       try { (prop as any).setLabelAtKey(idx, k.label); } catch (e) { /* older AE */ }

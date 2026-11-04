@@ -131,7 +131,7 @@ function mergeKeys(lists: IrKey[][]): IrKey[] {
   const outK: IrKey[] = [];
   for (const list of lists) for (const k of list) {
     const last = outK[outK.length - 1];
-    if (last && Math.abs(last.t - k.t) < 1e-6) { last.oe = k.oe; last.v = k.v; continue; }
+    if (last && Math.abs(last.t - k.t) < 1e-6) { last.oe = k.oe; last.v = k.v; if (k.o) last.o = k.o; continue; }
     if (last && k.t < last.t) throw new Error(`animation parts overlap in time (${k.t.toFixed(3)}s < ${last.t.toFixed(3)}s)`);
     outK.push(k);
   }
@@ -191,8 +191,11 @@ function lowerAnim(a: Anim, target: PropTarget, ctx: ValueCtx, start: number): {
       const mode = a.mode === 'pingpong' ? 'pingpong' : a.mode;
       return { keys: inner.keys, expr: `loopOut(${JSON.stringify(mode)});` };
     }
-    case 'expr':
-      return { expr: a.code };
+    case 'expr': {
+      let code = a.code;
+      for (const ref of a.refs ?? []) code = code.split(`__AEC_CONTROL(${ref.name})__`).join(`(${ctx.controls.use(ref)})`);
+      return { expr: code };
+    }
     case 'fn': {
       const dur = parseTime(a.duration as any, ctx.fps);
       const delay = parseTime(a.delay as any, ctx.fps, 0);

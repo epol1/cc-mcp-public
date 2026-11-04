@@ -85,7 +85,7 @@ Also: `Effect` (by friendly name or matchName, typed params), `Mask`, `TrackMatt
 
 ### 2.4 Layout (resolved with real AE text metrics)
 - `Stack` (direction, gap, align, justify), `Row`, `Column`, `Grid`, `Center`, `Align` (to comp, safe area or parent box), `Padding`, `SafeArea` (action/title safe, or custom insets), `Box` (explicit size), plus 3D helpers (§8.5).
-- The **layout solver lives in `src/shared/layout.ts`** and is compiled both for Node and into the ES3 runtime. The build runs in AE in this order:
+- The **layout solver lives in `src/shared/es3/layout.ts`** and is compiled both for Node and into the ES3 runtime. The build runs in AE in this order:
   1. create the layers,
   2. measure them (`sourceRectAtTime`, `composedLineCount`),
   3. solve the layout,
@@ -252,7 +252,7 @@ Targets are ids, names or paths. Ambiguous targets fail with candidates listed. 
 - Results larger than ~100 KB are spilled by the runtime to a temp file and read by Node.
 
 ## 8. 3D system (first-class)
-1. **Renderer control:** `renderer: "advanced3d" | "cinema4d" | "classic3d"` (`ADBE Advanced 3d` / `ADBE Ernst` / `ADBE Calder`). `src/compile/renderers.ts` holds the **feature table**: extrusion/bevel, environment light, HDRI, reflections, shadows, 3D models, DOF, motion blur, per renderer. Compile fails with a clear message and the suggested renderer when a scene uses an unsupported feature. Renderer quality options are not scriptable in 26.5, so the docs say so.
+1. **Renderer control:** `renderer: "advanced3d" | "cinema4d" | "classic3d"` (`ADBE Calder` / `ADBE Ernst` / `ADBE Advanced 3d`, see D36). `src/compile/renderers.ts` holds the **feature table**: extrusion/bevel, environment light, HDRI, reflections, shadows, 3D models, DOF, motion blur, per renderer. Compile fails with a clear message and the suggested renderer when a scene uses an unsupported feature. Renderer quality options are not scriptable in 26.5, so the docs say so.
 2. **3D layers:**
    - all transforms: position combined or separated, orientation vs. X/Y/Z rotation, scale, anchor, auto-orient (`CAMERA_OR_POINT_OF_INTEREST`, `CHARACTERS_TOWARD_CAMERA`),
    - `material={...}` (all Material Options),

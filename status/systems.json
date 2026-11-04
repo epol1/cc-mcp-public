@@ -537,7 +537,7 @@
         {
           "id": "solver",
           "name": "Shared layout solver",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
@@ -557,6 +557,12 @@
           "name": "Safe areas + aspect presets",
           "status": "todo",
           "weight": 1
+        },
+        {
+          "id": "layout-integrate",
+          "name": "Solver in runtime + DSL containers",
+          "status": "todo",
+          "weight": 3
         }
       ]
     },
@@ -567,49 +573,49 @@
         {
           "id": "3d-layers",
           "name": "3D layers + transforms",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "renderer",
           "name": "Renderer control + feature table",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "camera",
           "name": "Cameras + DOF",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "cam-rigs",
           "name": "Camera rigs (orbit/dolly/lookAt…)",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
           "id": "lights",
           "name": "Lights + HDRI environment",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "materials",
           "name": "Material options",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "extrude",
           "name": "Extrusion + bevel",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "models",
           "name": "3D models + animations",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
@@ -617,6 +623,12 @@
           "name": "3D layout helpers",
           "status": "todo",
           "weight": 2
+        },
+        {
+          "id": "renderer-ids",
+          "name": "Correct renderer IDs from AE strings",
+          "status": "done",
+          "weight": 1
         }
       ]
     },
@@ -633,42 +645,54 @@
         {
           "id": "p-components",
           "name": "Typed components",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p-layerref",
           "name": "Layer-ref source precomps",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p-emitter",
           "name": "Emitter linking",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p-bursts",
           "name": "Marker-synced bursts",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "p-camera",
           "name": "Camera integration",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p-presets",
           "name": "Presets (7)",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
           "id": "p-seed",
           "name": "Seeds + determinism",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "p-calibrate",
+          "name": "Producer unit + camera calibration",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "p-confetti-multi",
+          "name": "Multi-color confetti (layered)",
           "status": "todo",
           "weight": 1
         }
@@ -705,7 +729,7 @@
         {
           "id": "insp-3d",
           "name": "3D + particles",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
@@ -759,7 +783,7 @@
         {
           "id": "ed-3d-particles",
           "name": "3D + particle edits",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         },
         {
@@ -1093,6 +1117,11 @@
     {
       "area": "AE API",
       "text": "project.serializeToXML needs an undocumented enum; .aepx gradient read uses saved copies instead",
+      "status": "open"
+    },
+    {
+      "area": "AE API",
+      "text": "Model embedded-animation selection (ModelAnimName) not exposed to scripting yet",
       "status": "open"
     }
   ]

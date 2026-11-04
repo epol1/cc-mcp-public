@@ -112,6 +112,8 @@ export function setStatic(ctx: Ctx, prop: Property, v: any): void {
   try {
     prop.setValue(val);
   } catch (e) {
+    // AE hides some properties depending on renderer/light/layer state; report, don't abort the build.
+    if (String(e).indexOf('hidden') >= 0) { warn(ctx, prop.name + ' (' + prop.matchName + ') is hidden in the current renderer/state and was not set'); return; }
     fail(ctx, 'cannot set ' + prop.name + ' (' + prop.matchName + '): ' + e);
   }
 }

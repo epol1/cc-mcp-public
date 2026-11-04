@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.006**: 50.43% weighted, 74/149 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.007**: 61.60% weighted, 90/153 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -102,49 +102,53 @@
 - [ ] Variants _(w2)_
 - [ ] Compare comp
 
-## Layout (0%)
-- [ ] Shared layout solver _(w3)_
+## Layout (33%)
+- [x] Shared layout solver _(w3)_
 - [ ] AE-side text measurement
 - [ ] Layout-relative animation
 - [ ] Safe areas + aspect presets
+- [ ] Solver in runtime + DSL containers _(w3)_
 
-## 3D System (0%)
-- [ ] 3D layers + transforms
-- [ ] Renderer control + feature table _(w2)_
-- [ ] Cameras + DOF _(w2)_
-- [ ] Camera rigs (orbit/dolly/lookAt…) _(w3)_
-- [ ] Lights + HDRI environment _(w2)_
-- [ ] Material options
-- [ ] Extrusion + bevel
-- [ ] 3D models + animations _(w2)_
+## 3D System (74%)
+- [x] 3D layers + transforms
+- [x] Renderer control + feature table _(w2)_
+- [x] Cameras + DOF _(w2)_
+- [~] Camera rigs (orbit/dolly/lookAt…) _(w3)_
+- [x] Lights + HDRI environment _(w2)_
+- [x] Material options
+- [x] Extrusion + bevel
+- [~] 3D models + animations _(w2)_
 - [ ] 3D layout helpers _(w2)_
+- [x] Correct renderer IDs from AE strings
 
-## Particles (7%)
+## Particles (84%)
 - [x] Catalog coverage (9 systems)
-- [ ] Typed components _(w2)_
-- [ ] Layer-ref source precomps _(w2)_
-- [ ] Emitter linking _(w2)_
-- [ ] Marker-synced bursts
-- [ ] Camera integration _(w2)_
-- [ ] Presets (7) _(w3)_
-- [ ] Seeds + determinism
+- [x] Typed components _(w2)_
+- [x] Layer-ref source precomps _(w2)_
+- [x] Emitter linking _(w2)_
+- [x] Marker-synced bursts
+- [x] Camera integration _(w2)_
+- [~] Presets (7) _(w3)_
+- [x] Seeds + determinism
+- [x] Producer unit + camera calibration
+- [ ] Multi-color confetti (layered)
 
-## Inspector (75%)
+## Inspector (83%)
 - [x] Project/comp/layer walk _(w2)_
 - [x] Keys, eases, tangents _(w2)_
 - [x] Effect trees
 - [x] Text, shapes, masks _(w2)_
-- [ ] 3D + particles
+- [x] 3D + particles
 - [ ] .aepx gradient parse _(w2)_
 - [x] Compact agent outline _(w2)_
 
-## Edit Operations (92%)
+## Edit Operations (96%)
 - [x] Property/keys/easing ops _(w2)_
 - [x] Curve reshaping _(w2)_
 - [x] Effect add/remove/reorder/params
 - [x] Retime + replace footage
 - [x] Text/shape/path edits _(w2)_
-- [ ] 3D + particle edits
+- [~] 3D + particle edits
 - [x] addControls/variant/precompose _(w2)_
 - [x] One-step undo verified
 

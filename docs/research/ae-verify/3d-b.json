@@ -1,0 +1,42 @@
+{
+ "animOpts": [
+  {
+   "i": 1,
+   "n": "Name",
+   "m": "ADBE ModelAnimName",
+   "t": "NG",
+   "vt": "ONE_D",
+   "dropdown": null,
+   "valueText": null,
+   "kids": []
+  },
+  {
+   "i": 2,
+   "n": "Name",
+   "m": "ADBE ModelAnimName2",
+   "t": "P",
+   "vt": "NO_VALUE",
+   "dropdown": false
+  }
+ ],
+ "dogReflect": "active,adjustmentLayer,audioActive,audioEnabled,autoOrient,blendingMode,canSetCollapseTransformation,canSetEnabled,canSetTimeRemapEnabled,collapseTransformation,comment,containingComp,effectsActive,elided,enabled,environmentLayer,frameBlending,frameBlendingType,guideLayer,guides,hasAudio,hasTrackMatte,hasVideo,height,id,inPoint,index,isEffect,isMask,isModified,isNameFromSource,isNameSet,isTrackMatte,label,lightSource,lightType,locked,matchName,motionBlur,name,nullLayer,numProperties,outPoint,parent,parentProperty,preserveTransparency,propertyDepth,propertyIndex,propertyType,quality,samplingQuality,selected,selectedProperties,shy,solo,source,startTime,stretch,threeDLayer,threeDPerChar,time,timeRemapEnabled,trackMatteLayer,trackMatteType,width,__proto__",
+ "dogTimeRemap": false,
+ "dogDur": 30,
+ "snaps": {
+  "ADBE Advanced 3d": true,
+  "ADBE Ernst": true,
+  "ADBE Calder": true
+ },
+ "extrude_0": {
+  "set": "ok",
+  "hidden": false
+ },
+ "extrude_1": {
+  "set": "ok",
+  "hidden": false
+ },
+ "extrude_2": {
+  "set": "ok",
+  "hidden": false
+ }
+}

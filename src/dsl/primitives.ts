@@ -48,6 +48,8 @@ export interface LayerProps {
   props?: Record<string, V<any>>;
   /** Raw expressions by AE path. */
   expressions?: Record<string, string>;
+  /** Effects as a list (needed on <Precomp>, whose children are its contents). Same as <Effect> children. */
+  effects?: any[];
   children?: Children;
 }
 
@@ -201,3 +203,81 @@ export interface EffectProps {
 export const Effect = prim<EffectProps>('effect');
 export interface MaskProps { path?: string; points?: PathPoint[]; rect?: { x: number; y: number; width: number; height: number; roundness?: number }; mode?: 'add' | 'subtract' | 'intersect' | 'none' | 'lighten' | 'darken' | 'difference'; feather?: V<Vec>; expansion?: V<number>; opacity?: V<number>; inverted?: boolean; name?: string }
 export const Mask = prim<MaskProps>('mask');
+
+// ---------- 3D ----------
+export interface MaterialProps {
+  /** true/false or "only" (casts shadows only, invisible itself). */
+  castsShadows?: boolean | 'only';
+  acceptsShadows?: boolean | 'only';
+  acceptsLights?: boolean;
+  appearsInReflections?: boolean;
+  ambient?: V<number>; diffuse?: V<number>; specular?: V<number>; shininess?: V<number>; metal?: V<number>;
+  reflection?: V<number>; reflectionSharpness?: V<number>; reflectionRolloff?: V<number>;
+  transparency?: V<number>; transparencyRolloff?: V<number>; ior?: V<number>; lightTransmission?: V<number>;
+  shadowColor?: ColorSpec;
+}
+export interface GeometryProps {
+  /** Extrusion depth in px (text/shape; Advanced 3D or Cinema 4D renderer). */
+  extrusion?: V<number>;
+  bevel?: { style?: 'none' | 'angular' | 'concave' | 'convex'; depth?: V<number>; direction?: 'inward' | 'outward' | 'center' };
+  holeBevelDepth?: V<number>;
+  /** Footage planes: curvature (-100..100) and segments. */
+  curvature?: V<number>;
+  segments?: number;
+}
+export interface Layer3DProps {
+  material?: MaterialProps;
+  geometry?: GeometryProps;
+  autoOrient?: 'none' | 'path' | 'camera' | 'characters';
+}
+// Interface merging: every layer accepts the 3D props.
+export interface LayerProps extends Layer3DProps {}
+
+export interface CameraProps extends LayerProps {
+  /** Focal length in mm (36 mm film width), e.g. 24 wide, 50 normal, 85 portrait. Alternative to zoom. */
+  lens?: number;
+  zoom?: V<number>;
+  /** Two-node camera target (default comp centre). Ignored when oneNode. */
+  pointOfInterest?: V<Vec>;
+  oneNode?: boolean;
+  /** Aim the camera at a layer (by id) via expression. */
+  lookAt?: string;
+  dof?: boolean;
+  focusDistance?: V<number>;
+  /** Keep focus on a layer (by id) via expression (rack focus = animate which layer, or animate focusDistance). */
+  focusOn?: string;
+  /** Aperture in px; or give fStop (aperture = zoom / fStop). */
+  aperture?: V<number>;
+  fStop?: number;
+  blurLevel?: V<number>;
+  iris?: { shape?: 'fastRectangle' | 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'heptagon' | 'octagon' | 'nonagon' | 'decagon'; rotation?: number; roundness?: number; aspect?: number; diffraction?: number; highlightGain?: number; highlightThreshold?: number; highlightSaturation?: number };
+}
+export const Camera = prim<CameraProps>('camera');
+
+export interface LightProps extends LayerProps {
+  kind?: 'parallel' | 'spot' | 'point' | 'ambient' | 'environment';
+  intensity?: V<number>;
+  color?: V<ColorSpec>;
+  coneAngle?: V<number>;
+  coneFeather?: V<number>;
+  falloff?: 'none' | 'smooth' | 'inverseSquare';
+  radius?: V<number>;
+  falloffDistance?: V<number>;
+  castsShadows?: boolean;
+  shadowDarkness?: V<number>;
+  shadowDiffusion?: V<number>;
+  pointOfInterest?: V<Vec>;
+  lookAt?: string;
+  /** Environment light image (equirectangular .hdr/.exr/.png). Advanced 3D only. */
+  hdri?: string;
+  backgroundVisible?: boolean;
+  backgroundOpacity?: V<number>;
+  backgroundBlur?: V<number>;
+}
+export const Light = prim<LightProps>('light');
+
+export interface ModelProps extends LayerProps {
+  /** .glb / .gltf / .obj file (absolute or relative to the scene). Advanced 3D renderer. */
+  src: string;
+}
+export const Model = prim<ModelProps>('model');

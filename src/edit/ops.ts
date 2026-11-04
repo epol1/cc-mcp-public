@@ -48,7 +48,7 @@ export const AgentOp = z.discriminatedUnion('op', [
 export type AgentOp = z.infer<typeof AgentOp>;
 export interface EditInput { comp?: string | number; ops: AgentOp[] }
 
-const RENDER = { advanced3d: 'ADBE Advanced 3d', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Calder' };
+const RENDER = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' }; // D36
 
 function conv(v: any): any {
   if (typeof v === 'string' && /^(#|rgb|hsl)/i.test(v)) return parseColor(v);

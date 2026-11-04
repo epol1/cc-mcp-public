@@ -25,7 +25,7 @@ Each section ends with a **Recommendation**. "Verified" means it was run against
 | **Crash:** touching shape-gradient internals (`ADBE Vector Grad Colors`, G-Fill/G-Stroke subproperties) crashes AE `(0 :: 42)`. | 3 crashes; a step-logged run without gradients passed |
 
 ### Renderers and 3D
-- `comp.renderers` = `["ADBE Advanced 3d", "ADBE Calder", "ADBE Ernst"]` (Advanced 3D, Classic 3D, Cinema 4D). All three are switchable via `comp.renderer`. Renderer quality, shadow and environment settings are **not** exposed to scripting; only the renderer choice is.
+- `comp.renderers` = `["ADBE Advanced 3d", "ADBE Calder", "ADBE Ernst"]`. **Corrected (D36): `ADBE Advanced 3d` = Classic 3D (legacy ID, the new-comp default here), `ADBE Calder` = Advanced 3D, `ADBE Ernst` = Cinema 4D**, confirmed from AE's localized UI strings and by rendering extruded text (Classic 3D hides Geometry Options). All three are switchable via `comp.renderer`. Renderer quality, shadow and environment settings are **not** exposed to scripting; only the renderer choice is.
 - **Material Options** (`ADBE Material Options Group`), with the same tree on all renderers: Casts/Accepts Shadows, Accepts Lights, Light Transmission, Shadow Color, Appears in Reflections, Ambient, Diffuse, Specular Intensity, Specular Shininess, Metal, Reflection Intensity/Sharpness/Rolloff, Transparency, Transparency Rolloff, Index of Refraction.
 - **Geometry Options** (`ADBE Extrsn Options Group`) on text and shape layers: Bevel Style, Bevel Direction, Bevel Depth, Hole Bevel Depth, Extrusion Depth. Footage layers get `ADBE Plane Options Group` (Curvature, Segments).
 - **Camera** (`ADBE Camera Options Group`): Zoom, Depth of Field, Focus Distance, Aperture, Blur Level, Focus Area Width, Near/Far Blur Level, Iris Shape/Rotation/Roundness/Aspect Ratio/Diffraction Fringe, Highlight Gain/Threshold/Saturation.
@@ -76,7 +76,7 @@ Convert Expression to Keyframes **2639**, Create Shapes from Vector Layer **3973
 - Primary backend: the CEP bridge with eval-wrapping. Fallback: `AfterFX.com -r`. Add the dialog watchdog plus the crash-recovery routine.
 - Shape gradients: write via generated `.ffx` presets (`layer.applyPreset`), read by parsing a saved `.aepx` copy. Never touch the gradient properties directly.
 - Measure text in AE (`sourceRectAtTime`) through a measurement round-trip before layout, falling back to Node estimates when AE is unavailable.
-- 3D defaults: Advanced 3D for HDRI/environment lighting and models. Cinema 4D for extrusion and bevel of text/shapes. Classic 3D only for legacy or speed.
+- 3D defaults: Advanced 3D (`ADBE Calder`) for models, environment/HDRI lighting, shadows and extrusion. Cinema 4D (`ADBE Ernst`) as an alternative extrusion renderer. Classic 3D (`ADBE Advanced 3d`) only for legacy work or speed (no extrusion). After `threeDLayer = true`, re-assign `comp.renderer` before writing Geometry Options, or AE reports them as hidden.
 
 ---
 

@@ -66,7 +66,12 @@ export function applyProps(ctx: Ctx, layer: Layer, owner: any, specs: PropSpec[]
     if (s.enabled !== undefined) {
       try { (prop as any).enabled = s.enabled; } catch (e) { warn(ctx, 'cannot toggle ' + s.p); }
     }
-    if (s.keys && s.keys.length) applyKeys(ctx, prop, s.keys);
+    if (s.keys && s.keys.length) {
+      try { applyKeys(ctx, prop, s.keys); } catch (e) {
+        if (String(e).indexOf('hidden') >= 0) { warn(ctx, prop.name + ' is hidden in the current renderer/state; keys not set'); continue; }
+        throw e;
+      }
+    }
     else if (s.v !== undefined) setStatic(ctx, prop, s.v);
     if (s.expr) pending.exprs[pending.exprs.length] = { owner: ownerPath, layer: layer, spec: s, id: ctx.cur };
   }

@@ -152,6 +152,9 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     if (L.type === 'footage' || L.type === 'model') applyFootage(ctx, layer, comp, L);
   });
   each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
+  // Re-assigning the renderer refreshes 3D property visibility: right after threeDLayer = true AE reports
+  // Geometry Options as hidden until the comp's renderer is (re)set (verified, D36).
+  if (c.renderer) { try { comp.renderer = c.renderer; } catch (e) { warn(ctx, 'renderer ' + c.renderer + ' unavailable'); } }
   // Pass 3: structure (shape contents, effects, masks, text animators).
   each(c.layers, (L) => {
     ctx.cur = L.id;

@@ -28,7 +28,7 @@ export interface KeysAnim { $anim: 'keys'; keys: { t: T; v: ValueOrControl<Vec>;
 export interface SeqAnim { $anim: 'seq'; parts: Anim[] }
 export interface WiggleAnim { $anim: 'wiggle'; freq: Num; amp: Num; octaves?: number; ampMult?: number; seed?: number }
 export interface LoopAnim { $anim: 'loop'; anim: Anim; mode: 'cycle' | 'pingpong' | 'offset' | 'continue' }
-export interface ExprAnim { $anim: 'expr'; code: string }
+export interface ExprAnim { $anim: 'expr'; code: string; /** Controls referenced in code as __AEC_CONTROL(Name)__. */ refs?: ControlRef[] }
 export interface FnAnim { $anim: 'fn'; fn: (t: number) => Vec; duration: T; delay?: T; as?: 'keys' | 'expression' }
 export type Anim = TweenAnim | SpringAnim | KeysAnim | SeqAnim | WiggleAnim | LoopAnim | ExprAnim | FnAnim;
 
@@ -72,8 +72,8 @@ export function loop(anim: Anim, mode: LoopAnim['mode'] = 'cycle'): LoopAnim {
 }
 
 /** Raw AE expression (escape hatch). */
-export function expr(code: string): ExprAnim {
-  return { $anim: 'expr', code };
+export function expr(code: string, refs?: ControlRef[]): ExprAnim {
+  return { $anim: 'expr', code, refs };
 }
 
 /** Arbitrary (t)=>value curve, sampled and reduced to native keys within tolerance. t is seconds from start. */
