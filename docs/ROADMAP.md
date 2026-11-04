@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.007**: 61.60% weighted, 90/153 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.008**: 64.44% weighted, 95/154 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -55,7 +55,7 @@
 - [x] Effect/Mask/TrackMatte
 - [ ] Brand tokens/theme helpers
 
-## Animation & Easing (93%)
+## Animation & Easing (94%)
 - [x] Bezier→KeyframeEase (1D/multi/spatial) _(w3)_
 - [x] valueAtTime verification in AE _(w2)_
 - [x] Easing presets (Remotion set)
@@ -65,6 +65,7 @@
 - [~] stagger/loop/wiggle
 - [~] (t)=>value escape hatch
 - [x] Color ease calibration (255 units)
+- [x] Motion blur: comp/layer/forced (CC Force MB, Pixel MB) _(w2)_
 
 ## Text Animation (55%)
 - [x] Full TextDocument + style runs _(w2)_
@@ -102,12 +103,12 @@
 - [ ] Variants _(w2)_
 - [ ] Compare comp
 
-## Layout (33%)
+## Layout (100%)
 - [x] Shared layout solver _(w3)_
-- [ ] AE-side text measurement
-- [ ] Layout-relative animation
-- [ ] Safe areas + aspect presets
-- [ ] Solver in runtime + DSL containers _(w3)_
+- [x] AE-side text measurement
+- [x] Layout-relative animation
+- [x] Safe areas + aspect presets
+- [x] Solver in runtime + DSL containers _(w3)_
 
 ## 3D System (74%)
 - [x] 3D layers + transforms

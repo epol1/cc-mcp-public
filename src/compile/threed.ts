@@ -127,6 +127,9 @@ export function featuresOf(kind: string, p: any, threeD: boolean, hasFx: boolean
   if (m && (m.reflection || m.transparency || (m.ior !== undefined && m.ior !== 1))) f.push('pbrMaterials');
   if (m && m.lightTransmission) f.push('lightTransmission');
   if (threeD && (kind === 'text' || kind === 'shape' || kind === 'model') && (hasFx || p.matte || (p.blend && p.blend !== 'NORMAL'))) f.push('effectsOn3DVector');
-  if (threeD && p.motionBlur) f.push('motionBlur');
+  const mb = p.motionBlur;
+  const mbMode = typeof mb === 'string' ? mb : mb && typeof mb === 'object' ? mb.mode ?? 'native' : mb ? 'native' : undefined;
+  if (threeD && mbMode === 'native') f.push('motionBlur');
+  if (threeD && (mbMode === 'force' || mbMode === 'pixel') && (kind === 'text' || kind === 'shape' || kind === 'model')) f.push('effectsOn3DVector');
   return f;
 }

@@ -12,6 +12,8 @@ import { applyProps, buildGroups, flushExpressions } from './groups';
 import { setTextDocument } from './text';
 import { mustResolve } from './props';
 import { snapshotComp } from './snapshot';
+import type { IrLayout } from './layout';
+import { measureLeaf, solveComp } from './layout';
 import { each, now } from './util';
 
 export interface IrComp {
@@ -28,10 +30,12 @@ export interface IrComp {
   shutterAngle?: number;
   shutterPhase?: number;
   samples?: number;
+  adaptive?: number;
   draft3d?: boolean;
   part?: boolean; // helper precomp → _parts folder
   layers: IrLayer[];
   markers?: { t: number; comment?: string; dur?: number }[];
+  layouts?: IrLayout[];
   mgt?: { name: string; props: { layer: string; p: string; name: string }[] };
 }
 
@@ -130,6 +134,7 @@ function setupComp(ctx: Ctx, c: IrComp, folder: FolderItem, parts: FolderItem, r
   if (c.shutterAngle !== undefined) comp.shutterAngle = c.shutterAngle;
   if (c.shutterPhase !== undefined) comp.shutterPhase = c.shutterPhase;
   if (c.samples !== undefined) comp.motionBlurSamplesPerFrame = c.samples;
+  if (c.adaptive !== undefined) comp.motionBlurAdaptiveSampleLimit = c.adaptive;
   if (c.draft3d !== undefined) comp.draft3d = c.draft3d;
   return comp;
 }
@@ -137,6 +142,7 @@ function setupComp(ctx: Ctx, c: IrComp, folder: FolderItem, parts: FolderItem, r
 function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Property; id: string }[]): void {
   ctx.layers = {};
   const pending: Pending = { exprs: [] };
+  const sizes: { [id: string]: number[] } = {};
   // Pass 1: create bottom-up so final stacking equals IR order (index 0 = top).
   for (let i = c.layers.length - 1; i >= 0; i--) {
     const L = c.layers[i];
@@ -148,7 +154,7 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     ctx.cur = L.id;
     const layer = ctx.layers[L.id];
     setLayerAttrs(ctx, layer, L);
-    if (L.text) { setTextDocument(ctx, layer as TextLayer, L.text); applyAnchorBox(layer, L); }
+    if (L.text) { setTextDocument(ctx, layer as TextLayer, L.text); applyAnchorBox(layer, L); measureLeaf(ctx, layer, L, sizes); }
     if (L.type === 'footage' || L.type === 'model') applyFootage(ctx, layer, comp, L);
   });
   each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
@@ -162,9 +168,17 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     for (let g = 0; g < L.groups.length; g++) buildGroups(ctx, ctx.layers[L.id], ctx.layers[L.id], L.groups[g].at, L.groups[g].items, pending);
   });
   // Shape anchors need the contents built first (text anchors were measured before animators).
-  each(c.layers, (L) => { if (L.type === 'shape') { ctx.cur = L.id; applyAnchorBox(ctx.layers[L.id], L); } });
+  each(c.layers, (L) => {
+    ctx.cur = L.id;
+    if (L.type !== 'text') { applyAnchorBox(ctx.layers[L.id], L); measureLeaf(ctx, ctx.layers[L.id], L, sizes); }
+  });
+  // Layout: solve with real metrics; laid-out layers get their slot centre as position base.
+  const anchors: { [id: string]: number[] } = {};
+  each(c.layers, (L) => { if (L.anchorBox) anchors[L.id] = L.anchorBox; });
+  const slots = c.layouts && c.layouts.length ? solveComp(ctx, c.layouts, sizes, anchors) : {};
   // Pass 4: values and keyframes.
-  each(c.layers, (L) => { ctx.cur = L.id; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); });
+  each(c.layers, (L) => { ctx.cur = L.id; (ctx as any).layoutBase = slots[L.id] || null; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); });
+  (ctx as any).layoutBase = null;
   // Pass 5: expressions (all targets exist now).
   flushExpressions(ctx, pending, exprsOut);
   if (c.markers) {

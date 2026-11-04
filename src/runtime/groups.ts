@@ -14,6 +14,7 @@ export interface PropSpec {
   keys?: IrKey[];
   expr?: string;
   sep?: boolean; // set dimensionsSeparated on this property
+  rel?: number[]; // add the layout slot centre (component indices) to values and keys
   enabled?: boolean;
 }
 
@@ -62,6 +63,17 @@ export function applyProps(ctx: Ctx, layer: Layer, owner: any, specs: PropSpec[]
     if (s.sep !== undefined) {
       (prop as any).dimensionsSeparated = s.sep;
       continue;
+    }
+    const base = (ctx as any).layoutBase as number[] | null;
+    if (s.rel && base) {
+      const add = (v: any) => {
+        if (typeof v === 'number') return v + base[s.rel![0]];
+        const o: number[] = [];
+        for (let d = 0; d < v.length; d++) o[d] = v[d] + (d < s.rel!.length ? base[s.rel![d]] || 0 : 0);
+        return o;
+      };
+      if (s.v !== undefined) s.v = add(s.v);
+      if (s.keys) for (let k = 0; k < s.keys.length; k++) s.keys[k].v = add(s.keys[k].v);
     }
     if (s.enabled !== undefined) {
       try { (prop as any).enabled = s.enabled; } catch (e) { warn(ctx, 'cannot toggle ' + s.p); }

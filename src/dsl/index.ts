@@ -3,6 +3,7 @@ export { scene } from './scene.ts';
 export type { SceneConfig, SceneDef } from './scene.ts';
 export { Fragment } from './jsx-runtime.ts';
 export * from './primitives.ts';
+export { Stack, Row, Column, Grid, Align, Center, Padding, Box, Overlay, SafeArea } from './layout.ts';
 export { tween, spring, keys, seq, wiggle, loop, expr, sample, fade, slideIn, popIn, perChar, perWord, perLine, textPresets } from './anim.ts';
 export type { Anim, TextUnitsAnim, TextUnitFrom, Vec } from './anim.ts';
 export { control } from './control.ts';

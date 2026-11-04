@@ -11,7 +11,8 @@ export interface SceneConfig<P = Record<string, any>> {
   duration: Time;
   bg?: ColorSpec;
   renderer?: 'advanced3d' | 'cinema4d' | 'classic3d';
-  motionBlur?: boolean;
+  /** Comp motion blur: true, or { shutterAngle, shutterPhase, samples, adaptiveLimit }. */
+  motionBlur?: boolean | { enabled?: boolean; shutterAngle?: number; shutterPhase?: number; samples?: number; adaptiveLimit?: number };
   /** Default params (overridden per variant). `seed` drives every random/particle seed. */
   params?: P & { seed?: number };
   /** Variant param overrides: { A: {...}, B: {...} } → sibling comps Name_v###_A/B. */

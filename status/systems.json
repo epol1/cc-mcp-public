@@ -335,6 +335,12 @@
           "name": "Color ease calibration (255 units)",
           "status": "done",
           "weight": 1
+        },
+        {
+          "id": "motion-blur",
+          "name": "Motion blur: comp/layer/forced (CC Force MB, Pixel MB)",
+          "status": "done",
+          "weight": 2
         }
       ]
     },
@@ -543,25 +549,25 @@
         {
           "id": "measure",
           "name": "AE-side text measurement",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "rel-anim",
           "name": "Layout-relative animation",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "safe-area",
           "name": "Safe areas + aspect presets",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "layout-integrate",
           "name": "Solver in runtime + DSL containers",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         }
       ]

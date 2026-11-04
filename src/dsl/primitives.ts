@@ -33,7 +33,12 @@ export interface LayerProps {
   /** id of the parent layer. */
   parent?: string;
   blend?: 'NORMAL' | 'ADD' | 'SCREEN' | 'MULTIPLY' | 'OVERLAY' | 'SOFT_LIGHT' | 'HARD_LIGHT' | 'COLOR_DODGE' | 'COLOR_BURN' | 'LIGHTEN' | 'DARKEN' | 'DIFFERENCE' | 'HUE' | 'SATURATION' | 'COLOR' | 'LUMINOSITY' | 'LINEAR_DODGE' | 'LINEAR_LIGHT' | 'VIVID_LIGHT' | 'PIN_LIGHT' | 'ALPHA_ADD' | 'SILHOUETE_ALPHA' | 'STENCIL_ALPHA';
-  motionBlur?: boolean;
+  /**
+   * Motion blur: true/'native' = layer switch (comp switch is turned on automatically);
+   * 'force' = CC Force Motion Blur (sub-frame sampling: works for effects, particles, precomps, Advanced 3D);
+   * 'pixel' = Pixel Motion Blur (optical flow, good for footage). Object form sets samples/shutter.
+   */
+  motionBlur?: boolean | 'native' | 'force' | 'pixel' | { mode?: 'native' | 'force' | 'pixel'; samples?: number; shutterAngle?: number; shutterPhase?: number };
   /** Layer start/end inside its Sequence (seconds or "1.2s"). */
   from?: Time;
   duration?: Time;
@@ -48,6 +53,8 @@ export interface LayerProps {
   props?: Record<string, V<any>>;
   /** Raw expressions by AE path. */
   expressions?: Record<string, string>;
+  /** Inside layout containers: share of leftover space, self-alignment, explicit slot size. */
+  layout?: { grow?: number; align?: 'start' | 'center' | 'end' | 'stretch'; width?: number; height?: number; offset?: [number, number] };
   /** Effects as a list (needed on <Precomp>, whose children are its contents). Same as <Effect> children. */
   effects?: any[];
   children?: Children;
@@ -65,7 +72,8 @@ export interface CompositionProps {
   /** Background color (comp bg). */
   bg?: ColorSpec;
   renderer?: 'advanced3d' | 'cinema4d' | 'classic3d';
-  motionBlur?: boolean;
+  /** Comp motion blur switch, or { shutterAngle, shutterPhase, samples, adaptiveLimit }. */
+  motionBlur?: boolean | { enabled?: boolean; shutterAngle?: number; shutterPhase?: number; samples?: number; adaptiveLimit?: number };
   shutterAngle?: number;
   children?: Children;
 }
@@ -281,3 +289,12 @@ export interface ModelProps extends LayerProps {
   src: string;
 }
 export const Model = prim<ModelProps>('model');
+
+// ---------- Motion blur helper ----------
+export interface MotionBlurProps { mode?: 'force' | 'pixel'; samples?: number; shutterAngle?: number; shutterPhase?: number; name?: string; id?: string; from?: Time; duration?: Time }
+/**
+ * Adjustment layer that forces motion blur on everything below it (CC Force Motion Blur by default,
+ * or Pixel Motion Blur). Use when layer motion blur has no effect (particles, effects, Advanced 3D comps).
+ */
+export const MotionBlur = (p: MotionBlurProps) => ({ $$aec: 'element', type: Adjustment, props: { name: p.name ?? 'Force Motion Blur', id: p.id, from: p.from, duration: p.duration, motionBlur: { mode: p.mode ?? 'force', samples: p.samples, shutterAngle: p.shutterAngle, shutterPhase: p.shutterPhase } } });
+(MotionBlur as any).displayName = 'MotionBlur';

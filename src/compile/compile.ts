@@ -26,8 +26,8 @@ const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d
 export interface CompileOpts { version?: number; variant?: string; params?: Record<string, any>; sceneFile?: string }
 export interface CompileResult { ir: any; warnings: string[]; sources: Record<string, SourceLoc | undefined> }
 
-interface CompBuild { id: string; name: string; w: number; h: number; fps: number; dur: number; bg?: number[]; renderer?: string; rendererReq?: RendererKey; features: Set<Feature>; has3D?: boolean; motionBlur?: boolean; shutterAngle?: number; part?: boolean; layers: any[]; controls: ControlRegistry; markers?: any[] }
-interface Ctx { comp: CompBuild; start: number; end: number; path: string; seed: number; scene: SceneDef; sceneDir: string; counters: Map<string, number>; threeD: boolean }
+interface CompBuild { id: string; name: string; w: number; h: number; fps: number; dur: number; bg?: number[]; renderer?: string; rendererReq?: RendererKey; features: Set<Feature>; has3D?: boolean; shutterPhase?: number; samples?: number; adaptive?: number; motionBlur?: boolean; shutterAngle?: number; part?: boolean; layers: any[]; controls: ControlRegistry; markers?: any[] }
+interface Ctx { comp: CompBuild; start: number; end: number; path: string; seed: number; scene: SceneDef; sceneDir: string; counters: Map<string, number>; threeD: boolean; inLayout?: boolean }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'x';
 
@@ -53,9 +53,10 @@ export class Compiler {
     const mainId = slug(cfg.name) + (this.opts.variant ? '-' + slug(this.opts.variant) : '');
     const comp: CompBuild = {
       id: mainId, name: compName, w: cfg.width ?? 1920, h: cfg.height ?? 1080, fps, dur: parseTime(cfg.duration, fps),
-      bg: cfg.bg ? rgb(cfg.bg) : undefined, renderer: undefined, motionBlur: cfg.motionBlur,
+      bg: cfg.bg ? rgb(cfg.bg) : undefined, renderer: undefined, motionBlur: undefined,
       layers: [], controls: new ControlRegistry(), features: new Set(), rendererReq: cfg.renderer,
     };
+    if (cfg.motionBlur !== undefined) applyCompMB(comp, cfg.motionBlur);
     const root = this.def.render({ ...params, seed });
     const ctx: Ctx = { comp, start: 0, end: comp.dur, path: mainId, seed, scene: this.def, sceneDir: this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd(), counters: new Map(), threeD: false };
     this.walk(root, ctx);
@@ -72,7 +73,7 @@ export class Compiler {
   }
 
   private irComp(c: CompBuild): any {
-    return { id: c.id, name: c.name, w: c.w, h: c.h, fps: c.fps, dur: c.dur, bg: c.bg, renderer: c.renderer, motionBlur: c.motionBlur, shutterAngle: c.shutterAngle, part: c.part, layers: c.layers, markers: c.markers, mgt: (c as any).mgt };
+    return { id: c.id, name: c.name, w: c.w, h: c.h, fps: c.fps, dur: c.dur, bg: c.bg, renderer: c.renderer, motionBlur: c.motionBlur, shutterAngle: c.shutterAngle, shutterPhase: c.shutterPhase, samples: c.samples, adaptive: c.adaptive, part: c.part, layers: c.layers, markers: c.markers, mgt: (c as any).mgt, layouts: (c as any).layouts };
   }
 
   /** Reverses JSX order (later = on top) into AE order (index 0 = top) and adds the Controls null. */
@@ -151,7 +152,7 @@ export class Compiler {
       case 'composition':
         if (p.bg) ctx.comp.bg = rgb(p.bg);
         if (p.renderer) ctx.comp.rendererReq = p.renderer;
-        if (p.motionBlur !== undefined) ctx.comp.motionBlur = p.motionBlur;
+        if (p.motionBlur !== undefined) applyCompMB(ctx.comp, p.motionBlur);
         if (p.shutterAngle !== undefined) ctx.comp.shutterAngle = p.shutterAngle;
         this.walk(p.children, ctx);
         return;
@@ -181,8 +182,74 @@ export class Compiler {
       case 'effect':
       case 'mask':
         throw new Error(`<${el.type.displayName}> must be a child of a layer (Solid, Text, Shape, Footage, Adjustment, ...)`);
+      case 'layout.safe': {
+        const k = p.kind ?? 'title';
+        const ins = Array.isArray(k) ? k : k === 'action' ? [5, 5, 5, 5].map((v, i) => (i % 2 ? ctx.comp.w : ctx.comp.h) * v / 100) : [10, 10, 10, 10].map((v, i) => (i % 2 ? ctx.comp.w : ctx.comp.h) * v / 100);
+        const area = { x: ins[3], y: ins[0], w: ctx.comp.w - ins[1] - ins[3], h: ctx.comp.h - ins[0] - ins[2] };
+        for (const c of childrenOf(p.children)) if (typeof c !== 'string') for (const root of this.layoutNodes(c, ctx)) this.addLayout(ctx, root, area);
+        return;
+      }
       default:
+        if (kind.startsWith('layout.')) {
+          for (const root of this.layoutNodes(el, ctx)) this.addLayout(ctx, root, { x: 0, y: 0, w: ctx.comp.w, h: ctx.comp.h });
+          return;
+        }
         this.layer(kind, el, ctx);
+    }
+  }
+
+  private addLayout(ctx: Ctx, root: any, area: { x: number; y: number; w: number; h: number }): void {
+    const c: any = ctx.comp;
+    (c.layouts ??= []).push({ root, area });
+  }
+
+  /** Builds solver nodes for an element; layer leaves are compiled as layers positioned relative to their slot. */
+  private layoutNodes(el: AecElement, ctx: Ctx): any[] {
+    const kind: string | undefined = el.type?.aec;
+    const p = el.props;
+    const kids = () => {
+      const out: any[] = [];
+      for (const c of childrenOf(p.children)) if (typeof c !== 'string') out.push(...this.layoutNodes(c, ctx));
+      return out;
+    };
+    if (!kind) {
+      if (typeof el.type === 'function') {
+        const r = el.type({ ...p });
+        return childrenOf(Array.isArray(r) ? r : [r]).flatMap((c) => (typeof c === 'string' ? [] : this.layoutNodes(c, ctx)));
+      }
+      throw new Error(`unknown JSX element type ${String(el.type)}`);
+    }
+    const pad = (v: any) => (v === undefined ? undefined : Array.isArray(v) ? v : [v, v, v, v]);
+    const common = (k: string) => {
+      const n: any = { id: p.id ?? this.uid(ctx, k.replace('layout.', ''), undefined), kind: k.replace('layout.', '') };
+      for (const f of ['gap', 'align', 'justify', 'columns', 'rowGap', 'colGap', 'width', 'height', 'minWidth', 'maxWidth', 'offset', 'grow', 'at', 'direction']) if (p[f] !== undefined) n[f] = p[f];
+      if (p.padding !== undefined) n.padding = pad(p.padding);
+      return n;
+    };
+    switch (kind) {
+      case 'layout.stack': case 'layout.grid': case 'layout.align': case 'layout.padding': case 'layout.box': case 'layout.overlay':
+        return [{ ...common(kind), children: kids() }];
+      case 'sequence': {
+        const start = ctx.start + parseTime(p.from, ctx.comp.fps, 0);
+        const end = p.duration !== undefined ? start + parseTime(p.duration, ctx.comp.fps) : ctx.end;
+        const sub = { ...ctx, start, end };
+        const out: any[] = [];
+        for (const c of childrenOf(p.children)) if (typeof c !== 'string') out.push(...this.layoutNodes(c, sub));
+        return out;
+      }
+      case 'layout.safe':
+        throw new Error('<SafeArea> must be at the top level of the composition');
+      case 'precomp': {
+        const before = ctx.comp.layers.length;
+        this.precomp(el, { ...ctx, inLayout: true } as any);
+        const L = ctx.comp.layers[ctx.comp.layers.length - 1];
+        void before;
+        return [{ id: L.id, kind: 'leaf', ...(p.layout ?? {}) }];
+      }
+      default: {
+        const id = this.layer(kind, el, { ...ctx, inLayout: true } as any);
+        return [{ id, kind: 'leaf', ...(p.layout ?? {}) }];
+      }
     }
   }
 
@@ -203,7 +270,7 @@ export class Compiler {
     this.layer('precomp', el, ctx, { precompId: id, id });
   }
 
-  private layer(kind: string, el: AecElement, ctx: Ctx, extra: { precompId?: string; id?: string } = {}): void {
+  private layer(kind: string, el: AecElement, ctx: Ctx, extra: { precompId?: string; id?: string } = {}): string {
     const p = el.props;
     const fps = ctx.comp.fps;
     const id = extra.id ?? this.uid(ctx, kind, p.id);
@@ -214,7 +281,9 @@ export class Compiler {
     const L: any = { id, type: kind === 'adjustment' ? 'adjustment' : kind, name: p.name ?? this.defaultName(kind, p, id), in: inT, out: outT };
     if (threeD) L.threeD = true;
     if (p.blend) L.blend = p.blend;
-    if (p.motionBlur !== undefined) L.motionBlur = p.motionBlur;
+    const mb = p.motionBlur;
+    if (mb === true || mb === 'native' || (mb && typeof mb === 'object' && (mb.mode ?? 'native') === 'native')) { L.motionBlur = true; if (ctx.comp.motionBlur === undefined) ctx.comp.motionBlur = true; }
+    else if (mb === false) L.motionBlur = false;
     if (p.hidden) L.enabled = false;
     if (p.shy) L.shy = true;
     if (p.guide) L.guide = true;
@@ -322,6 +391,7 @@ export class Compiler {
     const isCam = kind === 'camera';
     const camInfo = isCam ? cameraProps(p, vctx, ctx.comp.w, ctx.comp.h) : null;
     const rest = { x: ctx.comp.w / 2, y: ctx.comp.h / 2, z: isCam ? camInfo!.restZ : kind === 'light' ? -600 : 0 };
+    if (ctx.inLayout) { rest.x = 0; rest.y = 0; } // laid-out layers: position is an offset from the solved slot
     for (const k of ['x', 'y', 'z'] as const) if (typeof p[k] === 'number') rest[k] = p[k];
     if (Array.isArray(p.position)) { rest.x = p.position[0]; rest.y = p.position[1]; rest.z = p.position[2] ?? rest.z; }
     const tProps = { ...p };
@@ -333,6 +403,15 @@ export class Compiler {
     // Ambient and environment lights have no transform in AE (writing it fails).
     const noTransform = kind === 'light' && (p.kind === 'ambient' || p.kind === 'environment');
     if (!noTransform) props.unshift(...lowerTransform({ props: tProps, anim, rest, threeD: !!L.threeD }, vctx));
+    if (ctx.inLayout) {
+      for (const s of props) {
+        if (s.p === 'ADBE Transform Group/ADBE Position' && !s.sep) (s as any).rel = L.threeD ? [0, 1, 2] : [0, 1];
+        else if (/ADBE Position_0$/.test(s.p)) (s as any).rel = [0];
+        else if (/ADBE Position_1$/.test(s.p)) (s as any).rel = [1];
+      }
+      if (!L.anchorBox && !Array.isArray(p.anchor)) L.anchorBox = [0.5, 0.5];
+      L.layoutLeaf = true;
+    }
     if (camInfo) props.push(...camInfo.props);
     if (kind === 'light') props.push(...lightProps(p, vctx, ctx.comp.w, ctx.comp.h));
     if (L.threeD && kind !== 'camera' && kind !== 'light') {
@@ -353,6 +432,10 @@ export class Compiler {
       else if (ck === 'mask') masks.push(this.mask(c, vctx));
       else if (kind !== 'shape') throw new Error(`[${id}] <${c.type?.displayName ?? ck}> can't be a child of <${el.type.displayName}>; only <Effect> and <Mask> can`);
     }
+    // Forced motion blur: works where the layer switch doesn't (effects/particles/precomps, Advanced 3D).
+    const mbMode = typeof mb === 'string' ? mb : mb && typeof mb === 'object' ? mb.mode ?? 'native' : undefined;
+    if (mbMode === 'force') fx.push({ mn: 'CC Force Motion Blur', props: [{ p: 'Motion Blur Samples', v: mb.samples ?? 16 }, { p: 'Override Shutter Settings', v: 1 }, { p: 'Shutter Angle', v: mb.shutterAngle ?? ctx.comp.shutterAngle ?? 180 }, { p: 'Shutter Phase', v: mb.shutterPhase ?? 0 }, { p: 'Native Motion Blur', v: 2 }] });
+    else if (mbMode === 'pixel') fx.push({ mn: 'ADBE OFMotionBlur', props: [{ p: 'Shutter Control', v: 1 }, { p: 'Shutter Angle', v: mb.shutterAngle ?? 180 }, { p: 'Shutter Samples', v: mb.samples ?? 8 }] });
     if (masks.length) groups.push({ at: 'ADBE Mask Parade', items: masks });
     if (fx.length) groups.push({ at: 'ADBE Effect Parade', items: fx });
     for (const [k, v] of Object.entries(p.props ?? {})) {
@@ -363,6 +446,7 @@ export class Compiler {
     if (groups.length) L.groups = groups;
     if (props.length) L.props = props;
     ctx.comp.layers.push(L);
+    return id;
   }
 
 
@@ -408,6 +492,16 @@ export class Compiler {
     const base: Record<string, string> = { solid: 'Solid', null: 'Null', adjustment: 'Adjustment', shape: 'Shape', footage: 'Footage', precomp: 'Precomp' };
     return `${base[kind] ?? kind} ${id.split('.').pop()?.replace(/^\D+/, '') ?? ''}`.trim();
   }
+}
+
+/** Comp motion blur: true/false or { shutterAngle, shutterPhase, samples, adaptiveLimit }. */
+function applyCompMB(c: CompBuild, mb: any): void {
+  if (typeof mb === 'boolean') { c.motionBlur = mb; return; }
+  c.motionBlur = mb.enabled !== false;
+  if (mb.shutterAngle !== undefined) c.shutterAngle = mb.shutterAngle;
+  if (mb.shutterPhase !== undefined) c.shutterPhase = mb.shutterPhase;
+  if (mb.samples !== undefined) c.samples = mb.samples;
+  if (mb.adaptiveLimit !== undefined) c.adaptive = mb.adaptiveLimit;
 }
 
 export function compileScene(def: SceneDef, opts: CompileOpts = {}): CompileResult {
