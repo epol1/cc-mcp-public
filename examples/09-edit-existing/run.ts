@@ -3,13 +3,17 @@
 // written to the original file), inspects it, then restyles it with edit ops: re-ease every position move to a
 // snappier curve, add a glow, ripple a hold into the timeline, and add live Map Delay / Map Speed controls to
 // the hand-made map move. Contact sheets before and
-// after are written next to this file, then ONE undo restores the comp exactly.
+// after are written to ~/.ae-compose/out/EditExisting, then ONE undo restores the comp exactly.
 // Run: npx tsx examples/09-edit-existing/run.ts [--keep]
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { applyEdits, contactSheet, importFootage, inspect, undo } from '../../src/api/index.ts';
 
 const here = path.dirname(new URL(import.meta.url).pathname).replace(/^\/(\w:)/, '$1');
+// Outputs (outlines, contact sheets) are derived from a client project: keep them out of the repo.
+const outDir = path.join(os.homedir(), '.ae-compose', 'out', 'EditExisting');
+fs.mkdirSync(outDir, { recursive: true });
 const aep = path.resolve(here, '../../assets/handmade/languages_proj/languages.aep');
 
 // 1) Import (reused if it is already in the project).
@@ -26,9 +30,9 @@ console.log(`target: "${main.name}" #${comp} ${main.w}×${main.h} ${main.dur}s $
 
 // 2) Look before touching.
 const before = await inspect({ comp });
-fs.writeFileSync(path.join(here, 'outline_before.txt'), before.outline);
+fs.writeFileSync(path.join(outDir, 'outline_before.txt'), before.outline);
 const sheetBefore = await contactSheet(comp, 8);
-fs.copyFileSync(sheetBefore.sheet, path.join(here, 'contact_before.png'));
+fs.copyFileSync(sheetBefore.sheet, path.join(outDir, 'contact_before.png'));
 console.log(before.outline.split('\n').slice(0, 25).join('\n'));
 
 // 3) Find what to edit from the inspector data (not by guessing names).
@@ -49,8 +53,8 @@ const r = await applyEdits({ comp, ops }, { frames: 8 });
 console.log('edit', r.ok ? 'ok' : `${r.error} at ${r.at}${r.rolledBack ? ' (rolled back)' : ''}`);
 console.log('ripple:', JSON.stringify(r.changes?.slice(-1)?.[0]?.ripple));
 for (const w of r.warnings ?? []) console.log('warning:', w);
-if (r.contactSheet) fs.copyFileSync(r.contactSheet, path.join(here, 'contact_after.png'));
-fs.writeFileSync(path.join(here, 'outline_after.txt'), (await inspect({ comp })).outline);
+if (r.contactSheet) fs.copyFileSync(r.contactSheet, path.join(outDir, 'contact_after.png'));
+fs.writeFileSync(path.join(outDir, 'outline_after.txt'), (await inspect({ comp })).outline);
 
 // 4) One undo restores the comp exactly (pass --keep to leave the edits in place).
 if (!process.argv.includes('--keep')) {

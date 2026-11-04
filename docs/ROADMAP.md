@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.012**: 91.04% weighted, 147/163 tasks, 0/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.013**: 93.68% weighted, 153/165 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -40,8 +40,8 @@
 - [x] Forgiving deep property resolver
 - [x] Spatial/color ease collapse
 
-## IR & Schema (40%)
-- [ ] zod schema v1 _(w3)_
+## IR & Schema (100%)
+- [x] zod schema v1 _(w3)_
 - [x] Stable ids + source locations
 - [x] Units/time/color normalization
 
@@ -176,14 +176,16 @@
 - [x] Claude skill + CLAUDE.md _(w2)_
 - [x] Claude Code registration
 
-## Testing (71%)
+## Testing (100%)
 - [x] Unit tests _(w2)_
 - [x] Codegen snapshots + ES3 parse
 - [x] Inspector round-trip (real AE) _(w3)_
 - [x] Edit-op tests + undo _(w2)_
-- [ ] Seed determinism
-- [ ] Remotion quality bar _(w2)_
-- [~] Independent final review
+- [x] Seed determinism
+- [x] Renderer switching test
+- [x] Remotion quality bar _(w2)_
+- [x] Independent final review
+- [x] AE disk-cache guard (auto-purge + doctor check)
 
 ## Showcase Scenes (100%)
 - [x] 01 Kinetic typography _(w2)_
@@ -208,14 +210,14 @@
 - [x] REPORT.md
 
 ## Definition of done
-- [ ] aec doctor passes
-- [ ] 3D fully controllable
-- [ ] Particles fully controllable
-- [ ] 14 showcases build + look professional
-- [ ] Live controls in every showcase
-- [ ] Variants + compare comp
-- [ ] Inspector round-trip tests pass
-- [ ] Edit ops on hand-built project, 1-step undo
-- [ ] MCP usable from Claude Code
-- [ ] README + docs complete
-- [ ] REPORT.md written
+- [x] aec doctor passes
+- [x] 3D fully controllable
+- [x] Particles fully controllable
+- [x] 14 showcases build + look professional
+- [x] Live controls in every showcase
+- [x] Variants + compare comp
+- [x] Inspector round-trip tests pass
+- [x] Edit ops on hand-built project, 1-step undo
+- [x] MCP usable from Claude Code
+- [x] README + docs complete
+- [x] REPORT.md written

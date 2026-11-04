@@ -19,7 +19,7 @@ export interface SceneConfig<P = Record<string, any>> {
   variants?: Record<string, Partial<P & { seed?: number }>>;
   /** Also build a Compare comp that grids the variants side by side. */
   compare?: boolean;
-  /** Version number in the comp name (default 1). Rebuilds replace comps by id; bump it to keep an older build alongside. */
+  /** Version number in the comp name (default 1). It only renames: rebuilds replace the comps by scene id, so to keep an older build, duplicate it first (duplicateComp edit op). */
   version?: number;
 }
 

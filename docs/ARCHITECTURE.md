@@ -41,22 +41,24 @@ The primary user of this tool is **an AI agent (Claude) working with a human des
 ae-compose/
   src/
     dsl/          JSX runtime + primitives + animation helpers + layout + controls/variants + 3D + particles
-    ir/           zod schema (versioned), ids, source locations, normalization
+    ir/           zod schema of the IR plus cross-reference checks (`validateIr`, run before anything reaches AE)
     compile/      DSL tree → IR: timing, layout plan, animation lowering, baking, rig planning, feature checks
     shared/       pure TS used BOTH in Node and in the ES3 runtime (ease math, layout solver, spring, units)
     runtime/      ES3 runtime library (TS → Babel → ES3): build / inspect / edit / snapshot / measure
-    codegen/      IR/ops → ES3 request scripts; ES3 validation (acorn)
-    bridge/       Backend interface; CEP HTTP backend; AfterFX.com fallback; dialog watchdog; recovery
-    catalog/      effect discovery → cached catalog → generated TS types; name resolution (fuzzy)
-    inspect/      Node side of the inspector (JSON → IR/outline), .aepx gradient parser
-    edit/         patch-op schema and helpers
+    codegen/      values → ES3 object literals for request scripts
+    bridge/       Backend interface; CEP HTTP backend; AfterFX.com fallback; ES3 check (acorn); dialog watchdog
+    catalog/      effect harvest (`harvest.ts`) → `params.json` → generated TS types; name resolution (fuzzy)
+    inspect/      Node side of the inspector (JSON → compact outline)
+    edit/         agent edit ops → runtime ops (key-color sampling, frame-string times)
+    scene/        TSX scene loader (esbuild)
+    api/          the operations the CLI and MCP share: build, inspect, edit, snapshot, doctor, disk-cache guard
     visual/       snapshot, contact sheet (sharp), preview (frame capture + ffmpeg; aerender optional), 32 bpc fix, key-color sampling
     cli/          `aec` commands
     mcp/          MCP stdio server
   packages/bridge-cep/extension/   CEP extension (stable manifest, hot-reloaded server.js)
   examples/       14 showcase scenes (+ shared brand tokens)
   skills/ae-compose/SKILL.md       authoring guide for Claude
-  tests/          unit, codegen snapshots, integration (real AE), visual
+  tests/          unit, codegen snapshots, integration (real AE), quality (Remotion side by side)
   docs/           ARCHITECTURE, DECISIONS, RESEARCH, DSL reference, AGENT_GUIDE, PROGRESS, REPORT
 ```
 It's a single npm package (`ae-compose`, bin `aec`), managed with pnpm. The runtime is built by Rollup into `dist/runtime/aec-runtime.jsx`.
@@ -130,7 +132,7 @@ How controls drive animation without rebuilding:
   ```
   Delay, duration (speed), distance and intensity become live, and the curve shape is preserved exactly. Keys are authored at the default control values.
 - **Expression rigs** (`rig: "expression"`): fully expression-driven springs, wiggles and orbits with every parameter on controls (stiffness, damping, overshoot, orbit speed…).
-- **Sticky controls**: on rebuild (`watch`), the current control values in AE are read first and re-applied after the rebuild, so a designer's tweaks survive code changes.
+- **Sticky controls**: each control layer is stamped with the defaults it was built with. On rebuild (`build`, `watch`), the runtime re-applies only the values a designer changed from that stamp, so tweaks survive code changes while new defaults in code still take effect (D56, D60). `--reset-controls` / `resetControls` drops the tweaks.
 
 ### 2.8 Variants and compare
 `variants({ A: {...}, B: {...}, C: {...} })` turns params into sibling comps `Name_v003_A/B/C`. Seed is always a variant param. An optional `Compare` comp grids the variant precomps, labeled and scaled to fit, with a shared timeline.
@@ -142,8 +144,8 @@ How controls drive animation without rebuilding:
 
 ## 3. Intermediate representation (IR)
 
-- `src/ir/schema.ts` (zod), version `irVersion: 1`, JSON-serializable. The compiler, runtime, inspector and MCP all speak IR.
-- The top level is `Project { scenes: Scene[] }`. A `Scene` has comp settings (size, fps, duration, bg, renderer, motion blur), `layers: Layer[]`, `controls: Control[]`, `variants?` and `assets`.
+- `src/ir/schema.ts` (zod), version `irVersion: 1`, JSON-serializable. The compiler emits it, `validateIr` checks it (shapes, key order, duplicate ids, parent/matte/asset/precomp references) before it is sent, and the runtime builds from it.
+- The top level is `Project { irVersion, main, assets, comps }`. A comp has its settings (size, fps, duration, bg, renderer, motion blur, markers) and `layers`. Controls are ordinary layers (the "Controls" null) with effects, and variants are separate comps.
 - A `Layer` is a discriminated union: `text | shape | solid | null | adjustment | footage | precomp | camera | light | model`. Each has `id`, `name`, `src`, timing (`in`, `out`, `start`, `stretch`), `parent`, `transform`, `threeD`, `material`, `geometry`, `effects`, `masks`, `matte`, `blend`, `motionBlur`, `expressions`, plus a type-specific payload (text doc/runs/animators, shape contents tree, …).
 - **Property values** are either static values or a `Track`:
   ```ts
@@ -152,7 +154,7 @@ How controls drive animation without rebuilding:
   Key   = { t: frames, v, inType, outType, inEase: Ease[], outEase: Ease[], continuous?, spatial?: {ti,to,auto}, roving?: false, label? }
   Ease  = { speed: number, influence: number }   // exact AE units
   ```
-  This is a lossless superset of what AE stores, so inspector output round-trips.
+  This was the design target. As built, layer properties are `{ p, v | keys, expr }` entries whose keys (`t, v, i, o, ie, oe, ti, to, …`) are in AE units (seconds, `KeyframeEase` speed/influence), so the inspector output and the IR compare directly (the round-trip test).
 - **Ids**: every IR node has `id` (deterministic: scene + path + explicit `id` prop). They're written into AE as the comment tag `aec:<id>` on comps and layers, and into effect and control names where needed. Hand-built items get path ids (`comp:"Title"/layer:"Logo"`).
 
 ---
@@ -160,13 +162,13 @@ How controls drive animation without rebuilding:
 ## 4. Code generator and runtime
 
 ### 4.1 Request scripts are data
-- Codegen emits a tiny ES3 script:
+- Every request is a tiny ES3 script: a preamble that loads the runtime with `$.evalFile` when it is missing or stale (version check), then one call:
   ```js
-  AEC.ensure("<runtimeVersion>");                 // loads dist runtime via $.evalFile if missing/stale
-  AEC.build({ ...IR as an ES3 object literal... }, { replace: true, snapshot: [..], contactSheet: 12 })
+  if (!$.global.AEC || $.global.AEC.version !== "<runtimeVersion>") { $.evalFile(new File(".../dist/runtime/aec-runtime.jsx")); }
+  AEC.build({ ...IR as an ES3 object literal... }, { keepControls: true })
   ```
   - The payload is an object literal: quoted keys, no trailing commas, `\u` escapes outside ASCII. It is not `JSON.parse`d (which is slow and absent in AE).
-  - Every script is parsed with acorn `ecmaVersion: 3` before sending.
+  - Every call is parsed with acorn `ecmaVersion: 3` before sending (`assertEs3`).
 - **Why data, not generated statements:** the runtime is written and tested once. Generated code is tiny and always valid. The same runtime powers inspect, edit, measure and snapshot, and errors are attributed to IR node ids (`AEC.cur = nodeId`) rather than generated line numbers.
 - Codegen snapshot tests store the emitted request script, normalized.
 
@@ -214,11 +216,12 @@ How controls drive animation without rebuilding:
   - shape contents and pen paths; masks; mattes;
   - 3D: renderer, material, geometry, camera/light options, environment source;
   - model layers, markers, controls and EG properties.
-- It skips `CUSTOM_VALUE` and fenced matchNames (D15). Gradient stops are recovered by saving a temporary `.aepx` copy and parsing its XML (`src/inspect/aepx.ts`).
+- It skips `CUSTOM_VALUE` and fenced matchNames (D15): shape gradient colors are reported as opaque. Gradients are written through generated `.ffx` presets (`src/compile/gradients.ts`). *(planned, not built)* reading stops back from a temporary `.aepx` copy.
+- Properties with expressions are read pre-expression (`valueAtTime(t, true)`) unless `evalExpressions` is asked for, so a full inspect of a heavy project takes seconds, not minutes (D55).
 - The Node side turns the JSON into:
   - (a) lossless IR, for round-trip tests and "edit then rebuild",
   - (b) a **compact outline** for agents, with ease names inferred (e.g. `easeOutCubic≈`), keyframe summaries (`0→1s, 3 keys, overshoot`) and only non-default effect params.
-- **Effect discovery** (`aec effects --refresh`): enumerates `app.effects`, filters to vanilla (D19), and applies each effect to a temp layer in a temp comp, one per eval, with a blocklist for dialog/analysis effects (Apply Color LUT, 3D Camera Tracker, Warp Stabilizer, Roto Brush…). It dumps names, matchNames, value types, ranges, defaults and popup labels (by stepping `setValue`, reading the display text where available), then caches to `~/.ae-compose/catalog/26.5.json`. `src/catalog/gen-types.ts` writes `src/dsl/effects.generated.ts` (typed params per effect).
+- **Effect discovery** (`aec effects --refresh`, `src/catalog/harvest.ts`): starts from the vanilla effect list (`effects.json`, D19) and applies each effect to a temp layer in a temp comp, one per eval, with a blocklist for dialog/analysis effects (Apply Color LUT, 3D Camera Tracker, Warp Stabilizer, Roto Brush, Numbers…). Any dialog that opens anyway is cancelled automatically. It records names, matchNames, value types, ranges, defaults and popup labels in `src/catalog/params.json` (391 of 397 effects) and regenerates `src/dsl/effects.generated.ts` (typed params per effect).
 
 ## 6. Edit operations
 `apply_edits({ target, ops })` runs zod-validated ops in **one undo group**. Ops:
@@ -269,12 +272,12 @@ The TSX-side equivalent is `<Series>` plus exits with `anchor: 'end'` (D51).
 
   A future `UxpBackend` (AE 27 beta) slots in here.
 - **Dialog watchdog** (`src/bridge/dialogs.ts` + `aewin.ps1`):
-  - when an eval exceeds ~5 s, or on demand, list AE `#32770` windows and capture each one (DPI-aware) as an image,
-  - answer with a named button, the default key or cancel,
-  - auto-answer known safe dialogs (Crash Repair → Continue; "missing fonts/footage" → OK),
-  - report the rest to the agent with the image.
-- **Recovery**: crash dialog → save prompt → Save Copy (cancel or save to `scratch/`) → relaunch → Crash Repair "Continue" → wait for the bridge.
-- Results larger than ~100 KB are spilled by the runtime to a temp file and read by Node.
+  - when an eval times out or the bridge fails, or on demand (`list_dialogs`), list AE `#32770` windows and capture each one (DPI-aware) as an image,
+  - answer with a named button (`answer_dialog`),
+  - auto-answer known safe dialogs (Crash Repair → Continue),
+  - report the rest to the agent with the image, or say that AE is busy or not running.
+- **Probe dialogs**: read-only probes (effect description, catalog harvest) run with `cancelDialogs`, which presses Cancel on any titled dialog that opens while they run (D54).
+- *(planned, not built)* **Automatic recovery** (save a copy, relaunch, Crash Repair, wait for the bridge). Today a hung or crashed AE is reported, and the user restarts it.
 
 ## 8. 3D system (first-class)
 1. **Renderer control:** `renderer: "advanced3d" | "cinema4d" | "classic3d"` (`ADBE Calder` / `ADBE Ernst` / `ADBE Advanced 3d`, see D36). `src/compile/renderers.ts` holds the **feature table**: extrusion/bevel, environment light, HDRI, reflections, shadows, 3D models, DOF, motion blur, per renderer. Compile fails with a clear message and the suggested renderer when a scene uses an unsupported feature. Renderer quality options are not scriptable in 26.5, so the docs say so.
@@ -305,23 +308,28 @@ The TSX-side equivalent is `<Series>` plus exits with `anchor: 'end'` (D51).
 ## 10. Visual feedback
 - `snapshot(comp, times[])`: a temp wrapper comp (premultiplied-alpha safe) with `saveFrameToPng().wait()` and the 32 bpc ×10 fix (D13). Returns PNG paths and downscaled base64.
 - `contactSheet(comp, n)`: N frames → one grid image (sharp) with timecode labels. It's attached automatically to build and edit results.
-- `renderPreview(comp, range, { scale, fps })`: saves a temp copy of the project and runs aerender (PNG sequence, draft settings) then ffmpeg (MP4 or GIF). Used for particle and motion checks.
+- `renderPreview(comp, range, { scale, fps })`: captures frames of the live (unsaved) state inside AE, then ffmpeg makes an MP4 or GIF; `aerender: true` renders the saved project file instead. Used for particle and motion checks.
+- **Disk-cache guard** (`src/api/cache.ts`): renders fill AE's disk cache, so after each snapshot, contact sheet and build the cache is purged when it passes 10 GB or the drive drops below 15 GB free (D62).
 - *(planned, not built)* **Lint**: text overflow, safe-area violations, overlaps at peaks, blank frames, too-short reading time, linear-only easing, renderer mismatch. Today: the automatic contact sheet plus build warnings, and the skill's review checklist.
 
 ## 11. Interfaces
-- **CLI** (`aec`): `build <scene.tsx> [--variants] [--new-version] [--dry-run]`, `watch`, `inspect "<comp>"`, `edit <ops.json>`, `snapshot`, `contact-sheet`, `preview`, `effects --refresh`, `dialogs`, `recover`, `doctor`.
+- **CLI** (`aec`): `doctor`, `build <scene.tsx> [--no-variants] [--variant A] [--version n] [--frames n] [--param k=v] [--reset-controls]`, `watch`, `inspect [comp] [--full] [--project]`, `edit <ops.json>`, `undo [steps]`, `snapshot`, `sheet`, `preview`, `effects [query] [--describe] [--refresh]`, `import`, `dialogs`, `eval`. *(planned, not built)* `--dry-run`, `recover`.
 - **MCP server** (stdio, `@modelcontextprotocol/sdk`):
-  - `build_scene`, `inspect_project`, `inspect_comp`, `apply_edits`, `create_variants`
+  - `build_scene`, `inspect_project`, `inspect_comp`, `apply_edits`, `create_variants`, `undo`
   - `snapshot`, `contact_sheet`, `render_preview` (images)
-  - `list_effects`, `describe_effect`, `list_project_items`, `import_footage`
-  - `list_dialogs`, `answer_dialog`, `run_extendscript` (logged escape hatch)
+  - `list_effects`, `describe_effect`, `list_project_items`, `preview_item`, `import_footage`
+  - `list_dialogs`, `answer_dialog`, `doctor`, `run_extendscript` (logged escape hatch)
 
   Tool descriptions are written for agents: when to use each one, what comes back, and an example.
 - **Skill**: `skills/ae-compose/SKILL.md` plus `CLAUDE.md`, covering the DSL reference, motion-design principles, timing for marketing, always exposing key timings as controls, always reviewing contact sheets, and offering 2–3 variants for subjective choices.
 
 ## 12. Testing
-- **Unit** (vitest): DSL → IR, schema, ease math (vs. Remotion), spring fitting, layout solver, units, name resolution.
+- **Unit** (vitest, `pnpm test:unit`): DSL → IR, IR schema, ease math (vs. Remotion), spring fitting, layout solver, units, SVG paths, edit-op lowering, outline.
 - **Codegen**: snapshot tests plus an ES3 parse of every output.
-- **Integration (real AE)**: build each primitive → inspect → assert round-trip within tolerance (values, key times, eases, effect params, 3D, particles). Plus edit ops with a one-step undo check, and seed determinism (pixel-identical frames across rebuilds).
+- **Integration (real AE, `tests/integration/`):**
+  - `roundtrip.ts`: builds the primitive matrix and four showcases, inspects them, and compares every property the IR sets (values, key times, key values, eases), including inside groups, effects, masks, 3D and particles (588 properties);
+  - `edit-ops.ts`: every agent op on a hand-built project, asserted through the inspector, then one undo must restore the comp exactly;
+  - `renderer-seeds.ts`: renderer switching (each switch one undo step) and seed determinism (pixel-identical frames across rebuilds);
+  - `ripple.ts`, `livecontrols.ts`, `ease-verify.ts`, plus the vitest suites `ease.test.ts` and `controls.test.ts`.
 - **Visual**: contact sheets for all 14 showcases, reviewed by me and by an independent reviewer subagent.
-- **Quality bar**: the kinetic type scene is built in Remotion with the same spec, and matching frames are compared side by side.
+- **Quality bar** (`tests/quality/compare.ts`): the kinetic type scene is rendered in Remotion from the same spec and compared frame by frame with the AE build (`docs/quality/kinetic-compare.png`).

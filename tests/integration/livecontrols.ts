@@ -1,3 +1,5 @@
+import os from 'node:os';
+import path from 'node:path';
 // Verifies live controls: retimable-keys rig (delay/duration/distance) and sticky controls on rebuild.
 import fs from 'node:fs';
 import { buildScene, applyEdits, runExtendScript } from '../../src/api/index.ts';
@@ -11,7 +13,9 @@ export default scene({ name: 'TestLive', width: 1280, height: 720, fps: 30, dura
       animate={{ y: tween({ from: control('Rise', 80), duration: control('Rise Duration', 0.6), delay: control('Rise Delay', 0.2), easing: 'easeOutCubic' }) }}>LIVE</Text>
   </Composition>
 ));`;
-fs.writeFileSync('tests/integration/testlive.tsx', SRC);
+// Generated fixture goes to the temp folder, not the repo (it used to rewrite tests/integration/testlive.tsx).
+const SCENE = path.join(os.tmpdir(), 'ae-compose-testlive.tsx');
+fs.writeFileSync(SCENE, SRC); // the scene loader maps 'ae-compose' to src/dsl wherever the file lives
 const ease = resolveEasing('easeOutCubic').fn;
 const expected = (t: number, rise: number, dur: number, delay: number) => 360 + rise * (1 - ease(Math.min(1, Math.max(0, (t - delay) / dur))));
 const sample = async (): Promise<number[]> => {
@@ -26,7 +30,7 @@ const check = (vals: number[], rise: number, dur: number, delay: number, label: 
   return maxErr;
 };
 
-const b1 = await buildScene({ file: 'tests/integration/testlive.tsx' }, { frames: 0, resetControls: true }); // start from the code defaults
+const b1 = await buildScene({ file: SCENE }, { frames: 0, resetControls: true }); // start from the code defaults
 if (!b1.ok) throw new Error(b1.error);
 check(await sample(), 80, 0.6, 0.2, 'defaults (Rise 80, Duration 0.6, Delay 0.2)');
 const e = await applyEdits({ comp: 'TestLive_v001', ops: [
@@ -36,6 +40,6 @@ const e = await applyEdits({ comp: 'TestLive_v001', ops: [
 ] }, { frames: 0 });
 if (!e.ok) throw new Error(e.error);
 check(await sample(), 200, 1.2, 1.0, 'after changing controls in AE (Rise 200, Duration 1.2, Delay 1.0) — no rebuild');
-const b2 = await buildScene({ file: 'tests/integration/testlive.tsx' }, { frames: 0 });
+const b2 = await buildScene({ file: SCENE }, { frames: 0 });
 console.log(`rebuild: restoredControls=${b2.restoredControls}`);
 check(await sample(), 200, 1.2, 1.0, 'after rebuilding from code (sticky controls kept the tweaks)');

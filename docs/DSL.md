@@ -25,7 +25,7 @@ Source of truth is the code: `src/dsl/*.ts` (public API), `src/compile/*.ts` (ho
 18. [AE gotchas handled for you](#18-ae-gotchas-handled-for-you)
 19. [Known limitations](#19-known-limitations)
 
-> **Typing note (current code).** `OrbitCamera`, `ParticleWorld`, `ZStack`, `Grid3D`, `Circle3D` and `Parallax` return *arrays* of elements. They *build fine* as JSX, because `build_scene` loads scenes with esbuild and doesn't type-check, but `tsc` rejects them as JSX components today (an array isn't a `JSX.Element`). Every example on this page type-checks, so it calls them as functions inside braces: `{ParticleWorld({ id: 'sparks', preset: 'sparks' })}`. Both forms compile to the same thing.
+> **Components that make several layers** (`OrbitCamera`, `ParticleWorld`, `ZStack`, `Grid3D`, `Circle3D`, `Parallax`) return a fragment, so both the JSX form `<ParticleWorld preset="sparks" />` and the function form `{ParticleWorld({ preset: 'sparks' })}` type-check and compile to the same thing.
 
 ---
 
@@ -60,7 +60,7 @@ export default scene({ name: 'Hello', width: 1920, height: 1080, fps: 30, durati
 | `params` | `P & { seed?: number }` | `{}` | Default params passed to `render`. `seed` defaults to `1`. |
 | `variants` | `Record<string, Partial<P>>` | none | Each key builds a sibling comp `<name>_v###_<key>` with those params merged over `params`. When variants exist, only the variants are built (pass `variants: false` to `build_scene` to build just the defaults). |
 | `compare` | `boolean` | `false` | Also build `<name>_v###_Compare`: the variants side by side in a grid, labeled with the params that differ, with its own contact sheet. |
-| `version` | `number` | `1` | The `v###` in the comp name. It only renames; a rebuild still replaces the comp with the same `name`. |
+| `version` | `number` | `1` | The `v###` in the comp name. It only renames: a rebuild replaces the comps by scene id. To keep an older build, `duplicateComp` it first. |
 
 Rebuilding a scene with the same `name` replaces its comp **in place**: the same project item, generated layers recreated, and live control values kept (§11.5). To keep the previous result, `duplicateComp` it first (§16) or change `name`.
 
@@ -100,6 +100,7 @@ The root element. Its props override the scene config.
 | `renderer` | `'advanced3d' \| 'cinema4d' \| 'classic3d'` | 3D renderer. |
 | `motionBlur` | `boolean \| { enabled?, shutterAngle?, shutterPhase?, samples?, adaptiveLimit? }` | Comp motion blur. |
 | `shutterAngle` | `number` | Shorthand for the comp shutter angle. |
+| `markers` | `{ t, comment, duration? }[]` | Comp markers. Expressions can read them (`thisComp.marker.key("hit")`, and `ParticleWorld burst={{ at: { marker: 'hit' } }}` fires on one), and ripple edits move them. With a `duration` they are scenes. |
 
 ---
 
@@ -1055,7 +1056,7 @@ Builds a comp-size black solid whose pixels are replaced by particles. Takes Lay
 | `texture` | `string \| Element` | | A layer id, or an element (wrapped in a hidden precomp) used as the particle texture. Sets Particle Type to Textured QuadPolygon unless a textured type is given. |
 | `textureSize` | `[w, h]` | `[256, 256]` | Texture precomp size (element textures). |
 | `emitter` | `{ follow: string }` | | Producer follows a layer's anchor in world space (expressions on Position X/Y/Z), for example an animated null or a logo. |
-| `burst` | `{ at: Time; duration?: Time; rate?: number }` | `duration 0.15s`, `rate 8` | Emit only in a burst: Birth Rate hold keys 0 → `rate` at `at` → 0. Give `at` in seconds, and give `rate` explicitly. |
+| `burst` | `{ at: Time \| { marker: string }; duration?: Time; rate?: number }` | `duration 0.15s`, `rate` = the preset's Birth Rate | Emit only in a burst: Birth Rate hold keys 0 → `rate` at `at` → 0. `at: { marker: 'hit' }` fires at the comp marker with that comment instead (an expression reads it, so moving the marker in AE retimes the burst). Frame times (`'12f'`) work. |
 | `width`, `height` | `number` | comp size | Host solid size. |
 
 Units: producer Position and Radius X/Y/Z are in **host layer widths** (`Position X 0.25` = +480 px on a 1920 layer), and +y is down. CC Particle World **follows the comp camera** automatically when the comp has one.
@@ -1143,7 +1144,7 @@ Seeds are always explicit, so a rebuild is pixel-identical. `ParticleWorld` and 
 
 ## 16. Edit ops (`apply_edits`)
 
-`apply_edits({ comp, ops, frames? })` applies a batch of ops to an **existing** comp (generated or hand-built) in **one undo group**, then returns what changed (before → after) and a contact sheet. `undo` reverts the whole batch. Validation runs before AE is touched. Run `inspect_comp` first on anything you didn't build.
+`apply_edits({ comp, ops, frames? })` applies a batch of ops to an **existing** comp (generated or hand-built) in **one undo group**, then returns what changed (before → after) and a contact sheet. `undo` reverts the whole batch. Validation runs before AE is touched, and the batch is **atomic**: if any op fails, everything is rolled back (`rolledBack: true`). Run `inspect_comp` first on anything you didn't build. Every op is covered by `tests/integration/edit-ops.ts` on a hand-built project (applied, asserted, undone in one step).
 
 **Targets.** `comp` is a comp name, aec id or item id (default: the active comp). `layer` is an aec id (the TSX `id`), a layer name (it must be unique, or the op fails and lists the candidates) or a 1-based index.
 
@@ -1318,7 +1319,7 @@ Layer `type`: `solid | null | text | shape | adjustment | footage | precomp | ca
 | `import_footage` | Import a file (footage, image, audio, 3D model, HDRI, SVG) into the project. |
 | `list_dialogs` | Modal dialogs blocking AE, each with an image capture (AE draws its own controls, so read the image). |
 | `answer_dialog` | Press a dialog button by label, or Cancel/Close, or Enter for the default. |
-| `undo` | Edit > Undo. Each build or edit batch is exactly one step. |
+| `undo` | Undo the last ae-compose change(s) with AE's own Edit > Undo (`steps`, default 1). An edit batch or a single build is one step; a build with variants is one step per variant plus one for the compare comp (the report says `undo steps`). Read-only probes in between are skipped; manual changes made in AE since then are undone first. |
 | `doctor` | Check AE, the CEP bridge, the runtime and tools, with a fix for each failure. |
 | `run_extendscript` | Raw ES3 escape hatch (logged). Never touch shape-gradient properties with it. Wrap mutations in an undo group. |
 
@@ -1330,7 +1331,7 @@ aec build <scene.tsx> [--no-variants] [--variant A] [--version 3] [--frames 8] [
 aec watch <scene.tsx>              rebuild in place on save (keeps live control values)
 aec inspect [comp] [--full] [--project] [--layers 1,2]
 aec edit <ops.json> [--comp name]  apply edit ops (one undo step); file is [ops] or { comp, ops }
-aec undo                           Edit > Undo in AE
+aec undo [steps]                   undo the last ae-compose build/edit (AE's Edit > Undo)
 aec snapshot [comp] --times 0,1.5,3
 aec sheet [comp] [--frames 12]     contact sheet
 aec preview [comp] [--range 0-3] [--scale 0.5] [--fps 15] [--gif]
@@ -1370,13 +1371,13 @@ Add `--json` to any command for machine-readable output. Outputs (IR, frames, co
 - **Renderer quality, shadow and environment settings aren't scriptable**; only the renderer choice is.
 - **Advanced 3D:** no motion blur, no effects/masks/mattes/blend modes on 3D text/shape/model layers, no point-light shadows. Snapshots are slow (~3.5 s per frame with HDRI and DOF, ~100 s first-render warm-up) (D37, D40).
 - **`fStop` follows AE's px definition** and produces extreme blur at real-world values, so use `aperture` (D39).
-- **Controls inside `<Precomp>` children** don't resolve: their expressions read `thisComp.layer("Controls")`, which only exists in the main comp. Keep controlled layers in the main comp.
-- **Spring `stiffness`/`damping`/`mass` controls** are only live with `rig: 'expression'`. `keys()` ignores controls. `sample({ as: 'expression' })` is accepted but still bakes keys.
+- **Controls inside `<Precomp>` children** read the main comp's Controls null as `comp("<main comp name>").layer("Controls")`, so renaming the main comp in AE breaks them (rebuild, or fix the name in the expressions).
+- **Spring `stiffness`/`damping`/`mass` controls** switch that spring to the closed-form expression automatically. `keys()` rejects controls on key times/values with a clear error, and `sample({ as: 'expression' })` is rejected (a JS function can't run in AE).
 - **Per-unit text easings** must be bezier (or use `spring`).
-- **Sticky controls** keep AE values over changed code defaults (§11.5).
+- **Sticky controls** keep values you changed in AE; untouched controls take new code defaults on rebuild (`resetControls` / `--reset-controls` drops the tweaks too) (§11.5).
 - **Rebuilds replace in place**, and `version` only renames.
-- **Seeds:** particle components default to a hash of their `id`, not the scene seed.
+- **Seeds:** particle components default to a hash of their `id`. Pass `seed={p.seed}` to make the scene/variant `seed` param drive them. The same seed rebuilds pixel-identical frames (tests/integration/renderer-seeds.ts).
 - **No automatic lint yet** (text overflow, safe areas, reading time, blank frames). Review the contact sheets yourself.
-- **Not available yet:** free comp markers from the DSL (named Sequences emit scene markers, and other markers are layer markers), choosing a glTF animation clip on `<Model>`, camera move helpers beyond `OrbitCamera` (animate `x`/`z`/`position`), `Mask rect.roundness` (ignored), and text wrapping from layout `maxWidth` (use `box`).
-- **Edit ops:** frame strings (`"12f"`) in `set` keys and `place` times are converted at 30 fps whatever the comp fps, so prefer seconds. `addLayer` text specs set only the text string (no font/size). `ease` can't name a spring. `x`/`y`/`z` only exist on separated positions.
-- **Typing:** see the note at the top (array-returning components), and `Parallax` reads an untyped `depth` prop.
+- **Not available yet:** choosing a glTF animation clip on `<Model>`, camera move helpers beyond `OrbitCamera` (animate `x`/`z`/`position` keys, see showcase 11), and text wrapping from layout `maxWidth` (use `box`).
+- **Edit ops:** frame strings (`"12f"`) use the comp's own fps. `ease` can't name a spring (use a bezier preset, `bounce` or `elastic`). `x`/`y`/`z` only exist on separated positions.
+- **Typing:** `Parallax` reads each child's `depth` prop (any number), which isn't in the layer prop types.

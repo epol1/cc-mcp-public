@@ -145,6 +145,13 @@ function walk(g: any, opts: InspectOpts, depth: number): any {
   return o;
 }
 
+const BLEND_NAMES = ['NORMAL', 'DISSOLVE', 'DANCING_DISSOLVE', 'DARKEN', 'MULTIPLY', 'COLOR_BURN', 'CLASSIC_COLOR_BURN', 'LINEAR_BURN', 'DARKER_COLOR', 'ADD', 'LIGHTEN', 'SCREEN', 'COLOR_DODGE', 'CLASSIC_COLOR_DODGE', 'LINEAR_DODGE', 'LIGHTER_COLOR', 'OVERLAY', 'SOFT_LIGHT', 'HARD_LIGHT', 'LINEAR_LIGHT', 'VIVID_LIGHT', 'PIN_LIGHT', 'HARD_MIX', 'DIFFERENCE', 'CLASSIC_DIFFERENCE', 'EXCLUSION', 'SUBTRACT', 'DIVIDE', 'HUE', 'SATURATION', 'COLOR', 'LUMINOSITY', 'STENCIL_ALPHA', 'STENCIL_LUMA', 'SILHOUETE_ALPHA', 'SILHOUETTE_LUMA', 'ALPHA_ADD', 'LUMINESCENT_PREMUL'];
+/** BlendingMode enum value → its name (the same names the IR and edit ops use). */
+function blendName(v: any): string {
+  for (let i = 0; i < BLEND_NAMES.length; i++) { const e = (BlendingMode as any)[BLEND_NAMES[i]]; if (e !== undefined && e === v) return BLEND_NAMES[i]; }
+  return String(v);
+}
+
 function layerType(L: any): string {
   if (L instanceof TextLayer) return 'text';
   if (L instanceof ShapeLayer) return 'shape';
@@ -166,7 +173,7 @@ function layerInfo(L: any, opts: InspectOpts): any {
   if (L.comment && !tag) o.comment = L.comment;
   if (L.stretch !== undefined && L.stretch !== 100) o.stretch = L.stretch;
   if (L.parent) o.parent = { index: L.parent.index, name: L.parent.name };
-  if (L.threeDLayer) o.threeD = true;
+  if (L.threeDLayer || L instanceof CameraLayer || L instanceof LightLayer) o.threeD = true; // cameras/lights are always 3D
   try { if (L.threeDPerChar) o.threeDPerChar = true; } catch (e) {}
   if (!L.enabled) o.enabled = false;
   if (L.solo) o.solo = true;
@@ -174,7 +181,7 @@ function layerInfo(L: any, opts: InspectOpts): any {
   if (L.locked) o.locked = true;
   try { if (L.guideLayer) o.guide = true; } catch (e) {}
   try { if (L.motionBlur) o.motionBlur = true; } catch (e) {}
-  try { if (L.blendingMode !== BlendingMode.NORMAL) o.blend = String(L.blendingMode); } catch (e) {}
+  try { if (L.blendingMode !== BlendingMode.NORMAL) o.blend = blendName(L.blendingMode); } catch (e) {}
   try { if (L.hasTrackMatte) o.matte = { layer: L.trackMatteLayer ? L.trackMatteLayer.name : null, type: String(L.trackMatteType) }; } catch (e) {}
   try { if (L.isTrackMatte) o.isMatte = true; } catch (e) {}
   try { if (L.autoOrient !== AutoOrientType.NO_AUTO_ORIENT) o.autoOrient = String(L.autoOrient); } catch (e) {}

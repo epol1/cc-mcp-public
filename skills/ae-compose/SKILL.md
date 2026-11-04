@@ -5,7 +5,7 @@ description: Make and edit motion graphics in Adobe After Effects with ae-compos
 
 # ae-compose: motion design in After Effects, from TSX
 
-You write a scene in a small TSX DSL, `build_scene` compiles it into **native, editable AE comps** (no plugins, no pre-renders), and every build or edit returns a **contact sheet** that you must look at. The full API (every component, prop, default and edit op) is in [`docs/DSL.md`](../../docs/DSL.md), so read the relevant section before using something unfamiliar. This file covers the workflow, recipes and design judgement.
+You write a scene in a small TSX DSL, `build_scene` compiles it into **native, editable AE comps** (no plugins, no pre-renders), and every build or edit returns a **contact sheet** that you must look at. The full API (every component, prop, default and edit op) is in [`docs/DSL.md`](reference/DSL.md), so read the relevant section before using something unfamiliar. This file covers the workflow, recipes and design judgement.
 
 ## 1. The loop
 
@@ -70,7 +70,7 @@ Key rules this shows:
 - **`from` alone on x/y/z/position is an offset from rest**, so `y: spring({ from: 30 })` rises 30 px into place. On scale/opacity/rotation it's an absolute start value that animates to the default (100/100/0).
 - **Layout containers** (`Stack`, `Grid`, `Align`, `SafeArea`…) are solved inside AE with real text metrics, and animations are relative to the solved slot.
 - Fonts are **PostScript names** (`Inter-Black`, `Inter-Medium`). Time is `0.4`, `"400ms"` or `"12f"`, and it's relative to the layer's start.
-- Call the array-returning helpers as functions in braces: `{ParticleWorld({...})}`, `{OrbitCamera({...})}`, `{ZStack({...})}`, `Grid3D`, `Circle3D`, `Parallax`. Their JSX forms build, but they fail `tsc` today.
+- `<ParticleWorld>`, `<OrbitCamera>`, `<ZStack>`, `<Grid3D>`, `<Circle3D>` and `<Parallax>` make several layers; use them as JSX like any other component.
 - **Name your beats** with `<Sequence name="Beat 2">`. Named sequences become scene markers, so `apply_edits` can ripple them later. For text exits, use `anchor: 'end'` (the delay counts back from the layer's end), so exits follow when a beat gets longer.
 
 ## 3. Recipes

@@ -44,12 +44,24 @@ export async function doctor(): Promise<{ ok: boolean; checks: Check[] }> {
       add({ name: 'Project bit depth 8/16 bpc', ok: p.bpc !== 32, warn: p.bpc === 32, detail: `${p.bpc} bpc`, fix: 'Project Settings > Color > Bit Depth 16 bpc (32 bpc snapshots are compensated but not a target, D29)' });
       const probe = await callRuntime('inspect', ['project', {}], { timeoutMs: 20_000 });
       add({ name: 'Scripts can write files / access network', ok: !!probe.ok, detail: 'inspect OK (file writes verified by snapshot tests)' });
-      const font = await import('../api/index.ts').then((m) => m.runExtendScript('(function(){var c=app.project.items.addComp("__aec_font",10,10,1,1,30);var L=c.layers.addText("x");var p=L.property("ADBE Text Properties").property("ADBE Text Document");var d=p.value;d.font="Inter-Bold";p.setValue(d);var f=p.value.font;c.remove();return f;})()', 20_000));
+      const font = await import('../api/index.ts').then((m) => m.runExtendScript('(function(){app.beginUndoGroup("ae-compose: doctor font probe");var f;try{var c=app.project.items.addComp("__aec_font",10,10,1,1,30);var L=c.layers.addText("x");var p=L.property("ADBE Text Properties").property("ADBE Text Document");var d=p.value;d.font="Inter-Bold";p.setValue(d);f=p.value.font;c.remove();}finally{app.endUndoGroup();$.global.__aecNoopUndos=($.global.__aecNoopUndos||0)+1;}return f;})()', 20_000));
       add({ name: 'Default font Inter installed', ok: font.ok && font.result === 'Inter-Bold', warn: true, detail: font.ok ? `AE resolved "Inter-Bold" → "${font.result}"` : font.error, fix: 'Install Inter (or set font= on Text)' });
     } catch (e: any) {
       add({ name: 'Runtime loads and answers in AE', ok: false, detail: e.message, fix: 'pnpm build:runtime; check AE for open dialogs (aec dialogs)' });
     }
   }
+  // Every snapshot/contact sheet renders frames, and AE caches them on disk (default: %LOCALAPPDATA%\Temp\Adobe\After
+  // Effects\<ver>\Disk Cache - <machine>). A long session filled a 930 GB C: drive with a 67 GB cache.
+  try {
+    const cacheRoot = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), 'Temp', 'Adobe', 'After Effects');
+    let cacheBytes = 0;
+    const walk = (d: string) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else { try { cacheBytes += fs.statSync(p).size; } catch { /* busy */ } } } };
+    if (fs.existsSync(cacheRoot)) walk(cacheRoot);
+    const free = (fs as any).statfsSync ? (() => { const s = (fs as any).statfsSync(cacheRoot.slice(0, 3)); return s.bavail * s.bsize; })() : NaN;
+    const gb = (n: number) => `${(n / 1e9).toFixed(1)} GB`;
+    const low = Number.isFinite(free) && free < 10e9, big = cacheBytes > 30e9;
+    add({ name: 'Disk space for AE disk cache', ok: !low && !big, warn: !low, detail: `${Number.isFinite(free) ? gb(free) + ' free on ' + cacheRoot.slice(0, 2) : 'free space unknown'}; AE disk cache ${gb(cacheBytes)}`, fix: 'AE > Edit > Preferences > Media & Disk Cache: Empty Disk Cache, and set Maximum Disk Cache Size (e.g. 20 GB) or move the cache to a bigger drive' });
+  } catch { /* best-effort */ }
   try { execFileSync('ffmpeg', ['-version'], { stdio: 'ignore', windowsHide: true }); add({ name: 'ffmpeg (for MP4/GIF previews)', ok: true, detail: 'found' }); }
   catch { add({ name: 'ffmpeg (for MP4/GIF previews)', ok: false, warn: true, detail: 'not on PATH', fix: 'winget install Gyan.FFmpeg' }); }
   try { await import('sharp'); add({ name: 'sharp (contact sheets)', ok: true, detail: 'loaded' }); } catch (e: any) { add({ name: 'sharp (contact sheets)', ok: false, detail: e.message, fix: 'pnpm install' }); }

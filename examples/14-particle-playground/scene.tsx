@@ -1,30 +1,46 @@
-// Showcase 14 — Particle Playground: a cannon fountain arcing under gravity behind a title, over a CC Star Burst
-// starfield, with the cannon's direction sweeping. Live controls: Fountain Rate, Fountain Speed, Gravity.
-import { scene, Composition, Solid, Text, ParticlePlayground, StarBurst, Effect, Adjustment, keys, perWord, control } from 'ae-compose';
+// Showcase 14 — Particle Playground: the title holds, then at the drop it is turned into particles by Playground's
+// Layer Exploder (the source is a hidden precomp holding the text for one frame, so the letters are emitted once) and
+// crumbles under Playground gravity. A light cannon fountain and a CC Star Burst starfield sit behind it.
+// Live controls: Gravity, Scatter, Fountain Rate.
+import { scene, Composition, Solid, Text, Precomp, ParticlePlayground, StarBurst, Effect, Adjustment, perWord, control } from 'ae-compose';
 
-export default scene({ name: 'Playground', width: 1920, height: 1080, fps: 30, duration: '6s', bg: '#05060a' }, () => (
-  <Composition>
-    <Solid name="BG" color="#05060a" />
-    <StarBurst name="Stars" params={{ Speed: 0.35, 'Grid Spacing': 5, Size: 160, Scatter: 300 }} opacity={85} />
-    <ParticlePlayground id="fountain" name="Fountain"
-      params={{
-        'Position': [960, 1000],
-        'Particles Per Second': control('Fountain Rate', 320, { min: 0, max: 900 }),
-        'Direction': keys({ t: 0, v: -18, easing: 'easeInOutSine' }, { t: 3, v: 18, easing: 'easeInOutSine' }, { t: 6, v: -18 }),
-        'Direction Random Spread': 14,
-        'Velocity': control('Fountain Speed', 720, { min: 0, max: 1500 }),
-        'Velocity Random Spread': 60,
-        'Color': '#7fb3ff',
-        'Particle Radius': 4,
-        'Force': control('Gravity', 380, { min: 0, max: 1200 }),
-      }}>
-    </ParticlePlayground>
-    <Adjustment name="Bloom">
-      <Effect name="Glow" params={{ 'Glow Radius': 30, 'Glow Intensity': 0.8, 'Glow Threshold': 65 }} />
-    </Adjustment>
-    <Text name="Title" font="Inter-Black" size={140} color="#f2f4f8" y={430}
-      animate={{ text: perWord({ from: { y: 60, opacity: 0 }, spring: { damping: 14, stiffness: 160 }, each: '120ms', delay: 0.6 }) }}>
-      PLAY IT YOUR WAY
-    </Text>
-  </Composition>
-));
+export default scene({ name: 'Playground', width: 1920, height: 1080, fps: 30, duration: '6s', bg: '#05060a' }, () => {
+  const DROP = 1.8; // seconds
+  const gravity = control('Gravity', 420, { min: 0, max: 1200 });
+  const scatter = control('Scatter', 90, { min: 0, max: 400 });
+  const rate = control('Fountain Rate', 60, { min: 0, max: 600 });
+  return (
+    <Composition>
+      <Solid name="BG" color="#05060a" />
+      <StarBurst name="Stars" params={{ Speed: 0.35, 'Grid Spacing': 5, Size: 160, Scatter: 300 }} opacity={85} />
+      {/* The title as real text until the drop... */}
+      <Text name="Title" font="Inter-Black" size={150} color="#9cc8ff" y={470} duration={DROP}
+        animate={{ text: perWord({ from: { y: 50, opacity: 0 }, spring: { damping: 14, stiffness: 160 }, each: '110ms', delay: 0.2 }) }}>
+        PLAY IT YOUR WAY
+      </Text>
+      {/* ...then it is exploded into particles exactly once. Layer Exploder samples its source at every frame and
+          ignores the source layer's in/out points, so the source is a hidden precomp whose CONTENT is the text for
+          one frame only (the drop frame) and empty otherwise. */}
+      <Precomp id="source" name="Title (exploder source)" hidden>
+        <Text font="Inter-Black" size={150} color="#9cc8ff" y={470} from={DROP} duration={1 / 30}>PLAY IT YOUR WAY</Text>
+      </Precomp>
+      <ParticlePlayground id="pg" name="Playground"
+        params={{
+          'Position': [960, 1040],
+          'Particles Per Second': rate,
+          'Direction Random Spread': 16,
+          'Velocity': 620,
+          'Velocity Random Spread': 90,
+          'Color': '#4683c4',
+          'Particle Radius': 2,
+          'Explode Layer': { layer: 'source' },
+          'Radius of New Particles': 2,
+          'Velocity Dispersion': scatter,
+          'Force': gravity,
+        }} />
+      <Adjustment name="Bloom">
+        <Effect name="Glow" params={{ 'Glow Radius': 20, 'Glow Intensity': 0.5, 'Glow Threshold': 75 }} />
+      </Adjustment>
+    </Composition>
+  );
+});

@@ -46,6 +46,7 @@ server.registerTool('build_scene', {
   if (r.warnings.length) lines.push('warnings:', ...r.warnings.map((w) => `- ${w}`));
   if (r.exprErrors.length) lines.push('expression errors:', ...r.exprErrors.map((e) => `- ${e.node} ${e.prop}${e.src ? ` (${e.src})` : ''}: ${e.error}`));
   if (r.restoredControls) lines.push(`kept ${r.restoredControls} live control value(s) from the previous build`);
+  if ((r.undoSteps ?? 1) > 1) lines.push(`undo steps: ${r.undoSteps} (undo with steps: ${r.undoSteps} removes this whole build)`);
   lines.push(`contact sheets: ${r.contactSheets.join(', ') || 'none'}`, `IR: ${r.irFile}`);
   const out: Content[] = [text(lines.join('\n'))];
   for (const s of r.contactSheets.slice(0, 4)) out.push(await image(s));
@@ -126,14 +127,17 @@ server.registerTool('create_variants', {
   inputSchema: {
     source: z.string().optional(),
     file: z.string().optional(),
-    variants: z.record(z.string(), z.record(z.string(), z.any())).describe('{ A: {...params}, B: {...params} }'),
+    variants: z.record(z.string().regex(/^[A-Za-z0-9_-]{1,24}$/, 'variant keys: letters, digits, _ or -'), z.record(z.string(), z.any())).describe('{ A: {...params}, B: {...params} }'),
+    compare: z.boolean().optional().describe('also build a Compare comp gridding the variants (default true)'),
+    cwd: z.string().optional().describe('directory for resolving relative imports/assets when using `source`'),
     frames: z.number().int().min(0).max(16).optional(),
   },
 }, async (a) => wrap(async () => {
   const out: Content[] = [];
   const { loadScene } = await import('../scene/load.ts');
-  const loaded = await loadScene({ file: a.file, source: a.source });
+  const loaded = await loadScene({ file: a.file, source: a.source, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) } as any);
   loaded.def.config.variants = a.variants as any;
+  loaded.def.config.compare = a.compare !== false;
   const r = await buildScene({ def: loaded.def, file: loaded.file }, { frames: a.frames ?? 6 });
   out.push(text(`${r.ok ? 'OK' : 'FAILED'}: ${r.comps.map((c) => c.name).join(', ')}${r.error ? `\nerror: ${r.error}` : ''}`));
   for (const s of r.contactSheets) out.push(await image(s, 1200));
@@ -212,9 +216,9 @@ server.registerTool('answer_dialog', {
 
 server.registerTool('undo', {
   title: 'Undo',
-  description: 'Edit > Undo in After Effects. Each build_scene / apply_edits is exactly one undo step.',
-  inputSchema: {},
-}, async () => wrap(async () => [text(JSON.stringify(await undo()))]));
+  description: 'Undo the last ae-compose change(s) with After Effects\' own Edit > Undo. Each apply_edits batch and each single build is one step; a build with variants is one step per variant comp plus one for the compare comp (the build report says "undo steps"). Read-only probes in between are skipped. Changes made by hand in AE after the last ae-compose call are undone first, so check the result with inspect_comp when the user has been working in AE.',
+  inputSchema: { steps: z.number().int().min(1).max(50).optional().describe('how many ae-compose changes to undo (default 1)') },
+}, async (a) => wrap(async () => [text(JSON.stringify(await undo(a.steps ?? 1)))]));
 
 server.registerTool('doctor', {
   title: 'Check environment',

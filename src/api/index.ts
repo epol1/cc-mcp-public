@@ -10,6 +10,7 @@ import { resolveEffect, searchEffects } from '../catalog/resolve.ts';
 import { compileEditOps } from '../edit/ops.ts';
 import type { EditInput } from '../edit/ops.ts';
 import { OUT_ROOT } from './build.ts';
+import { guardDiskCache } from './cache.ts';
 
 export { buildScene } from './build.ts';
 export type { BuildOptions, BuildReport } from './build.ts';
@@ -33,6 +34,7 @@ export async function contactSheet(comp: string | number | undefined, n = 8, tim
   const frames = r.frames.filter((f: any) => f.ok).map((f: any) => ({ t: f.t, file: f.file }));
   const sheet = path.join(dir, 'contact.png');
   await writeContactSheet(sheet, frames, { bpc: r.bpc, fps: r.fps, title: `${r.comp} — ${frames.length} frames` });
+  await guardDiskCache();
   return { sheet, frames, comp: r.comp };
 }
 
@@ -60,6 +62,7 @@ export async function snapshot(comp: string | number | undefined, times: number[
     fs.writeFileSync(out, await normalizeCapture(f.file, r.bpc));
     files.push(out);
   }
+  await guardDiskCache();
   return { files, comp: r.comp };
 }
 
@@ -74,8 +77,9 @@ export async function applyEdits(input: EditInput, opts: { frames?: number } = {
   return r;
 }
 
-export async function undo(): Promise<any> {
-  return callRuntime('undo', []);
+/** Undo the last `steps` ae-compose builds/edits (variant builds report their step count as `undoSteps`). */
+export async function undo(steps = 1): Promise<any> {
+  return callRuntime('undo', [steps]);
 }
 
 export function listEffects(query = '', limit = 40) {

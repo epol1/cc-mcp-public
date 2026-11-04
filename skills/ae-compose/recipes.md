@@ -1,6 +1,6 @@
 # ae-compose recipes
 
-Extra patterns beyond the five in `SKILL.md`. Every block type-checks against the DSL. Asset paths are relative to the scene file, so swap in the real ones. Reference: [`docs/DSL.md`](../../docs/DSL.md).
+Extra patterns beyond the five in `SKILL.md`. Every block type-checks against the DSL. Asset paths are relative to the scene file, so swap in the real ones. Reference: [`docs/DSL.md`](reference/DSL.md).
 
 ## End card with CTA pulse
 

@@ -21,3 +21,7 @@ assets/hdri/*
 # AE autosaves and lock files
 *.aep.lock
 Adobe After Effects Auto-Save/
+
+# Showcase 09 outputs (derived from a client project)
+examples/09-edit-existing/outline_*.txt
+examples/09-edit-existing/contact_*.png

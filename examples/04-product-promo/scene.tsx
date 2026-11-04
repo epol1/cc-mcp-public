@@ -4,6 +4,21 @@
 import { scene, Composition, Series, Footage, Solid, Shape, Rect, Fill, GradientFill, Text, Svg, Mask, Row, Column, Effect, spring, tween, keys, perWord, perLine, perChar, textPresets, control } from 'ae-compose';
 
 const INK = '#0b0d12';
+
+/** Two angled bars sweep across, covering the frame at `at` (the cut) and clearing on the far side. */
+function AccentWipe({ at, color }: { at: number; color: any }) {
+  return (
+    <>
+      {[0, 1].map((i) => (
+        <Shape name={`Wipe ${at}s ${i + 1}`} rotation={-12} from={at - 0.45} duration={0.9}
+          animate={{ x: keys({ t: i * 0.06, v: -1500, easing: 'easeInCubic' }, { t: 0.42 + i * 0.03, v: 960, hold: true }, { t: 0.5 + i * 0.03, v: 960, easing: 'easeOutCubic' }, { t: 0.88, v: 3400 }) }}>
+          <Rect size={[2400, 2400]} />
+          <Fill color={i === 0 ? '#0b0d12' : color} />
+        </Shape>
+      ))}
+    </>
+  );
+}
 const WHITE = '#f2f4f8';
 const MUTED = '#9aa5b5';
 
@@ -91,6 +106,9 @@ export default scene({ name: 'ProductPromo', width: 1920, height: 1080, fps: 30,
           <Solid name="Fade Out" color="#000000" animate={{ opacity: keys({ t: 2.7, v: 0, easing: 'easeInCubic' }, { t: 3.2, v: 100 }) }} />
         </Series.Sequence>
       </Series>
+      {/* Transitions: angled accent wipes that cover each cut (Hero → Details at 2.8 s, Details → End Card at 5.6 s). */}
+      <AccentWipe at={2.8} color={accent} />
+      <AccentWipe at={5.6} color={accent} />
     </Composition>
   );
 });

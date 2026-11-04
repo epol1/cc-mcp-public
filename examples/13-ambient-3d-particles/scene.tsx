@@ -1,6 +1,6 @@
 // Showcase 13 — Ambient particles in 3D: drifting bokeh dust (CC Particle World follows the comp camera, so it
 // parallaxes with the move) around a 3D title and a ring of product cards, with a slow orbiting camera.
-// Live controls: Orbit Speed and the dust preset's Birth Rate / Velocity / Birth Size.
+// Live controls: Orbit Speed and the dust's Velocity ("Dust Bokeh Velocity"); Birth Rate and Birth Size are fixed for this shot.
 import { scene, Composition, Solid, Text, Footage, Circle3D, OrbitCamera, ParticleWorld, spring, tween, perChar, control } from 'ae-compose';
 
 export default scene({ name: 'Ambient3D', width: 1920, height: 1080, fps: 30, duration: '8s', bg: '#06070b', renderer: 'classic3d' }, () => (

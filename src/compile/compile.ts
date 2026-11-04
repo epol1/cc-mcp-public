@@ -17,7 +17,7 @@ import { anchorBox, lowerTransform } from './transform.ts';
 import { textDoc, unitAnimator } from './text.ts';
 import { shapeItems, pointsToShape } from './shapes.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
-import { popupIndex } from '../catalog/harvest.ts';
+import { paramRange, popupIndex } from '../catalog/harvest.ts';
 import { cameraProps, featuresOf, geometryProps, lightProps, materialProps } from './threed.ts';
 import type { Feature, RendererKey } from './renderers.ts';
 import { chooseRenderer, RENDERER_ID, RENDERER_NAME } from './renderers.ts';
@@ -326,6 +326,10 @@ export class Compiler {
       case 'solid':
       case 'adjustment':
         L.solid = { color: rgb(p.color ?? (kind === 'adjustment' ? '#ffffff' : '#000000')), w: p.width ?? ctx.comp.w, h: p.height ?? ctx.comp.h };
+        // AE renders a layer at its own pixel size: a 30000 px solid needs 3.4 GB per frame and stops renders with
+        // a modal memory error. For huge planes (floors), use a smaller solid and scale it.
+        if (L.solid.w > 30000 || L.solid.h > 30000) throw new Error(`[${id}] solid ${L.solid.w}×${L.solid.h} exceeds AE's 30000 px limit; use a smaller solid with scale (e.g. width={4000} scale={800})`);
+        if (L.solid.w * L.solid.h > 64e6) this.warnings.push(`[${id}] solid ${L.solid.w}×${L.solid.h} is very large (memory per frame); a smaller solid with scale renders the same plane far cheaper`);
         break;
       case 'text': {
         const text = p.text ?? childrenOf(p.children).filter((c) => typeof c === 'string').join('');
@@ -495,6 +499,13 @@ export class Compiler {
         let isColor = true;
         try { parseColor(val); } catch { isColor = false; }
         if (!isColor) throw new Error(`${name}: "${val}" is not an option of "${k}" (use describe_effect to list options, or pass the number)`);
+      }
+      // A percent given for a 0–1 parameter (e.g. the Fill effect's Opacity): scale it, from the harvested range.
+      const range = paramRange(mn, k);
+      if (typeof v === 'number' && range && range.max === 1 && range.min >= 0 && v > 1 && v <= 100) {
+        this.warnings.push(`${name}: "${k}" is 0–1 in AE; ${v} was read as ${v}% → ${v / 100}`);
+        props.push({ p: k, v: v / 100 });
+        continue;
       }
       const isColorish = typeof val === 'string' || (isControl(val) && val.kind === 'color');
       const dims = isColorish ? 4 : Array.isArray(val) ? val.length : isAnim(val) && Array.isArray((val as any).to ?? (val as any).from) ? ((val as any).to ?? (val as any).from).length : 1;

@@ -23,10 +23,15 @@ fs.writeFileSync(vfile, next + '\n');
 const run = (cmd, a, opts = {}) => execFileSync(cmd, a, { cwd: root, stdio: 'inherit', ...opts });
 // Gate: unit tests must pass when they exist.
 const pkg = fs.existsSync(path.join(root, 'package.json')) ? JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')) : {};
-if (pkg.scripts && pkg.scripts['test:unit']) {
-  try { run(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', ['run', '-s', 'test:unit'], { shell: process.platform === 'win32' }); }
-  catch { fs.writeFileSync(vfile, cur + '\n'); console.error('unit tests failed, release aborted'); process.exit(1); }
+// Gates: typecheck (Node + ES3 runtime) and unit tests must pass.
+for (const script of ['typecheck', 'test:unit']) {
+  if (!(pkg.scripts && pkg.scripts[script])) continue;
+  try { run(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', ['run', '-s', script], { shell: process.platform === 'win32' }); }
+  catch { fs.writeFileSync(vfile, cur + '\n'); console.error(`${script} failed, release aborted`); process.exit(1); }
 }
+// The skill ships with its DSL reference: keep the copy inside the skill folder in sync.
+fs.mkdirSync(path.join(root, 'skills/ae-compose/reference'), { recursive: true });
+fs.copyFileSync(path.join(root, 'docs/DSL.md'), path.join(root, 'skills/ae-compose/reference/DSL.md'));
 run(process.execPath, [path.join(root, 'status/build.mjs'), '--record', next]);
 run('git', ['add', '-A']);
 run('git', ['commit', '-q', '-m', `${next} ${message}`, '-m', 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>']);

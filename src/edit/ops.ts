@@ -77,7 +77,7 @@ export const AgentOp = z.discriminatedUnion('op', [
   z.object({ op: z.literal('comp'), set: z.object({ renderer: z.enum(['advanced3d', 'cinema4d', 'classic3d']).optional(), bg: z.any().optional(), width: z.number().optional(), height: z.number().optional(), duration: z.number().optional(), fps: z.number().optional(), motionBlur: z.boolean().optional(), shutterAngle: z.number().optional(), name: z.string().optional() }) }),
   z.object({ op: z.literal('precompose'), layers: z.array(Layer), name: z.string() }),
   z.object({ op: z.literal('duplicateComp'), name: z.string() }),
-  z.object({ op: z.literal('addControls'), layer: Layer, prop: z.string(), delay: z.string().optional().describe('slider name for a live delay'), speed: z.string().optional().describe('slider name for live speed (%)') }),
+  z.object({ op: z.literal('addControls'), layer: Layer, prop: z.string(), delay: z.string().optional().describe('slider name for a live delay'), speed: z.string().optional().describe('slider name for live speed (%)'), force: z.boolean().optional().describe('replace an existing (non-ae-compose) expression') }),
   z.object({
     op: z.literal('ripple'),
     at: TimeV.optional().describe('insert (by > 0) or remove (by < 0) time starting here'),
@@ -283,7 +283,7 @@ export async function compileEditOps(input: EditInput, notes?: string[]): Promis
         out.push({ op: 'duplicateComp', name: op.name });
         break;
       case 'addControls':
-        out.push({ op: 'rigTiming', layer: op.layer, path: propPath(op.prop), delayName: op.delay, speedName: op.speed });
+        out.push({ op: 'rigTiming', layer: op.layer, path: propPath(op.prop), delayName: op.delay, speedName: op.speed, force: op.force });
         break;
       case 'ripple': {
         const { op: _o, ...rest } = op;

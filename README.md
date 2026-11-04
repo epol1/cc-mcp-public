@@ -61,6 +61,12 @@ Restart After Effects, open a project, and check everything:
 node bin/aec.mjs doctor
 ```
 
+To type `aec` instead of `node bin/aec.mjs`, link it once:
+
+```bash
+pnpm link --global
+```
+
 ### Setup checklist (what `aec doctor` verifies)
 - [ ] After Effects 2026 found, and running with a project open
 - [ ] CEP bridge extension installed (junction) and **PlayerDebugMode=1**
@@ -81,17 +87,17 @@ aec build <scene.tsx> [--variant A] [--frames 8] [--param k=v] [--reset-controls
 aec watch <scene.tsx>                        rebuild on save (keeps live control values)
 aec inspect [comp] [--full]                  readable outline of a comp (works on hand-built comps)
 aec edit <ops.json> [--comp name]            apply edit ops (atomic, one undo step)
-aec undo                                     undo the last ae-compose build/edit
+aec undo [steps]                             undo the last ae-compose build/edit (AE's own Edit > Undo)
 aec snapshot [comp] --times 1,2.5            exact frames as PNG
 aec sheet [comp] [--frames 12]               contact sheet
 aec preview [comp] [--gif]                   short low-res MP4/GIF
-aec effects [query]                          search the vanilla effect catalog (391 effects with params)
+aec effects [query] [--describe n] [--refresh]   search the vanilla effect catalog (391 effects with params); --refresh re-harvests it from the installed AE
 aec import <file>                            import footage into the project
 aec dialogs [--answer <hwnd> <button>]       list/answer AE modal dialogs
 aec eval "<extendscript>"                    escape hatch
 ```
 
-All commands accept `--json`.
+Most commands accept `--json` for machine-readable output.
 
 ## MCP server (Claude Code, Claude Desktop)
 
@@ -107,7 +113,17 @@ Elsewhere, register it with an absolute path:
 claude mcp add ae-compose -- node "E:/Projects/ae-mcp/bin/aec-mcp.mjs"
 ```
 
-For **Claude Desktop**, add the same `command`/`args` under `mcpServers` in `claude_desktop_config.json`, then restart the app.
+For **Claude Desktop**, open Settings → Developer → Edit Config (the file is `%APPDATA%\Claude\claude_desktop_config.json`), add the server, and restart the app:
+
+```json
+{
+  "mcpServers": {
+    "ae-compose": { "command": "node", "args": ["E:/Projects/ae-mcp/bin/aec-mcp.mjs"] }
+  }
+}
+```
+
+Use the absolute path of your clone. After Effects must be running with a project open; `doctor` (a tool in both apps) checks the setup.
 
 The server has 18 tools. Images come back as JPEG of at most 1600 px.
 
@@ -127,6 +143,8 @@ The server has 18 tools. Images come back as JPEG of at most 1600 px.
 - copy the folder to `~/.claude/skills/ae-compose/` for Claude Code;
 - zip it and upload it as a skill on claude.ai.
 
+The folder is self-contained: `reference/DSL.md` is a copy of `docs/DSL.md`, kept in sync on every release.
+
 ## 5-minute quickstart
 
 1. Run `aec doctor`: all green (AE open with a project).
@@ -145,7 +163,7 @@ The server has 18 tools. Images come back as JPEG of at most 1600 px.
    node bin/aec.mjs inspect KineticType_v001
    ```
 
-   Then apply ops, for example `[{"op":"ease","layer":"MOVE","prop":"scale","easing":"easeOutBack"}]` or `[{"op":"ripple","scene":"Beat 2","by":1}]`, with `aec edit` or the `apply_edits` MCP tool. Each batch is one undo step, and it's rolled back entirely if any op fails.
+   Then apply ops, for example `[{"op":"ease","layer":"Underline","prop":"scale","easing":"easeOutBack"}]` or `[{"op":"ripple","scene":"Beat 2","by":1}]`, with `aec edit` or the `apply_edits` MCP tool. Each batch is one undo step, and it's rolled back entirely if any op fails.
 6. Ask Claude (with the MCP server and skill), for example: *"make the scene at 0:03 a bit slower so we can read the text"*, or *"I greenscreened this element, add it to this comp with the controller still behind it and animate it in"*.
 
 ## Showcases
@@ -204,3 +222,16 @@ npx tsx tests/integration/livecontrols.ts
 ```bash
 npx tsx tests/integration/ease-verify.ts
 ```
+
+```bash
+npx tsx tests/integration/edit-ops.ts
+```
+
+```bash
+npx tsx tests/integration/renderer-seeds.ts
+```
+
+The round-trip check covers 588 properties: values, keys and eases inside groups, effects and masks, plus 3D and particles. The edit-op suite applies every op to a hand-built project and checks that one undo restores it exactly. Renderer switching, seed determinism and live controls each have their own check. `npx tsx tests/quality/compare.ts` renders the kinetic-type spec in Remotion and in AE side by side, written to [docs/quality/kinetic-compare.png](docs/quality/kinetic-compare.png).
+
+### AE disk cache
+Every snapshot and contact sheet renders frames that AE caches on disk. ae-compose purges AE's caches automatically when the disk cache passes 10 GB or the drive drops below 15 GB free (`AEC_CACHE_LIMIT_GB`; set `AEC_NO_CACHE_PURGE=1` to disable). It's still worth capping **Edit > Preferences > Media & Disk Cache > Maximum Disk Cache Size** (for example 20 GB).

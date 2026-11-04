@@ -4,7 +4,7 @@
 > Roadmap and dashboard: `status/systems.json` → `status/index.html` (`node status/build.mjs`). Release: `node scripts/release.mjs "msg"`.
 
 ## Current phase
-**Phase 3: Build.** Phases 0–2 are done (environment, research, architecture).
+**Phase 3 complete: the GOAL §7 Definition of Done is met** (evidence in `docs/REPORT.md`). Work now is the planned features below and whatever the user asks for next.
 
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.
@@ -14,7 +14,7 @@
 - Status dashboard and release flow (`status/`, `scripts/release.mjs`). Private GitHub repo `epol1/ae-compose`.
 
 ## Built so far (Phase 3)
-- **Core:** ES3 runtime (build/inspect/edit/snapshot/describe/layout/ripple/preview), TS→ES3 toolchain, bridge client, dialog watchdog, auto-cancel of probe dialogs (D54), recovery, `aec` CLI (doctor passes), MCP server (18 tools).
+- **Core:** ES3 runtime (build/inspect/edit/snapshot/describe/layout/ripple/preview), TS→ES3 toolchain, bridge client, dialog watchdog, auto-cancel of probe dialogs (D54), zod IR validation before AE (`src/ir/schema.ts`), AE disk-cache guard (D62), `aec` CLI (doctor passes), MCP server (18 tools).
 - **DSL + compiler:**
   - layers, transforms, text documents and runs, per-unit text animators (with `anchor: 'end'` exits), shapes/pen/SVG, effects (fuzzy names, popup labels), masks (rounded rects), mattes;
   - controls (with `plus()` staggers) and EG;
@@ -29,22 +29,31 @@
   - ripple (D50), place + key + preview_item (D52);
   - atomic batches with rollback (D53); one-step undo.
 - **Verified in AE:**
-  - easing 11/11;
-  - live controls 0.000 px, sticky 3/3;
+  - round-trip: 588 properties (matrix + showcases 01/05/10/12) match the IR;
+  - edit ops: 26/26 on the hand-built project, each undone exactly in one step;
+  - renderer switching and seed determinism: pass;
+  - easing 11/11; live controls 0.000 px, sticky 3/3;
   - ripple: frames pixel-identical after the shift;
-  - greenscreen place → key → background → animate → undo.
-- **Docs:** `docs/DSL.md` (19 sections; 61 examples type-check and compile), `skills/ae-compose/SKILL.md` + `recipes.md`.
-- **Tests:** 253 unit/codegen tests pass (`npm run test:unit`). The 12 bugs the test agent found are fixed and kept as regression tests. AE integration checks in `tests/integration/` pass: round-trip, ripple, live controls, ease. Watch mode works.
+  - greenscreen place → key → background → animate → undo;
+  - Remotion side by side (kinetic type): timing matches, AE at least as good (`docs/quality/kinetic-compare.png`).
+- **Docs:** `docs/DSL.md` (copied to `skills/ae-compose/reference/DSL.md` on release), `skills/ae-compose/SKILL.md` + `recipes.md`, README, ARCHITECTURE (unbuilt parts marked planned), REPORT (what to try first, next 5 improvements).
+- **Tests:** unit/codegen tests pass (`pnpm test:unit`, including 21 IR-schema tests). Bugs found by the test agent and the independent reviewer are fixed and kept as regression tests. AE integration checks in `tests/integration/` pass: round-trip, edit ops, renderer + seeds, ripple, live controls, ease. Watch mode works.
 - **Showcases:** all 14 built, reviewed from contact sheets and iterated.
 - **MCP:** a fresh headless Claude Code session using only the skill and the MCP tools built, reviewed, fixed and ripple-edited a title card unaided (REPORT.md).
 
 ## Next
-1. Act on the independent DoD review (testing/t-review).
-2. Planned features (marked in ARCHITECTURE.md): lint, `stagger`/`interpolate` helpers, dolly/push-in rig helpers, Range Selector text mode, text on path, multi-color confetti, `.aepx` gradient reads, seed-determinism and Remotion side-by-side tests.
-3. `undo`: detect an AE session whose undo history is not recording (D61) and say so instead of reporting success.
+The ranked list is in `docs/REPORT.md` ("Next 5 improvements"):
+1. Lint report on every build and edit (overflow, safe areas, overlaps, blank frames, reading time).
+2. Motion previews the agent can judge (GIF strips or velocity graphs after builds).
+3. Gradient read-back (`.aepx`) and a `setGradient` op.
+4. Automatic recovery from AE hangs and crashes.
+5. Bezier-aware ripple splits; `stagger()` / `interpolate()` helpers.
+
+Also: `undo` should detect an AE session whose undo history is not recording (D61) and say so instead of reporting success; dolly/push-in rig helpers, Range Selector text mode, text on path, multi-color confetti.
 
 ## Open issues
 - AE crashes `(0 :: 42)` from shape-gradient internals: fenced (D15). One crash with no script running happened while the `Blue Dwarf V0` dev plugins were installed; they have since been removed (D18). No crashes since.
 - Renderer quality settings are not scriptable (documented limitation). Model embedded-animation selection is not scriptable (open).
-- Rebuilding a scene keeps layers that edits added to its comps (they're untagged). Decide whether `replace` should remove them, or keep the current behavior and document it.
+- Rebuilding a scene keeps layers that edits added to its comps (they're untagged; documented in DSL.md).
+- AE's disk cache fills fast during snapshot-heavy sessions; the guard purges it (D62), and the user should cap Maximum Disk Cache Size in AE preferences.
 - Edit `set` keys default to `easeInOutCubic`; DSL `keys()` default to `easeOutCubic` (documented; consider aligning).

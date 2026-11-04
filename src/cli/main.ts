@@ -8,22 +8,33 @@ import { watchScene } from './watch.ts';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
-const flags: Record<string, string | boolean> = {};
+const flags: Record<string, any> = {};
 const pos: string[] = [];
+const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep'];
+const REPEATABLE = ['param'];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
   if (a.startsWith('--')) {
-    const [k, v] = a.slice(2).split('=');
-    if (v !== undefined) flags[k] = v;
-    else if (argv[i + 1] && !argv[i + 1].startsWith('--') && !['json', 'refresh', 'no-variants', 'new-version', 'full', 'gif', 'project', 'undo'].includes(k)) flags[k] = argv[++i];
-    else flags[k] = true;
+    const eq = a.indexOf('=');
+    const k = eq > 0 ? a.slice(2, eq) : a.slice(2);
+    let v: any;
+    if (eq > 0) v = a.slice(eq + 1); // --k=v (v may contain "=")
+    else if (argv[i + 1] !== undefined && !argv[i + 1].startsWith('--') && !BOOLEAN.includes(k)) v = argv[++i];
+    else v = true;
+    if (REPEATABLE.includes(k) && flags[k] !== undefined) flags[k] = [...(Array.isArray(flags[k]) ? flags[k] : [flags[k]]), v];
+    else flags[k] = v;
   } else pos.push(a);
 }
 const json = !!flags.json;
 const out = (human: string, raw: any) => console.log(json ? JSON.stringify(raw, null, 1) : human);
 const params = () => {
   const p: Record<string, any> = {};
-  for (const kv of String(flags.param ?? '').split(',').filter(Boolean)) { const [k, v] = kv.split('='); p[k] = isNaN(+v) ? v : +v; }
+  // --param k=v,k2=v2 ; repeat --param for values containing commas (--param 'title=Hi, there').
+  const all = Array.isArray(flags.param) ? flags.param : flags.param !== undefined ? [flags.param] : [];
+  for (const raw of all) {
+    const parts = Array.isArray(flags.param) ? [String(raw)] : String(raw).split(/,(?=[^,=]+=)/);
+    for (const kv of parts.filter(Boolean)) { const i = kv.indexOf('='); if (i <= 0) continue; const k = kv.slice(0, i), v = kv.slice(i + 1); p[k] = v !== '' && !isNaN(+v) ? +v : v; }
+  }
   return p;
 };
 
@@ -34,15 +45,15 @@ const HELP = `aec — ae-compose CLI (native After Effects from TSX)
   aec watch <scene.tsx>              rebuild in place on save (keeps live control values)
   aec inspect [comp] [--full] [--project] [--layers 1,2]
   aec edit <ops.json> [--comp name]  apply agent edit ops (one undo step)
-  aec undo                           Edit > Undo in AE
+  aec undo [steps]                   undo the last ae-compose build/edit (AE's Edit > Undo)
   aec snapshot [comp] --times 0,1.5,3
   aec sheet [comp] [--frames 12]     contact sheet
   aec preview [comp] [--range 0-3] [--scale 0.5] [--fps 15] [--gif]
-  aec effects [query] [--describe <name>]
+  aec effects [query] [--describe <name>] [--refresh]   (--refresh re-harvests params from the installed AE)
   aec import <file> [--folder name]
   aec dialogs [--answer <hwnd> <button>]
   aec eval "<extendscript>"
-Add --json to any command for machine-readable output.`;
+Most commands accept --json for machine-readable output.`;
 
 async function main() {
   switch (cmd) {
@@ -76,7 +87,7 @@ async function main() {
       break;
     }
     case 'undo':
-      out('undone', await undo());
+      out('undone', await undo(pos[0] ? +pos[0] : 1));
       break;
     case 'snapshot': {
       const times = String(flags.times ?? '0').split(',').map(Number);
@@ -96,11 +107,18 @@ async function main() {
       break;
     }
     case 'effects':
-      if (flags.describe) { const r = await describeEffect(String(flags.describe)); out(`${r.name} (${r.matchName})\n` + r.params.map((p: any) => `  ${p.index}. ${p.name} [${p.mn}] ${p.type}${p.default !== undefined ? ` = ${JSON.stringify(p.default)}` : ''}${p.min !== undefined ? ` (${p.min}..${p.max})` : ''}${p.options ? `\n       ${p.options.join(' | ')}` : ''}`).join('\n'), r); }
+      if (flags.refresh) {
+        // Re-harvest every vanilla effect's params from the installed AE (after an AE update), then regenerate types.
+        const { harvest } = await import('../catalog/harvest.ts');
+        const r = await harvest({ force: true, log: (m) => process.stderr.write(m + '\n'), timeoutMs: 60_000 });
+        const failed = r.failed.length ? '\n  ' + r.failed.join('\n  ') : '';
+        out(`harvested ${r.done} effects; ${r.failed.length} failed${failed}\nupdated src/catalog/params.json and src/dsl/effects.generated.ts`, r);
+        process.exitCode = r.failed.length ? 1 : 0;
+      } else if (flags.describe) { const r = await describeEffect(String(flags.describe)); out(`${r.name} (${r.matchName})\n` + r.params.map((p: any) => `  ${p.index}. ${p.name} [${p.mn}] ${p.type}${p.default !== undefined ? ` = ${JSON.stringify(p.default)}` : ''}${p.min !== undefined ? ` (${p.min}..${p.max})` : ''}${p.options ? `\n       ${p.options.join(' | ')}` : ''}`).join('\n'), r); }
       else { const r = listEffects(pos[0] ?? '', 80); out(r.map((e) => `${e.name}  [${e.mn}]  ${e.category}`).join('\n'), r); }
       break;
     case 'import':
-      out(JSON.stringify(await importFootage(pos[0], flags.folder as string)), null);
+      { const r = await importFootage(pos[0], flags.folder as string); out(r.ok ? `imported "${r.name}" #${r.id}${r.reused ? ' (already in the project)' : ''}` : `error: ${r.error}`, r); process.exitCode = r.ok ? 0 : 1; }
       break;
     case 'dialogs': {
       if (flags.answer) { const r = await answerDialog(+flags.answer, pos[0] ?? 'OK'); out(JSON.stringify(r), r); break; }

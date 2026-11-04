@@ -5,6 +5,8 @@ import path from 'node:path';
 import { loadScene } from '../scene/load.ts';
 import { compileScene } from '../compile/compile.ts';
 import type { SceneDef } from '../dsl/scene.ts';
+import { validateIr } from '../ir/schema.ts';
+import { guardDiskCache } from './cache.ts';
 import type { SourceLoc } from '../dsl/jsx-runtime.ts';
 import { callRuntime } from '../bridge/index.ts';
 import { writeContactSheet } from '../visual/images.ts';
@@ -30,6 +32,8 @@ export interface BuildOptions {
 
 export interface BuiltComp { id: string; name: string; itemId: number; layers: number }
 export interface BuildReport {
+  /** Undo steps this build took (one per variant comp, plus one for a compare comp): pass to undo(steps). */
+  undoSteps?: number;
   ok: boolean;
   scene: string;
   comps: BuiltComp[];
@@ -73,8 +77,11 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   const outDir = opts.outDir ?? path.join(OUT_ROOT, report.scene.replace(/[^A-Za-z0-9_-]+/g, '_'));
   fs.mkdirSync(outDir, { recursive: true });
   const nFrames = opts.frames ?? 8;
+  for (const { ir } of irs) validateIr(ir); // fail in Node with a path, before anything reaches AE
   for (const { ir, sources, label } of irs) {
-    const irFile = path.join(outDir, `ir${label ? '_' + label : ''}.json`);
+    // Variant keys come from scene code or MCP input: never let one escape outDir (it feeds a recursive delete).
+    const safeLabel = label === undefined ? undefined : (String(label).replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+$/, '') || 'variant');
+    const irFile = path.join(outDir, `ir${safeLabel ? '_' + safeLabel : ''}.json`);
     fs.writeFileSync(irFile, JSON.stringify(ir, null, 1));
     report.irFile = irFile;
     const main = ir.comps.find((c: any) => c.id === ir.main) ?? ir.comps[ir.comps.length - 1];
@@ -82,6 +89,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     const snapDir = path.join(outDir, 'frames', label ?? 'main').replace(/\\/g, '/');
     fs.rmSync(snapDir, { recursive: true, force: true });
     const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined }], { timeoutMs: 300_000 });
+    report.undoSteps = (report.undoSteps ?? 0) + 1;
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;
     for (const e of r.exprErrors ?? []) report.exprErrors.push({ ...e, src: loc(sources[e.node]) });
@@ -106,6 +114,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     try { await buildCompare(irs, report, outDir); } catch (e: any) { report.warnings.push(`compare comp failed: ${e.message}`); }
   }
   report.ms = Date.now() - t0;
+  { const note = await guardDiskCache(); if (note) report.warnings.push(note); }
   return report;
 }
 
@@ -132,6 +141,7 @@ async function buildCompare(irs: { ir: any; label?: string; params?: Record<stri
   const ir = { irVersion: 1, scene, comps: [{ id: `${first.id.split('-')[0]}-compare`, name: `${first.name.replace(/_[^_]+$/, '')}_Compare`, w: W, h: H, fps: first.fps, dur: Math.max(...mains.map((x) => x.comp.dur)), bg: [0.06, 0.07, 0.09], layers }] };
   const times = [first.dur * 0.25, first.dur * 0.5, first.dur * 0.9].map((t) => Math.round(t * first.fps) / first.fps);
   const r = await callRuntime('build', [ir, { replace: true, open: true, snapshots: [{ times, dir: path.join(outDir, 'frames', 'compare').replace(/\\/g, '/') }] }], { timeoutMs: 600_000 });
+  report.undoSteps = (report.undoSteps ?? 0) + 1;
   if (!r.ok) throw new Error(r.error);
   report.comps.push(...r.comps);
   for (const snap of r.snapshots ?? []) {

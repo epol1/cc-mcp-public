@@ -14,7 +14,7 @@ const GEN = path.join(DIR, '../dsl/effects.generated.ts');
 // Effects that open a modal dialog (file picker, options, analysis) when applied from a script.
 export const HARVEST_BLOCKLIST = new Set(['CINEMA 4D Effect', 'mochaAECC', 'ADBE 3D Tracker', 'ADBE Apply Color LUT2', 'ADBE SubspaceStabilizer', 'ADBE Numbers2']);
 
-export async function harvest(opts: { only?: string[]; log?: (s: string) => void; timeoutMs?: number } = {}): Promise<{ done: number; failed: string[] }> {
+export async function harvest(opts: { only?: string[]; force?: boolean; log?: (s: string) => void; timeoutMs?: number } = {}): Promise<{ done: number; failed: string[] }> {
   const log = opts.log ?? ((s: string) => console.log(s));
   const list: [string, string, string][] = JSON.parse(fs.readFileSync(path.join(DIR, 'effects.json'), 'utf8')).effects;
   const db: Record<string, any> = fs.existsSync(PARAMS) ? JSON.parse(fs.readFileSync(PARAMS, 'utf8')) : {};
@@ -22,7 +22,7 @@ export async function harvest(opts: { only?: string[]; log?: (s: string) => void
   let done = 0;
   for (const [mn, name, cat] of list) {
     if (opts.only && !opts.only.includes(mn)) continue;
-    if (db[mn] && !opts.only) { done++; continue; }
+    if (db[mn] && !opts.only && !opts.force) { done++; continue; }
     if (HARVEST_BLOCKLIST.has(mn)) { db[mn] = { name, category: cat, skipped: 'opens a dialog/analysis on apply' }; continue; }
     try {
       const r = await callRuntime('describeEffect', [mn], { timeoutMs: opts.timeoutMs ?? 30_000, cancelDialogs: true });
@@ -77,8 +77,16 @@ export function generateTypes(db?: Record<string, any>): void {
   fs.writeFileSync(GEN, lines.join('\n'));
 }
 
-/** Popup label → index using the harvested catalog ("Screen" → 6). Returns undefined when unknown. */
 let DB: Record<string, any> | null = null;
+
+/** Harvested min/max of an effect parameter (by display name or matchName), when known. */
+export function paramRange(effectMn: string, param: string): { min: number; max: number } | undefined {
+  if (!DB) DB = fs.existsSync(PARAMS) ? JSON.parse(fs.readFileSync(PARAMS, 'utf8')) : {};
+  const p = DB![effectMn]?.params?.find((x: any) => x.n === param || x.mn === param);
+  return p && typeof p.min === 'number' && typeof p.max === 'number' ? { min: p.min, max: p.max } : undefined;
+}
+
+/** Popup label → index using the harvested catalog ("Screen" → 6). Returns undefined when unknown. */
 export function popupIndex(effectMn: string, param: string, label: string): number | undefined {
   if (!DB) DB = fs.existsSync(PARAMS) ? JSON.parse(fs.readFileSync(PARAMS, 'utf8')) : {};
   const p = DB![effectMn]?.params?.find((x: any) => x.n === param || x.mn === param);

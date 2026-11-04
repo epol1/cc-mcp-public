@@ -2,6 +2,7 @@
 // never touches the user's project file) → ffmpeg MP4/GIF. Option `aerender`: render a COPY of the saved
 // .aep with aerender (unsaved changes are not included; reported as a warning). See D33.
 import fs from 'node:fs';
+import { guardDiskCache } from '../api/cache.ts';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { callRuntime } from '../bridge/index.ts';
@@ -48,5 +49,6 @@ export async function renderPreview(comp: string | number | undefined, o: Previe
   const input = ['-y', '-v', 'error', '-framerate', String(fps), '-i', path.join(dir, 'f_%04d.png')];
   if (o.gif) await run('ffmpeg', [...input, '-vf', `scale=iw*${scale}:-2:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse`, outFile]);
   else await run('ffmpeg', [...input, '-vf', `scale=trunc(iw*${scale}/2)*2:-2`, '-pix_fmt', 'yuv420p', '-c:v', 'libx264', '-crf', '23', outFile]);
+  await guardDiskCache();
   return { file: outFile, frames: ok.length, method: 'capture', ms: Date.now() - t0, warnings };
 }

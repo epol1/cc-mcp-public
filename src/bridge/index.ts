@@ -8,6 +8,13 @@ import { AfterFxBackend } from './afterfx.ts';
 import { aeWindows, autoAnswerKnown, pressDialog } from './dialogs.ts';
 import type { Backend, EvalResult } from './types.ts';
 import { es3String, toEs3Literal } from '../codegen/literal.ts';
+import { parse as parseJs } from 'acorn';
+
+/** Throws if `code` is not valid ES3 (what ExtendScript accepts). */
+export function assertEs3(code: string): void {
+  try { parseJs(code, { ecmaVersion: 3, sourceType: 'script' }); }
+  catch (e: any) { const at = e.pos ?? 0; throw new Error(`generated request is not valid ES3 (${e.message}) near: ${code.slice(Math.max(0, at - 60), at + 60)}`); }
+}
 
 export type { Backend, EvalResult, DialogInfo } from './types.ts';
 
@@ -83,7 +90,9 @@ export async function evalAE(script: string, opts: { timeoutMs?: number; cancelD
 
 /** Calls AEC.<fn>(...args) in AE and parses the JSON it returns. */
 export async function callRuntime<T = any>(fn: string, args: unknown[], opts: { timeoutMs?: number; cancelDialogs?: boolean } = {}): Promise<T> {
-  const script = ensurePreamble() + `AEC.${fn}(${args.map((a) => toEs3Literal(a)).join(', ')});`;
+  const call = `AEC.${fn}(${args.map((a) => toEs3Literal(a)).join(', ')});`;
+  assertEs3(call); // every generated request is parsed as ES3 before it is sent (a syntax error in AE shows a modal alert)
+  const script = ensurePreamble() + call;
   const r = await evalAE(script, opts);
   if (!r.ok) {
     const err: any = new Error(`AE eval failed: ${r.error}${r.line ? ` (line ${r.line})` : ''}`);

@@ -207,7 +207,7 @@
         {
           "id": "ir-schema",
           "name": "zod schema v1",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
@@ -963,19 +963,31 @@
         {
           "id": "t-seeds",
           "name": "Seed determinism",
-          "status": "todo",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "t-renderer",
+          "name": "Renderer switching test",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "t-remotion",
           "name": "Remotion quality bar",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "t-review",
           "name": "Independent final review",
-          "status": "wip",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "disk-cache",
+          "name": "AE disk-cache guard (auto-purge + doctor check)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -1105,57 +1117,57 @@
     {
       "id": "dod-doctor",
       "name": "aec doctor passes",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-3d",
       "name": "3D fully controllable",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-particles",
       "name": "Particles fully controllable",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-showcases",
       "name": "14 showcases build + look professional",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-controls",
       "name": "Live controls in every showcase",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-variants",
       "name": "Variants + compare comp",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-roundtrip",
       "name": "Inspector round-trip tests pass",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-edits",
       "name": "Edit ops on hand-built project, 1-step undo",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-mcp",
       "name": "MCP usable from Claude Code",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-docs",
       "name": "README + docs complete",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "dod-report",
       "name": "REPORT.md written",
-      "status": "todo"
+      "status": "done"
     }
   ],
   "issues": [
@@ -1176,12 +1188,22 @@
     },
     {
       "area": "AE API",
-      "text": "project.serializeToXML needs an undocumented enum; .aepx gradient read uses saved copies instead",
+      "text": "project.serializeToXML needs an undocumented enum; reading gradient stops back from a saved .aepx copy is planned (insp-aepx)",
       "status": "open"
     },
     {
       "area": "AE API",
       "text": "Model embedded-animation selection (ModelAnimName) not exposed to scripting yet",
+      "status": "open"
+    },
+    {
+      "area": "AE stability",
+      "text": "AE disk cache fills the drive during snapshot-heavy sessions; auto-purged above 10 GB or under 15 GB free (D62)",
+      "status": "mitigated"
+    },
+    {
+      "area": "AE stability",
+      "text": "Seen once: an AE session stopped recording undo (Edit menu stuck at \"Can’t Undo\") until restarted; undo should detect it (D61)",
       "status": "open"
     }
   ]

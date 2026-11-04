@@ -281,6 +281,8 @@ function runOp(ctx: Ctx, comp: CompItem, op: EditOp, pending: Pending, changes: 
       // Adds live delay/speed controls to an existing animated property (keys stay editable).
       const p = prop(ctx, L!, op.path);
       if (p.numKeys < 2) fail(ctx, op.path + ' has fewer than 2 keys');
+      // Never silently replace someone's expression (an earlier ae-compose rig on the same property is fine).
+      if (p.expression && p.expression.indexOf('ae-compose rig') < 0 && op.force !== true) fail(ctx, op.path + ' already has an expression; pass force: true to replace it');
       const ctl = ensureControls(comp);
       const fxp = ctl.property('ADBE Effect Parade') as PropertyGroup;
       const add = (name: string, v: number) => { let fx: any = fxp.property(name); if (!fx) { fx = fxp.addProperty('ADBE Slider Control'); fx.name = name; fx = fxp.property(name); (fx.property(1) as Property).setValue(v); } return name; };
@@ -327,7 +329,9 @@ function JSON_q(s: string): string {
 }
 
 function ensureControls(comp: CompItem): Layer {
-  for (let i = 1; i <= comp.numLayers; i++) if (comp.layer(i).name === 'Controls') return comp.layer(i);
+  // Reuse an existing Controls null (ae-compose's or the user's own control layer); anything else named
+  // "Controls" is left alone and a new null is added.
+  for (let i = 1; i <= comp.numLayers; i++) { const L: any = comp.layer(i); if (L.name === 'Controls' && L.nullLayer) return L; }
   const n = comp.layers.addNull(comp.duration);
   n.name = 'Controls';
   n.enabled = false;

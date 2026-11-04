@@ -40,12 +40,18 @@ const AEC: any = {
   contactFrames: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => contactFrames(ref, n, dir, times)); },
   previewItem: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => noopGroup('preview', () => previewItem(ref, n, dir, times))); },
   layerSourceFrame: function (comp: any, layer: any, t: number, dir: string) { return guard(() => noopGroup('sample frame', () => layerSourceFrame(comp, layer, t, dir))); },
-  undo: function () {
+  /**
+   * Edit > Undo for the last `steps` ae-compose builds/edits (a variant build is one step per variant plus one
+   * for the compare comp; the build report says how many). Read-only probes since then are skipped. This is AE's
+   * own Undo: changes made by hand in AE after the last ae-compose call are undone first.
+   */
+  undo: function (steps?: number) {
     return guard(() => {
+      const n = Math.max(1, steps || 1);
       const extra = $.global.__aecNoopUndos || 0;
-      for (let i = 0; i <= extra; i++) app.executeCommand(16);
+      for (let i = 0; i < n + extra; i++) app.executeCommand(16);
       $.global.__aecNoopUndos = 0;
-      return { ok: true, steps: extra + 1 };
+      return { ok: true, steps: n, skippedProbes: extra };
     });
   },
   snapshot: function (compRef: { id?: string; name?: string }, times: number[], dir: string) {
