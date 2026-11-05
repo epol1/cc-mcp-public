@@ -92,6 +92,7 @@ export const AgentOp = z.discriminatedUnion('op', [
     duration: TimeV.optional().describe('new length of the span/scene'),
     where: z.union([z.enum(['quiet', 'start', 'end']), TimeV]).optional().describe('with scene + by: where the hold goes (default quiet)'),
     deep: z.boolean().optional().describe('ripple inside precomps that span the edit (default true)'),
+    snap: z.literal('beats').optional().describe('round the change so the edited scene ends on a beat (needs BeatMarkers on the comp); beat markers never move'),
   }).describe('Ripple edit: everything after the change shifts (layers, keys, markers, comp length); nothing needs retiming by hand'),
   z.object({
     op: z.literal('place'),

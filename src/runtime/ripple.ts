@@ -161,6 +161,9 @@ function remapMarkers(mp: Property, m: TimeMap, ctx?: Ctx, owner?: string): numb
   for (let k = n; k >= 1; k--) mp.removeKey(k);
   for (let i = 0; i < list.length; i++) {
     const it = list[i], d = (it.v as any).duration || 0;
+    // Beat-grid markers (A5) follow the music, which keeps playing through a ripple: they stay where they are.
+    const cm = String((it.v as any).comment);
+    if (!owner && d === 0 && (cm === 'beat' || /^bar \d+$/.test(cm))) { placeMarker(mp, it.t, it.v); continue; }
     const t2 = mapT(m, it.t);
     const e2 = d > 0 ? mapT(m, it.t + d, true) : t2;
     if (d > 0) (it.v as any).duration = Math.max(0, e2 - t2);
@@ -380,6 +383,13 @@ export function rippleComp(ctx: Ctx, comp: CompItem, m: TimeMap, deep: boolean, 
 
 // ---------- scenes and quiet time ----------
 
+/** Times of beat-grid comp markers ("beat", "bar N"; BeatMarkers). */
+function beatTimes(comp: CompItem): number[] {
+  const mk: any = (comp as any).markerProperty, out: number[] = [];
+  for (let k = 1; k <= mk.numKeys; k++) { const c = String(mk.keyValue(k).comment); if (c === 'beat' || /^bar \d+$/.test(c)) out[out.length] = mk.keyTime(k); }
+  return out;
+}
+
 export function scenesOf(comp: CompItem): { name: string; a: number; b: number }[] {
   const out: { name: string; a: number; b: number }[] = [];
   const mk = (comp as any).markerProperty as Property;
@@ -571,6 +581,24 @@ export function ripple(ctx: Ctx, comp: CompItem, op: any): any {
     const at = snap(parseT(op.at, fps)), by = snap(parseT(op.by, fps));
     m = by >= 0 ? { a: at, b: at, len: by } : { a: at, b: at - by, len: 0 };
   } else fail(ctx, 'ripple needs { at, by }, { span, scale|duration|by } or { scene, scale|duration|by }');
+  // snap: 'beats' (A5): round the change so everything after it (the edited scene's end) lands on a beat marker.
+  if (op.snap === 'beats' && m) {
+    const beats = beatTimes(comp);
+    if (!beats.length) warn(ctx, 'snap: "beats" needs beat markers on the comp (BeatMarkers); the edit was not snapped');
+    else {
+      const end = has(op.scene) || has(op.span) ? b : m.b;
+      const want = end + delta(m);
+      let best = beats[0];
+      for (let i = 1; i < beats.length; i++) if (Math.abs(beats[i] - want) < Math.abs(best - want)) best = beats[i];
+      const adj = snap(best - want);
+      if (Math.abs(adj) > EPS) {
+        if (isInsert(m)) m = { a: m.a, b: m.b, len: Math.max(fr, m.len + adj) };
+        else if (m.len < EPS && m.b - adj > m.a + fr) m = { a: m.a, b: snap(m.b - adj), len: 0 };
+        else m = { a: m.a, b: m.b, len: Math.max(fr, m.len + adj) };
+        info.snappedToBeat = best;
+      }
+    }
+  }
   const mm = m!;
   if (isInsert(mm) && mm.len < EPS) fail(ctx, 'ripple by 0s does nothing');
   const st: Stats = { shifted: 0, spanning: 0, keys: 0, markers: 0, exprs: 0, rigs: 0, removed: [], precomps: [], untouchedExprs: 0 };

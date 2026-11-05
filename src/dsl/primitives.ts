@@ -172,6 +172,8 @@ export interface FootageProps extends LayerProps {
   muted?: boolean;
 }
 export const Footage = prim<FootageProps>('footage');
+/** Comp markers (times relative to the enclosing Sequence): beat grids, cue points that expressions read. */
+export const CompMarkers = prim<{ markers: { t: Time; comment?: string; duration?: Time }[] }>('compMarkers');
 export interface VectorProps extends Omit<FootageProps, 'fit' | 'speed' | 'trim' | 'loop' | 'muted' | 'crop'> {
   /** Vector artwork to convert: .ai, .eps or .pdf (imported, then turned into an editable shape layer). */
   src: string;

@@ -76,9 +76,12 @@ export function motionSample(c: CompItem, opts: MotionSampleOpts): any {
   const o: any = { ok: true, comp: c.name, itemId: c.id, w: c.width, h: c.height, fps: c.frameRate, dur: c.duration, step: stepF * fd, times: [], layers: [], scenes: [] };
   for (let f = 0; f < nFrames; f += stepF) o.times[o.times.length] = f * fd;
   const mk: any = (c as any).markerProperty;
+  o.beats = [];
   for (let k = 1; k <= mk.numKeys; k++) {
     const m = mk.keyValue(k);
     if (m.duration > 0) o.scenes[o.scenes.length] = { name: m.comment, t: mk.keyTime(k), dur: m.duration };
+    // Beat grid markers (BeatMarkers, A5): lint checks cuts against them.
+    else if (m.comment === 'beat' || /^bar \d+$/.test(m.comment)) o.beats[o.beats.length] = mk.keyTime(k);
   }
   const ts = targets(c, opts);
   for (let k = 0; k < ts.length; k++) {

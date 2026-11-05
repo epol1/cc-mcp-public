@@ -259,6 +259,22 @@ server.registerTool('deliver', {
   return out;
 }));
 
+server.registerTool('analyze_beats', {
+  title: 'Analyze music beats',
+  description: 'Beat grid of a music file (mp3, m4a, wav…): tempo, confidence, beat and downbeat (bar) times, for planning cuts and accents before writing a beat-synced scene. In a scene, use `const B = beatsOf(file)` (B.bar(n), B.beat(n), B.bars(n) as a duration, B.snap(t)), `<Audio src>` and `<BeatMarkers beats={B} />`; lint then flags cuts just off a beat, and ripple edits take snap: "beats".',
+  inputSchema: { file: z.string().describe('audio file path'), minBpm: z.number().optional(), maxBpm: z.number().optional(), beatsPerBar: z.number().int().optional() },
+}, async (a) => wrap(async () => {
+  const { analyzeBeats } = await import('../audio/beats.ts');
+  const r = await analyzeBeats(path.resolve(a.file), { minBpm: a.minBpm, maxBpm: a.maxBpm, beatsPerBar: a.beatsPerBar });
+  const f = (t: number) => t.toFixed(3);
+  return [text([
+    `${path.basename(r.file)}: ${r.bpm.toFixed(1)} BPM, confidence ${r.confidence.toFixed(2)}, ${r.beats.length} beats over ${r.duration.toFixed(1)} s, ${r.beatsPerBar}/bar (downbeat confidence ${r.downbeatConfidence.toFixed(2)})`,
+    `bar starts (downbeats): ${r.downbeats.slice(0, 24).map(f).join(', ')}${r.downbeats.length > 24 ? ' …' : ''}`,
+    `beats: ${r.beats.slice(0, 48).map(f).join(', ')}${r.beats.length > 48 ? ' …' : ''}`,
+    r.confidence < 0.3 ? 'low confidence: the track has no steady pulse; place cuts by phrasing instead of beats' : 'one bar = ' + (60 / r.bpm * r.beatsPerBar).toFixed(3) + ' s',
+  ].join('\n'))];
+}));
+
 server.registerTool('motion_preview', {
   title: 'Judge motion: frame strip + speed graph',
   description: 'Judge how a comp moves, as images you can read: a strip of dense frames over one segment (default: one second around the busiest moment), the speed graph of every animated layer (moves with their easing class, holds shaded, how many layers move at once), a motion summary, and the style-lint craft rules. Also writes a GIF for humans. Use after a build to check easing feel, holds, transitions and "everything moves at once".',

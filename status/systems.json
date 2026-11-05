@@ -1320,7 +1320,7 @@
         {
           "id": "p5-beats",
           "name": "Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {

@@ -31,6 +31,8 @@ export interface MotionData {
   layers: MotionLayer[];
   scenes: { name: string; t: number; dur: number }[];
   transitions?: { kind: string; t: number; dur: number; layer?: string }[];
+  /** Beat-grid marker times (BeatMarkers): cuts are checked against them (off-beat). */
+  beats?: number[];
 }
 
 /**
@@ -129,8 +131,8 @@ export interface MotionOptions {
   visibleOpacity?: number;
 }
 
-export type StyleRule = 'transition-repeat' | 'crowded-entrance' | 'short-hold' | 'easing-monotony' | 'linear-move' | 'slide-furniture' | 'short-end-hold' | 'everything-moves' | 'dead-air';
-export const STYLE_RULES: StyleRule[] = ['transition-repeat', 'crowded-entrance', 'short-hold', 'easing-monotony', 'linear-move', 'slide-furniture', 'short-end-hold', 'everything-moves', 'dead-air'];
+export type StyleRule = 'transition-repeat' | 'crowded-entrance' | 'short-hold' | 'easing-monotony' | 'linear-move' | 'slide-furniture' | 'short-end-hold' | 'everything-moves' | 'dead-air' | 'off-beat';
+export const STYLE_RULES: StyleRule[] = ['transition-repeat', 'crowded-entrance', 'short-hold', 'easing-monotony', 'linear-move', 'slide-furniture', 'short-end-hold', 'everything-moves', 'dead-air', 'off-beat'];
 
 /** Same shape as LintIssue (src/lint/index.ts), with style rules. */
 export interface StyleIssue {

@@ -42,6 +42,8 @@ export async function loadScene(input: { file?: string; source?: string; cwd?: s
   fs.mkdirSync(CACHE, { recursive: true });
   const tmp = path.join(CACHE, crypto.createHash('sha1').update(code).digest('hex').slice(0, 16) + '.mjs');
   if (!fs.existsSync(tmp)) fs.writeFileSync(tmp, code);
+  // The bundle runs from the temp folder: DSL helpers that need repo files (the beat analyzer) find them here.
+  (globalThis as any).__AEC_ROOT__ = ROOT;
   const mod = await import(pathToFileURL(tmp).href);
   const def = mod.default;
   if (!isScene(def)) throw new Error('the scene file must `export default scene({ name, duration, ... }, () => <Composition>...</Composition>)`');

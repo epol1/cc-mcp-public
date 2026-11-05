@@ -8,6 +8,7 @@ import { analyzeMotion, formatStyleIssues, gif, motionStrip, motionSummary, spee
 import type { MotionData, StyleIssue, StyleOptions } from '../motion/index.ts';
 import type { LintAnim, LintData } from '../lint/index.ts';
 import { cssBezier } from '../shared/bezier.ts';
+import { offBeatCuts } from '../audio/beats.ts';
 import { springUnit } from '../shared/spring.ts';
 import os from 'node:os';
 
@@ -100,13 +101,29 @@ export function foldTextReveals(data: MotionData, lint?: LintData): MotionData {
   return data;
 }
 
+/**
+ * off-beat (A5): with a beat grid on the comp (BeatMarkers), scene starts and element entrances that land just off a
+ * beat (within 0.15 s, more than a frame away) read as sloppy sync: snap them (beatsOf().snap) or move them on purpose.
+ */
+function offBeat(d: MotionData): StyleIssue[] {
+  if (!d.beats?.length) return [];
+  const cuts = new Map<number, string>();
+  for (const s of d.scenes) if (s.t > 0.05) cuts.set(+s.t.toFixed(3), `scene "${s.name}" starts`);
+  for (const L of d.layers) if (L.in > 0.05 && L.in < d.dur - 0.05 && L.kind !== 'null' && !(L.tags ?? []).includes('controls')) if (!cuts.has(+L.in.toFixed(3))) cuts.set(+L.in.toFixed(3), `"${L.name}" enters`);
+  const tol = 1 / d.fps + 0.01;
+  return offBeatCuts([...cuts.keys()], d.beats, { window: 0.15, tolerance: tol }).map((c) => ({
+    rule: 'off-beat' as const, severity: 'warn' as const, t: [c.t, c.t] as [number, number], layer: cuts.get(+c.t.toFixed(3)),
+    message: `${cuts.get(+c.t.toFixed(3))} at ${c.t.toFixed(2)}s, ${Math.abs(c.offBy * 1000).toFixed(0)} ms ${c.offBy > 0 ? 'after' : 'before'} the beat at ${c.nearest.toFixed(2)}s: snap it to the beat (beatsOf(...).snap) or move it clearly off it`,
+  }));
+}
+
 /** Judges motion samples (from a build, an edit or motionSample) and draws the speed graph. */
 export async function motionReport(data: any, opts: MotionOptions = {}, ir?: any, lint?: LintData): Promise<MotionReport> {
   const t0 = Date.now();
   if (!data || !data.ok) return { ok: false, error: data?.error ?? 'no motion samples', comp: data?.comp ?? '', summary: [], style: [], lines: [], layers: 0, samples: 0, ms: 0 };
   const d = foldTextReveals(tagFromIr(data as MotionData, ir), lint);
   const a = analyzeMotion(d);
-  const style = opts.style === false ? [] : styleLint(d, a, opts.style ?? {});
+  const style = opts.style === false ? [] : [...styleLint(d, a, opts.style ?? {}), ...(opts.style?.ignore?.includes('off-beat') ? [] : offBeat(d))];
   let graph: string | undefined;
   if (opts.graph !== false && d.layers.length) {
     const file = path.join(OUT_ROOT, safe(d.comp), `motion_${Date.now()}.png`);

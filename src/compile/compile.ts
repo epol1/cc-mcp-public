@@ -230,6 +230,9 @@ export class Compiler {
       case 'precomp':
         this.precomp(el, ctx);
         return;
+      case 'compMarkers':
+        for (const mk of p.markers ?? []) (ctx.comp.markers ??= []).push({ t: ctx.start + parseTime(mk.t, ctx.comp.fps), comment: mk.comment, dur: mk.duration !== undefined ? parseTime(mk.duration, ctx.comp.fps) : undefined });
+        return;
       case 'effect':
       case 'rigEffect':
       case 'mask':
@@ -520,7 +523,7 @@ export class Compiler {
     if (Array.isArray(p.position) && !anim.position) delete (tProps as any).position;
     if (isCam || kind === 'light') delete (tProps as any).anchor; // camera/light anchor is the point of interest
     // Ambient and environment lights have no transform in AE (writing it fails).
-    const noTransform = kind === 'light' && (p.kind === 'ambient' || p.kind === 'environment');
+    const noTransform = (kind === 'light' && (p.kind === 'ambient' || p.kind === 'environment')) || (kind === 'footage' && p.audio === true); // audio-only layers have no transform
     if (!noTransform) props.unshift(...lowerTransform({ props: tProps, anim, rest, threeD: !!L.threeD }, vctx));
     if (ctx.inLayout) {
       for (const s of props) {

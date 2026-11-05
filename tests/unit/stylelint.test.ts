@@ -188,7 +188,7 @@ describe('style lint: dead-air', () => {
 
 describe('style lint: options and formatting', () => {
   it('lists every rule, honours ignore, and formats warnings first', () => {
-    expect(STYLE_RULES).toHaveLength(9);
+    expect(STYLE_RULES).toHaveLength(10) // + off-beat (A5, judged in src/api/motion.ts);
     const d = data([0, 1].map((k) => card(`Card ${k}`, { t0: 0.5, leaveAt: 3, outEase: 'easeOutExpo', y: 300 + k * 400 })), { transitions: [{ kind: 'push', t: 2, dur: 0.4 }, { kind: 'push', t: 4, dur: 0.4 }] });
     expect(rules(d)).toEqual(expect.arrayContaining(['transition-repeat', 'easing-monotony']));
     expect(rules(d, { ignore: ['transition-repeat'] })).not.toContain('transition-repeat');

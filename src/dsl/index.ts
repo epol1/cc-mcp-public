@@ -8,6 +8,8 @@ export { tween, spring, keys, seq, wiggle, loop, expr, sample, fade, slideIn, po
 export type { Anim, TextUnitsAnim, TextUnitFrom, Vec } from './anim.ts';
 export { control, plus } from './control.ts';
 export { field } from './field.ts';
+export { beatsOf, Audio, BeatMarkers } from './beats.ts';
+export type { BeatSync } from './beats.ts';
 export { Cloner, line, grid, circle, onPath, scatter, sphere, helix, noise, falloff, stagger, follow, step, colorize, csv } from './cloner.ts';
 export type { ClonerProps, ClonerMotion, Distribution, Effector } from './cloner.ts';
 export { OrbitCamera, CameraMove, PushIn, PullOut, Truck, Pedestal, Crane, ThreePointLights } from './rigs.ts';
