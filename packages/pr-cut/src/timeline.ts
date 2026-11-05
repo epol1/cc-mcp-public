@@ -1,0 +1,54 @@
+// The resolved timeline pr-cut writes into Premiere: every clip with exact source ticks and sequence frames.
+// Edit plans (plan/schema.ts) compile to this; the FCP7 writer (xml/fcp7.ts) and the inspector speak it.
+import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
+import type { Rate } from '@ae-mcp/core/time/timecode.ts';
+
+export interface Grade {
+  exposure?: number; contrast?: number; highlights?: number; shadows?: number; whites?: number; blacks?: number;
+  temperature?: number; tint?: number; saturation?: number; vibrance?: number; fadedFilm?: number; sharpen?: number;
+}
+
+export interface TLClip {
+  /** pr-cut id: "seg3" for a segment, "seg3.2" for its second piece after tightening, "b1" B-roll, "m1" music. */
+  id: string;
+  /** Key into Timeline.media. */
+  media: string;
+  /** 1-based video track, or undefined for audio-only use. */
+  vTrack?: number;
+  /** 1-based first audio track (stereo takes this and the next), or undefined for picture only. */
+  aTrack?: number;
+  /** Sequence frames, end exclusive. */
+  start: number;
+  end: number;
+  /** Source range in Premiere ticks (exact), end exclusive. */
+  inTicks: number;
+  outTicks: number;
+  /** Clip gain, dB (0 = unchanged). */
+  level?: number;
+  /** Level keyframes at sequence frames, dB (ducking, fades). */
+  levelKeys?: { frame: number; db: number }[];
+  /** Basic Motion: scale % and center offset as a fraction of the frame (punch-ins, reframing). */
+  motion?: { scale?: number; center?: [number, number] };
+  grade?: Grade;
+  /** Transition into this clip from the previous clip on the same track (centered on the cut). */
+  transitionIn?: { kind: 'dissolve' | 'dip-black' | 'dip-white' | 'audio-crossfade'; frames: number };
+  /** Source audio channels to use (1-based); default [1, 2] for stereo sources, [1] for mono. */
+  channels?: number[];
+  label?: 'Iris' | 'Violet' | 'Caribbean' | 'Lavender' | 'Cerulean' | 'Forest' | 'Rose' | 'Mango' | 'Purple' | 'Blue' | 'Teal' | 'Magenta' | 'Tan' | 'Green' | 'Brown' | 'Yellow';
+  name?: string;
+}
+
+export interface TLMarker { frame: number; duration?: number; name: string; comment?: string; color?: number }
+
+export interface Timeline {
+  name: string;
+  rate: Rate;
+  width: number;
+  height: number;
+  sampleRate?: number;
+  media: Record<string, MediaInfo>;
+  clips: TLClip[];
+  markers: TLMarker[];
+}
+
+export const timelineEnd = (t: Timeline) => t.clips.reduce((m, c) => Math.max(m, c.end), 0);

@@ -1,0 +1,244 @@
+<filter>
+<effect>
+<name></name>
+<effectid>Lumetri</effectid>
+<effecttype>filter</effecttype>
+<mediatype>video</mediatype>
+<pproBypass>false</pproBypass>
+<parameter authoringApp="PremierePro">
+<parameterid>1</parameterid>
+<name>Blob</name>
+<hash>63866a15-9327-e4cb-ff31-c9ea0000000e</hash>
+<value>/v4=</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>3</parameterid>
+<name> </name>
+<value>-91445760000000000,true,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>4</parameterid>
+<name> </name>
+<hash>63866a15-9327-e4cb-ff31-c9ea0000000e</hash>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>5</parameterid>
+<name>Input LUT</name>
+<LowerBound>0</LowerBound>
+<UpperBound>11</UpperBound>
+<value>-91445760000000000,0,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>7</parameterid>
+<name>Temperature</name>
+<LowerBound>-300</LowerBound>
+<UpperBound>300</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>8</parameterid>
+<name>Tint</name>
+<LowerBound>-300</LowerBound>
+<UpperBound>300</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>20</parameterid>
+<name>Saturation</name>
+<LowerBound>0</LowerBound>
+<UpperBound>300</UpperBound>
+<UpperUIBound>200</UpperUIBound>
+<value>-91445760000000000,100.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>11</parameterid>
+<name>Exposure</name>
+<LowerBound>-7</LowerBound>
+<UpperBound>7</UpperBound>
+<LowerUIBound>-5</LowerUIBound>
+<UpperUIBound>5</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>12</parameterid>
+<name>Contrast</name>
+<LowerBound>-150</LowerBound>
+<UpperBound>150</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>13</parameterid>
+<name>Highlights</name>
+<LowerBound>-150</LowerBound>
+<UpperBound>150</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>14</parameterid>
+<name>Shadows</name>
+<LowerBound>-150</LowerBound>
+<UpperBound>150</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>15</parameterid>
+<name>Whites</name>
+<LowerBound>-150</LowerBound>
+<UpperBound>150</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>16</parameterid>
+<name>Blacks</name>
+<LowerBound>-150</LowerBound>
+<UpperBound>150</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>23</parameterid>
+<name> </name>
+<value>-91445760000000000,true,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>24</parameterid>
+<name> </name>
+<hash>63866a15-9327-e4cb-ff31-c9ea0000000e</hash>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>25</parameterid>
+<name>Look</name>
+<LowerBound>0</LowerBound>
+<UpperBound>68</UpperBound>
+<value>-91445760000000000,0,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>26</parameterid>
+<name>Intensity</name>
+<LowerBound>0</LowerBound>
+<UpperBound>200</UpperBound>
+<value>-91445760000000000,100.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>28</parameterid>
+<name>Faded Film</name>
+<LowerBound>0</LowerBound>
+<UpperBound>150</UpperBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>29</parameterid>
+<name>Sharpen</name>
+<LowerBound>-100</LowerBound>
+<UpperBound>100</UpperBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>30</parameterid>
+<name>Vibrance</name>
+<LowerBound>-100</LowerBound>
+<UpperBound>100</UpperBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>31</parameterid>
+<name>Saturation</name>
+<LowerBound>0</LowerBound>
+<UpperBound>300</UpperBound>
+<UpperUIBound>200</UpperUIBound>
+<value>-91445760000000000,100.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>32</parameterid>
+<name></name>
+<hash>49d2fca5-ddd1-a393-0544-f6d80000002c</hash>
+<value>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>33</parameterid>
+<name>Tint Balance</name>
+<LowerBound>-150</LowerBound>
+<UpperBound>150</UpperBound>
+<LowerUIBound>-100</LowerUIBound>
+<UpperUIBound>100</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>37</parameterid>
+<name> </name>
+<value>-91445760000000000,true,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>39</parameterid>
+<name> </name>
+<hash>261f3840-e8cf-a8cd-fa5e-bac10000082c</hash>
+<value>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPA/AAAAAAAA8D8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwPwAAAAAAAPA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>42</parameterid>
+<name>Hue vs Sat</name>
+<hash>f146cafe-eab3-19ed-0ee8-de0e00000214</hash>
+<value>AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>46</parameterid>
+<name> </name>
+<value>-91445760000000000,true,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>47</parameterid>
+<name> </name>
+<hash>0b5436c4-bae0-bb64-a2f6-c8c40000006c</hash>
+<value>AAAAAAAAAAAAAAAAAADgPwAAAAAAAAAAAAAAAAAAAAAAAAAAAADgPwAAAAAAAAAAAAAAAAAAAAAAAAAAAADgPwAAAAAAAAAAAAAAAAAAAAAAAAAAAADgPwAAAAAAAAAA</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>50</parameterid>
+<name> </name>
+<value>-91445760000000000,true,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>51</parameterid>
+<name>Amount</name>
+<LowerBound>-5</LowerBound>
+<UpperBound>5</UpperBound>
+<LowerUIBound>-3</LowerUIBound>
+<UpperUIBound>3</UpperUIBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>52</parameterid>
+<name>Midpoint</name>
+<LowerBound>0</LowerBound>
+<UpperBound>100</UpperBound>
+<value>-91445760000000000,50.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>53</parameterid>
+<name>Roundness</name>
+<LowerBound>-100</LowerBound>
+<UpperBound>100</UpperBound>
+<value>-91445760000000000,0.,0,0,0,0,0,0</value>
+</parameter>
+<parameter authoringApp="PremierePro">
+<parameterid>54</parameterid>
+<name>Feather</name>
+<LowerBound>0</LowerBound>
+<UpperBound>100</UpperBound>
+<value>-91445760000000000,50.,0,0,0,0,0,0</value>
+</parameter>
+</effect>
+</filter>
