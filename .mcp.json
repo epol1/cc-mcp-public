@@ -2,7 +2,15 @@
   "mcpServers": {
     "ae-compose": {
       "command": "node",
-      "args": ["E:/Projects/ae-mcp/bin/aec-mcp.mjs"]
+      "args": [
+        "E:/Projects/ae-mcp/bin/aec-mcp.mjs"
+      ]
+    },
+    "pr-cut": {
+      "command": "node",
+      "args": [
+        "E:/Projects/ae-mcp/bin/prc-mcp.mjs"
+      ]
     }
   }
 }

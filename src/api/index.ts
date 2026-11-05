@@ -28,6 +28,8 @@ export type { MotionOptions, MotionReport } from './motion.ts';
 export { lintComp } from './lint.ts';
 export { renderComp, renderSummary, RENDER_FORMATS } from './render.ts';
 export type { RenderOptions, RenderResult, RenderFormat } from './render.ts';
+export { exportMogrt, mogrtSummary } from './mogrt.ts';
+export type { MogrtResult } from './mogrt.ts';
 export type { LintOptions, LintReport } from './lint.ts';
 export type { BuildOptions, BuildReport } from './build.ts';
 

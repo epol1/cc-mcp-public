@@ -1,6 +1,6 @@
 # Premiere counterpart: plan (draft)
 
-Status: proposal, not started. The run prompt is **`GOAL-PREMIERE.md`** (Phase 7), which supersedes this draft where they differ. It adds:
+Status: **superseded by the build.** pr-cut exists (Phase 7): the design as built is **`docs/PRCUT.md`** and the verified Premiere behaviour is `docs/research/premiere/spike.md`. This file is kept as the original proposal. Where they differ (build path: FCP7 XML first, not UXP; JSON plans; CEP bridge), PRCUT.md is right. The longer brief `GOAL-PREMIERE.md` added:
 - reuse of the Phase 5 toolkit: captions, beat sync, reframe/deliver, pacing previews, style lint, `plan_scene` → `plan_cut`, recipes → cut templates, and the designer panel
 - the asset sources from `docs/ASSETS.md`, moved into a shared core
 - a **media library**: a SQLite index of the user's footage by transcript, shot descriptions, audio facts and sync groups, which both tools search

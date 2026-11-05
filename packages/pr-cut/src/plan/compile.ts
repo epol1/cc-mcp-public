@@ -339,6 +339,7 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const dur = t.duration !== undefined ? fr(T(t.duration)) : fr(4);
     titles.push({ id: tid, mogrt: media.path(t.mogrt), start, end: start + dur, track: t.track ?? Math.max(3, ...[...occupied.keys()].map((k) => k + 1)), fields: t.fields ?? {} });
   }
+  if (titles.length) timeline.minVideoTracks = Math.max(...titles.map((t) => t.track));
 
   return {
     plan, timeline, pieces, segments: segs, titles, transcripts, warnings,

@@ -121,3 +121,14 @@ describe('review #15 and fresh-session findings', () => {
     expect(back.fadeOut).toEqual({ kind: 'dissolve', frames: 18 });
   });
 });
+
+describe('titles get their track before the import', () => {
+  it('creates the empty title track in the XML (importMGT on a missing track lands on V1, over the picture)', async () => {
+    const c = await compilePlan({ name: 't', segments: [{ id: 's', src: 'iv', words: [0, 4] }], titles: [{ mogrt: 'D:/lt.mogrt', at: { seg: 's' }, fields: { Name: 'A' } }] }, resolverFor(touching('We never shipped it then.')));
+    expect(c.titles[0].track).toBe(3);
+    expect(c.timeline.minVideoTracks).toBe(3);
+    const w = writeFcp7(c.timeline);
+    expect(w.videoTracks).toBe(3);
+    expect(w.xml.match(/<track>/g)?.length).toBe(3); // video tracks are bare <track>; audio tracks carry attributes
+  });
+});

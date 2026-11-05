@@ -70,5 +70,5 @@ export async function runEs<T = unknown>(body: string, opts: { timeoutMs?: numbe
 
 /** ES3 string literal for embedding values in scripts. */
 export const lit = (v: unknown) => JSON.stringify(v).replace(/[\u007f-￿]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
-/** Native path for Premiere's file APIs (forward slashes fail in some, D-PR1). */
+/** Native path for Premiere's file APIs (forward slashes fail in some, D105). */
 export const nativePath = (p: string) => path.resolve(p).replace(/\//g, '\\');

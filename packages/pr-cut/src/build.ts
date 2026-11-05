@@ -106,6 +106,8 @@ var s = prcSeq(${lit(seqId)}); app.project.openSequence(s.sequenceID);
 var jobs = ${JSON.stringify(jobs)}, u0 = prcUndo(), missing = [];
 for (var i = 0; i < jobs.length; i++) {
   var j = jobs[i];
+  // importMGT on a track that doesn't exist lands on V1, over the picture.
+  if (j.vOff >= s.videoTracks.numTracks) { missing.push(j.id + ': no track V' + (j.vOff + 1)); continue; }
   var ti = s.importMGT(j.path, j.start, j.vOff, 0);
   if (!ti) { missing.push(j.id + ': importMGT failed'); continue; }
   var e = new Time(); e.ticks = j.end; try { ti.end = e; } catch (err) {}

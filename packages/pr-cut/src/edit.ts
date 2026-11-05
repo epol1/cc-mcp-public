@@ -491,6 +491,10 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   // Only media the new version uses (a deleted clip's missing file must not block the import).
   const used = new Set(timeline.clips.map((c) => c.media));
   timeline.media = Object.fromEntries(Object.entries(timeline.media).filter(([k]) => used.has(k)));
+  // Title tracks must exist before the import (importMGT on a missing track lands on V1, over the picture).
+  const topTrack = Math.max(1, ...kept.map((c) => c.vTrack ?? 0));
+  const titleTrack = (op: any) => op.track ?? topTrack + 1;
+  if (titles.length) timeline.minVideoTracks = Math.max(...titles.map(({ op }) => titleTrack(op)));
   const imp = await importTimeline(timeline);
   // The version's own sidecar, so segment ids and captions carry on to its next version.
   fs.mkdirSync(CUTS_DIR, { recursive: true });
@@ -514,8 +518,7 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   if (titles.length) {
     const resolved = titles.map(({ op, anchor, n: k }) => {
       const s0 = anchor ? anchor.clip.start + (op.at.offset !== undefined ? Math.round(T(op.at.offset, fps) * fps) : 0) : Math.round(T(op.at ?? 0, fps) * fps);
-      const used = Math.max(1, ...kept.map((c) => c.vTrack ?? 0));
-      return { id: `t${k + 1}`, mogrt: srcPath(op.mogrt), start: s0, end: s0 + Math.round(T(op.duration ?? 4, fps) * fps), track: op.track ?? used + 1, fields: op.fields ?? {} };
+      return { id: `t${k + 1}`, mogrt: srcPath(op.mogrt), start: s0, end: s0 + Math.round(T(op.duration ?? 4, fps) * fps), track: titleTrack(op), fields: op.fields ?? {} };
     });
     const t = await placeTitles(imp.sequenceId, resolved, tpf);
     liveSteps += t.steps;

@@ -1466,6 +1466,294 @@
         }
       ],
       "phase": 6
+    },
+    {
+      "id": "pr-core",
+      "name": "Pr · Shared core",
+      "phase": 7,
+      "tasks": [
+        {
+          "id": "pr-core-move",
+          "name": "Shared modules moved to packages/core (bridge, watchdog, visual, captions, beats, motion, lint report, reframe targets, templates, units, assets)",
+          "status": "done",
+          "weight": 4
+        },
+        {
+          "id": "pr-core-ae-gate",
+          "name": "AE integration suites pass after the refactor",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-core-watchdog",
+          "name": "Watchdog for both apps (-App ae|pr), Premiere dialog detection",
+          "status": "done",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pr-bridge",
+      "name": "Pr · Bridge and spike",
+      "phase": 7,
+      "tasks": [
+        {
+          "id": "pr-spike",
+          "name": "Spike: Premiere 26.5.2 feature table (docs/research/premiere/spike.md)",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-cep",
+          "name": "CEP + ExtendScript bridge (:47812) with UXP hub",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-uxp",
+          "name": "UXP plugin (long-poll) loaded and verified",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "pr-doctor",
+          "name": "prc doctor",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "pr-undo",
+          "name": "Undo journal (index at the change, focus-safe)",
+          "status": "done",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pr-cut",
+      "name": "Pr · Cutting",
+      "phase": 7,
+      "tasks": [
+        {
+          "id": "pr-time",
+          "name": "Ticks, rates, drop-frame timecode (exhaustive tests)",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-transcribe",
+          "name": "Transcription: faster-whisper, fillers kept, energy-refined boundaries, corrections",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-plan",
+          "name": "Edit plan IR + compiler (words/sentences/quotes/time, tightening, J/L, punch-ins)",
+          "status": "done",
+          "weight": 5
+        },
+        {
+          "id": "pr-xml",
+          "name": "FCP7 writer in Premiere dialect; round trip at 6 rates",
+          "status": "done",
+          "weight": 4
+        },
+        {
+          "id": "pr-build",
+          "name": "build_cut with contact sheets and cut strips",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-lint",
+          "name": "Edit lint",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-edits",
+          "name": "Edits on any sequence as versions (adopt Premiere XML)",
+          "status": "done",
+          "weight": 5
+        },
+        {
+          "id": "pr-tighten",
+          "name": "tighten (dry-run diff, apply)",
+          "status": "done",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pr-dress",
+      "name": "Pr · Dress and finish",
+      "phase": 7,
+      "tasks": [
+        {
+          "id": "pr-broll",
+          "name": "B-roll over segments/jump cuts, snap to beats",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-music",
+          "name": "Music: ducking on words, backtimed endings, montage on bars/beats",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-captions",
+          "name": "Captions from transcripts (caption track)",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-mogrt-place",
+          "name": "Place .mogrt titles and fill fields (Premiere-authored verified)",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-mogrt-export",
+          "name": "export_mogrt in ae-compose → place_mogrt round trip",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-karaoke",
+          "name": "Karaoke captions via an ae-compose mogrt",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "pr-grade",
+          "name": "Lumetri grades in plans and edits",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-match",
+          "name": "match_shots verified in Premiere (difference 85 → 17)",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-loudness",
+          "name": "audio_finish: -14 LUFS / -1 dBTP measured",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-deliver",
+          "name": "deliver: master + Auto Reframe 9:16/1:1/4:5",
+          "status": "done",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pr-library",
+      "name": "Pr · Media library",
+      "phase": 7,
+      "tasks": [
+        {
+          "id": "pr-lib-db",
+          "name": "SQLite FTS5 index, worker, statuses",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-lib-shots",
+          "name": "Shots, thumbnails, agent-written descriptions",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-lib-search",
+          "name": "library_search (said + seen, filters, grid)",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-lib-ppro-stt",
+          "name": "Premiere Speech to Text as an engine (UXP)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "pr-lib-diarize",
+          "name": "Speaker diarization",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "pr-lib-sync",
+          "name": "Sync groups (multicam by audio)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "pr-lib-ae",
+          "name": "find_assets local source uses the library (AE crossover)",
+          "status": "todo",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pr-quality",
+      "name": "Pr · Tests, docs, showcases",
+      "phase": 7,
+      "tasks": [
+        {
+          "id": "pr-unit",
+          "name": "Unit specs (timecode, transcripts, compiler, writer/adopt, lint, library, montage, review regressions)",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-suites",
+          "name": "Premiere suites: round trip x6, build, edits on a hand cut, finishing",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-fresh",
+          "name": "Fresh-session test (skill + MCP only)",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-review",
+          "name": "Independent review: findings fixed with regression specs",
+          "status": "done",
+          "weight": 3
+        },
+        {
+          "id": "pr-skill",
+          "name": "skills/pr-cut/SKILL.md",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-interview",
+          "name": "30-min interview → 2-min cut the user keeps (needs footage)",
+          "status": "todo",
+          "weight": 5
+        },
+        {
+          "id": "pr-handcut",
+          "name": "Edit demo on the user's own hand cut",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "pr-report",
+          "name": "REPORT.md Phase 7",
+          "status": "todo",
+          "weight": 1
+        }
+      ]
     }
   ],
   "definitionOfDone": [
@@ -1577,6 +1865,11 @@
       "id": 6,
       "name": "Phase 6: asset sources (docs/ASSETS.md)",
       "badge": "assets"
+    },
+    {
+      "id": 7,
+      "name": "Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md)",
+      "badge": "pr-cut"
     }
   ]
 }

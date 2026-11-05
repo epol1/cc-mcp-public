@@ -1,4 +1,4 @@
-// Timeline → FCP7 XML (xmeml v4) in Premiere's own dialect, as Premiere 26.5 exports it (spike, D-PR2): linked
+// Timeline → FCP7 XML (xmeml v4) in Premiere's own dialect, as Premiere 26.5 exports it (spike, D106): linked
 // A/V clipitems, stereo exploded to two mono tracks, exact `pproTicksIn/Out`, transitions centred on cuts with the
 // FCP7 "-1" start/end convention, Audio Levels as linear gain, Basic Motion, and Lumetri copied from Premiere's own
 // filter block. Importing the file is one undo step and lands as a new sequence that reuses existing master clips.
@@ -108,7 +108,7 @@ export function writeFcp7(t: Timeline): WriteResult {
   const warnings: string[] = [];
   const tpf = ticksPerFrame(t.rate);
   const ids: Ids = { clip: 0, file: new Map(), master: new Map() };
-  const vTracks = Math.max(1, ...t.clips.map((c) => c.vTrack ?? 0));
+  const vTracks = Math.max(1, t.minVideoTracks ?? 0, ...t.clips.map((c) => c.vTrack ?? 0));
   // Audio tracks: every audio use takes its channel count of tracks starting at aTrack.
   const chans = (c: TLClip) => {
     const m = t.media[c.media];

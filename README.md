@@ -28,6 +28,24 @@ One statement makes many native, live elements, and every build reports how the 
 - **Agent tools:** a speed graph, motion summary and 10 style-lint rules on every build (repeated transitions, short holds, linear moves, no focal point…); `motion_preview` frame strips; `plan_scene` (check a beat sheet before writing TSX); reframe to 9:16 / 1:1 / 4:5 and `deliver` every format; beat sync to music; a recipe library.
 - **Everything stays vanilla AE:** rigs are generated pseudo effects, the expression library is inlined into the expressions, and a designer panel in AE shows the controls, lint and an Ask Claude box.
 
+## pr-cut: editing in Premiere Pro
+
+The same idea for editing. Claude reads footage as text (local Whisper, word-level, fillers kept), writes a paper edit, and **pr-cut** builds a **native, editable Premiere sequence** from a JSON edit plan: real clips with frame-exact in/out points, tightened by words (fillers, repeats, long pauses cut only in the gaps between words), punch-ins or B-roll over jump cuts, J/L cuts, music ducked under the words and ending on its real ending (or a montage cut on the bars), Lumetri grades, captions and `.mogrt` titles. Every build and edit returns a report, edit lint, a contact sheet and strips of frames around every cut.
+
+```json
+{ "name": "Ana testimonial", "media": { "ana": "D:/Shoot/ana.mp4" },
+  "segments": [
+    { "src": "ana", "quote": "we were losing a customer every single day", "beat": "hook" },
+    { "src": "ana", "sentences": ["s41", "s43"], "beat": "proof" } ],
+  "broll": [ { "src": "lib:52", "over": "seg2/2" } ],
+  "music": [ { "src": "D:/Music/bed.wav" } ], "captions": true }
+```
+
+- **Never touches your work:** builds are new sequences; edits on any sequence (yours or pr-cut's) land as the next version (`Name v002`), with your grades, levels, effects and graphics carried. A build or edit is one Ctrl+Z; `undo` reverts a batch in one call and refuses if you've worked in between.
+- **Finishing:** `audio_finish` (−14/−16/−23 LUFS, measured), `match_shots`, `deliver` (16:9 master + Auto Reframe 9:16 / 1:1 / 4:5).
+- **Media library** shared with ae-compose: what's said (transcripts) and what's seen (shot descriptions) in your footage, searchable with SQLite FTS5.
+- Install: `node scripts/install-cep.mjs --pr`, restart Premiere, then `prc doctor`. MCP server: `bin/prc-mcp.mjs` (registered in `.mcp.json`). Skill: `skills/pr-cut/SKILL.md`. Design: `docs/PRCUT.md`.
+
 ## Status
 
 [![ae-compose status dashboard](status/status.png)](status/index.html)
@@ -101,6 +119,7 @@ aec snapshot [comp] --times 1,2.5            exact frames as PNG
 aec sheet [comp] [--frames 12]               contact sheet
 aec preview [comp] [--gif]                   short low-res MP4/GIF (review)
 aec render [comp] [--format mp4|mov|prores4444|png|…] [--out path]   final file via AE's Render Queue
+aec mogrt [comp] [--out file.mogrt] [--overwrite]                    Motion Graphics template for Premiere
 aec effects [query] [--describe n] [--refresh]   search the vanilla effect catalog (391 effects with params); --refresh re-harvests it from the installed AE
 aec import <file>                            import footage into the project
 aec dialogs [--answer <hwnd> <button>]       list/answer AE modal dialogs
@@ -136,13 +155,13 @@ For **Claude Desktop**, open Settings → Developer → Edit Config (the file is
 
 Use the absolute path of your clone. After Effects must be running with a project open; `doctor` (a tool in both apps) checks the setup.
 
-The server has 31 tools. Images come back as JPEG of at most 1600 px.
+The server has 32 tools. Images come back as JPEG of at most 1600 px.
 
 | Area | Tools |
 |---|---|
 | Build | `build_scene`, `create_variants` |
 | Look | `snapshot`, `contact_sheet`, `render_preview` |
-| Deliver | `render` (MP4, ProRes 422/4444, PNG/TIFF sequences, lossless AVI) |
+| Deliver | `render` (MP4, ProRes 422/4444, PNG/TIFF sequences, lossless AVI), `export_mogrt` (a .mogrt for Premiere, EG properties as its fields) |
 | Inspect | `inspect_project`, `list_project_items`, `preview_item`, `inspect_comp`, `lint_comp` |
 | Edit | `apply_edits` (ops include `ripple`, `place` and `key`), `undo` |
 | Effects | `list_effects`, `describe_effect` |
@@ -236,6 +255,7 @@ Each scene in [`examples/`](examples) is built from your own assets and exposes 
 - [docs/RESEARCH.md](docs/RESEARCH.md): verified AE 26.5 scripting facts and research summaries
 - [docs/REPORT.md](docs/REPORT.md): what was built, what was verified, limits
 - [docs/TOOLKIT.md](docs/TOOLKIT.md): Phase 5 design, the creative toolkit (cloner, UI/data/type kits, motion previews, style lint, reframe, beat sync); goal prompt in [GOAL-PHASE5.md](GOAL-PHASE5.md)
+- [docs/PRCUT.md](docs/PRCUT.md): pr-cut design and reference (Premiere); verified Premiere 26.5.2 behaviour in [docs/research/premiere/spike.md](docs/research/premiere/spike.md); skill [skills/pr-cut/SKILL.md](skills/pr-cut/SKILL.md)
 - [docs/PROGRESS.md](docs/PROGRESS.md): current phase, next steps, open issues
 - [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md): rules for agents developing this repo
 
@@ -245,7 +265,9 @@ Each scene in [`examples/`](examples) is built from your own assets and exposes 
 pnpm test:unit
 ```
 
-That runs the unit and codegen tests (287, Node only).
+That runs the unit and codegen tests (800, Node only), ae-compose's and pr-cut's.
+
+`pnpm test:pr` runs pr-cut's Premiere checks (Premiere Pro with the pr-cut bridge; a throwaway test project): XML round trip at six frame rates, a build, edits on a hand-cut sequence, loudness and delivery.
 
 The checks below need After Effects running:
 

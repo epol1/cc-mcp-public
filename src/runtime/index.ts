@@ -14,6 +14,7 @@ import { motionSample } from './motion';
 import type { MotionSampleOpts } from './motion';
 import { renderComp, renderTemplates } from './render';
 import type { RenderCompOpts } from './render';
+import { exportMogrt } from './mogrt';
 import type { LintSampleOpts } from './lint';
 
 /**
@@ -78,6 +79,8 @@ const AEC: any = {
     }));
   },
   render: function (comp: any, opts: RenderCompOpts) { return guard(() => renderComp(comp, opts)); },
+  /** Writes a .mogrt (saving the project first only with `save`). A successful export clears AE's undo history (recorded in __aecHistory). */
+  exportMogrt: function (comp: any, folder: string, save?: boolean) { return guard(() => exportMogrt(comp, folder, save)); },
   purgeCaches: function () { return guard(() => purgeCaches()); },
   renderTemplates: function () { return guard(() => noopGroup('render templates', () => renderTemplates())); },
   /**

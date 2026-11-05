@@ -60,6 +60,8 @@ export interface Timeline {
   media: Record<string, MediaInfo>;
   clips: TLClip[];
   markers: TLMarker[];
+  /** Video tracks to create even when empty: titles are placed on them after the import (importMGT on a missing track lands on V1). */
+  minVideoTracks?: number;
 }
 
 /** A clip's framing scale: its own motion, else the Basic Motion filter carried from Premiere, else 100 %. */

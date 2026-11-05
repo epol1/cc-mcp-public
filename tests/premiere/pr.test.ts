@@ -9,6 +9,8 @@ const SCRIPTS: [string, number][] = [
   ['tests/premiere/build.ts', 600_000],
   ['tests/premiere/edits.ts', 600_000],
   ['tests/premiere/finish.ts', 1_200_000],
+  ['tests/premiere/match.ts', 900_000],
+  ['tests/premiere/mogrt.ts', 900_000], // needs the AE-exported fixture (tests/integration/mogrt/mogrt.ts, run first when missing)
 ];
 
 describe('pr-cut (Premiere)', () => {

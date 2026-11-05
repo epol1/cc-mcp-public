@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.02.000**: 100.00% weighted, 216/216 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.02.001**: 95.62% weighted, 248/257 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -279,6 +279,61 @@
 - [x] Skill + DSL docs, unit tests on recorded responses, AE fetch-import-collect test _(w2)_
 - [x] Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete _(w2)_
 - [x] Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6
+
+# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (80.2%)
+
+## Pr · Shared core (100%)
+- [x] Shared modules moved to packages/core (bridge, watchdog, visual, captions, beats, motion, lint report, reframe targets, templates, units, assets) _(w4)_
+- [x] AE integration suites pass after the refactor _(w3)_
+- [x] Watchdog for both apps (-App ae|pr), Premiere dialog detection _(w2)_
+
+## Pr · Bridge and spike (82%)
+- [x] Spike: Premiere 26.5.2 feature table (docs/research/premiere/spike.md) _(w3)_
+- [x] CEP + ExtendScript bridge (:47812) with UXP hub _(w3)_
+- [ ] UXP plugin (long-poll) loaded and verified _(w2)_
+- [x] prc doctor
+- [x] Undo journal (index at the change, focus-safe) _(w2)_
+
+## Pr · Cutting (100%)
+- [x] Ticks, rates, drop-frame timecode (exhaustive tests) _(w2)_
+- [x] Transcription: faster-whisper, fillers kept, energy-refined boundaries, corrections _(w3)_
+- [x] Edit plan IR + compiler (words/sentences/quotes/time, tightening, J/L, punch-ins) _(w5)_
+- [x] FCP7 writer in Premiere dialect; round trip at 6 rates _(w4)_
+- [x] build_cut with contact sheets and cut strips _(w3)_
+- [x] Edit lint _(w2)_
+- [x] Edits on any sequence as versions (adopt Premiere XML) _(w5)_
+- [x] tighten (dry-run diff, apply) _(w2)_
+
+## Pr · Dress and finish (91%)
+- [x] B-roll over segments/jump cuts, snap to beats _(w2)_
+- [x] Music: ducking on words, backtimed endings, montage on bars/beats _(w3)_
+- [x] Captions from transcripts (caption track) _(w2)_
+- [x] Place .mogrt titles and fill fields (Premiere-authored verified) _(w2)_
+- [x] export_mogrt in ae-compose → place_mogrt round trip _(w3)_
+- [ ] Karaoke captions via an ae-compose mogrt _(w2)_
+- [x] Lumetri grades in plans and edits _(w2)_
+- [x] match_shots verified in Premiere (difference 85 → 17) _(w2)_
+- [x] audio_finish: -14 LUFS / -1 dBTP measured _(w2)_
+- [x] deliver: master + Auto Reframe 9:16/1:1/4:5 _(w2)_
+
+## Pr · Media library (47%)
+- [x] SQLite FTS5 index, worker, statuses _(w3)_
+- [x] Shots, thumbnails, agent-written descriptions _(w2)_
+- [x] library_search (said + seen, filters, grid) _(w2)_
+- [ ] Premiere Speech to Text as an engine (UXP) _(w2)_
+- [ ] Speaker diarization _(w2)_
+- [ ] Sync groups (multicam by audio) _(w2)_
+- [ ] find_assets local source uses the library (AE crossover) _(w2)_
+
+## Pr · Tests, docs, showcases (61%)
+- [x] Unit specs (timecode, transcripts, compiler, writer/adopt, lint, library, montage, review regressions) _(w3)_
+- [x] Premiere suites: round trip x6, build, edits on a hand cut, finishing _(w3)_
+- [x] Fresh-session test (skill + MCP only) _(w3)_
+- [x] Independent review: findings fixed with regression specs _(w3)_
+- [x] skills/pr-cut/SKILL.md _(w2)_
+- [ ] 30-min interview → 2-min cut the user keeps (needs footage) _(w5)_
+- [ ] Edit demo on the user's own hand cut _(w3)_
+- [ ] REPORT.md Phase 7
 
 ## Definition of done
 - [x] aec doctor passes

@@ -194,27 +194,58 @@ export async function matchShots(seqId: string, reference: string, targets: stri
   const pick = (id: string) => { const m = /^V1\/(\d+)$/.exec(id); const c = m ? v1[+m[1] - 1] : undefined; if (!c) throw new Error(`clip ${id}: use V1/<n> (inspect_sequence)`); return c; };
   const ref = pick(reference);
   const tgt = targets === '*' ? v1.filter((c) => c !== ref) : targets.map(pick);
-  const mid = (c: typeof ref) => Math.round((c.start + c.end) / 2 / s.timebase);
-  const dir = path.join(PRC_HOME, 'match', `${seqId.slice(0, 8)}_${Date.now().toString(36)}`);
-  const files = await exportFrames(seqId, [mid(ref), ...tgt.map(mid)], R, dir);
-  const st0 = await stats(files[0]);
-  const edits: any[] = [], lines: string[] = [];
-  for (let k = 0; k < tgt.length; k++) {
-    const st = await stats(files[k + 1]);
-    const id = `V1/${v1.indexOf(tgt[k]) + 1}`;
-    const exposure = Math.max(-2, Math.min(2, Math.log2(st0.luma / Math.max(1e-3, st.luma))));
-    // Lumetri temperature/tint are roughly ±100 for a strong cast; 1 unit ≈ 0.25 % of the blue–red balance.
-    const temperature = Math.max(-60, Math.min(60, ((st0.r - st0.b) - (st.r - st.b)) * 400));
-    const tint = Math.max(-60, Math.min(60, ((st.g - (st.r + st.b) / 2) - (st0.g - (st0.r + st0.b) / 2)) * 400));
-    const saturation = Math.max(50, Math.min(160, (st0.chroma / Math.max(1e-3, st.chroma)) * 100));
-    const g = { exposure: round2(exposure), temperature: round2(temperature), tint: round2(tint), saturation: round2(saturation) };
-    edits.push({ op: 'grade', target: id, ...g });
-    lines.push(`${id} → ${JSON.stringify(g)}`);
+  const idx = (c: typeof ref) => v1.indexOf(c);
+  const mid = (c: { start: number; end: number }) => Math.round((c.start + c.end) / 2 / s.timebase);
+  const measure = async (sid: string, clips: { start: number; end: number }[]) => {
+    const files = await exportFrames(sid, clips.map(mid), R, path.join(PRC_HOME, 'match', `${sid.slice(0, 8)}_${Date.now().toString(36)}`));
+    return Promise.all(files.map(stats));
+  };
+  const [st0, ...sts] = await measure(seqId, [ref, ...tgt]);
+  // The change each clip needs, on top of its own current grade (exposure and temperature/tint add, saturation scales).
+  const base = (c: typeof ref) => ({ exposure: c.lumetri?.exposure ?? 0, temperature: c.lumetri?.temperature ?? 0, tint: c.lumetri?.tint ?? 0, saturation: c.lumetri?.saturation ?? 100 });
+  const want = (st: Awaited<ReturnType<typeof stats>>, b: ReturnType<typeof base>) => ({
+    exposure: clamp(b.exposure + Math.log2(st0.luma / Math.max(1e-3, st.luma)), -5, 5),
+    // Lumetri's temperature moves the red–blue balance by about 0.25 % per unit (refined below from measurement).
+    temperature: clamp(b.temperature + ((st0.r - st0.b) - (st.r - st.b)) * 400, -100, 100),
+    tint: clamp(b.tint + ((st.g - (st.r + st.b) / 2) - (st0.g - (st0.r + st0.b) / 2)) * 400, -100, 100),
+    saturation: clamp(b.saturation * (st0.chroma / Math.max(1e-3, st.chroma)), 0, 200),
+  });
+  const plans = tgt.map((c, k) => ({ id: `V1/${idx(c) + 1}`, n: idx(c), g: want(sts[k], base(c)) }));
+  const lines = plans.map((p) => `${p.id} → ${JSON.stringify(round(p.g))}`);
+  if (o.dryRun) return { summary: `match to ${reference}:\n${lines.join('\n')}` };
+  const r = await applyCutEdits(seqId, plans.map((p) => ({ op: 'grade', target: p.id, ...round(p.g) })));
+  const vid = r.report.sequence!.id;
+  // Refine on the new version from its own frames (two rounds): Lumetri's response isn't linear, so each round
+  // re-measures and corrects what is left. Writes go to the new version's Lumetri directly (indices as inspect).
+  const vs = await inspectSequenceRaw(vid);
+  const vv1 = vs.clips.filter((c) => c.track === 'V1');
+  const dist = (a: Awaited<ReturnType<typeof stats>>, b: Awaited<ReturnType<typeof stats>>) => Math.abs(a.luma - b.luma) * 255 + Math.abs((a.r - a.b) - (b.r - b.b)) * 255;
+  let cur = plans.map((p) => ({ ...p, g: { ...p.g } }));
+  let measured = await measure(vid, [vv1[idx(ref)], ...cur.map((p) => vv1[p.n])]);
+  const before = sts.map((st) => dist(st0, st));
+  for (let round_ = 0; round_ < 2; round_++) {
+    const [r0, ...rs] = measured;
+    if (rs.every((st) => dist(r0, st) < 6)) break;
+    cur = cur.map((p, k) => {
+      const st = rs[k];
+      return { ...p, g: {
+        exposure: clamp(p.g.exposure + Math.log2(r0.luma / Math.max(1e-3, st.luma)), -5, 5),
+        temperature: clamp(p.g.temperature + ((r0.r - r0.b) - (st.r - st.b)) * 400, -100, 100),
+        tint: clamp(p.g.tint + ((st.g - (st.r + st.b) / 2) - (r0.g - (r0.r + r0.b) / 2)) * 400, -100, 100),
+        saturation: clamp(p.g.saturation * (r0.chroma / Math.max(1e-3, st.chroma)), 0, 200),
+      } };
+    });
+    await runEs(`var s = prcSeq(${lit(vid)}); var jobs = ${JSON.stringify(cur.map((p) => ({ n: p.n, g: round(p.g) })))};
+for (var i = 0; i < jobs.length; i++) { var c = s.videoTracks[0].clips[jobs[i].n];
+  for (var x = 0; x < c.components.numItems; x++) if (c.components[x].matchName === 'AE.ADBE Lumetri') { var P = c.components[x].properties; P[19].setValue(jobs[i].g.exposure, true); P[14].setValue(jobs[i].g.temperature, true); P[15].setValue(jobs[i].g.tint, true); P[16].setValue(jobs[i].g.saturation, true); } }
+prcJson(1)`);
+    measured = await measure(vid, [vv1[idx(ref)], ...cur.map((p) => vv1[p.n])]);
   }
-  const summary = `match to ${reference}:\n${lines.join('\n')}`;
-  if (o.dryRun) return { summary };
-  const r = await applyCutEdits(seqId, edits);
-  return { summary: `${summary}\n${r.summary}`, report: r.report };
+  const [r0, ...rs] = measured;
+  const after = rs.map((st) => dist(r0, st));
+  const result = cur.map((p, k) => `${p.id} → ${JSON.stringify(round(p.g))} (difference ${before[k].toFixed(0)} → ${after[k].toFixed(0)})`);
+  return { summary: `match to ${reference}:\n${result.join('\n')}\n${r.summary}`, report: r.report };
 }
 
-const round2 = (x: number) => Math.round(x * 100) / 100;
+const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
+const round = (g: Record<string, number>) => Object.fromEntries(Object.entries(g).map(([k, v]) => [k, Math.round(v * 100) / 100]));

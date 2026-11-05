@@ -7,7 +7,7 @@ description: Edit video in Adobe Premiere Pro with pr-cut. Claude transcribes fo
 
 You read footage as text (word-level transcripts), decide the story like an editor, and write an **edit plan** (JSON). `build_cut` turns it into a **new native Premiere sequence**: real clips with real in/out points, real Lumetri, transitions, levels and captions. It returns a report, edit lint, a **contact sheet** and **strips of frames around each cut**, and you must look at both before calling the cut done. Revisions go through `apply_cut_edits`, which imports the result as the next version ("Interview v002"). Each build or edit is **one undo step** in Premiere, and pr-cut never changes the user's own sequences or media.
 
-For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `skills/ae-compose/SKILL.md`, "Lower third with live controls and EG text fields", then export as .mogrt).
+For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `skills/ae-compose/SKILL.md`, "Lower third with live controls and EG text fields", then ae-compose `export_mogrt`, which returns the field names).
 
 ## 1. The loop
 
@@ -80,7 +80,7 @@ Look at the contact sheet and the strips; read the lint; play the story in your 
 - `tighten` (plan-wide default, segment overrides): `fillers`, `repeats`, `maxPause` (0.6 s), `keepPause` (0.25 s), `handles` (0.06 s), `minPiece` (0.5 s), `cut: [wordIdx | [a, b]]` (extra words to remove: false starts).
 - `broll`: `over` a segment, a range `["seg2","seg3"]`, or a jump cut `"seg2/3"`; or `at` (sequence time). `offset`, `duration`, `in` (source in), `audio` (nat sound dB), `scale`, `grade`, `transition`, `snap: "beat" | "bar"` (start and end on the music's beats or bars).
 - `music`: `at`, `until`, `level`, `open`, `duck`, `ending` (`backtime` / `fade` / `cut`), `in`, `fadeIn`, `fadeOut`.
-- `titles`: `{ "mogrt": "path.mogrt", "at": { "seg": "turn", "offset": "0.5s" }, "duration": "4s", "fields": { "Name": "Ana Ruiz", "Title": "Founder" } }`. Field names are the template's Essential Graphics property names.
+- `titles`: `{ "mogrt": "path.mogrt", "at": { "seg": "turn", "offset": "0.5s" }, "duration": "4s", "fields": { "Name": "Ana Ruiz", "Title": "Founder" } }`. Field names are the template's Essential Graphics property names. Titles go on their own track above the picture and B-roll (V3 by default; `track` to choose); a color field reads back as a packed number in Premiere, so set colors in the template.
 - **Montage** (instead of `segments`): `"montage": { "music": "…", "clips": ["lib:3", "lib:7", …], "cut": "bar" | "beat" | 2, "length": "30s", "level": 0 }` cuts the picture on the track's bars or beats, cycling the clips (each shot takes the next stretch of its source), and ends on the track's own ending. Give the clips in story order; check the strips for shots that start on a bad frame.
 - Plan-wide: `fps`, `size` (`[w,h]` or `"9:16"`), `jumpCuts`, `grade` (per alias or `"*"`), `markers` (segment markers with beat and quote, default on), `captions`.
 - Times anywhere: `3.5`, `"3.5s"`, `"250ms"`, `"12f"`, `"1:02.5"`, `"00:01:02:12"`.

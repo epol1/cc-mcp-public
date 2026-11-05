@@ -34,6 +34,7 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 | Look again | `contact_sheet`, `snapshot`, `render_preview` |
 | Check any comp (timing, safe areas, overlaps) | `lint_comp` (builds and edits include it) |
 | Final file the user asked for | `render` (`format`: mp4, mov, prores4444 for alpha, png…). It clears AE's undo history, so render when the work is approved, and say where the file is |
+| A title or lower third for Premiere | build it transparent at the sequence size with `eg=` texts / `control()`s, then `export_mogrt` (needs the project saved: ask before `save: true`; clears AE's undo history, so export when approved); pr-cut places it and fills its fields by name |
 | Effect params | `list_effects`, `describe_effect` |
 | Judge motion feel, not just frames | `motion_preview` (a dense frame strip of the busiest second, the speed graph, the style lint) |
 | Many varied copies of one design (cards, tiles, particles of UI) | `<Cloner>` (§11.1) |
@@ -207,6 +208,8 @@ export default scene({ name: 'LowerThird', duration: '6s', params: { person: 'Jo
 ```
 
 Dragging **Out Delay** in the Controls null retimes every exit live (retimable keys / Expression Selector). `eg` exposes the texts in Essential Graphics.
+
+**For Premiere:** drop the footage and the shade (a template has a transparent background), build it at the sequence size, and `export_mogrt`. The EG properties (`Name`, `Role`, every `control()`) become the template's fields; the result lists them, and pr-cut's `titles` fill them by those names. AE exports only from a saved project without pending changes (`save: true` saves it in place: ask the user first), and the export clears AE's undo history.
 
 ### 4.3 Logo reveal: draw-on with trim paths, gradient arc, glow
 

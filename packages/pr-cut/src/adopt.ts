@@ -113,7 +113,7 @@ export function adoptXml(xml: string): Adopted {
         idx++;
         items.push({
           id: attr(k, 'id') ?? `${kind}${ti}_${j}`, kind, track: ti + 1, index: idx, start, end, inT, outT, fileId: fid, name: txt(el(k, 'name')),
-          links: els(k, 'link').map((l) => txt(el(l, 'linkclipref'))), filters: els(k, 'filter').filter((f) => txt(child(f, 'effect/effectid'))).map((f) => serialize(f)), // Premiere exports empty audio filters it can't re-import (D-PR)
+          links: els(k, 'link').map((l) => txt(el(l, 'linkclipref'))), filters: els(k, 'filter').filter((f) => txt(child(f, 'effect/effectid'))).map((f) => serialize(f)), // Premiere exports empty audio filters it can't re-import (D109)
           enabled: txt(el(k, 'enabled')).toUpperCase() !== 'FALSE', sourceTrack: Number(txt(child(k, 'sourcetrack/trackindex')) || 0) || undefined,
           raw: graphic ? withFileDef(k) : undefined, graphic,
         });

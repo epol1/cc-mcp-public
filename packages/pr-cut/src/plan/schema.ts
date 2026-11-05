@@ -1,4 +1,4 @@
-// The edit plan: what an agent writes to make a cut. Declarative JSON (cuts are data, D-PR3), validated before
+// The edit plan: what an agent writes to make a cut. Declarative JSON (cuts are data, D107), validated before
 // Premiere is touched. Segments tell the story on V1/A1 and address source by words, sentences, quote or time.
 import { z } from 'zod';
 

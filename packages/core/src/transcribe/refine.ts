@@ -1,5 +1,5 @@
 // Word boundaries from the audio itself. Whisper places word starts early (measured 0.2–0.3 s in normal speech and
-// up to ~1 s after a long pause, D-PR4), which would clip onsets at a cut. Here every boundary is snapped to the
+// up to ~1 s after a long pause, D108), which would clip onsets at a cut. Here every boundary is snapped to the
 // loudness envelope: a word starts where the sound rises out of the noise floor and ends where it falls back.
 import { execFile } from 'node:child_process';
 import type { Word } from './types.ts';

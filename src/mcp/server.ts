@@ -10,6 +10,7 @@ import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, l
 import type { MotionReport } from '../api/index.ts';
 import { lintSummary } from '../api/lint.ts';
 import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
+import { exportMogrt, mogrtSummary } from '../api/mogrt.ts';
 import { recover } from '../api/recover.ts';
 import { LINT_RULES } from '../lint/index.ts';
 import { doctor } from '../api/doctor.ts';
@@ -177,6 +178,17 @@ server.registerTool('render', {
   if (r.poster) out.push(await image(r.poster, 960));
   return out;
 }));
+
+server.registerTool('export_mogrt', {
+  title: 'Export a Motion Graphics template for Premiere',
+  description: 'Export a comp as a .mogrt for Premiere Pro. Its Essential Graphics properties become the fields an editor (or pr-cut place_mogrt) fills in: texts with eg="Label", control() values and field()s. Build the comp the size of the Premiere sequence (1920×1080 for 16:9), make the background transparent (no full-frame solid or footage) and keep the text in params short. Returns the file and its field names. AE exports only from a saved project with no unsaved changes: an unsaved project is refused (the user saves it), and one with changes needs save: true, which saves the project in place (the user\'s file), so ask first. Default folder: "mogrt" next to the project; an existing file is only replaced with overwrite.',
+  inputSchema: {
+    comp: z.union([z.string(), z.number()]).optional().describe('comp name, aec id or item id (default: the active comp)'),
+    out: z.string().optional().describe('output .mogrt file or folder'),
+    overwrite: z.boolean().optional(),
+    save: z.boolean().optional().describe('save the project in place first when it has unsaved changes (AE requires it; ask the user)'),
+  },
+}, async (a) => wrap(async () => [text(mogrtSummary(await exportMogrt(a.comp, a)))]));
 
 server.registerTool('lint_comp', {
   title: 'Lint a comp',
