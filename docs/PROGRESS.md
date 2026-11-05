@@ -38,6 +38,8 @@
 
 **Next:** the ranked list in REPORT.md (Phase 5 "Next improvements"): faster builds of large scenes, `plan_scene` scaffolds with the real transitions, matte-aware lint, recipe thumbnails, a live crash test of `recover_ae`.
 
+**Planned: asset sources** (design in `docs/ASSETS.md`, D90; roadmap group "Assets ·", phase 6, not started): `find_assets` / `fetch_asset` over free APIs (Iconify, Poly Haven, ambientCG, Pexels, Pixabay, Openverse, Fontsource) instead of a hosted library.
+
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.
 - **Phase 1**: research reports in `docs/research/` (toolchain, prior art, Remotion/Lottie/easing) and the AE 26.5 API verification summary in `docs/RESEARCH.md` §1 (raw dumps in `docs/research/ae-verify/`).

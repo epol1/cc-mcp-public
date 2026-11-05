@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.01.000**: 100.00% weighted, 206/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.01.001**: 95.39% weighted, 206/213 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -265,6 +265,17 @@
 - [x] DSL reference + skill sections for every tool _(w2)_
 - [x] Fresh-session test with only the skill + MCP
 - [x] REPORT.md: Phase 5 results, limits, next improvements
+
+# Asset sources (docs/ASSETS.md) (0.0%)
+
+## Assets · Free asset sources (0%)
+- [ ] Core: hit record, source adapters, cache, API keys, license allowlist, CREDITS.md _(w3)_
+- [ ] Keyless adapters: Iconify, Poly Haven, ambientCG, local folders _(w3)_
+- [ ] find_assets (thumbnail grid) + fetch_asset (download, copy into project, import) + doctor _(w3)_
+- [ ] Key-based adapters: Pexels, Pixabay, Openverse _(w2)_
+- [ ] Fonts via Fontsource, after probing font installs in AE _(w2)_
+- [ ] asset: src scheme in the DSL (fetched at compile time, cached) _(w2)_
+- [ ] Skill + DSL docs, unit tests on recorded responses, AE fetch-import-collect test _(w2)_
 
 ## Definition of done
 - [x] aec doctor passes

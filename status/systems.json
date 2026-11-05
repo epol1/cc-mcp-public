@@ -1399,6 +1399,55 @@
         }
       ],
       "phase": 5
+    },
+    {
+      "id": "assets",
+      "name": "Assets · Free asset sources",
+      "tasks": [
+        {
+          "id": "assets-core",
+          "name": "Core: hit record, source adapters, cache, API keys, license allowlist, CREDITS.md",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "assets-keyless",
+          "name": "Keyless adapters: Iconify, Poly Haven, ambientCG, local folders",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "assets-tools",
+          "name": "find_assets (thumbnail grid) + fetch_asset (download, copy into project, import) + doctor",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "assets-keyed",
+          "name": "Key-based adapters: Pexels, Pixabay, Openverse",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "assets-fonts",
+          "name": "Fonts via Fontsource, after probing font installs in AE",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "assets-dsl",
+          "name": "asset: src scheme in the DSL (fetched at compile time, cached)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "assets-docs",
+          "name": "Skill + DSL docs, unit tests on recorded responses, AE fetch-import-collect test",
+          "status": "todo",
+          "weight": 2
+        }
+      ],
+      "phase": 6
     }
   ],
   "definitionOfDone": [
@@ -1505,6 +1554,11 @@
       "id": 5,
       "name": "Phase 5: creative toolkit (docs/TOOLKIT.md)",
       "badge": "phase 5"
+    },
+    {
+      "id": 6,
+      "name": "Asset sources (docs/ASSETS.md)",
+      "badge": "assets"
     }
   ]
 }
