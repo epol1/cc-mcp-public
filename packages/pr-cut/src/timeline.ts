@@ -38,6 +38,12 @@ export interface TLClip {
   channels?: number[];
   label?: 'Iris' | 'Violet' | 'Caribbean' | 'Lavender' | 'Cerulean' | 'Forest' | 'Rose' | 'Mango' | 'Purple' | 'Blue' | 'Teal' | 'Magenta' | 'Tan' | 'Green' | 'Brown' | 'Yellow';
   name?: string;
+  disabled?: boolean;
+  /**
+   * Adopted from Premiere's XML: filter blocks carried verbatim (patched in place when grade/motion/level are set),
+   * and for graphics the whole clipitem (re-timed only).
+   */
+  raw?: { video?: string[]; audio?: string[]; item?: string };
 }
 
 export interface TLMarker { frame: number; duration?: number; name: string; comment?: string; color?: number }

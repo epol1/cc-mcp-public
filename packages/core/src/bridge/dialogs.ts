@@ -52,6 +52,8 @@ export async function pressDialog(hwnd: number, button: string, app: HostApp = '
 /** Dialogs we answer automatically because there is only one sensible answer. Matched on UIA text when available. */
 const AUTO_ANSWERS: { match: RegExp; button: string }[] = [
   { match: /Crash Repair Options/i, button: 'Continue' },
+  // Premiere after an FCP XML import with untranslated effects: informational; the details go to a report file.
+  { match: /Translation Report|FCP Translation Results/i, button: 'OK' },
 ];
 
 export async function autoAnswerKnown(state?: AeWindowState, app: HostApp = 'ae'): Promise<string[]> {

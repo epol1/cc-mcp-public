@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { framesToTimecode, ticksPerFrame, timecodeToFrames, xmlRate, type Rate } from '@ae-mcp/core/time/timecode.ts';
 import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
 import { timelineEnd, type Grade, type TLClip, type Timeline } from '../timeline.ts';
+import { el, parseXml, serialize, setText, txt } from './dom.ts';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -37,7 +38,11 @@ const LUMETRI_PARAM: Record<keyof Grade, { id: string; name: string }> = {
 };
 
 export function lumetriFilter(g: Grade, ind: string): string {
-  let block = LUMETRI_TEMPLATE();
+  return patchLumetri(LUMETRI_TEMPLATE(), g).trim().split('\n').map((l) => ind + l).join('\n');
+}
+
+/** Set Basic Correction / Creative values inside a Lumetri filter block (Premiere's own or the template). */
+export function patchLumetri(block: string, g: Grade): string {
   for (const [k, v] of Object.entries(g) as [keyof Grade, number][]) {
     if (v === undefined) continue;
     const p = LUMETRI_PARAM[k];
@@ -46,8 +51,10 @@ export function lumetriFilter(g: Grade, ind: string): string {
     if (!re.test(block)) throw new Error(`grade: Lumetri template has no ${p.name} parameter`);
     block = block.replace(re, (_m, a, t, _old, b) => `${a}${t}${Number(v)}${b}`);
   }
-  return block.trim().split('\n').map((l) => ind + l).join('\n');
+  return block;
 }
+
+const effectId = (filter: string) => /<effectid>([^<]*)<\/effectid>/.exec(filter)?.[1] ?? '';
 
 interface Ids { clip: number; file: Map<string, string>; master: Map<string, string> }
 
@@ -133,6 +140,7 @@ export function writeFcp7(t: Timeline): WriteResult {
 
   const clipItem = (it: Item, ind: string, trIn?: number, trOut?: number): string => {
     const c = it.clip, m = t.media[c.media];
+    if (c.raw?.item) return rawItem(c, it, ind);
     const masterKey = c.media;
     if (!ids.master.has(masterKey)) ids.master.set(masterKey, `masterclip-${ids.master.size + 1}`);
     const r = m.video?.rate ?? t.rate;
@@ -146,7 +154,7 @@ export function writeFcp7(t: Timeline): WriteResult {
       `${ind}<clipitem id="${it.xmlId}"${it.kind === 'audio' ? ` premiereChannelType="${chans(c).length >= 2 ? 'stereo' : 'mono'}"` : ''}>`,
       `${ind}\t<masterclipid>${ids.master.get(masterKey)}</masterclipid>`,
       `${ind}\t<name>${esc(c.name ?? m.name)}</name>`,
-      `${ind}\t<enabled>TRUE</enabled>`,
+      `${ind}\t<enabled>${c.disabled && it.kind === 'video' ? 'FALSE' : 'TRUE'}</enabled>`,
       `${ind}\t<duration>${durFrames}</duration>`,
       rateXml(t.rate, ind + '\t'),
       `${ind}\t<start>${start}</start>`, `${ind}\t<end>${end}</end>`,
@@ -156,6 +164,15 @@ export function writeFcp7(t: Timeline): WriteResult {
     if (it.kind === 'video') lines.push(`${ind}\t<alphatype>none</alphatype>`, `${ind}\t<pixelaspectratio>square</pixelaspectratio>`, `${ind}\t<anamorphic>FALSE</anamorphic>`);
     lines.push(fileXml(c.media, m, t.rate, ids, ind + '\t'));
     if (it.kind === 'audio') lines.push(`${ind}\t<sourcetrack>`, `${ind}\t\t<mediatype>audio</mediatype>`, `${ind}\t\t<trackindex>${it.sourceTrack}</trackindex>`, `${ind}\t</sourcetrack>`);
+    // Filters carried from an adopted sequence, minus the ones this clip now sets itself.
+    const raws = (it.kind === 'video' ? c.raw?.video : c.raw?.audio) ?? [];
+    for (const f of raws) {
+      const id = effectId(f);
+      if (it.kind === 'video' && c.motion && id === 'basic') continue;
+      if (it.kind === 'audio' && (c.level !== undefined || c.levelKeys?.length) && id === 'audiolevels') continue;
+      lines.push(ind + '\t' + (it.kind === 'video' && c.grade && id === 'Lumetri' ? patchLumetri(f, c.grade) : f));
+    }
+    const rawLumetri = it.kind === 'video' && raws.some((f) => effectId(f) === 'Lumetri');
     if (it.kind === 'video' && c.motion) {
       const [h, v] = c.motion.center ?? [0, 0];
       lines.push(`${ind}\t<filter>`, `${ind}\t\t<effect>`, `${ind}\t\t\t<name>Basic Motion</name>`, `${ind}\t\t\t<effectid>basic</effectid>`, `${ind}\t\t\t<effectcategory>motion</effectcategory>`, `${ind}\t\t\t<effecttype>motion</effecttype>`, `${ind}\t\t\t<mediatype>video</mediatype>`,
@@ -163,7 +180,7 @@ export function writeFcp7(t: Timeline): WriteResult {
         `${ind}\t\t\t<parameter authoringApp="PremierePro">`, `${ind}\t\t\t\t<parameterid>center</parameterid>`, `${ind}\t\t\t\t<name>Center</name>`, `${ind}\t\t\t\t<value>`, `${ind}\t\t\t\t\t<horiz>${h}</horiz>`, `${ind}\t\t\t\t\t<vert>${v}</vert>`, `${ind}\t\t\t\t</value>`, `${ind}\t\t\t</parameter>`,
         `${ind}\t\t</effect>`, `${ind}\t</filter>`);
     }
-    if (it.kind === 'video' && c.grade && Object.keys(c.grade).length) lines.push(lumetriFilter(c.grade, ind + '\t'));
+    if (it.kind === 'video' && c.grade && Object.keys(c.grade).length && !rawLumetri) lines.push(lumetriFilter(c.grade, ind + '\t'));
     if (it.kind === 'audio' && (c.level || c.levelKeys?.length)) {
       lines.push(`${ind}\t<filter>`, `${ind}\t\t<effect>`, `${ind}\t\t\t<name>Audio Levels</name>`, `${ind}\t\t\t<effectid>audiolevels</effectid>`, `${ind}\t\t\t<effectcategory>audiolevels</effectcategory>`, `${ind}\t\t\t<effecttype>audiolevels</effecttype>`, `${ind}\t\t\t<mediatype>audio</mediatype>`,
         `${ind}\t\t\t<parameter authoringApp="PremierePro">`, `${ind}\t\t\t\t<parameterid>level</parameterid>`, `${ind}\t\t\t\t<name>Level</name>`, `${ind}\t\t\t\t<valuemin>0</valuemin>`, `${ind}\t\t\t\t<valuemax>3.98109</valuemax>`, `${ind}\t\t\t\t<value>${round6(dbToGain(c.level ?? 0))}</value>`);
@@ -180,6 +197,24 @@ export function writeFcp7(t: Timeline): WriteResult {
     if (c.label) lines.push(`${ind}\t<labels>`, `${ind}\t\t<label2>${c.label}</label2>`, `${ind}\t</labels>`);
     lines.push(`${ind}</clipitem>`);
     return lines.join('\n');
+  };
+
+  /** A graphic carried from an adopted sequence: its own clipitem, re-timed, with a unique file id and no stale links. */
+  const rawItem = (c: TLClip, it: Item, ind: string): string => {
+    const { root } = parseXml(c.raw!.item!);
+    root.attrs = root.attrs.map(([k, v]) => [k, k === 'id' ? it.xmlId : v] as [string, string]);
+    const len = it.e.end - it.e.start;
+    const inF = Number(txt(el(root, 'in')) || 0);
+    setText(root, 'start', it.e.start);
+    setText(root, 'end', it.e.end);
+    setText(root, 'out', inF + len);
+    const pin = txt(el(root, 'pproTicksIn'));
+    if (pin) setText(root, 'pproTicksOut', Number(pin) + len * tpf);
+    if (c.disabled) setText(root, 'enabled', 'FALSE');
+    root.kids = root.kids.filter((k) => typeof k === 'string' || k.tag !== 'link');
+    const f = el(root, 'file');
+    if (f) f.attrs = f.attrs.map(([k, v]) => [k, k === 'id' ? `file-g${it.xmlId.replace(/\D/g, '')}` : v] as [string, string]);
+    return ind + serialize(root);
   };
 
   const trackXml = (kind: 'video' | 'audio', n: number, ind: string): string => {

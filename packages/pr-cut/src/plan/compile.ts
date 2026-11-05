@@ -43,7 +43,7 @@ export interface Compiled {
   stats: { sourceSeconds: number; cutSeconds: number; removed: { fillers: number; repeats: number; pauses: number; pauseSeconds: number } };
 }
 
-const DEF: Required<Omit<Tighten, 'cut'>> = { fillers: true, repeats: true, maxPause: 0.6, keepPause: 0.25, handles: 0.06, minPiece: 0.5 };
+export const DEF: Required<Omit<Tighten, 'cut'>> = { fillers: true, repeats: true, maxPause: 0.6, keepPause: 0.25, handles: 0.06, minPiece: 0.5 };
 const DISCOURSE = new Set(['so', 'and', 'but', 'well', 'okay', 'ok', 'yeah', 'like', 'now', 'right', 'um', 'uh']);
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9']/g, '');
 
@@ -293,7 +293,7 @@ function dedupeKeys(keys: { frame: number; db: number }[]) {
  * Split a segment's words into pieces: drop fillers/repeats/chosen words, shorten long pauses, and put every cut
  * in the gap between words (frame-quantized, never past the neighbouring word). Short leftovers merge back.
  */
-function tightenSegment(id: string, seg: Segment, mediaKey: string, tr: Transcript, a: number, b: number, opt: typeof DEF & { cut?: Tighten['cut'] }, off: boolean, fps: number, removed: Compiled['stats']['removed'], warnings: string[]): Omit<Piece, 'start' | 'end'>[] {
+export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: string, tr: Transcript, a: number, b: number, opt: typeof DEF & { cut?: Tighten['cut'] }, off: boolean, fps: number, removed: Compiled['stats']['removed'], warnings: string[]): Omit<Piece, 'start' | 'end'>[] {
   const W = tr.words;
   const keep: boolean[] = [];
   const why: (string | null)[] = [];

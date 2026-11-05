@@ -14,7 +14,7 @@ export interface ImportResult { sequenceId: string; name: string; xmlFile: strin
 const safe = (s: string) => s.replace(/[^\w.-]+/g, '_').slice(0, 80);
 
 export async function importTimeline(t: Timeline, opts: { bin?: string } = {}): Promise<ImportResult> {
-  for (const m of Object.values(t.media)) if (!fs.existsSync(m.path)) throw new Error(`media missing: ${m.path} (importing it would open a modal dialog in Premiere)`);
+  for (const m of Object.values(t.media)) if (m.path && !fs.existsSync(m.path)) throw new Error(`media missing: ${m.path} (importing it would open a modal dialog in Premiere)`);
   const w = writeFcp7(t);
   const dir = path.join(PRC_HOME, 'xml');
   fs.mkdirSync(dir, { recursive: true });

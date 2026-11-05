@@ -36,8 +36,22 @@ function prcUndo() { return qe.project.undoStackIndex(); }
 `;
 
 /** Run ExtendScript that ends in a value; returns the parsed JSON when the script returns prcJson(...). */
+/** Dialogs answered while scripts ran (informational ones such as the FCP translation report), for reports. */
+export const answeredDialogs: string[] = [];
+
 export async function runEs<T = unknown>(body: string, opts: { timeoutMs?: number; json?: boolean } = {}): Promise<T> {
-  const r = await es.eval(ES_PRELUDE + '\n' + body, { timeoutMs: opts.timeoutMs ?? 120_000 });
+  // While a call runs, answer known informational dialogs so they can't block it (checked every 2 s; short calls
+  // finish before the first check).
+  let busy = false;
+  const watch = setInterval(async () => {
+    if (busy) return;
+    busy = true;
+    try {
+      const w = await appWindows('pr');
+      if (w.dialogs.length) answeredDialogs.push(...(await autoAnswerKnown(w, 'pr')));
+    } catch { /* watchdog is best effort */ } finally { busy = false; }
+  }, 2000);
+  const r = await es.eval(ES_PRELUDE + '\n' + body, { timeoutMs: opts.timeoutMs ?? 120_000 }).finally(() => clearInterval(watch));
   if (!r.ok) {
     if (r.timedOut) {
       const w = await appWindows('pr', { capture: true }).catch(() => null);

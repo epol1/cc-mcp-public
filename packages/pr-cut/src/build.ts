@@ -116,7 +116,7 @@ prcJson({ undo: prcUndo() - u0, missing: missing });
 }
 
 /** Captions from the kept words' times in the cut → SRT → Premiere caption track (two undo steps). */
-async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: number; maxLines?: number }): Promise<number> {
+export async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: number; maxLines?: number }): Promise<number> {
   const fps = c.timeline.rate.num / c.timeline.rate.den;
   const words: { text: string; start: number; end: number }[] = [];
   for (const p of c.pieces) {
