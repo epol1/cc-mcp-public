@@ -23,6 +23,7 @@ import { journaled, undoLast } from '../undo.ts';
 import { applyCutEdits, EDIT_OPS_HELP } from '../edit.ts';
 import { tightenSequence } from '../tighten.ts';
 import { libraryTools } from '../library-tools.ts';
+import { libraryPath } from '@ae-mcp/core/library/db.ts';
 
 const server = new McpServer({ name: 'pr-cut', version: '0.1.0' }, {
   instructions: 'pr-cut edits in Premiere Pro: transcript-driven rough cuts, word-level tightening, B-roll, titles (ae-compose .mogrts), music, grade, captions, delivery. Read skills/pr-cut/SKILL.md first. Typical loop: library_search / transcribe → read_transcript → paper edit → build_cut → look at the contact sheet and cut strips → apply_cut_edits (each a new version, one undo) → export. Never edit the user\'s sequences in place: pr-cut builds new sequences and versions.',
@@ -63,8 +64,8 @@ server.registerTool('build_cut', {
   inputSchema: { plan: z.any().describe(planDescription), dryRun: z.boolean().optional(), strips: z.union([z.boolean(), z.number().int()]).optional().describe('cut-point strips: default on for ≤ 12 cuts; a number = first N cuts'), baseDir: z.string().optional().describe('directory for relative media paths') },
 }, async ({ plan, dryRun, strips, baseDir }) => wrap(async () => {
   const p = typeof plan === 'string' ? JSON.parse(plan) : plan;
-  if (dryRun) return [text(reportText((await buildCut(p, { dryRun: true, baseDir })).report))];
-  const r = await journaled('build_cut', p.name, async () => { const b = await buildCut(p, { strips, baseDir }); return { ...b, sequenceId: b.report.sequence?.id }; });
+  if (dryRun) return [text(reportText((await buildCut(p, { dryRun: true, baseDir, libraryPath })).report))];
+  const r = await journaled('build_cut', p.name, async () => { const b = await buildCut(p, { strips, baseDir, libraryPath }); return { ...b, sequenceId: b.report.sequence?.id }; });
   return withImages(r.report);
 }));
 

@@ -4,6 +4,7 @@
 import { parseTime, rate as toRate, secondsToFrames, ticksPerFrame, TICKS_PER_SECOND, type Rate } from '@ae-mcp/core/time/timecode.ts';
 import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
 import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
+import { cachedTranscript } from '@ae-mcp/core/transcribe/index.ts';
 import type { Transcript } from '@ae-mcp/core/transcribe/types.ts';
 import { REFRAMES } from '@ae-mcp/core/deliver/targets.ts';
 import type { Grade, TLClip, TLMarker, Timeline } from '../timeline.ts';
@@ -240,9 +241,20 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const keys: { frame: number; db: number }[] = [];
     const mEnd = start + playable;
     if (m.duck !== false) {
-      // Speech spans from the dialogue pieces, merged across short gaps; music opens up in gaps of 1.5 s or more.
+      // Speech spans from the words actually spoken in the cut (whole pieces when there is no transcript), merged
+      // across short gaps; music opens up in gaps of 1.5 s or more.
+      const raw: [number, number][] = [];
+      for (const p of pieces) {
+        const tr = transcripts[p.media] ?? cachedTranscript(timeline.media[p.media].path);
+        if (!tr) { raw.push([p.start, p.end]); continue; }
+        const inside = p.words ? tr.words.slice(p.words[0], p.words[1] + 1) : tr.words.filter((w) => w.start >= p.inS - 0.02 && w.end <= p.outS + 0.02);
+        for (const w of inside) {
+          raw.push([Math.max(p.start, p.start + fr(w.start - p.inS, 'floor')), Math.min(p.end, p.start + fr(w.end - p.inS, 'ceil'))]);
+        }
+      }
+      raw.sort((x, y) => x[0] - y[0]);
       const spans: [number, number][] = [];
-      for (const p of pieces) { const last = spans.at(-1); if (last && p.start - last[1] < fr(1.5)) last[1] = p.end; else spans.push([p.start, p.end]); }
+      for (const s of raw) { const last = spans.at(-1); if (last && s[0] - last[1] < fr(1.5)) last[1] = Math.max(last[1], s[1]); else spans.push([...s]); }
       const ramp = fr(0.35);
       let lvl = spans.length && spans[0][0] - start < fr(1.5) ? level : open;
       keys.push({ frame: start, db: lvl });

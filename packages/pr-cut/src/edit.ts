@@ -8,6 +8,7 @@ import { cachedTranscript, transcribe } from '@ae-mcp/core/transcribe/index.ts';
 import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
 import type { Transcript } from '@ae-mcp/core/transcribe/types.ts';
 import { probe } from '@ae-mcp/core/media/probe.ts';
+import { libraryPath } from '@ae-mcp/core/library/db.ts';
 import { formatIssues, summarizeIssues } from '@ae-mcp/core/lint/report.ts';
 import { adoptSequence } from './adopt.ts';
 import { addCaptions, CUTS_DIR, type BuildReport } from './build.ts';
@@ -39,6 +40,11 @@ export const EDIT_OPS_HELP = `Edits run in order; each is { op, ... }. Targets: 
 interface SP { clip: TLClip; origin: number; gapBefore: number; tr?: Transcript | null; label: string }
 
 const T = (x: string | number, fps: number) => parseTime(x, { num: Math.round(fps * 1000), den: 1000 });
+/** A source path, or a library id "lib:41". */
+const srcPath = (src: string) => {
+  if (src.startsWith('lib:')) { const p = libraryPath(src.slice(4)); if (!p) throw new Error(`${src} is not in the media library`); return p; }
+  return path.resolve(src);
+};
 
 export interface EditResult { report: BuildReport; summary: string }
 
@@ -120,7 +126,7 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
   const fq = (s: number, mode: 'floor' | 'ceil') => (mode === 'floor' ? Math.floor(s * fps + 1e-6) : Math.ceil(s * fps - 1e-6)) / fps;
   const rangeFromWords = (tr: Transcript, a: number, b: number) => [fq(gapBefore(tr, a), 'ceil'), fq(gapAfter(tr, b), 'floor')] as [number, number];
   const newPiece = async (src: string | undefined, like: SP, e: any): Promise<SP> => {
-    const media = src ? path.resolve(src) : t0.media[like.clip.media].path;
+    const media = src ? srcPath(src) : t0.media[like.clip.media].path;
     let key = like.clip.media;
     if (src) {
       key = `f_${path.basename(media).replace(/[^\w.-]+/g, '_')}_new`;
@@ -265,7 +271,7 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
       }
       case 'broll': {
         const ref = resolve(e.over, tag);
-        const info = await probe(path.resolve(e.src));
+        const info = await probe(srcPath(e.src));
         const key = `f_${path.basename(e.src).replace(/[^\w.-]+/g, '_')}_b${n}`;
         t0.media[key] = info;
         const c: TLClip = { id: `b${n + 1}`, media: key, vTrack: e.track ?? 2, start: 0, end: 0, inTicks: 0, outTicks: 0, label: 'Mango', ...(e.audio !== undefined && info.audio ? { aTrack: 3, level: e.audio } : {}) };
