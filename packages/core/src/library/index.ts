@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFile, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { probe } from '../media/probe.ts';
-import { mediaHash, transcribe } from '../transcribe/index.ts';
+import { mediaHash, transcribe, whisperServer, type TranscribeEngine } from '../transcribe/index.ts';
 import { analyzeBeats } from '../audio/beats.ts';
 import { LIBRARY_DIR, library, mediaByHash, mediaByPath, setSentences, setShots, upsertMedia, type MediaRow } from './db.ts';
 
@@ -86,7 +86,7 @@ export async function detectShots(file: string, duration: number, thumbsDir: str
 }
 
 /** Index one queued file end to end. */
-export async function indexOne(row: MediaRow, log: (s: string) => void = () => {}): Promise<void> {
+export async function indexOne(row: MediaRow, log: (s: string) => void = () => {}, engine?: TranscribeEngine): Promise<void> {
   const d = library();
   const set = (m: Partial<MediaRow>) => upsertMedia({ ...m, hash: row.hash, path: row.path });
   try {
@@ -108,7 +108,7 @@ export async function indexOne(row: MediaRow, log: (s: string) => void = () => {
     if (info.audio && info.duration >= 3 && info.kind !== 'audio') {
       set({ status: 'transcribing' });
       log(`transcribe ${row.name}`);
-      const t = await transcribe(row.path);
+      const t = await transcribe(row.path, { engine });
       const speech = t.words.reduce((s, w) => s + (w.end - w.start), 0);
       const ratio = info.duration ? speech / info.duration : 0;
       set({ speech_ratio: Math.round(ratio * 1000) / 1000, words: t.words.length });
@@ -140,12 +140,15 @@ export async function indexOne(row: MediaRow, log: (s: string) => void = () => {
 /** Drain the queue (the worker's loop). */
 export async function runQueue(log: (s: string) => void = () => {}): Promise<number> {
   let n = 0;
-  for (;;) {
-    const row = library().prepare("SELECT * FROM media WHERE status IN ('queued', 'probing', 'transcribing', 'beats', 'shots') ORDER BY CASE kind WHEN 'video' THEN 0 ELSE 1 END, id LIMIT 1").get() as MediaRow | undefined;
-    if (!row) return n;
-    await indexOne(row, log);
-    n++;
-  }
+  const engine = whisperServer(); // one model load for the whole queue
+  try {
+    for (;;) {
+      const row = library().prepare("SELECT * FROM media WHERE status IN ('queued', 'probing', 'transcribing', 'beats', 'shots') ORDER BY CASE kind WHEN 'video' THEN 0 ELSE 1 END, id LIMIT 1").get() as MediaRow | undefined;
+      if (!row) return n;
+      await indexOne(row, log, engine);
+      n++;
+    }
+  } finally { engine.close(); }
 }
 
 /** Start the background worker if it isn't running. */

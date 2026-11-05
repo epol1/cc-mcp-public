@@ -74,6 +74,63 @@ export const whisperEngine: TranscribeEngine = {
   },
 };
 
+/**
+ * One long-lived Whisper process for many files (the library worker): the model loads once instead of per file
+ * (~3.5 s each). Jobs are queued; close() ends the process.
+ */
+export function whisperServer(): TranscribeEngine & { close(): void } {
+  let proc: ReturnType<typeof spawn> | null = null;
+  let ready: Promise<void> | null = null;
+  const waiting = new Map<string, { resolve: () => void; reject: (e: Error) => void }>();
+  let chain: Promise<unknown> = Promise.resolve();
+  const start = () => {
+    if (ready) return ready;
+    proc = spawn(WHISPER_PY, [WORKER, '--serve'], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    ready = new Promise<void>((res, rej) => {
+      let buf = '';
+      proc!.stdout!.on('data', (d: Buffer) => {
+        buf += d.toString();
+        let i;
+        while ((i = buf.indexOf('\n')) >= 0) {
+          const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+          if (line === 'ready') { res(); continue; }
+          const m = /^(done|error) (\S+)(?: (.*))?$/.exec(line);
+          if (!m) continue;
+          const w = waiting.get(m[2]);
+          if (!w) continue;
+          waiting.delete(m[2]);
+          if (m[1] === 'done') w.resolve(); else w.reject(new Error(`whisper: ${m[3]}`));
+        }
+      });
+      proc!.on('error', rej);
+      proc!.on('close', (code) => { rej(new Error(`whisper server exited (${code})`)); for (const w of waiting.values()) w.reject(new Error('whisper server exited')); waiting.clear(); ready = null; proc = null; });
+    });
+    return ready;
+  };
+  return {
+    name: 'faster-whisper (served)',
+    available: whisperEngine.available,
+    run(file, opts) {
+      const job = async (): Promise<RawWords> => {
+        await start();
+        fs.mkdirSync(TRANSCRIPTS, { recursive: true });
+        const out = path.join(TRANSCRIPTS, `tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.json`);
+        await new Promise<void>((resolve, reject) => {
+          waiting.set(out, { resolve, reject });
+          proc!.stdin!.write(JSON.stringify({ media: file, out, language: opts.language }) + '\n');
+        });
+        const j = JSON.parse(fs.readFileSync(out, 'utf8'));
+        fs.rmSync(out, { force: true });
+        return { engine: j.engine, model: j.model, language: j.language, duration: j.duration, words: j.words };
+      };
+      const p = chain.then(job, job);
+      chain = p.catch(() => {});
+      return p;
+    },
+    close() { try { proc?.stdin?.end(); } catch { /* gone */ } },
+  };
+}
+
 export interface TranscribeOptions {
   engine?: TranscribeEngine;
   language?: string;

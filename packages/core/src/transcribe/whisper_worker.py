@@ -39,37 +39,27 @@ def decode(media):
 FILLER_PROMPT = "Umm, so, uh, let me think, like, hmm. I mean, I- I was, uh, you know, kind of thinking about it."
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("media")
-    ap.add_argument("out")
-    ap.add_argument("--model", default="large-v3-turbo")
-    ap.add_argument("--language", default=None)
-    ap.add_argument("--device", default="cuda")
-    ap.add_argument("--no-fillers", action="store_true")
-    a = ap.parse_args()
-
+def load_model(name, device):
     add_cuda_dlls()
     from faster_whisper import WhisperModel
-
-    t0 = time.time()
-    compute = "float16" if a.device == "cuda" else "int8"
+    compute = "float16" if device == "cuda" else "int8"
     try:
-        model = WhisperModel(a.model, device=a.device, compute_type=compute)
+        return WhisperModel(name, device=device, compute_type=compute), device
     except Exception as e:  # no usable GPU: fall back to CPU
         print(f"warn cuda unavailable ({e}); using cpu", file=sys.stderr, flush=True)
-        a.device, compute = "cpu", "int8"
-        model = WhisperModel(a.model, device="cpu", compute_type=compute)
-    load_s = time.time() - t0
+        return WhisperModel(name, device="cpu", compute_type="int8"), "cpu"
 
-    audio = decode(a.media)
+
+def transcribe_one(model, model_name, device, media, out_path, language=None, fillers=True, load_s=0.0):
+    t0 = time.time()
+    audio = decode(media)
     segments, info = model.transcribe(
         audio,
-        language=a.language,
+        language=language,
         word_timestamps=True,
         vad_filter=True,
         vad_parameters={"min_silence_duration_ms": 500},
-        initial_prompt=None if a.no_fillers else FILLER_PROMPT,
+        initial_prompt=FILLER_PROMPT if fillers else None,
         condition_on_previous_text=False,
         beam_size=5,
     )
@@ -82,23 +72,55 @@ def main():
         if s.end - last > 30:
             last = s.end
             print(f"progress {s.end:.1f} {info.duration:.1f}", file=sys.stderr, flush=True)
-
     out = {
         "engine": "faster-whisper",
-        "model": a.model,
-        "device": a.device,
+        "model": model_name,
+        "device": device,
         "language": info.language,
         "languageProbability": round(info.language_probability, 3),
         "duration": round(info.duration, 3),
-        "seconds": {"load": round(load_s, 2), "total": round(time.time() - t0, 2)},
+        "seconds": {"load": round(load_s, 2), "total": round(time.time() - t0 + load_s, 2)},
         "words": words,
         "segments": segs,
     }
-    tmp = a.out + ".tmp"
+    tmp = out_path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False)
-    os.replace(tmp, a.out)
-    print(f"done {len(words)} words in {out['seconds']['total']} s", file=sys.stderr, flush=True)
+    os.replace(tmp, out_path)
+    return len(words), out["seconds"]["total"]
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("media", nargs="?")
+    ap.add_argument("out", nargs="?")
+    ap.add_argument("--model", default="large-v3-turbo")
+    ap.add_argument("--language", default=None)
+    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--no-fillers", action="store_true")
+    # --serve: keep the model loaded and read one JSON job per stdin line ({"media", "out", "language"?});
+    # answers "done <out> <words>" or "error <out> <message>" per job on stdout (the library worker uses this).
+    ap.add_argument("--serve", action="store_true")
+    a = ap.parse_args()
+
+    t0 = time.time()
+    model, device = load_model(a.model, a.device)
+    load_s = time.time() - t0
+    if not a.serve:
+        n, total = transcribe_one(model, a.model, device, a.media, a.out, a.language, not a.no_fillers, load_s)
+        print(f"done {n} words in {total} s", file=sys.stderr, flush=True)
+        return
+    print("ready", flush=True)
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+        job = json.loads(line)
+        try:
+            n, _ = transcribe_one(model, a.model, device, job["media"], job["out"], job.get("language"), not job.get("noFillers", False))
+            print(f"done {job['out']} {n}", flush=True)
+        except BaseException as e:  # keep serving the next job
+            print(f"error {job.get('out')} {str(e)[:300]}".replace("\n", " "), flush=True)
 
 
 if __name__ == "__main__":
