@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.027**: 98.72% weighted, 202/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.01.000**: 100.00% weighted, 206/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -216,7 +216,7 @@
 - [x] AGENT_GUIDE.md
 - [x] REPORT.md
 
-# Phase 5: creative toolkit (docs/TOOLKIT.md) (95.2%)
+# Phase 5: creative toolkit (docs/TOOLKIT.md) (100%)
 
 ## P5 · Foundations (100%)
 - [x] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
@@ -256,15 +256,15 @@
 ## P5 · Designer panel (optional) (100%)
 - [x] CEP panel: controls by rig, variants, lint list, recipes, ask Claude _(w4)_
 
-## P5 · Showcases, tests, docs (70%)
+## P5 · Showcases, tests, docs (100%)
 - [x] Showcase 15: 100 cards with subtle variations (cloner) _(w2)_
 - [x] Showcase 16: product UI demo (UI kit, cursor, scroll) _(w2)_
 - [x] Showcase 17: data story (data viz kit) _(w2)_
 - [x] Showcase 18: music-synced promo (beat sync, transitions) _(w2)_
-- [~] Unit + AE integration tests (one-step undo) for every tool _(w3)_
-- [~] DSL reference + skill sections for every tool _(w2)_
-- [ ] Fresh-session test with only the skill + MCP
-- [ ] REPORT.md: Phase 5 results, limits, next improvements
+- [x] Unit + AE integration tests (one-step undo) for every tool _(w3)_
+- [x] DSL reference + skill sections for every tool _(w2)_
+- [x] Fresh-session test with only the skill + MCP
+- [x] REPORT.md: Phase 5 results, limits, next improvements
 
 ## Definition of done
 - [x] aec doctor passes

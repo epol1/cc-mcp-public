@@ -4,7 +4,7 @@
 > Roadmap and dashboard: `status/systems.json` → `status/index.html` (`node status/build.mjs`). Release: `node scripts/release.mjs "msg"`.
 
 ## Current phase
-**Phase 5, the creative toolkit** (spec `docs/TOOLKIT.md`, goal `GOAL-PHASE5.md`, roadmap: the "P5 ·" groups in `status/systems.json`).
+**Phase 5, the creative toolkit: complete** (spec `docs/TOOLKIT.md`, goal `GOAL-PHASE5.md`, roadmap: the "P5 ·" groups in `status/systems.json`).
 
 ### Phase 5 so far
 - **§11 verifications (D73, D74):** `footage().sourceData` libraries work on 26.5 but aren't cached (a missing file disables every expression using it) and cost ~3× per call, so the library is inlined by default. Pseudo effects generated as .ffx work, the .aep stores their definition, and a fresh `aerender` rendered a copy with our presets moved away.
@@ -26,7 +26,17 @@
 - **Verified in AE** (`tests/integration/p5/kits.ts`): typography, backgrounds and data viz build with no expression errors, lint, and one undo restores the comp exactly. Fixed on the way: word bounds under centred text (D85), pseudo-effect matchNames over 31 bytes (D84), the bridge's 300 s fetch limit (D86).
 - **Regression**: every earlier integration suite passes (roundtrip, edit-ops 26/26, edit-3d, renderer-seeds, gradient-edit, ease 11/11 after fixing the test's spring reference, quality compare, render).
 
-**Next:** AE checks of the UI kit, transitions and path tools; showcases 16–18; fresh-session test; independent review; REPORT.
+- **UI kit, transitions, path tools verified in AE** (`p5/kits.ts`), and `plan_scene` + recipes end to end (`p5/agenttools.ts`: a planned scaffold and a recipe instance build and undo in one step).
+- **Showcases 16–18** (product UI demo, data story, beat-synced promo): lint and style-lint clean, reviewed from contact sheets and frame strips of every transition.
+- **Independent review** (a subagent that read the code and docs without AE): every finding fixed with a regression test (D87–D89 and REPORT "Found and fixed").
+- **AE restarted once more** (user OK'd) when expression evaluation had slowed 4× after hours of heavy builds (D79).
+- **REPORT.md** has the Phase 5 section (definition of done with evidence, limits, fixes, next improvements).
+
+- **Fresh-session test passed** (TOOLKIT §10 item 6): a headless session with only the skill and MCP built and reviewed LoopPromo_v001 (cloner, phone UI with a beat-timed tap, bar-aligned cuts, held end card) unaided in 22 min; details in REPORT.md.
+
+**Phase 5 is complete:** TOOLKIT §10 met, every P5 roadmap group at 100 %.
+
+**Next:** the ranked list in REPORT.md (Phase 5 "Next improvements"): faster builds of large scenes, `plan_scene` scaffolds with the real transitions, matte-aware lint, recipe thumbnails, a live crash test of `recover_ae`.
 
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.

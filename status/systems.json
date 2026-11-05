@@ -1376,25 +1376,25 @@
         {
           "id": "p5-tests",
           "name": "Unit + AE integration tests (one-step undo) for every tool",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-docs",
           "name": "DSL reference + skill sections for every tool",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-fresh",
           "name": "Fresh-session test with only the skill + MCP",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "p5-report",
           "name": "REPORT.md: Phase 5 results, limits, next improvements",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         }
       ],
