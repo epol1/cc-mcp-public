@@ -1,7 +1,7 @@
 # ae-compose — Report
 
 What was built, how it was verified against the installed After Effects 2026 (26.5), and what is limited or
-left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D62); the roadmap with live status is
+left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D64); the roadmap with live status is
 [`status/systems.json`](../status/systems.json) / [ROADMAP.md](ROADMAP.md).
 
 ## Definition of Done (GOAL §7)
@@ -54,6 +54,7 @@ left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D62); t
   - `aec` CLI (doctor/build/watch/inspect/edit/undo/snapshot/sheet/preview/effects/import/dialogs/eval);
   - MCP server (18 tools; images come back automatically after builds and edits);
   - Claude skill (`skills/ae-compose`).
+- **Lint** (D63): every build and edit returns a lint report, and `lint_comp` checks any comp. It flags text on screen too briefly to read, text cut off or outside action-safe, overlapping texts, box overflow, missing fonts, near-empty frames and linear-only moves, each with the layer and the time range.
 - **Visual feedback:**
   - automatic contact sheets after every build and edit, snapshots, previews (frame capture → ffmpeg);
   - 16 bpc captures; 32 bpc is compensated but not a target.
@@ -74,6 +75,7 @@ left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D62); t
 - **3D renderers and seeds** (`tests/integration/renderer-seeds.ts`): switching Classic 3D → Advanced 3D → Cinema 4D → Classic keeps 3D transforms, and each switch is one undo step. Rebuilding a particle scene with the same seed gives pixel-identical frames (mean diff 0.0000); another seed gives different frames.
 - **IR validation:** every compiled IR passes the zod schema and its cross-reference checks before it reaches AE, and every request is parsed as ES3 first.
 - **Remotion quality bar** (`tests/quality/compare.ts`): the kinetic type spec of showcase 01 was rewritten for Remotion 4.0.540 with the same beats, springs, staggers, exits, fonts and colors, and rendered at the same times as the AE build ([docs/quality/kinetic-compare.png](quality/kinetic-compare.png)). Timing matches beat for beat. The AE frames are at least as good: same layout and type, with native motion blur and text animators that stay editable.
+- **Lint on the 14 showcases:** the first run flagged 9 issues in 6 showcases. Six were real: both taglines in 01 left before they could be read, the wordmark in 10 drifted out of action-safe, the words in the opening of 11 stacked on each other, the opening of 12 was nearly empty, and the title in 14 exploded before it could be read. Three were false positives, now fixed in lint: 3D text behind the camera (two in 11), and an arrow counted as a word (04). Fixing 11 then showed its words flew past too fast to read, so it was re-staged as a stop-and-go dolly (D64). All 13 scene showcases lint clean now (09 edits a hand-built project). With lint sampling inside the undo group, the 26 edit ops still undo exactly in one step, and a linted build is one undo step.
 - **Effect catalog:** 391/397 vanilla effects harvested from the installed AE. The 6 skipped open dialogs when applied.
 - **Performance:**
   - a scene build takes 1–10 s (Advanced 3D: about 3.5 s per snapshot frame, D40);
@@ -115,7 +117,6 @@ It reported the comp, its fixes, the ripple result and the final contact sheet, 
   - a bezier segment that spans an insert point is stretched rather than split (linear segments are split exactly);
   - rebuilding a scene keeps layers that edits added to its comps (they are untagged; documented).
 - **Planned, not built** (marked in ARCHITECTURE.md):
-  - lint (overflow, safe areas, reading time) — today the agent reviews the automatic contact sheet;
   - an `interpolate`/`stagger` helper;
   - dolly/push-in rig helpers (keyed moves work);
   - Range Selector text mode, text on path, multi-color confetti preset;
@@ -145,8 +146,10 @@ It reported the comp, its fixes, the ripple result and the final contact sheet, 
 
 ## Next 5 improvements, ranked by impact
 
-1. **Lint report on every build and edit.** Text overflow, safe-area violations, overlaps at peak frames, blank frames, too-short reading time. Today the agent must spot these in the contact sheet; a lint pass would catch them before a person sees them and would make fresh sessions noticeably more reliable.
+Lint, the first item on the original list, is built (D63). The list now:
+
+1. **Final renders.** ae-compose produces review material only (contact sheets, frames, low-res previews in `~/.ae-compose/out/`). Finals still go through AE's Render Queue by hand. A `render` tool that queues a comp with a chosen output module (H.264, ProRes, PNG sequence with alpha) and an output path, renders it, and reports the file would close the loop from brief to deliverable.
 2. **Motion previews the agent can judge.** Contact sheets show layout, not feel. Sending a short low-res GIF strip or a per-layer velocity graph after builds would let the agent check easing, springs and pacing, the parts motion design is judged on.
 3. **Gradient read-back and editing** (`.aepx` parse plus a `setGradient` op). Gradients are common in client projects, and today the inspector reports them as opaque, so an agent can't edit what it can't see.
 4. **Automatic recovery from hangs and crashes.** Detect a hung AE, save a copy, relaunch, answer Crash Repair and reconnect the bridge. Three restarts in this build needed a person; a long autonomous session needs this.
-5. **Bezier-aware ripple and a stagger helper.** Split bezier segments at ripple insert points (today they stretch), and add `stagger()` / `interpolate()` to the DSL so layer staggers and value mapping need less hand-written arithmetic.
+5. **Occlusion-aware lint, bezier-aware ripple and a stagger helper.** Lint can't see footage or shapes covering a word (showcase 11 needed a visual check for that). Ripple stretches bezier segments that span an insert point instead of splitting them. And `stagger()` / `interpolate()` would remove hand-written timing arithmetic from scenes.

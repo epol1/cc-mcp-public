@@ -14,7 +14,9 @@ import { mustResolve } from './props';
 import { snapshotComp } from './snapshot';
 import type { IrLayout } from './layout';
 import { measureLeaf, solveComp } from './layout';
-import { each, now } from './util';
+import { each, errText, now } from './util';
+import { lintSample } from './lint';
+import type { LintSampleOpts } from './lint';
 
 export interface IrComp {
   id: string;
@@ -52,6 +54,8 @@ export interface BuildOpts {
   keepControls?: boolean;
   open?: boolean;
   snapshots?: { comp?: string; times: number[]; dir: string; prefix?: string }[];
+  /** Lint samples of the main comp, taken inside the build's undo group (so one undo still reverts the build). */
+  lint?: LintSampleOpts;
 }
 
 const CONTROL_MN: { [mn: string]: boolean } = {
@@ -289,6 +293,9 @@ export function build(project: IrProject, opts: BuildOpts): any {
       const err = x.prop.expressionError;
       if (err) result.exprErrors.push({ node: x.id, prop: x.prop.matchName, error: err });
     });
+    if (opts.lint) {
+      try { result.lint = lintSample(ctx.comps[project.main || project.comps[project.comps.length - 1].id], opts.lint); } catch (e) { result.lint = { ok: false, error: errText(e) }; }
+    }
   } catch (e) {
     result.ok = false;
     if (e instanceof AecError) { result.error = e.message; result.node = e.node; }

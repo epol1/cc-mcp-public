@@ -9,6 +9,8 @@ import type { InspectOpts } from './inspect';
 import { edit } from './edit';
 import type { EditOp } from './edit';
 import { contactFrames, describeEffect, importFile, layerSourceFrame, previewItem } from './tools';
+import { lintSample } from './lint';
+import type { LintSampleOpts } from './lint';
 
 /**
  * Read-only tools that need a temporary comp (effect description, footage previews) leave a no-op undo group
@@ -40,6 +42,7 @@ const AEC: any = {
   contactFrames: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => contactFrames(ref, n, dir, times)); },
   previewItem: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => noopGroup('preview', () => previewItem(ref, n, dir, times))); },
   layerSourceFrame: function (comp: any, layer: any, t: number, dir: string) { return guard(() => noopGroup('sample frame', () => layerSourceFrame(comp, layer, t, dir))); },
+  lintSample: function (comp: any, opts: LintSampleOpts) { return guard(() => noopGroup('lint', () => lintSample(comp, opts || {}))); },
   /**
    * Edit > Undo for the last `steps` ae-compose builds/edits (a variant build is one step per variant plus one
    * for the compare comp; the build report says how many). Read-only probes since then are skipped. This is AE's

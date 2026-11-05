@@ -61,6 +61,7 @@ export default scene({ name: 'Hello', width: 1920, height: 1080, fps: 30, durati
 | `variants` | `Record<string, Partial<P>>` | none | Each key builds a sibling comp `<name>_v###_<key>` with those params merged over `params`. When variants exist, only the variants are built (pass `variants: false` to `build_scene` to build just the defaults). |
 | `compare` | `boolean` | `false` | Also build `<name>_v###_Compare`: the variants side by side in a grid, labeled with the params that differ, with its own contact sheet. |
 | `version` | `number` | `1` | The `v###` in the comp name. It only renames: a rebuild replaces the comps by scene id. To keep an older build, `duplicateComp` it first. |
+| `lint` | `{ safe?, readingRate?, minRead?, ignore? } \| false` | on | Lint settings for this scene's builds (§18); `false` turns lint off. |
 
 Rebuilding a scene with the same `name` replaces its comp **in place**: the same project item, generated layers recreated, and live control values kept (§11.5). To keep the previous result, `duplicateComp` it first (§16) or change `name`.
 
@@ -286,7 +287,7 @@ Its children become a nested comp (in the scene's `_parts` folder), used as one 
 </Precomp>
 ```
 
-Inside a precomp, layer ids still need to be scene-unique, and `parent`, `matte` and expression layer refs resolve within that precomp. `control()` values don't currently reach layers inside a precomp (§19).
+Inside a precomp, layer ids still need to be scene-unique, and `parent`, `matte` and expression layer refs resolve within that precomp. `control()` values used inside a precomp read the main comp's Controls layer, so one slider drives layers inside and outside precomps.
 
 ### `<Svg>`
 
@@ -1023,7 +1024,7 @@ Computed in Node (no measurement). Each child becomes `threeD`, and its own `x`/
 | `ZStack` | `origin` (`[960,540,0]`), `spacing` (`400`) | Child *i* at `origin + i·spacing` along z. |
 | `Grid3D` | `origin`, `columns` (`ceil(√n)`), `spacing` `[x, y]` (`[420,300]`), `plane` `'xy' \| 'xz'` | Grid on a wall (xy) or floor (xz), centred on origin. |
 | `Circle3D` | `center`, `radius` (`800`), `startAngle` (`0`), `arc` (`360`), `face` `'out' \| 'center' \| 'camera'` (`'out'`) | Ring/arc in the XZ plane, each child turned to face out, in, or toward the camera. |
-| `Parallax` | `factor` (`1`) | Child `z = depth × factor`, where `depth` is a prop on each child (untyped today, see §19). |
+| `Parallax` | `factor` (`1`) | Child `z = depth × factor`, where `depth` is a prop on each child (untyped today, see §20). |
 
 ```tsx
 {ZStack({ spacing: 600, children: [
@@ -1298,19 +1299,47 @@ Layer `type`: `solid | null | text | shape | adjustment | footage | precomp | ca
 
 ---
 
-## 17. MCP tools and CLI
+## 17. Lint
+
+Every `build_scene` and `apply_edits` result carries a **lint report** for the comp it built or edited; `lint_comp` (CLI `aec lint`) checks any comp, generated or hand-built. Each issue names the layer and the time range.
+
+| Rule | Severity | What it catches |
+|---|---|---|
+| `reading-time` | warn | A text is readable for less than 0.5 s + words ÷ 3.5 (about 210 wpm). "Readable" = on screen, at ≥ 90 % of its peak opacity, nearly still, and past its per-unit reveal (until its exit starts). |
+| `off-frame` | warn | A readable text is cut off by the frame edge. Entrances and exits from off-screen don't count. |
+| `safe-area` | warn | A readable text is outside action-safe (5 % inset per side; `safe: 'title'` for 10 %, or a fraction). |
+| `overlap` | warn | Two visible texts overlap (≥ 15 % of the smaller one) for 0.3 s or more. |
+| `overflow` | warn | Box text that doesn't fit its box (AE hides the last lines). |
+| `missing-font` | warn | AE substituted a font that isn't installed. |
+| `blank-frame` | warn | A rendered frame mid-comp is almost empty (background only). The first and last frame are ignored (fades from and to black are normal). |
+| `linear-motion` | note | Position/scale keys whose moving segments are all linear. |
+
+How it measures: inside the build's (or edit's) own undo group, one temporary text layer samples every visible text layer every 0.1 s in comp coordinates with `sourceRectAtTime` + `toComp`. That is exact for parenting, 3D layers, cameras and nested precomps; 3D text behind the camera counts as off screen. Per-unit animators are read too: ae-compose reveals and exits use the current values of their live controls (stagger, delay, spring physics), and hand-built Range Selectors are read from their Start/End/Offset keys. Blank frames are judged from the contact sheet frames. A build or edit is still one undo step.
+
+Lint only sees text against text and empty frames: it can't tell when footage or a shape covers a word, or whether a composition reads well. That's what the contact sheet is for.
+
+Tune or skip it:
+
+```tsx
+scene({ name: 'Promo', duration: '6s', lint: { safe: 'title', readingRate: 4, ignore: ['linear-motion'] } }, () => …)
+```
+
+`build_scene` / `apply_edits` take the same `lint` option (`false` skips it; options merge over the scene's). CLI: `--no-lint`, `--safe title|action|0.07`, `--reading-rate 4`, `--ignore rule,rule`.
+
+## 18. MCP tools and CLI
 
 ### MCP tools (`aec-mcp`, stdio)
 
 | Tool | What it does |
 |---|---|
-| `build_scene` | Compile TSX (`source` or `file`) into native comps. Returns a report (comps, warnings, expression errors with TSX lines, kept controls, IR path) plus contact sheets. Options: `params`, `variants` (`false` or a list of keys), `frames` (default 8, max 24), `times`, `cwd`. |
+| `build_scene` | Compile TSX (`source` or `file`) into native comps. Returns a report (comps, warnings, expression errors with TSX lines, kept controls, the lint report (§17), IR path) plus contact sheets. Options: `params`, `variants` (`false` or a list of keys), `frames` (default 8, max 24), `times`, `cwd`, `resetControls`, `lint`. |
 | `create_variants` | Build a scene with several param sets as sibling comps (`{ A: {...}, B: {...} }`). One contact sheet per variant. |
 | `inspect_project` | Compact list of every comp/footage/folder (names, sizes, durations, aec ids). |
 | `list_project_items` | Search the Project panel: comps, footage, stills, audio, solids, folders, with size, fps, duration, alpha, file path, folder and how often each is used. Filter by `type`, `kind` (`video`, `still`, `audio`, `comp`, `solid`) or a `name`/file substring. |
 | `preview_item` | Contact sheet of any project item (clip, still or comp) without placing it, e.g. to find the greenscreen take or the right background. `frames` (default 6), `times` (item-local seconds). |
 | `inspect_comp` | Readable outline of a comp: layers, timing, animated props with inferred easing names (`easeOutCubic≈`, overshoot), expressions with errors, effects with changed params, text, shapes, 3D, **scenes** (named spans, the ripple targets) and markers. `detail: "full"` returns raw JSON. `sheet: true` adds a contact sheet. |
-| `apply_edits` | Batched edit ops in one undo step (§16), plus a contact sheet (default 6 frames). The result lists each change and any `notes` (e.g. the sampled key color). |
+| `apply_edits` | Batched edit ops in one undo step (§16), plus a contact sheet (default 6 frames) and the lint report. The result lists each change and any `notes` (e.g. the sampled key color). |
+| `lint_comp` | Lint any comp (§17): too-short reads, text cut off or outside the safe area, overlapping texts, box overflow, missing fonts, near-empty frames. `frames` (default 8) are rendered for the blank-frame check; `safe`, `readingRate`, `ignore`. |
 | `snapshot` | Exact frames at given times (as AE renders them). |
 | `contact_sheet` | N evenly spaced frames with timecodes (default 12). Use 12–16 for particles. |
 | `render_preview` | Short low-res MP4 (or GIF, returned inline) of a time range, to judge motion feel. It captures the live, unsaved state; `aerender: true` renders the saved project instead. |
@@ -1327,25 +1356,26 @@ Layer `type`: `solid | null | text | shape | adjustment | footage | precomp | ca
 
 ```
 aec doctor                         check the whole environment
-aec build <scene.tsx> [--no-variants] [--variant A] [--version 3] [--frames 8] [--param k=v,..]
+aec build <scene.tsx> [--no-variants] [--variant A] [--version 3] [--frames 8] [--param k=v,..] [--reset-controls] [--no-lint]
 aec watch <scene.tsx>              rebuild in place on save (keeps live control values)
 aec inspect [comp] [--full] [--project] [--layers 1,2]
 aec edit <ops.json> [--comp name]  apply edit ops (one undo step); file is [ops] or { comp, ops }
+aec lint [comp] [--frames 8]       lint a comp (§17); build/edit/lint take --safe, --reading-rate, --ignore
 aec undo [steps]                   undo the last ae-compose build/edit (AE's Edit > Undo)
 aec snapshot [comp] --times 0,1.5,3
 aec sheet [comp] [--frames 12]     contact sheet
 aec preview [comp] [--range 0-3] [--scale 0.5] [--fps 15] [--gif]
-aec effects [query] [--describe <name>]
+aec effects [query] [--describe <name>] [--refresh]
 aec import <file> [--folder name]
 aec dialogs [--answer <hwnd> <button>]
 aec eval "<extendscript>"
 ```
 
-Add `--json` to any command for machine-readable output. Outputs (IR, frames, contact sheets) go to `~/.ae-compose/out/<Scene>/`.
+Most commands accept `--json` for machine-readable output. Outputs (IR, frames, contact sheets) go to `~/.ae-compose/out/<Scene>/`.
 
 ---
 
-## 18. AE gotchas handled for you
+## 19. AE gotchas handled for you
 
 - **Gradient stops crash AE 26.5** when scripts read or write them. Gradients are applied as generated `.ffx` presets, and their stops are recorded in the group name (D15, D47).
 - **`addText` inherits the Character panel.** Every TextDocument field is reset and set explicitly. `allCaps`/`smallCaps` are read-only (the `fontCapsOption` enums are used instead), and horizontal/vertical scale are multipliers in scripting (D30). Font substitution is reported as a warning.
@@ -1363,7 +1393,7 @@ Add `--json` to any command for machine-readable output. Outputs (IR, frames, co
 - **Modal dialogs and crashes** are detected by a watchdog (`list_dialogs`/`answer_dialog`), with a recovery routine (D17).
 - **Expression re-evaluation storms** during builds are avoided by controlling what the viewer shows. The result comp opens afterwards.
 
-## 19. Known limitations
+## 20. Known limitations
 
 - **Vanilla AE only.** Third-party effects aren't in the catalog and are never applied (D2, D19).
 - **8/16 bpc only.** 32 bpc projects get a passive capture fix and no other support (D29).

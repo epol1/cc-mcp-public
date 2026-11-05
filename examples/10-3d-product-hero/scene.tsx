@@ -23,7 +23,7 @@ export default scene({ name: 'ProductHero3D', width: 1920, height: 1080, fps: 30
       <Solid id="floor" name="Floor" color="#15181f" width={4000} height={4000} scale={800} threeD position={[960, 700, 0]} rotationX={90}
         material={{ acceptsShadows: true, specular: 20, shininess: 10 }} />
       {/* Wordmark behind the product, extruded with a convex bevel. */}
-      <Text id="word" name="Wordmark" font="Inter-Black" size={170} color="#4683c4" tracking={-10} threeD position={[960, 440, 900]}
+      <Text id="word" name="Wordmark" font="Inter-Black" size={150} color="#4683c4" tracking={-10} threeD position={[960, 440, 900]}
         geometry={{ extrusion: 90, bevel: { style: 'convex', depth: 8 } }} material={{ castsShadows: true, specular: 60, shininess: 40, metal: 30 }}
         animate={{ y: spring({ from: 600, damping: 16, stiffness: 90 }), opacity: tween({ from: 0, duration: '0.6s' }) }}>
         BUILT DIFFERENT

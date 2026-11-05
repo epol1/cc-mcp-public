@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.013**: 93.68% weighted, 153/165 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.014**: 93.41% weighted, 156/169 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -162,12 +162,15 @@
 - [x] Chroma key op (Keylight + Spill, auto screen color) _(w2)_
 - [x] Atomic edit batches (rollback on failure)
 
-## Visual Feedback (71%)
+## Visual Feedback (73%)
 - [x] Snapshot (+32bpc fix)
 - [x] Contact sheets
 - [x] aerender preview MP4/GIF _(w2)_
-- [ ] Lint checks _(w2)_
+- [x] Lint report on builds/edits + lint_comp (reading time, safe areas, overlaps, fonts, blank frames) _(w2)_
 - [x] Auto-attach to results
+- [x] Lint reads per-unit animator timing (live controls, range selectors)
+- [ ] Final render tool (Render Queue output module + path) _(w2)_
+- [ ] Lint: occlusion of text by footage/shapes
 
 ## Interfaces (100%)
 - [x] CLI (aec) _(w2)_
@@ -175,6 +178,7 @@
 - [x] watch mode
 - [x] Claude skill + CLAUDE.md _(w2)_
 - [x] Claude Code registration
+- [x] Skill: motion-design direction (story, intention, transitions, holds)
 
 ## Testing (100%)
 - [x] Unit tests _(w2)_

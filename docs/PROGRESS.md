@@ -24,6 +24,8 @@
   - gradients via .ffx (D47), variants + Compare (D48);
   - named Sequences → scene markers.
 - **Effect catalog:** 391/397 vanilla effects harvested → `src/catalog/params.json` + `src/dsl/effects.generated.ts`.
+- **Lint (D63):** every build and edit returns a lint report (reading time, frame edges, action/title safe, text overlap, box overflow, missing fonts, near-empty frames, linear-only moves); `lint_comp` / `aec lint` for any comp. All 13 scene showcases lint clean after re-staging 01, 10, 11, 12 and 14 (D64).
+- **Skill:** SKILL.md §2 "Direct it like a motion designer" (story beats, intention, transitions from scene elements, arrive → hold → leave).
 - **Edits:**
   - property/curve/effect/text/path/layer/comp ops;
   - ripple (D50), place + key + preview_item (D52);
@@ -43,11 +45,11 @@
 
 ## Next
 The ranked list is in `docs/REPORT.md` ("Next 5 improvements"):
-1. Lint report on every build and edit (overflow, safe areas, overlaps, blank frames, reading time).
+1. Final renders: a `render` tool (Render Queue, output module and path, report the file). The user asked where finished renders go; today there are only review frames and previews in `~/.ae-compose/out/`.
 2. Motion previews the agent can judge (GIF strips or velocity graphs after builds).
 3. Gradient read-back (`.aepx`) and a `setGradient` op.
 4. Automatic recovery from AE hangs and crashes.
-5. Bezier-aware ripple splits; `stagger()` / `interpolate()` helpers.
+5. Occlusion-aware lint (footage or shapes covering text); bezier-aware ripple splits; `stagger()` / `interpolate()` helpers.
 
 Also: `undo` should detect an AE session whose undo history is not recording (D61) and say so instead of reporting success; dolly/push-in rig helpers, Range Selector text mode, text on path, multi-color confetti.
 
@@ -55,5 +57,6 @@ Also: `undo` should detect an AE session whose undo history is not recording (D6
 - AE crashes `(0 :: 42)` from shape-gradient internals: fenced (D15). One crash with no script running happened while the `Blue Dwarf V0` dev plugins were installed; they have since been removed (D18). No crashes since.
 - Renderer quality settings are not scriptable (documented limitation). Model embedded-animation selection is not scriptable (open).
 - Rebuilding a scene keeps layers that edits added to its comps (they're untagged; documented in DSL.md).
+- Seen once (2026-11-04, not reproduced in 4 reruns): right after a standalone lint, one undo did not remove a linted test build. All undo suites pass; watch for it (possibly D61's undo-history problem).
 - AE's disk cache fills fast during snapshot-heavy sessions; the guard purges it (D62), and the user should cap Maximum Disk Cache Size in AE preferences.
 - Edit `set` keys default to `easeInOutCubic`; DSL `keys()` default to `easeOutCubic` (documented; consider aligning).

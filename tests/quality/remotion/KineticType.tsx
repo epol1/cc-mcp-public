@@ -59,15 +59,15 @@ export const KineticType: React.FC = () => {
             exit={{ start: 2.05, each: 0.012, duration: 0.25, to: { y: -60, opacity: 0, blur: 14 } }} />
         </div>
       </Sequence>
-      <Sequence from={sec(2.3)} durationInFrames={sec(2.4)}>
+      <Sequence from={sec(2.3)} durationInFrames={sec(3.4)}>
         <div style={col(26)}>
           <Units text="NATIVE." by="char" style={font(230, 900, WHITE)} reveal={{ each: 0, delay: 0, duration: 0.9, easing: expoOut, from: { tracking: 60, opacity: 0, blur: 6 } }}
-            exit={{ start: 2.0, each: 0.01, duration: 0.3, to: { opacity: 0, blur: 10 } }} />
+            exit={{ start: 3.0, each: 0.01, duration: 0.3, to: { opacity: 0, blur: 10 } }} />
           <Units text="Real layers. Eased keyframes. Live controls." by="word" style={{ ...font(52, 500, MUTED), lineHeight: 1 }} reveal={{ each: 0.07, delay: 0.5, duration: 0.5, easing: cubicOut, from: { y: 30, opacity: 0 } }}
-            exit={{ start: 2.0, each: 0.02, duration: 0.25, to: { opacity: 0 } }} />
+            exit={{ start: 3.0, each: 0.02, duration: 0.25, to: { opacity: 0 } }} />
         </div>
       </Sequence>
-      <Sequence from={sec(4.6)}>
+      <Sequence from={sec(5.6)}>
         <div style={col(30)}>
           <Units text="ae-compose" by="char" style={font(190, 900, WHITE, -10)} reveal={{ each: 0.028, delay: 0, spring: { damping: 12, stiffness: 190 }, from: { y: 70, opacity: 0, rotation: 8 } }} />
           <Underline />

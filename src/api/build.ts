@@ -7,6 +7,8 @@ import { compileScene } from '../compile/compile.ts';
 import type { SceneDef } from '../dsl/scene.ts';
 import { validateIr } from '../ir/schema.ts';
 import { guardDiskCache } from './cache.ts';
+import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
+import type { LintOptions, LintReport } from './lint.ts';
 import type { SourceLoc } from '../dsl/jsx-runtime.ts';
 import { callRuntime } from '../bridge/index.ts';
 import { writeContactSheet } from '../visual/images.ts';
@@ -28,6 +30,8 @@ export interface BuildOptions {
   times?: number[];
   open?: boolean;
   outDir?: string;
+  /** Lint the main comp after building (default on; false disables; options merge over the scene's `lint`). */
+  lint?: boolean | LintOptions;
 }
 
 export interface BuiltComp { id: string; name: string; itemId: number; layers: number }
@@ -45,6 +49,8 @@ export interface BuildReport {
   restoredControls: number;
   ms: number;
   irFile?: string;
+  /** Lint report per built main comp (one per variant). */
+  lint?: (LintReport & { label?: string })[];
 }
 
 const loc = (s?: SourceLoc) => (s ? `${path.basename(s.file)}:${s.line}:${s.col}` : undefined);
@@ -60,11 +66,13 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   const report: BuildReport = { ok: true, scene: '', comps: [], warnings: [], exprErrors: [], contactSheets: [], frames: [], restoredControls: 0, ms: 0 };
   let irs: { ir: any; sources: Record<string, SourceLoc | undefined>; label?: string; params?: Record<string, any> }[] = [];
   let compareWanted = false;
+  let sceneLint: LintOptions | false | undefined;
   if (input.ir) irs = [{ ir: input.ir, sources: {} }];
   else {
     const loaded = input.def ? { def: input.def, file: input.file ?? path.join(process.cwd(), 'scene.tsx') } : await loadScene(input);
     const def = loaded.def;
     compareWanted = !!def.config.compare;
+    sceneLint = def.config.lint;
     const vkeys = def.config.variants && opts.variants !== false ? Object.keys(def.config.variants).filter((k) => opts.variants === true || opts.variants === undefined || (opts.variants as string[]).includes(k)) : [];
     const runs = vkeys.length ? vkeys.map((k) => ({ variant: k, params: { ...def.config.variants![k], ...(opts.params ?? {}) } })) : [{ variant: undefined as string | undefined, params: opts.params }];
     for (const r of runs) {
@@ -77,6 +85,8 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   const outDir = opts.outDir ?? path.join(OUT_ROOT, report.scene.replace(/[^A-Za-z0-9_-]+/g, '_'));
   fs.mkdirSync(outDir, { recursive: true });
   const nFrames = opts.frames ?? 8;
+  const lint = lintSettings(sceneLint, opts.lint);
+  const lintRuns: { label?: string; data: any; frames: { t: number; file: string }[]; bpc: number }[] = [];
   for (const { ir } of irs) validateIr(ir); // fail in Node with a path, before anything reaches AE
   for (const { ir, sources, label } of irs) {
     // Variant keys come from scene code or MCP input: never let one escape outDir (it feeds a recursive delete).
@@ -88,7 +98,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     const times = nFrames > 0 ? [...sheetTimes(main.dur, main.fps, nFrames), ...(opts.times ?? [])] : opts.times ?? [];
     const snapDir = path.join(outDir, 'frames', label ?? 'main').replace(/\\/g, '/');
     fs.rmSync(snapDir, { recursive: true, force: true });
-    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined }], { timeoutMs: 300_000 });
+    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined, lint: lint ? SAMPLE_OPTS : undefined }], { timeoutMs: 300_000 });
     report.undoSteps = (report.undoSteps ?? 0) + 1;
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;
@@ -100,8 +110,10 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
       break;
     }
     report.comps.push(...r.comps);
+    if (r.lint) lintRuns.push({ label, data: r.lint, frames: [], bpc: 8 });
     for (const s of r.snapshots ?? []) {
       const frames = s.frames.filter((f: any) => f.ok).map((f: any) => ({ file: f.file, t: f.t }));
+      if (r.lint && s.comp === r.lint.comp) Object.assign(lintRuns[lintRuns.length - 1], { frames, bpc: s.bpc });
       report.frames.push(...frames.map((f: any) => ({ comp: s.comp, ...f })));
       if (frames.length > 1) {
         const sheet = path.join(outDir, `contact_${(label ?? 'main').replace(/[^A-Za-z0-9_-]+/g, '_')}.png`);
@@ -112,6 +124,12 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   }
   if (report.ok && compareWanted && irs.length > 1) {
     try { await buildCompare(irs, report, outDir); } catch (e: any) { report.warnings.push(`compare comp failed: ${e.message}`); }
+  }
+  if (lint && lintRuns.length) {
+    report.lint = [];
+    for (const run of lintRuns) {
+      try { report.lint.push({ ...(await lintFromSamples(run.data, lint, run.frames, run.bpc)), label: run.label }); } catch (e: any) { report.warnings.push(`lint failed: ${e.message}`); }
+    }
   }
   report.ms = Date.now() - t0;
   { const note = await guardDiskCache(); if (note) report.warnings.push(note); }

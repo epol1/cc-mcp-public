@@ -14,8 +14,9 @@ export default scene({ name: 'ParticleReveal', width: 1920, height: 1080, fps: 3
       <Rect size={[1920, 1080]} />
       <GradientFill type="radial" start={[0, 0]} end={[1000, 0]} stops={[{ offset: 0, color: '#132036' }, { offset: 1, color: INK }]} />
     </Shape>
-    {/* The sweep: a null crossing the logo; the trail and the wipe follow it. */}
-    <Null id="sweep" name="Sweep" animate={{ position: keys({ t: 0.3, v: [260, 560], easing: 'easeInOutCubic' }, { t: 2.0, v: [1660, 520] }) }} />
+    {/* The sweep: a null crossing the logo; the trail and the wipe follow it. It starts moving on frame 0 (sine ease)
+        so the logo is already forming by 1 s: no empty opening. */}
+    <Null id="sweep" name="Sweep" animate={{ position: keys({ t: 0, v: [260, 560], easing: 'easeInOutSine' }, { t: 2.0, v: [1660, 520] }) }} />
     <Svg id="logo" src="../../assets/logo/cc-logo.svg" name="Logo" width={960} y={500} color="#f2f4f8"
       expressions={{ 'ADBE Transform Group/ADBE Opacity': 'var m = thisComp.marker.key("explode").time; linear(time, m, m + 0.25, 100, 0);' }}>
       {/* Linear Wipe completion tracks the sweep's x: the logo appears right behind the particles. */}

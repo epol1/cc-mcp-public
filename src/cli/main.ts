@@ -1,7 +1,8 @@
 // `aec` CLI. Every command prints a short human summary; --json prints the raw result for scripts/agents.
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildScene, inspect, applyEdits, contactSheet, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo } from '../api/index.ts';
+import { buildScene, inspect, applyEdits, contactSheet, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
+import { lintFlags, lintSummary } from '../api/lint.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
 import { watchScene } from './watch.ts';
@@ -10,7 +11,7 @@ const argv = process.argv.slice(2);
 const cmd = argv[0];
 const flags: Record<string, any> = {};
 const pos: string[] = [];
-const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep'];
+const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep', 'no-lint'];
 const REPEATABLE = ['param'];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -45,6 +46,8 @@ const HELP = `aec — ae-compose CLI (native After Effects from TSX)
   aec watch <scene.tsx>              rebuild in place on save (keeps live control values)
   aec inspect [comp] [--full] [--project] [--layers 1,2]
   aec edit <ops.json> [--comp name]  apply agent edit ops (one undo step)
+  aec lint [comp] [--frames 8]       check text timing, frame edges, safe areas, overlaps, fonts, blank frames
+    build/edit/lint take --safe action|title|0.07, --reading-rate 3.5, --ignore rule,..; build/edit: --no-lint
   aec undo [steps]                   undo the last ae-compose build/edit (AE's Edit > Undo)
   aec snapshot [comp] --times 0,1.5,3
   aec sheet [comp] [--frames 12]     contact sheet
@@ -65,8 +68,8 @@ async function main() {
     }
     case 'build': {
       if (!pos[0]) throw new Error('usage: aec build <scene.tsx>');
-      const r = await buildScene({ file: pos[0] }, { variants: flags['no-variants'] ? false : flags.variant ? String(flags.variant).split(',') : true, version: flags.version ? +flags.version : undefined, frames: flags.frames !== undefined ? +flags.frames : 8, params: params(), resetControls: !!flags['reset-controls'] });
-      out(`${r.ok ? '✔' : '✘'} ${r.scene}: ${r.comps.map((c) => `${c.name} (${c.layers} layers)`).join(', ')} in ${r.ms} ms${r.error ? `\n  error: ${r.error}` : ''}${r.warnings.length ? '\n  warnings:\n    ' + r.warnings.join('\n    ') : ''}${r.exprErrors.length ? '\n  expression errors:\n    ' + r.exprErrors.map((e) => `${e.node} ${e.prop}${e.src ? ` (${e.src})` : ''}: ${e.error}`).join('\n    ') : ''}${r.contactSheets.length ? `\n  contact sheet: ${r.contactSheets.join(', ')}` : ''}`, r);
+      const r = await buildScene({ file: pos[0] }, { variants: flags['no-variants'] ? false : flags.variant ? String(flags.variant).split(',') : true, version: flags.version ? +flags.version : undefined, frames: flags.frames !== undefined ? +flags.frames : 8, params: params(), resetControls: !!flags['reset-controls'], lint: lintFlags(flags) });
+      out(`${r.ok ? '✔' : '✘'} ${r.scene}: ${r.comps.map((c) => `${c.name} (${c.layers} layers)`).join(', ')} in ${r.ms} ms${r.error ? `\n  error: ${r.error}` : ''}${r.warnings.length ? '\n  warnings:\n    ' + r.warnings.join('\n    ') : ''}${r.exprErrors.length ? '\n  expression errors:\n    ' + r.exprErrors.map((e) => `${e.node} ${e.prop}${e.src ? ` (${e.src})` : ''}: ${e.error}`).join('\n    ') : ''}${r.contactSheets.length ? `\n  contact sheet: ${r.contactSheets.join(', ')}` : ''}${(r.lint ?? []).map((l) => '\n  ' + lintSummary(l, l.label).join('\n    ')).join('')}`, r);
       process.exitCode = r.ok ? 0 : 1;
       break;
     }
@@ -82,8 +85,16 @@ async function main() {
     case 'edit': {
       const file = pos[0];
       const input = JSON.parse(file === '-' ? fs.readFileSync(0, 'utf8') : fs.readFileSync(file, 'utf8'));
-      const r = await applyEdits(Array.isArray(input) ? { comp: flags.comp as string, ops: input } : { comp: (flags.comp as string) ?? input.comp, ops: input.ops });
-      out(`${r.ok ? '✔' : '✘'} ${r.comp}: ${r.changes?.length ?? 0} changes in ${r.ms} ms${r.error ? `\n  error: ${r.error} (${r.at})` : ''}${r.contactSheet ? `\n  contact sheet: ${r.contactSheet}` : ''}`, r);
+      const r = await applyEdits(Array.isArray(input) ? { comp: flags.comp as string, ops: input } : { comp: (flags.comp as string) ?? input.comp, ops: input.ops }, { lint: lintFlags(flags) });
+      out(`${r.ok ? '✔' : '✘'} ${r.comp}: ${r.changes?.length ?? 0} changes in ${r.ms} ms${r.error ? `\n  error: ${r.error} (${r.at})` : ''}${r.contactSheet ? `\n  contact sheet: ${r.contactSheet}` : ''}${r.lint ? '\n  ' + lintSummary(r.lint).join('\n    ') : ''}`, r);
+      process.exitCode = r.ok ? 0 : 1;
+      break;
+    }
+    case 'lint': {
+      const lf = lintFlags(flags);
+      const r = await lintComp(pos[0], { ...(typeof lf === 'object' ? lf : {}), frames: flags.frames !== undefined ? +flags.frames : 8 });
+      out(lintSummary(r, undefined, 1000).join('\n  '), r);
+      process.exitCode = r.ok ? 0 : 1;
       break;
     }
     case 'undo':

@@ -6,7 +6,9 @@ import sharp from 'sharp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo } from '../api/index.ts';
+import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
+import { lintSummary } from '../api/lint.ts';
+import { LINT_RULES } from '../lint/index.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
 
@@ -22,13 +24,19 @@ async function image(file: string, maxW = 1600): Promise<Content> {
   return { type: 'image', data: buf.toString('base64'), mimeType: 'image/jpeg' };
 }
 const fail = (e: any) => ({ isError: true, content: [text(`error: ${e?.message ?? e}${e?.dialogs?.length ? `\nA dialog is blocking After Effects: ${e.dialogs.map((d: any) => `hwnd ${d.hwnd} "${d.title}" capture ${d.capture}`).join('; ')}. Use list_dialogs / answer_dialog.` : ''}`)] });
+const lintInput = z.union([z.boolean(), z.object({
+  safe: z.union([z.enum(['action', 'title']), z.number().min(0).max(0.3)]).optional().describe('safe-area margin per side: action (5 %, default), title (10 %), or a fraction'),
+  readingRate: z.number().min(0.5).max(20).optional().describe('words per second a viewer reads (default 3.5)'),
+  ignore: z.array(z.enum(LINT_RULES as [string, ...string[]])).optional(),
+})]).optional().describe('lint the result (default on): false skips it, or tune it');
+
 async function wrap(fn: () => Promise<Content[]>) {
   try { return { content: await fn() }; } catch (e) { return fail(e); }
 }
 
 server.registerTool('build_scene', {
   title: 'Build a scene in After Effects',
-  description: 'Compile a TSX scene (ae-compose DSL, Remotion-style) into native AE comps and return a build report plus a contact sheet image. Pass `source` (TSX text) or `file` (path to a .tsx). Rebuilding the same scene replaces it in place and keeps live control values. Scene variants (config.variants) build as sibling comps. Use `params` to override scene params. Errors include the TSX line.',
+  description: 'Compile a TSX scene (ae-compose DSL, Remotion-style) into native AE comps and return a build report, a lint report (text cut off or outside the safe area, overlapping texts, text on screen too briefly to read, missing fonts, blank frames) and a contact sheet image. Fix lint warnings unless they are intended. Pass `source` (TSX text) or `file` (path to a .tsx). Rebuilding the same scene replaces it in place and keeps live control values. Scene variants (config.variants) build as sibling comps. Use `params` to override scene params. Errors include the TSX line.',
   inputSchema: {
     source: z.string().optional().describe('TSX source: `export default scene({...}, () => <Composition>...</Composition>)`'),
     file: z.string().optional().describe('path to a scene .tsx file'),
@@ -38,15 +46,17 @@ server.registerTool('build_scene', {
     frames: z.number().int().min(0).max(24).optional().describe('contact sheet frames (default 8; 0 = none)'),
     times: z.array(z.number()).optional().describe('extra exact snapshot times (seconds)'),
     resetControls: z.boolean().optional().describe('rebuild with the control values written in the code (default: keep values tweaked in AE)'),
+    lint: lintInput,
   },
 }, async (a) => wrap(async () => {
-  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls });
+  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls, lint: a.lint as any });
   const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.scene} → ${r.comps.map((c) => `"${c.name}" (${c.layers} layers)`).join(', ')} in ${r.ms} ms`];
   if (r.error) lines.push(`error: ${r.error}`);
   if (r.warnings.length) lines.push('warnings:', ...r.warnings.map((w) => `- ${w}`));
   if (r.exprErrors.length) lines.push('expression errors:', ...r.exprErrors.map((e) => `- ${e.node} ${e.prop}${e.src ? ` (${e.src})` : ''}: ${e.error}`));
   if (r.restoredControls) lines.push(`kept ${r.restoredControls} live control value(s) from the previous build`);
   if ((r.undoSteps ?? 1) > 1) lines.push(`undo steps: ${r.undoSteps} (undo with steps: ${r.undoSteps} removes this whole build)`);
+  for (const l of r.lint ?? []) lines.push(...lintSummary(l, l.label));
   lines.push(`contact sheets: ${r.contactSheets.join(', ') || 'none'}`, `IR: ${r.irFile}`);
   const out: Content[] = [text(lines.join('\n'))];
   for (const s of r.contactSheets.slice(0, 4)) out.push(await image(s));
@@ -109,16 +119,33 @@ server.registerTool('apply_edits', {
     comp: z.union([z.string(), z.number()]).optional(),
     ops: z.array(z.record(z.string(), z.any())).min(1),
     frames: z.number().int().min(0).max(16).optional().describe('contact sheet frames (default 6; 0 = none)'),
+    lint: lintInput,
   },
 }, async (a) => wrap(async () => {
-  const r = await applyEdits({ comp: a.comp, ops: a.ops as any }, { frames: a.frames });
+  const r = await applyEdits({ comp: a.comp, ops: a.ops as any }, { frames: a.frames, lint: a.lint as any });
   const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.comp ?? a.comp} — ${r.changes?.length ?? 0} change(s) in ${r.ms} ms (one undo step: call undo to revert)`];
   if (r.error) lines.push(`error: ${r.error} (${r.at})`);
   for (const c of r.changes ?? []) lines.push(`- ${JSON.stringify(c)}`);
   for (const e of r.exprErrors ?? []) lines.push(`expression error ${e.prop}: ${e.error}`);
+  lines.push(...lintSummary(r.lint));
   const out: Content[] = [text(lines.join('\n'))];
   if (r.contactSheet) out.push(await image(r.contactSheet));
   return out;
+}));
+
+server.registerTool('lint_comp', {
+  title: 'Lint a comp',
+  description: 'Check any comp (generated or hand-built) for what a viewer would notice: text cut off by the frame or outside the safe area, box text that overflows, texts overlapping each other, text on screen too briefly to read for its word count, missing fonts, linear-only moves, and empty frames mid-comp. Each issue names the layer and the time range. build_scene and apply_edits run this automatically; use it on existing projects or after manual changes.',
+  inputSchema: {
+    comp: z.union([z.string(), z.number()]).optional().describe('comp name, aec id or item id (default: the active comp)'),
+    frames: z.number().int().min(0).max(24).optional().describe('frames rendered for the blank-frame check (default 8; 0 = skip)'),
+    safe: z.union([z.enum(['action', 'title']), z.number().min(0).max(0.3)]).optional(),
+    readingRate: z.number().min(0.5).max(20).optional(),
+    ignore: z.array(z.enum(LINT_RULES as [string, ...string[]])).optional(),
+  },
+}, async (a) => wrap(async () => {
+  const r = await lintComp(a.comp, { frames: a.frames, safe: a.safe, readingRate: a.readingRate, ignore: a.ignore as any });
+  return [text(lintSummary(r, undefined, 1000).join('\n'))];
 }));
 
 server.registerTool('create_variants', {

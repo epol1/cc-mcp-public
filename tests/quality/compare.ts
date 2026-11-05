@@ -8,7 +8,7 @@ import { renderStill, selectComposition } from '@remotion/renderer';
 import { buildScene } from '../../src/api/build.ts';
 import { snapshot } from '../../src/api/index.ts';
 
-const TIMES = [0.6, 1.1, 2.15, 3.1, 4.0, 5.1, 6.2];
+const TIMES = [0.6, 1.1, 2.15, 3.1, 4.6, 6.4, 8.4];
 const out = path.resolve('docs/quality');
 const serve = await bundle({ entryPoint: path.resolve('tests/quality/remotion/index.tsx') });
 const comp = await selectComposition({ serveUrl: serve, id: 'KineticType' });

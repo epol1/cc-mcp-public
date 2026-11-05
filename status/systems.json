@@ -884,14 +884,32 @@
         },
         {
           "id": "lint",
-          "name": "Lint checks",
-          "status": "todo",
+          "name": "Lint report on builds/edits + lint_comp (reading time, safe areas, overlaps, fonts, blank frames)",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "auto-attach",
           "name": "Auto-attach to results",
           "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "lint-anim",
+          "name": "Lint reads per-unit animator timing (live controls, range selectors)",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "render-final",
+          "name": "Final render tool (Render Queue output module + path)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "lint-occlusion",
+          "name": "Lint: occlusion of text by footage/shapes",
+          "status": "todo",
           "weight": 1
         }
       ]
@@ -927,6 +945,12 @@
         {
           "id": "mcp-register",
           "name": "Claude Code registration",
+          "status": "done",
+          "weight": 1
+        },
+        {
+          "id": "skill-direction",
+          "name": "Skill: motion-design direction (story, intention, transitions, holds)",
           "status": "done",
           "weight": 1
         }

@@ -11,8 +11,12 @@ import { compileEditOps } from '../edit/ops.ts';
 import type { EditInput } from '../edit/ops.ts';
 import { OUT_ROOT } from './build.ts';
 import { guardDiskCache } from './cache.ts';
+import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
+import type { LintOptions } from './lint.ts';
 
 export { buildScene } from './build.ts';
+export { lintComp } from './lint.ts';
+export type { LintOptions, LintReport } from './lint.ts';
 export type { BuildOptions, BuildReport } from './build.ts';
 
 const safe = (s: string) => s.replace(/[^A-Za-z0-9_-]+/g, '_').slice(0, 60);
@@ -27,7 +31,7 @@ export async function inspect(target: { comp?: string | number; project?: boolea
   return { outline: outlineComp(j), json: j };
 }
 
-export async function contactSheet(comp: string | number | undefined, n = 8, times?: number[]): Promise<{ sheet: string; frames: { t: number; file: string }[]; comp: string }> {
+export async function contactSheet(comp: string | number | undefined, n = 8, times?: number[]): Promise<{ sheet: string; frames: { t: number; file: string }[]; comp: string; bpc: number }> {
   const dir = path.join(OUT_ROOT, '_sheets', safe(String(comp ?? 'active')) + '_' + Date.now()).replace(/\\/g, '/');
   const r = await callRuntime('contactFrames', [comp ?? null, n, dir, times ?? null], { timeoutMs: 300_000 });
   if (!r.ok) throw new Error(r.error);
@@ -35,7 +39,7 @@ export async function contactSheet(comp: string | number | undefined, n = 8, tim
   const sheet = path.join(dir, 'contact.png');
   await writeContactSheet(sheet, frames, { bpc: r.bpc, fps: r.fps, title: `${r.comp} — ${frames.length} frames` });
   await guardDiskCache();
-  return { sheet, frames, comp: r.comp };
+  return { sheet, frames, comp: r.comp, bpc: r.bpc };
 }
 
 /** Contact sheet of any project item (footage, still or comp), to look at media before using it. */
@@ -66,14 +70,18 @@ export async function snapshot(comp: string | number | undefined, times: number[
   return { files, comp: r.comp };
 }
 
-export async function applyEdits(input: EditInput, opts: { frames?: number } = {}): Promise<any> {
+export async function applyEdits(input: EditInput, opts: { frames?: number; lint?: boolean | LintOptions } = {}): Promise<any> {
   const notes: string[] = [];
   const ops = await compileEditOps(input, notes);
-  const r = await callRuntime('edit', [{ comp: input.comp }, ops, {}], { timeoutMs: 300_000 });
+  const lint = lintSettings(opts.lint);
+  const r = await callRuntime('edit', [{ comp: input.comp }, ops, lint ? { lint: SAMPLE_OPTS } : {}], { timeoutMs: 300_000 });
   if (notes.length) r.notes = notes;
+  let sheet: Awaited<ReturnType<typeof contactSheet>> | undefined;
   if (r.ok && (opts.frames ?? 6) > 0) {
-    try { r.contactSheet = (await contactSheet(r.itemId, opts.frames ?? 6)).sheet; } catch (e: any) { r.contactSheetError = e.message; }
+    try { sheet = await contactSheet(r.itemId, opts.frames ?? 6); r.contactSheet = sheet.sheet; } catch (e: any) { r.contactSheetError = e.message; }
   }
+  // The raw samples are replaced by the report (what the agent needs to read).
+  if (r.lint) r.lint = lint && r.ok ? await lintFromSamples(r.lint, lint, sheet?.frames, sheet?.bpc) : undefined;
   return r;
 }
 

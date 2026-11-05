@@ -13,7 +13,9 @@ import { findItem, importFile, itemCandidates } from './tools';
 import { makeTextDocument, setTextDocument } from './text';
 import { findComp } from './inspect';
 import { parseT, ripple } from './ripple';
-import { clamp, each, now } from './util';
+import { clamp, each, errText, now } from './util';
+import { lintSample } from './lint';
+import type { LintSampleOpts } from './lint';
 
 export interface EditOp { op: string; layer?: any; [k: string]: any }
 
@@ -339,7 +341,7 @@ function ensureControls(comp: CompItem): Layer {
   return n;
 }
 
-export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: string; keepPartial?: boolean }): any {
+export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: string; keepPartial?: boolean; lint?: LintSampleOpts }): any {
   const ctx = newCtx('edit');
   const t0 = now();
   const changes: any[] = [];
@@ -360,6 +362,8 @@ export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: s
     for (let i = 0; i < ops.length; i++) { ctx.cur = 'op' + (i + 1) + ':' + ops[i].op; runOp(ctx, comp, ops[i], pending, changes); }
     flushExpressions(ctx, pending, exprs);
     each(exprs, (x) => { if (x.prop.expressionError) res.exprErrors.push({ node: x.id, prop: x.prop.matchName, error: x.prop.expressionError }); });
+    // Lint samples inside the edit's undo group (one undo still reverts the edit); a lint failure never fails the edit.
+    if (opts.lint) { try { res.lint = lintSample(comp, opts.lint); } catch (e) { res.lint = { ok: false, error: errText(e) }; } }
   } catch (e) {
     failed = true;
     res.ok = false;

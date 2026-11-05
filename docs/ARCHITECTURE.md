@@ -21,7 +21,7 @@ The primary user of this tool is **an AI agent (Claude) working with a human des
 2. **Feedback is automatic.** Every build and edit returns:
    - a **contact sheet image**,
    - the **key frames**,
-   - *(planned, not built)* a **lint report**: text overflow, safe-area violations, overlaps, blank frames, too-fast reads, renderer/feature mismatches, missing fonts. Today the agent reviews the automatic contact sheet instead, plus build warnings (unknown params, hidden properties, missing footage),
+   - a **lint report**: text too briefly on screen to read, text cut off or outside the safe area, overlapping texts, box overflow, missing fonts, near-empty frames, linear-only moves (§10),
    - the ids it created, so the next edit can target them.
 
    The agent never has to remember to look.
@@ -50,6 +50,7 @@ ae-compose/
     catalog/      effect harvest (`harvest.ts`) → `params.json` → generated TS types; name resolution (fuzzy)
     inspect/      Node side of the inspector (JSON → compact outline)
     edit/         agent edit ops → runtime ops (key-color sampling, frame-string times)
+    lint/         lint rules over the AE samples, blank-frame check on rendered frames
     scene/        TSX scene loader (esbuild)
     api/          the operations the CLI and MCP share: build, inspect, edit, snapshot, doctor, disk-cache guard
     visual/       snapshot, contact sheet (sharp), preview (frame capture + ffmpeg; aerender optional), 32 bpc fix, key-color sampling
@@ -310,12 +311,12 @@ The TSX-side equivalent is `<Series>` plus exits with `anchor: 'end'` (D51).
 - `contactSheet(comp, n)`: N frames → one grid image (sharp) with timecode labels. It's attached automatically to build and edit results.
 - `renderPreview(comp, range, { scale, fps })`: captures frames of the live (unsaved) state inside AE, then ffmpeg makes an MP4 or GIF; `aerender: true` renders the saved project file instead. Used for particle and motion checks.
 - **Disk-cache guard** (`src/api/cache.ts`): renders fill AE's disk cache, so after each snapshot, contact sheet and build the cache is purged when it passes 10 GB or the drive drops below 15 GB free (D62).
-- *(planned, not built)* **Lint**: text overflow, safe-area violations, overlaps at peaks, blank frames, too-short reading time, linear-only easing, renderer mismatch. Today: the automatic contact sheet plus build warnings, and the skill's review checklist.
+- **Lint** (`src/runtime/lint.ts` samples, `src/lint/` rules, D63): inside the build's or edit's own undo group, one temporary text layer (at the bottom of the stack, so layer indices never shift) carries an expression that measures every visible text layer, including those in nested precomps, with `sourceRectAtTime` + `toComp` every 0.1 s. That is exact for parenting, 3D layers and cameras; 3D text behind the camera counts as off screen. Per-unit animators are read too: ae-compose reveals/exits with the current values of their live controls (parsed from the selector expression), hand-built Range Selectors from their keys. Node judges the samples (reading time vs. word count, frame edges, action/title safe, text-on-text overlap, box overflow, substituted fonts, linear-only moves) and checks the contact-sheet frames for near-empty ones. Builds, edits and `lint_comp` return the report. Not covered: occlusion by non-text layers, composition and taste (the contact sheet and the skill's review).
 
 ## 11. Interfaces
-- **CLI** (`aec`): `doctor`, `build <scene.tsx> [--no-variants] [--variant A] [--version n] [--frames n] [--param k=v] [--reset-controls]`, `watch`, `inspect [comp] [--full] [--project]`, `edit <ops.json>`, `undo [steps]`, `snapshot`, `sheet`, `preview`, `effects [query] [--describe] [--refresh]`, `import`, `dialogs`, `eval`. *(planned, not built)* `--dry-run`, `recover`.
+- **CLI** (`aec`): `doctor`, `build <scene.tsx> [--no-variants] [--variant A] [--version n] [--frames n] [--param k=v] [--reset-controls]`, `watch`, `inspect [comp] [--full] [--project]`, `edit <ops.json>`, `lint [comp]`, `undo [steps]`, `snapshot`, `sheet`, `preview`, `effects [query] [--describe] [--refresh]`, `import`, `dialogs`, `eval`. *(planned, not built)* `--dry-run`, `recover`.
 - **MCP server** (stdio, `@modelcontextprotocol/sdk`):
-  - `build_scene`, `inspect_project`, `inspect_comp`, `apply_edits`, `create_variants`, `undo`
+  - `build_scene`, `inspect_project`, `inspect_comp`, `apply_edits`, `create_variants`, `lint_comp`, `undo`
   - `snapshot`, `contact_sheet`, `render_preview` (images)
   - `list_effects`, `describe_effect`, `list_project_items`, `preview_item`, `import_footage`
   - `list_dialogs`, `answer_dialog`, `doctor`, `run_extendscript` (logged escape hatch)

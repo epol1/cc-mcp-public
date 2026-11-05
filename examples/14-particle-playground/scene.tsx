@@ -5,7 +5,7 @@
 import { scene, Composition, Solid, Text, Precomp, ParticlePlayground, StarBurst, Effect, Adjustment, perWord, control } from 'ae-compose';
 
 export default scene({ name: 'Playground', width: 1920, height: 1080, fps: 30, duration: '6s', bg: '#05060a' }, () => {
-  const DROP = 1.8; // seconds
+  const DROP = 2.8; // seconds: the 4-word title is readable for ~1.9 s before it explodes
   const gravity = control('Gravity', 420, { min: 0, max: 1200 });
   const scatter = control('Scatter', 90, { min: 0, max: 400 });
   const rate = control('Fountain Rate', 60, { min: 0, max: 600 });

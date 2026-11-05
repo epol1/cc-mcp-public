@@ -1,4 +1,5 @@
 // scene(): the default export of a scene file. Params feed variants; seed is always a param.
+import type { LintOptions } from '../lint/index.ts';
 import type { ColorSpec, Time } from '../shared/units.ts';
 import type { AecElement } from './jsx-runtime.ts';
 
@@ -21,6 +22,8 @@ export interface SceneConfig<P = Record<string, any>> {
   compare?: boolean;
   /** Version number in the comp name (default 1). It only renames: rebuilds replace the comps by scene id, so to keep an older build, duplicate it first (duplicateComp edit op). */
   version?: number;
+  /** Lint settings for this scene (false disables lint): safe-area margin, reading rate, rules to ignore. */
+  lint?: LintOptions | false;
 }
 
 export interface SceneDef<P = Record<string, any>> {

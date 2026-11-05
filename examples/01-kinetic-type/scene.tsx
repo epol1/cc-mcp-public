@@ -8,7 +8,7 @@ const INK = '#0b0d12';
 const WHITE = '#eef1f6';
 const MUTED = '#8b95a5';
 
-export default scene({ name: 'KineticType', width: 1920, height: 1080, fps: 30, duration: '6.5s', bg: INK }, () => {
+export default scene({ name: 'KineticType', width: 1920, height: 1080, fps: 30, duration: '8.8s', bg: INK }, () => {
   const stagger = control('Word Stagger', 0.085, { min: 0, max: 0.4 });
   const delay = control('Title Delay', 0.15, { min: 0, max: 2 });
   const accent = control('Accent Color', '#4683c4');
@@ -38,8 +38,8 @@ export default scene({ name: 'KineticType', width: 1920, height: 1080, fps: 30, 
         </Column>
       </Series.Sequence>
 
-      {/* Beat 2 (overlaps Beat 1's exit by 0.1 s) */}
-      <Series.Sequence duration="2.4s" offset="-0.1s" name="Beat 2">
+      {/* Beat 2 (overlaps Beat 1's exit by 0.1 s). 3.4 s: the 6-word line holds ~2.2 s after it lands. */}
+      <Series.Sequence duration="3.4s" offset="-0.1s" name="Beat 2">
         <Column gap={26}>
           <Text font="Inter-Black" size={230} color={WHITE}
             animate={{ text: [textPresets.trackingIn({ duration: '0.9s' }), perChar({ from: { opacity: 0, blur: 10 }, easing: 'easeInCubic', duration: '0.3s', each: '10ms', delay: 0.4, anchor: 'end', direction: 'out' })] }}>
@@ -52,8 +52,8 @@ export default scene({ name: 'KineticType', width: 1920, height: 1080, fps: 30, 
         </Column>
       </Series.Sequence>
 
-      {/* Beat 3: lockup */}
-      <Series.Sequence duration="1.9s" offset="-0.1s" name="Lockup">
+      {/* Beat 3: lockup, held ~2 s after the tagline lands (the end state is the point). */}
+      <Series.Sequence duration="3.2s" offset="-0.1s" name="Lockup">
         <Column gap={30}>
           <Text font="Inter-Black" size={190} color={WHITE} tracking={-10}
             animate={{ text: perChar({ from: { y: 70, opacity: 0, rotation: 8 }, spring: { damping, stiffness: 190 }, each: '28ms' }) }}>

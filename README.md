@@ -18,7 +18,7 @@ export default scene({ name: 'Hello', duration: '4s', bg: '#0b0d12' }, () => (
 ));
 ```
 
-`aec build hello.tsx` produces a comp `Hello_v001` in your open project. Every layer and keyframe is ordinary AE that you can grab and edit. "Bounce" is a live slider on a Controls layer and in Essential Graphics. A contact sheet comes back automatically.
+`aec build hello.tsx` produces a comp `Hello_v001` in your open project. Every layer and keyframe is ordinary AE that you can grab and edit. "Bounce" is a live slider on a Controls layer and in Essential Graphics. A contact sheet and a **lint report** come back automatically. Lint flags text that's on screen too briefly to read, text cut off or outside the safe area, texts on top of each other, missing fonts and near-empty frames, each with the layer and the time.
 
 ## Status
 
@@ -83,10 +83,11 @@ If the CEP bridge isn't available, ae-compose falls back to `AfterFX.com -r` (sl
 
 ```text
 aec doctor                                   environment + bridge checks with fixes
-aec build <scene.tsx> [--variant A] [--frames 8] [--param k=v] [--reset-controls]
+aec build <scene.tsx> [--variant A] [--frames 8] [--param k=v] [--reset-controls] [--no-lint]
 aec watch <scene.tsx>                        rebuild on save (keeps live control values)
 aec inspect [comp] [--full]                  readable outline of a comp (works on hand-built comps)
 aec edit <ops.json> [--comp name]            apply edit ops (atomic, one undo step)
+aec lint [comp] [--safe title] [--ignore r]  reading time, frame edges, safe areas, overlaps, fonts, blank frames
 aec undo [steps]                             undo the last ae-compose build/edit (AE's own Edit > Undo)
 aec snapshot [comp] --times 1,2.5            exact frames as PNG
 aec sheet [comp] [--frames 12]               contact sheet
@@ -125,13 +126,13 @@ For **Claude Desktop**, open Settings → Developer → Edit Config (the file is
 
 Use the absolute path of your clone. After Effects must be running with a project open; `doctor` (a tool in both apps) checks the setup.
 
-The server has 18 tools. Images come back as JPEG of at most 1600 px.
+The server has 19 tools. Images come back as JPEG of at most 1600 px.
 
 | Area | Tools |
 |---|---|
 | Build | `build_scene`, `create_variants` |
 | Look | `snapshot`, `contact_sheet`, `render_preview` |
-| Inspect | `inspect_project`, `list_project_items`, `preview_item`, `inspect_comp` |
+| Inspect | `inspect_project`, `list_project_items`, `preview_item`, `inspect_comp`, `lint_comp` |
 | Edit | `apply_edits` (ops include `ripple`, `place` and `key`), `undo` |
 | Effects | `list_effects`, `describe_effect` |
 | Media | `import_footage` |
@@ -154,7 +155,7 @@ The folder is self-contained: `reference/DSL.md` is a copy of `docs/DSL.md`, kep
    node bin/aec.mjs build examples/01-kinetic-type/scene.tsx
    ```
 
-   The comp opens in AE. The CLI prints the contact sheet path (`~/.ae-compose/out/KineticType/contact_main.png`).
+   The comp opens in AE. The CLI prints the contact sheet path (`~/.ae-compose/out/KineticType/contact_main.png`) and the lint result (no warnings for this one).
 3. In AE, select the **Controls** layer and drag **Word Stagger** or **Accent Color**. The animation changes live, with no rebuild.
 4. Edit the TSX (for example, change a beat's `duration`) and rebuild: the comp updates in place. Your control tweaks are kept, and controls you didn't touch take the new defaults from code. Later beats ripple automatically because they're in a `<Series>`.
 5. Edit any comp, even one you built by hand:
@@ -203,7 +204,7 @@ Each scene in [`examples/`](examples) is built from your own assets and exposes 
 pnpm test:unit
 ```
 
-That runs the unit and codegen tests (253, Node only).
+That runs the unit and codegen tests (287, Node only).
 
 The checks below need After Effects running:
 
