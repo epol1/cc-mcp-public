@@ -1,7 +1,7 @@
 # ae-compose — Report
 
 What was built, how it was verified against the installed After Effects 2026 (26.5), and what is limited or
-left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D64); the roadmap with live status is
+left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D65); the roadmap with live status is
 [`status/systems.json`](../status/systems.json) / [ROADMAP.md](ROADMAP.md).
 
 ## Definition of Done (GOAL §7)
@@ -54,6 +54,7 @@ left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D64); t
   - `aec` CLI (doctor/build/watch/inspect/edit/undo/snapshot/sheet/preview/effects/import/dialogs/eval);
   - MCP server (18 tools; images come back automatically after builds and edits);
   - Claude skill (`skills/ae-compose`).
+- **Final renders** (D65): the `render` tool writes MP4, ProRes 422 / 422 HQ / 4444 with alpha, PNG or TIFF sequences or lossless AVI through AE's Render Queue, checks the file and returns a poster frame (`tests/integration/render.ts`: every format, the user's queue untouched, no overwrite, honest undo afterwards).
 - **Lint** (D63): every build and edit returns a lint report, and `lint_comp` checks any comp. It flags text on screen too briefly to read, text cut off or outside action-safe, overlapping texts, box overflow, missing fonts, near-empty frames and linear-only moves, each with the layer and the time range.
 - **Visual feedback:**
   - automatic contact sheets after every build and edit, snapshots, previews (frame capture → ffmpeg);
@@ -146,10 +147,10 @@ It reported the comp, its fixes, the ripple result and the final contact sheet, 
 
 ## Next 5 improvements, ranked by impact
 
-Lint, the first item on the original list, is built (D63). The list now:
+Lint (D63) and final renders (D65), the top items on earlier versions of this list, are built. The list now:
 
-1. **Final renders.** ae-compose produces review material only (contact sheets, frames, low-res previews in `~/.ae-compose/out/`). Finals still go through AE's Render Queue by hand. A `render` tool that queues a comp with a chosen output module (H.264, ProRes, PNG sequence with alpha) and an output path, renders it, and reports the file would close the loop from brief to deliverable.
-2. **Motion previews the agent can judge.** Contact sheets show layout, not feel. Sending a short low-res GIF strip or a per-layer velocity graph after builds would let the agent check easing, springs and pacing, the parts motion design is judged on.
-3. **Gradient read-back and editing** (`.aepx` parse plus a `setGradient` op). Gradients are common in client projects, and today the inspector reports them as opaque, so an agent can't edit what it can't see.
-4. **Automatic recovery from hangs and crashes.** Detect a hung AE, save a copy, relaunch, answer Crash Repair and reconnect the bridge. Three restarts in this build needed a person; a long autonomous session needs this.
-5. **Occlusion-aware lint, bezier-aware ripple and a stagger helper.** Lint can't see footage or shapes covering a word (showcase 11 needed a visual check for that). Ripple stretches bezier segments that span an insert point instead of splitting them. And `stagger()` / `interpolate()` would remove hand-written timing arithmetic from scenes.
+1. **Motion previews the agent can judge.** Contact sheets show layout, not feel. Sending a short low-res GIF strip or a per-layer velocity graph after builds would let the agent check easing, springs and pacing, the parts motion design is judged on.
+2. **Gradient read-back and editing** (`.aepx` parse plus a `setGradient` op). Gradients are common in client projects, and today the inspector reports them as opaque, so an agent can't edit what it can't see.
+3. **Automatic recovery from hangs and crashes.** Detect a hung AE, save a copy, relaunch, answer Crash Repair and reconnect the bridge. Three restarts in this build needed a person; a long autonomous session needs this.
+4. **Occlusion-aware lint.** Lint can't see footage or shapes covering a word (showcase 11 needed a visual check for that).
+5. **Bezier-aware ripple and a stagger helper.** Ripple stretches bezier segments that span an insert point instead of splitting them, and `stagger()` / `interpolate()` would remove hand-written timing arithmetic from scenes.

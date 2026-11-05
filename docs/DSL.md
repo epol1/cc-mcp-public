@@ -1342,6 +1342,7 @@ scene({ name: 'Promo', duration: '6s', lint: { safe: 'title', readingRate: 4, ig
 | `lint_comp` | Lint any comp (§17): too-short reads, text cut off or outside the safe area, overlapping texts, box overflow, missing fonts, near-empty frames. `frames` (default 8) are rendered for the blank-frame check; `safe`, `readingRate`, `ignore`. |
 | `snapshot` | Exact frames at given times (as AE renders them). |
 | `contact_sheet` | N evenly spaced frames with timecodes (default 12). Use 12–16 for particles. |
+| `render` | Final deliverable through AE's Render Queue at full quality (live project state). `format`: `mp4` (H.264; `quality` draft/standard/high = 5/15/40 Mbps), `mov` (ProRes 422), `mov-alpha` / `prores4444` (ProRes 4444 with alpha), `prores` (422 HQ via ffmpeg), `png` / `tiff` (sequences with alpha), `avi` (lossless); `settings` best/draft, `start`/`end` or `workArea`, `out` (file or folder), `template` (any AE output module). Default folder: `renders/` next to the saved project, else `~/.ae-compose/renders/`; never overwrites. Returns codec, size, frames, alpha and a poster frame. **A scripted render clears AE's undo history**: `undo` afterwards reports that earlier steps can't be undone. |
 | `render_preview` | Short low-res MP4 (or GIF, returned inline) of a time range, to judge motion feel. It captures the live, unsaved state; `aerender: true` renders the saved project instead. |
 | `list_effects` | Search vanilla effects by name/matchName/category. |
 | `describe_effect` | Full param list of one effect: names, matchNames, types, defaults, ranges, popup options, layer-ref params. |
@@ -1365,13 +1366,14 @@ aec undo [steps]                   undo the last ae-compose build/edit (AE's Edi
 aec snapshot [comp] --times 0,1.5,3
 aec sheet [comp] [--frames 12]     contact sheet
 aec preview [comp] [--range 0-3] [--scale 0.5] [--fps 15] [--gif]
+aec render [comp] [--format mp4|mov|mov-alpha|prores|prores4444|png|tiff|avi] [--quality high] [--out path] [--range 0-5] [--work-area] [--draft]
 aec effects [query] [--describe <name>] [--refresh]
 aec import <file> [--folder name]
 aec dialogs [--answer <hwnd> <button>]
 aec eval "<extendscript>"
 ```
 
-Most commands accept `--json` for machine-readable output. Outputs (IR, frames, contact sheets) go to `~/.ae-compose/out/<Scene>/`.
+Most commands accept `--json` for machine-readable output. Review outputs (IR, frames, contact sheets, previews) go to `~/.ae-compose/out/<Scene>/`; final renders go to `renders/` next to the saved project (or `~/.ae-compose/renders/`).
 
 ---
 

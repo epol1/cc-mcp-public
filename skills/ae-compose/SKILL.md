@@ -33,6 +33,7 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 | Find, look at and use project media | `list_project_items` (`kind: "video"`…) → `preview_item` → `apply_edits` `place` / `key` (chroma key) |
 | Look again | `contact_sheet`, `snapshot`, `render_preview` |
 | Check any comp (timing, safe areas, overlaps) | `lint_comp` (builds and edits include it) |
+| Final file the user asked for | `render` (`format`: mp4, mov, prores4444 for alpha, png…). It clears AE's undo history, so render when the work is approved, and say where the file is |
 | Effect params | `list_effects`, `describe_effect` |
 | AE stuck | `list_dialogs` → `answer_dialog`; `doctor` |
 
@@ -54,6 +55,7 @@ A scene is a short story told with motion, not a slideshow of elements. Before w
   - precision: snapping to a grid;
   - transformation: one shape morphing into the next.
 - **Keep one visual language.** Use one or two motifs (an accent bar, a circle, a line) that recur and evolve across beats, and the same easing family for the same kind of move.
+- **It's motion graphics, not a slide deck.** Unless the brief asks for them, don't add slide furniture: no section titles or scene names, no "01 / 04" or category numbers, no labels parked in the corners, no header or footer bars that sit there for the whole piece. Nobody makes motion graphics like that. Text that is on screen carries the message of its beat and leaves with it. A persistent element (a logo bug, a progress line) needs an explicit request or a clear job in the story.
 
 ### 2.3 Transitions grow out of the scene
 Cut by continuity, not with stock wipes. The outgoing beat should hand something to the incoming one:

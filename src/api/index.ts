@@ -16,6 +16,8 @@ import type { LintOptions } from './lint.ts';
 
 export { buildScene } from './build.ts';
 export { lintComp } from './lint.ts';
+export { renderComp, renderSummary, RENDER_FORMATS } from './render.ts';
+export type { RenderOptions, RenderResult, RenderFormat } from './render.ts';
 export type { LintOptions, LintReport } from './lint.ts';
 export type { BuildOptions, BuildReport } from './build.ts';
 

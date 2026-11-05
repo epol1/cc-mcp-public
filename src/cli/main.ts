@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { buildScene, inspect, applyEdits, contactSheet, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
 import { lintFlags, lintSummary } from '../api/lint.ts';
+import { renderComp, renderSummary } from '../api/render.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
 import { watchScene } from './watch.ts';
@@ -11,7 +12,7 @@ const argv = process.argv.slice(2);
 const cmd = argv[0];
 const flags: Record<string, any> = {};
 const pos: string[] = [];
-const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep', 'no-lint'];
+const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep', 'no-lint', 'draft', 'work-area'];
 const REPEATABLE = ['param'];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -48,6 +49,8 @@ const HELP = `aec — ae-compose CLI (native After Effects from TSX)
   aec edit <ops.json> [--comp name]  apply agent edit ops (one undo step)
   aec lint [comp] [--frames 8]       check text timing, frame edges, safe areas, overlaps, fonts, blank frames
     build/edit/lint take --safe action|title|0.07, --reading-rate 3.5, --ignore rule,..; build/edit: --no-lint
+  aec render [comp] [--format mp4|mov|mov-alpha|prores|prores4444|png|tiff|avi] [--quality high] [--out path] [--range 0-5] [--work-area] [--draft]
+                                     final file through AE's Render Queue (default: renders/ next to the project)
   aec undo [steps]                   undo the last ae-compose build/edit (AE's Edit > Undo)
   aec snapshot [comp] --times 0,1.5,3
   aec sheet [comp] [--frames 12]     contact sheet
@@ -94,6 +97,13 @@ async function main() {
       const lf = lintFlags(flags);
       const r = await lintComp(pos[0], { ...(typeof lf === 'object' ? lf : {}), frames: flags.frames !== undefined ? +flags.frames : 8 });
       out(lintSummary(r, undefined, 1000).join('\n  '), r);
+      process.exitCode = r.ok ? 0 : 1;
+      break;
+    }
+    case 'render': {
+      const [a, b] = flags.range ? String(flags.range).split('-').map(Number) : [undefined, undefined];
+      const r = await renderComp(pos[0], { format: flags.format as any, quality: flags.quality as any, settings: flags.draft ? 'draft' : 'best', start: a, end: b, workArea: !!flags['work-area'], out: flags.out as string, template: flags.template as string });
+      out(renderSummary(r), r);
       process.exitCode = r.ok ? 0 : 1;
       break;
     }

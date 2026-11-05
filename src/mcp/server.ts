@@ -8,6 +8,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
 import { lintSummary } from '../api/lint.ts';
+import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
 import { LINT_RULES } from '../lint/index.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
@@ -133,6 +134,26 @@ server.registerTool('apply_edits', {
   return out;
 }));
 
+server.registerTool('render', {
+  title: 'Render a final file',
+  description: 'Render a comp to a deliverable file through the AE Render Queue at full quality (the live project state, saved or not), check what was written, and return the path plus a poster frame. Formats: mp4 (H.264, default; quality draft 5 / standard 15 / high 40 Mbps), mov (QuickTime High Quality), mov-alpha, prores (422 HQ), prores4444 (with alpha), png or tiff (frame sequences with alpha), avi (lossless). Default folder: "renders" next to the saved project (or ~/.ae-compose/renders); existing files are never overwritten. AE is busy while it renders. Only render when the user asks for a final/deliverable; for checking motion use render_preview.',
+  inputSchema: {
+    comp: z.union([z.string(), z.number()]).optional().describe('comp name, aec id or item id (default: the active comp)'),
+    format: z.enum(RENDER_FORMATS as [string, ...string[]]).optional(),
+    quality: z.enum(['draft', 'standard', 'high']).optional().describe('mp4 bitrate'),
+    settings: z.enum(['best', 'draft']).optional().describe('render settings (draft = half resolution)'),
+    start: z.number().optional(), end: z.number().optional(),
+    workArea: z.boolean().optional().describe('render the work area instead of the whole comp'),
+    out: z.string().optional().describe('output file (with extension) or folder'),
+    template: z.string().optional().describe('exact AE output module template name (overrides format)'),
+  },
+}, async (a) => wrap(async () => {
+  const r = await renderComp(a.comp, a as any);
+  const out: Content[] = [text(renderSummary(r))];
+  if (r.poster) out.push(await image(r.poster, 960));
+  return out;
+}));
+
 server.registerTool('lint_comp', {
   title: 'Lint a comp',
   description: 'Check any comp (generated or hand-built) for what a viewer would notice: text cut off by the frame or outside the safe area, box text that overflows, texts overlapping each other, text on screen too briefly to read for its word count, missing fonts, linear-only moves, and empty frames mid-comp. Each issue names the layer and the time range. build_scene and apply_edits run this automatically; use it on existing projects or after manual changes.',
@@ -243,7 +264,7 @@ server.registerTool('answer_dialog', {
 
 server.registerTool('undo', {
   title: 'Undo',
-  description: 'Undo the last ae-compose change(s) with After Effects\' own Edit > Undo. Each apply_edits batch and each single build is one step; a build with variants is one step per variant comp plus one for the compare comp (the build report says "undo steps"). Read-only probes in between are skipped. Changes made by hand in AE after the last ae-compose call are undone first, so check the result with inspect_comp when the user has been working in AE.',
+  description: 'Undo the last ae-compose change(s) with After Effects\' own Edit > Undo. Each apply_edits batch and each single build is one step; a build with variants is one step per variant comp plus one for the compare comp (the build report says "undo steps"). Read-only probes in between are skipped. Changes made by hand in AE after the last ae-compose call are undone first, so check the result with inspect_comp when the user has been working in AE. AE clears its undo history when it renders or purges its caches; undo then only reaches the steps made since, and says so.',
   inputSchema: { steps: z.number().int().min(1).max(50).optional().describe('how many ae-compose changes to undo (default 1)') },
 }, async (a) => wrap(async () => [text(JSON.stringify(await undo(a.steps ?? 1)))]));
 

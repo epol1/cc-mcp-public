@@ -902,14 +902,20 @@
         },
         {
           "id": "render-final",
-          "name": "Final render tool (Render Queue output module + path)",
-          "status": "todo",
+          "name": "Final render tool (MP4, ProRes, PNG/TIFF; honest undo after render)",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "lint-occlusion",
           "name": "Lint: occlusion of text by footage/shapes",
           "status": "todo",
+          "weight": 1
+        },
+        {
+          "id": "undo-floor",
+          "name": "Undo knows when AE cleared its history (render, purge)",
+          "status": "done",
           "weight": 1
         }
       ]

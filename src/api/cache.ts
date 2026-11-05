@@ -2,15 +2,16 @@
 // "Maximum Disk Cache Size" a working session filled a 930 GB C: drive twice (68 GB of cache in ~40 minutes,
 // D62). After render-producing calls we check the cache and purge it (app.purge(PurgeTarget.ALL_CACHES), the same
 // as Edit > Purge > All Memory & Disk Cache; verified to empty the disk cache) when it gets large or the drive
-// gets low. Purging only drops cached frames: AE re-renders them on demand.
+// gets low. Purging drops cached frames (AE re-renders them on demand) and, as AE does for Purge > All Memory &
+// Disk Cache, also its undo history, which is why it only runs when space is really tight (D65). The runtime records
+// the purge so `undo` reports what can no longer be undone.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { evalAE } from '../bridge/index.ts';
+import { callRuntime } from '../bridge/index.ts';
 
-const LIMIT_BYTES = Number(process.env.AEC_CACHE_LIMIT_GB ?? 10) * 1e9;
+const LIMIT_BYTES = Number(process.env.AEC_CACHE_LIMIT_GB ?? 30) * 1e9;
 const MIN_FREE_BYTES = 15e9;
-let rendersSincePurge = 0;
 
 function cacheDir(): string | null {
   const base = path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local'), 'Temp', 'Adobe', 'After Effects');
@@ -38,14 +39,11 @@ function freeBytes(d: string): number {
 /** Call after a render-producing operation. Returns a note when it purged (for build/edit reports). */
 export async function guardDiskCache(): Promise<string | undefined> {
   if (process.env.AEC_NO_CACHE_PURGE === '1') return undefined;
-  rendersSincePurge++;
   const dir = cacheDir();
-  const size = dir ? dirBytes(dir) : NaN;
-  const free = dir ? freeBytes(dir) : Infinity;
-  const due = dir ? size > LIMIT_BYTES || free < MIN_FREE_BYTES : rendersSincePurge >= 10;
-  if (!due) return undefined;
-  const r = await evalAE('app.purge(PurgeTarget.ALL_CACHES); "purged"', { timeoutMs: 120_000 });
-  rendersSincePurge = 0;
-  if (!r.ok) return `could not purge AE's disk cache: ${r.error}`;
-  return dir ? `purged AE's disk cache (${(size / 1e9).toFixed(1)} GB; ${(free / 1e9).toFixed(1)} GB free on ${path.parse(dir).root})` : 'purged AE caches';
+  if (!dir) return undefined; // unknown cache location: never purge blind (it also clears undo)
+  const size = dirBytes(dir);
+  const free = freeBytes(dir);
+  if (!(size > LIMIT_BYTES || free < MIN_FREE_BYTES)) return undefined;
+  try { await callRuntime('purgeCaches', [], { timeoutMs: 120_000 }); } catch (e: any) { return `could not purge AE's disk cache: ${e.message}`; }
+  return `purged AE's disk cache (${(size / 1e9).toFixed(1)} GB; ${(free / 1e9).toFixed(1)} GB free on ${path.parse(dir).root}). AE clears its undo history with it: earlier steps can no longer be undone`;
 }

@@ -10,6 +10,8 @@ import { edit } from './edit';
 import type { EditOp } from './edit';
 import { contactFrames, describeEffect, importFile, layerSourceFrame, previewItem } from './tools';
 import { lintSample } from './lint';
+import { renderComp, renderTemplates } from './render';
+import type { RenderCompOpts } from './render';
 import type { LintSampleOpts } from './lint';
 
 /**
@@ -20,7 +22,25 @@ function noopGroup(name: string, fn: () => any): any {
   app.beginUndoGroup('ae-compose: ' + name);
   try { return fn(); } finally { app.endUndoGroup(); $.global.__aecNoopUndos = ($.global.__aecNoopUndos || 0) + 1; }
 }
-function realChange(fn: () => any): any { $.global.__aecNoopUndos = 0; return fn(); }
+/**
+ * A build or edit: no-op groups before it are buried under it. After AE has cleared its undo history (a render or a
+ * cache purge, see __aecHistory), count the real steps made since, so undo never claims more than AE can do.
+ */
+function realChange(fn: () => any): any {
+  $.global.__aecNoopUndos = 0;
+  const r = fn();
+  const h = $.global.__aecHistory;
+  if (h && r && r.ok) h.steps++;
+  return r;
+}
+
+/** App-wide cache purge (frees AE's disk cache). AE also drops its undo history with it, so record that. */
+function purgeCaches(): any {
+  app.purge(PurgeTarget.ALL_CACHES);
+  $.global.__aecNoopUndos = 0;
+  $.global.__aecHistory = { reason: 'a cache purge', steps: 0 };
+  return { ok: true };
+}
 
 function guard(fn: () => any): string {
   try {
@@ -43,6 +63,9 @@ const AEC: any = {
   previewItem: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => noopGroup('preview', () => previewItem(ref, n, dir, times))); },
   layerSourceFrame: function (comp: any, layer: any, t: number, dir: string) { return guard(() => noopGroup('sample frame', () => layerSourceFrame(comp, layer, t, dir))); },
   lintSample: function (comp: any, opts: LintSampleOpts) { return guard(() => noopGroup('lint', () => lintSample(comp, opts || {}))); },
+  render: function (comp: any, opts: RenderCompOpts) { return guard(() => renderComp(comp, opts)); },
+  purgeCaches: function () { return guard(() => purgeCaches()); },
+  renderTemplates: function () { return guard(() => noopGroup('render templates', () => renderTemplates())); },
   /**
    * Edit > Undo for the last `steps` ae-compose builds/edits (a variant build is one step per variant plus one
    * for the compare comp; the build report says how many). Read-only probes since then are skipped. This is AE's
@@ -52,8 +75,13 @@ const AEC: any = {
     return guard(() => {
       const n = Math.max(1, steps || 1);
       const extra = $.global.__aecNoopUndos || 0;
-      for (let i = 0; i < n + extra; i++) app.executeCommand(16);
-      $.global.__aecNoopUndos = 0;
+      // AE cleared its history at a render or cache purge: only the steps made since then exist.
+      const h = $.global.__aecHistory;
+      const can = h ? Math.min(n, h.steps) : n;
+      if (can > 0) for (let i = 0; i < can + extra; i++) app.executeCommand(16);
+      if (can > 0) $.global.__aecNoopUndos = 0;
+      if (h) h.steps -= can;
+      if (can < n) return { ok: can > 0, steps: can, skippedProbes: can > 0 ? extra : 0, error: (can ? 'only ' + can + ' step(s) could be undone: ' : 'nothing to undo: ') + 'After Effects cleared its undo history at ' + h.reason + ', so earlier builds and edits can no longer be undone (they are still in the project; rebuild or edit to change them).' };
       return { ok: true, steps: n, skippedProbes: extra };
     });
   },

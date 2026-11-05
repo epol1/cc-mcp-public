@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.014**: 93.41% weighted, 156/169 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.015**: 94.21% weighted, 158/170 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -162,15 +162,16 @@
 - [x] Chroma key op (Keylight + Spill, auto screen color) _(w2)_
 - [x] Atomic edit batches (rollback on failure)
 
-## Visual Feedback (73%)
+## Visual Feedback (92%)
 - [x] Snapshot (+32bpc fix)
 - [x] Contact sheets
 - [x] aerender preview MP4/GIF _(w2)_
 - [x] Lint report on builds/edits + lint_comp (reading time, safe areas, overlaps, fonts, blank frames) _(w2)_
 - [x] Auto-attach to results
 - [x] Lint reads per-unit animator timing (live controls, range selectors)
-- [ ] Final render tool (Render Queue output module + path) _(w2)_
+- [x] Final render tool (MP4, ProRes, PNG/TIFF; honest undo after render) _(w2)_
 - [ ] Lint: occlusion of text by footage/shapes
+- [x] Undo knows when AE cleared its history (render, purge)
 
 ## Interfaces (100%)
 - [x] CLI (aec) _(w2)_
