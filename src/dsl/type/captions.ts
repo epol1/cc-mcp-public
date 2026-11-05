@@ -97,6 +97,13 @@ export interface CaptionsProps {
   /** Reading-speed check: warn (default), error (throw) or off. */
   reading?: 'warn' | 'error' | 'off';
   readingOptions?: ReadingOptions;
+  /**
+   * A caption template for Premiere (export_mogrt): one caption spanning the comp (the first cue is the placeholder)
+   * whose text and word start times are Essential Graphics fields, "Caption" and "Word Times" (seconds from the
+   * caption's start, space-separated). The text keeps its bottom centre in the caption area as it is retyped.
+   * pr-cut places one per caption with `captions: { mogrt }`.
+   */
+  template?: boolean;
 }
 
 interface StyleSpec {
@@ -223,8 +230,11 @@ export function Captions(p: CaptionsProps) {
   const kMode = kOpt?.mode ?? st.karaoke?.mode ?? 'past';
   const kScale = kMode === 'current' ? kOpt?.scale ?? st.karaoke?.scale ?? 100 : 100;
   const hl = kOpt?.color ?? st.karaoke?.color ?? '#ffd23f';
-  const underline = !!kOpt?.underline;
-  if (karaoke && plan.estimated) dslWarn(`Captions "${p.id}": karaoke word times are estimated from characters (the source has no word timing); give word JSON, VTT inline timestamps or cues[].words for exact sync`);
+  const tpl = !!p.template;
+  if (tpl && cues.length > 1) dslWarn(`Captions "${p.id}": a template builds one caption (the first cue as placeholder); Premiere fills each caption's text and word times`);
+  if (tpl && kOpt?.underline) dslWarn(`Captions "${p.id}": the karaoke underline isn't available in a template`);
+  const underline = !!kOpt?.underline && !tpl;
+  if (karaoke && plan.estimated && !tpl) dslWarn(`Captions "${p.id}": karaoke word times are estimated from characters (the source has no word timing); give word JSON, VTT inline timestamps or cues[].words for exact sync`);
   const boxOpt: CaptionBox | null = p.box === false ? null : p.box === true ? {} : p.box ?? st.box ?? null;
   const color = p.color ?? st.color;
   const shadow = p.shadow ?? st.shadow ?? false;
@@ -247,15 +257,23 @@ export function Captions(p: CaptionsProps) {
   const texts: AecElement[] = [];
   const boxes: AecElement[] = [];
   const wordStarts: number[][] = [];
-  cues.forEach((c, i) => {
+  // A template's caption spans the comp; Premiere trims each instance, so it cuts in and out (no fades). Its text is
+  // retyped in Premiere, so instead of the build-time layout it keeps its bottom centre at the caption area's bottom
+  // centre (live anchor from the text's bounds).
+  const span = (c: Caption) => (tpl ? { from: 0 } : { from: c.start, duration: c.end - c.start });
+  const ins = plan.area === 'title' ? [frame.h * 0.1, frame.w * 0.1, frame.h * 0.1, frame.w * 0.1] : plan.area;
+  const tplAt = [Math.round(ins[3] + (frame.w - ins[1] - ins[3]) / 2), Math.round(frame.h - ins[2])];
+  const TPL_ANCHOR = '// ae-compose caption template: bottom centre of the text, so a longer caption grows upward\nvar r = sourceRectAtTime(time, false);\n[r.left + r.width / 2, r.top + r.height];';
+  (tpl ? cues.slice(0, 1) : cues).forEach((c, i) => {
     const prev = cues[i - 1], next = cues[i + 1];
-    const fin = !prev || c.start - prev.end > gap ? 1 : 0;
-    const fout = !next || next.start - c.end > gap ? 1 : 0;
+    const fin = !tpl && (!prev || c.start - prev.end > gap) ? 1 : 0;
+    const fout = !tpl && (!next || next.start - c.end > gap) ? 1 : 0;
     const ws = c.words.map((w) => r3(Math.max(0, w.start - c.start)));
     wordStarts.push(ws);
     const ex: Record<string, string> = {
       [SOURCE_TEXT]: `// ae-compose captions: text color from the Captions effect (edit the text freely)\nvar c = ${C}("Text Color").value; style.setFillColor([c[0], c[1], c[2]]);`,
     };
+    if (tpl) ex['ADBE Transform Group/ADBE Anchor Point'] = TPL_ANCHOR;
     let animate: any;
     if (karaoke) {
       const from: any = { fill: hexOf(hl) };
@@ -263,7 +281,9 @@ export function Captions(p: CaptionsProps) {
       animate = { text: perWord({ name: 'Karaoke', from, each: 0, duration: 0.1 }) };
       ex[amountPath('Karaoke')] = [
         `// ae-compose karaoke (${kMode} word): word starts in s from this caption's in point; look and sync in the Captions effect`,
-        `var e = ${C}, W = [${ws.join(', ')}];`,
+        tpl
+          ? `var e = ${C}, W = [], WT = String(__AEC_LAYER(${p.id}.times)__.text.sourceText).split(/[\\s,]+/);\nfor (var q0 = 0; q0 < WT.length; q0++) { var v0 = parseFloat(WT[q0]); if (!isNaN(v0)) W.push(v0); }`
+          : `var e = ${C}, W = [${ws.join(', ')}];`,
         'var t = time - inPoint + e("Sync Offset").value, r = Math.max(e("Ramp").value, 0.001), i = textIndex - 1, n = W.length;',
         'if (textTotal !== n) { W = []; for (var q = 0; q < textTotal; q++) W.push(q * (outPoint - inPoint) / Math.max(textTotal, 1)); n = textTotal; }',
         'var a = L.smooth(0, 1, (t - W[i]) / r);',
@@ -286,8 +306,8 @@ export function Captions(p: CaptionsProps) {
       stroke: p.stroke ?? st.stroke,
       strokeWidth: p.strokeWidth ?? st.strokeWidth,
       align: 'center',
-      from: c.start,
-      duration: c.end - c.start,
+      ...span(c),
+      ...(tpl ? { eg: 'Caption', x: tplAt[0], y: tplAt[1] } : {}),
       tags: ['caption'],
       opacity: expr(`// ae-compose captions: fades next to gaps (Fade in the Captions effect); back-to-back cues cut\nvar f = Math.max(${C}("Fade").value, 0.001);\n100 * Math.min(${fin ? 'L.clamp((time - inPoint) / f, 0, 1)' : '1'}, ${fout ? 'L.clamp((outPoint - time) / f, 0, 1)' : '1'});`),
       animate,
@@ -301,8 +321,7 @@ export function Captions(p: CaptionsProps) {
         name: `${cueName(i)} Box`,
         space: 'comp',
         parent: cueId(i),
-        from: c.start,
-        duration: c.end - c.start,
+        ...span(c),
         tags: ['caption'],
         opacity: expr(`__AEC_LAYER(${cueId(i)})__.transform.opacity.value;`),
         children: [
@@ -342,7 +361,10 @@ export function Captions(p: CaptionsProps) {
       ],
     }));
   }
-  out.push(jsx(SafeArea, { kind: plan.area, children: jsx(Align, { at: 'bottom', children: texts }) }));
+  if (tpl) {
+    // The word start times as an editable field, read by the karaoke selector (a hidden layer: never rendered).
+    out.push(...texts, jsx(Text, { id: `${p.id}.times`, name: 'Word Times', text: wordStarts[0].join(' '), font: plan.font, size: 24, hidden: true, eg: 'Word Times', tags: ['caption'] }));
+  } else out.push(jsx(SafeArea, { kind: plan.area, children: jsx(Align, { at: 'bottom', children: texts }) }));
   return jsx(Fragment, { children: out });
 }
 (Captions as any).displayName = 'Captions';

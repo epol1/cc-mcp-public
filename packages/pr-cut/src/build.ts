@@ -68,12 +68,12 @@ export async function buildCut(planInput: unknown, o: BuildOptions = {}): Promis
   let live = 0;
   if (c.titles.length) { const t = await placeTitles(imp.sequenceId, c.titles, tpf); live += t.steps; c.warnings.push(...t.missing.map((m) => `title ${m}`)); report.warnings.push(...t.missing.map((m) => `title ${m}`)); }
   const capOpt = c.plan.captions;
-  if (capOpt) live += await addCaptions(imp.sequenceId, c, typeof capOpt === 'object' ? capOpt : {});
+  if (capOpt) { const w0 = c.warnings.length; live += await addCaptions(imp.sequenceId, c, typeof capOpt === 'object' ? capOpt : {}); report.warnings.push(...c.warnings.slice(w0)); }
   report.undoSteps += live;
 
   fs.mkdirSync(CUTS_DIR, { recursive: true });
   const sidecar = path.join(CUTS_DIR, `${imp.sequenceId}.json`);
-  fs.writeFileSync(sidecar, JSON.stringify({ sequenceId: imp.sequenceId, name: imp.name, builtAt: new Date().toISOString(), plan: c.plan, pieces: c.pieces, segments: c.segments, titles: c.titles, rate: R, undoSteps: report.undoSteps }, null, 1));
+  fs.writeFileSync(sidecar, JSON.stringify({ sequenceId: imp.sequenceId, name: imp.name, builtAt: new Date().toISOString(), plan: c.captionMogrt ? { ...c.plan, captions: { ...(c.plan.captions as object), mogrt: c.captionMogrt.mogrt } } : c.plan, captionTrack: c.captionMogrt?.track, pieces: c.pieces, segments: c.segments, titles: c.titles, rate: R, undoSteps: report.undoSteps }, null, 1));
   report.sidecar = sidecar;
 
   if (o.sheet !== false) {
@@ -122,7 +122,11 @@ prcJson({ undo: prcUndo() - u0, missing: missing });
   return { steps: jobs.length, missing: r.missing }; // one undo step per placed title (field values are not undo steps)
 }
 
-/** Captions from the kept words' times in the cut → SRT → Premiere caption track (two undo steps). */
+/**
+ * Captions from the kept words' times in the cut → SRT → Premiere caption track (two undo steps); or, when the cut has
+ * a caption template (ae-compose `<Captions template>`), one template per caption on its own track with its
+ * "Caption" text and "Word Times" (karaoke) filled in (one undo step each).
+ */
 export async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: number; maxLines?: number }): Promise<number> {
   const fps = c.timeline.rate.num / c.timeline.rate.den;
   const words: { text: string; start: number; end: number }[] = [];
@@ -136,6 +140,19 @@ export async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: nu
     }
   }
   const caps = captionsFromWords(words as any, { maxChars: o.maxChars ?? 42, maxLines: o.maxLines ?? 2 } as any);
+  if (c.captionMogrt) {
+    const r3 = (x: number) => Math.round(x * 1000) / 1000;
+    const jobs = caps.map((cap, k) => {
+      const start = Math.round(cap.start * fps);
+      // Back-to-back captions: each ends where the next starts (no one-frame overlap on the same track).
+      const end = Math.max(start + 1, Math.min(Math.round(cap.end * fps), caps[k + 1] ? Math.round(caps[k + 1].start * fps) : Infinity));
+      return { id: `cap${k + 1}`, mogrt: c.captionMogrt!.mogrt, start, end, track: c.captionMogrt!.track, fields: { Caption: cap.lines.join('\r'), 'Word Times': cap.words.map((w) => r3(Math.max(0, w.start - cap.start))).join(' ') } };
+    });
+    const t = await placeTitles(seqId, jobs, ticksPerFrame(c.timeline.rate));
+    const missing = [...new Set(t.missing.map((m) => m.replace(/^cap\d+: /, '')))];
+    if (missing.length) c.warnings.push(...missing.map((m) => `captions: ${m} (build the template with <Captions template>)`));
+    return t.steps;
+  }
   const srt = path.join(CUTS_DIR, `${seqId}.srt`);
   fs.mkdirSync(CUTS_DIR, { recursive: true });
   fs.writeFileSync(srt, toSrt(caps));

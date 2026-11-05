@@ -34,6 +34,7 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 | Look again | `contact_sheet`, `snapshot`, `render_preview` |
 | Check any comp (timing, safe areas, overlaps) | `lint_comp` (builds and edits include it) |
 | Final file the user asked for | `render` (`format`: mp4, mov, prores4444 for alpha, png…). It clears AE's undo history, so render when the work is approved, and say where the file is |
+| Karaoke captions for a Premiere cut | `<Captions style="karaoke" template cues={[…one placeholder cue…]} />` in a 10 s comp at the sequence size → `export_mogrt` → pr-cut `captions: { mogrt }` |
 | A title or lower third for Premiere | build it transparent at the sequence size with `eg=` texts / `control()`s, then `export_mogrt` (needs the project saved: ask before `save: true`; clears AE's undo history, so export when approved); pr-cut places it and fills its fields by name |
 | Effect params | `list_effects`, `describe_effect` |
 | Judge motion feel, not just frames | `motion_preview` (a dense frame strip of the busiest second, the speed graph, the style lint) |

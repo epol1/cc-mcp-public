@@ -19,6 +19,7 @@ import { lintCut } from './lint.ts';
 import { DEF, duckKeys, speechSpans, tightenSegment, type Compiled, type Piece } from './plan/compile.ts';
 import { projectInfo } from './project.ts';
 import { motionScale, type Grade, type TLClip, type Timeline } from './timeline.ts';
+import { placeAeTemplates, readAeTemplates, type AeTemplateClip } from './mgt.ts';
 
 export const EDIT_OPS_HELP = `Edits run in order; each is { op, ... }. Targets: path ids from inspect_sequence ("V1/3"), pr-cut segment/piece ids ("proof", "proof.2"), or { quote: "words spoken in the clip" }.
 - { op: "delete", target }  ripple delete (picture and sound; later clips move up)
@@ -36,7 +37,7 @@ export const EDIT_OPS_HELP = `Edits run in order; each is { op, ... }. Targets: 
 - { op: "remove", target }  remove a B-roll/graphic/music clip without rippling
 - { op: "title", mogrt, at?: time | { target, offset? }, duration?, track?, fields?: { "Name": "…" } }  place a .mogrt on the new version and fill its fields
 - { op: "rename", name }
-- { op: "captions", maxChars?, maxLines? } | { op: "captions", captions: false }  caption track from the new cut's words (automatic when the cut was built with captions)`;
+- { op: "captions", maxChars?, maxLines?, mogrt? } | { op: "captions", captions: false }  caption track from the new cut's words, or with mogrt an ae-compose caption template per caption (karaoke); automatic when the cut was built with captions`;
 
 const Target = z.union([z.string().min(1), z.object({ quote: z.string().min(3) }).strict()]);
 const Tm = z.union([z.number(), z.string()]);
@@ -59,7 +60,7 @@ export const EditOpSchema = z.discriminatedUnion('op', [
   z.object({ op: z.literal('remove'), target: Target }).strict(),
   z.object({ op: z.literal('title'), mogrt: z.string(), at: z.union([Tm, z.object({ target: Target.optional(), seg: z.string().optional(), offset: Tm.optional() }).strict()]).optional(), duration: Tm.optional(), track: z.number().int().min(2).optional(), fields: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional() }).strict(),
   z.object({ op: z.literal('rename'), name: z.string().min(1) }).strict(),
-  z.object({ op: z.literal('captions'), captions: z.literal(false).optional(), maxChars: z.number().int().optional(), maxLines: z.number().int().optional() }).strict(),
+  z.object({ op: z.literal('captions'), captions: z.literal(false).optional(), maxChars: z.number().int().optional(), maxLines: z.number().int().optional(), mogrt: z.string().optional() }).strict(),
 ]);
 
 /** Check every op before anything happens: shapes, required targets, and one-of choices. */
@@ -112,7 +113,10 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   const firstStart = spine[0].clip.start;
   const oldEnd = spine[spine.length - 1].clip.end;
   const was = (oldEnd - firstStart) / fps;
-  const others = t0.clips.filter((c) => !spineIds.includes(c.id));
+  // Caption templates of the earlier version are rebuilt from the new cut's words (below), not carried. AE-made
+  // templates come through Premiere's XML as clips of an .aegraphic file; Premiere's own as raw graphic items.
+  const graphicClip = (c: TLClip) => !!c.raw?.item || /\.aegraphic$/i.test(t0.media[c.media]?.path ?? '');
+  const others = t0.clips.filter((c) => !spineIds.includes(c.id) && !(sidecar?.captionTrack && c.vTrack === sidecar.captionTrack && graphicClip(c)));
   const anchorOf = (frame: number) => {
     // Inside a dialogue clip: that clip at that source moment. In a gap on V1 (or before the first clip): the next
     // clip's start, with the distance kept. After the last clip: the last clip's end.
@@ -123,6 +127,9 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   };
   const anchors = new Map(others.map((c) => [c, { a: anchorOf(c.start), b: anchorOf(c.end) }]));
   const origOf = new Map(others.map((c) => [c, { start: c.start, end: c.end, inTicks: c.inTicks, outTicks: c.outTicks }]));
+  // After Effects templates: their field values, read now; they are placed again after the import (mgt.ts).
+  const isAeTemplate = (c: TLClip) => !!c.vTrack && /\.aegraphic$/i.test(t0.media[c.media]?.path ?? '');
+  const aeSource = others.some(isAeTemplate) ? await readAeTemplates(seqId) : [];
 
   // ---- target resolution ----
   const resolve = (target: any, what = 'target'): SP[] => {
@@ -202,7 +209,7 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   let name = o.name;
   const titles: { op: any; anchor: SP | null; n: number }[] = [];
   // A caption track doesn't travel through XML: rebuild it from the new cut's words when the cut had captions.
-  let captions: false | { maxChars?: number; maxLines?: number } = sidecar?.plan?.captions ? (typeof sidecar.plan.captions === 'object' ? sidecar.plan.captions : {}) : false;
+  let captions: false | { maxChars?: number; maxLines?: number; mogrt?: string } = sidecar?.plan?.captions ? (typeof sidecar.plan.captions === 'object' ? sidecar.plan.captions : {}) : false;
   for (const [n, e] of edits.entries()) {
     const tag = `#${n + 1} ${e.op}`;
     switch (e.op) {
@@ -365,7 +372,7 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
         break;
       }
       case 'rename': name = e.name; break;
-      case 'captions': captions = e.captions === false ? false : { maxChars: e.maxChars, maxLines: e.maxLines }; log.push(`${tag}: ${captions ? 'caption track from the words of the new cut' : 'no captions'}`); break;
+      case 'captions': captions = e.captions === false ? false : { maxChars: e.maxChars, maxLines: e.maxLines, mogrt: e.mogrt ? srcPath(e.mogrt) : captions ? captions.mogrt : undefined }; log.push(`${tag}: ${!captions ? 'no captions' : captions.mogrt ? `a ${path.basename(captions.mogrt)} per caption from the words of the new cut` : 'caption track from the words of the new cut'}`); break;
       default: throw new Error(`${tag}: unknown op (use ${EDIT_OPS_HELP.match(/op: "[a-z-]+"/g)?.map((x) => x.slice(5)).join(', ')})`);
     }
   }
@@ -488,17 +495,30 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
     const loose = kept.filter((c) => !c.vTrack && c.aTrack && t0.media[c.media]?.kind !== 'audio' && spine.some((sp) => c.start < sp.clip.end && c.end > sp.clip.start));
     if (loose.length) warnings.push(`${loose.map((c) => c.id).join(', ')}: audio under the dialogue that isn't linked to its picture; word edits moved the picture only. Link it in Premiere (select picture and sound, Clip > Link) and edit again.`);
   }
+  const aeJobs: AeTemplateClip[] = [];
+  timeline.clips = timeline.clips.filter((c) => {
+    if (!isAeTemplate(c)) return true;
+    const o = origOf.get(c);
+    const src = o && aeSource.find((x) => x.track === c.vTrack && Math.round(x.start / tpf) === o.start);
+    if (!src) { warnings.push(`${c.id}: an After Effects template not found in the source sequence; carried as a plain clip (its fields show the template's defaults)`); return true; }
+    aeJobs.push({ ...src, start: c.start * tpf, end: c.end * tpf, inPoint: src.inPoint + (c.inTicks - o!.inTicks) });
+    return false;
+  });
+  if (aeJobs.length) timeline.minVideoTracks = Math.max(timeline.minVideoTracks ?? 0, ...aeJobs.map((j) => j.track));
   // Only media the new version uses (a deleted clip's missing file must not block the import).
   const used = new Set(timeline.clips.map((c) => c.media));
   timeline.media = Object.fromEntries(Object.entries(timeline.media).filter(([k]) => used.has(k)));
   // Title tracks must exist before the import (importMGT on a missing track lands on V1, over the picture).
   const topTrack = Math.max(1, ...kept.map((c) => c.vTrack ?? 0));
   const titleTrack = (op: any) => op.track ?? topTrack + 1;
-  if (titles.length) timeline.minVideoTracks = Math.max(...titles.map(({ op }) => titleTrack(op)));
+  if (titles.length) timeline.minVideoTracks = Math.max(timeline.minVideoTracks ?? 0, ...titles.map(({ op }) => titleTrack(op)));
+  // Caption templates: their own track above everything else.
+  const captionTrack = captions && captions.mogrt ? Math.max(topTrack, timeline.minVideoTracks ?? 0) + 1 : undefined;
+  if (captionTrack) timeline.minVideoTracks = captionTrack;
   const imp = await importTimeline(timeline);
   // The version's own sidecar, so segment ids and captions carry on to its next version.
   fs.mkdirSync(CUTS_DIR, { recursive: true });
-  fs.writeFileSync(path.join(CUTS_DIR, `${imp.sequenceId}.json`), JSON.stringify({ sequenceId: imp.sequenceId, name: imp.name, builtAt: new Date().toISOString(), parent: seqId, edits, plan: { captions: captions || undefined }, pieces: spine.map((sp) => ({ id: sp.label, start: sp.clip.start, end: sp.clip.end })), rate: R }, null, 1));
+  fs.writeFileSync(path.join(CUTS_DIR, `${imp.sequenceId}.json`), JSON.stringify({ sequenceId: imp.sequenceId, name: imp.name, builtAt: new Date().toISOString(), parent: seqId, edits, plan: { captions: captions || undefined }, captionTrack, pieces: spine.map((sp) => ({ id: sp.label, start: sp.clip.start, end: sp.clip.end })), rate: R }, null, 1));
 
   // Report + lint on the new spine (clips take their piece labels as ids so lint can match framing per piece).
   const seen = new Set<string>();
@@ -511,7 +531,7 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
     return { id: s.label, seg: s.label.split('.')[0], src: t0.media[s.clip.media].path, media: s.clip.media, words: ws.length ? [ws[0].i, ws[ws.length - 1].i] : null, inS, outS, start: s.clip.start, end: s.clip.end, jump: false };
   });
   pieces.forEach((pc, k) => { const prev = pieces[k - 1]; pc.jump = !!prev && prev.media === pc.media && Math.abs(prev.outS - pc.inS) > 1 / fps; });
-  const compiled: Compiled = { plan: { name: timeline.name, segments: [{ src: '-', from: 0 }] } as any, timeline, pieces, segments: [], titles: [], transcripts, warnings, stats: { sourceSeconds: 0, cutSeconds: (end - firstStart) / fps, removed: { fillers: 0, repeats: 0, pauses: 0, pauseSeconds: 0 } } };
+  const compiled: Compiled = { plan: { name: timeline.name, segments: [{ src: '-', from: 0 }] } as any, timeline, pieces, segments: [], titles: [], captionMogrt: captions && captions.mogrt && captionTrack ? { mogrt: captions.mogrt, track: captionTrack } : undefined, transcripts, warnings, stats: { sourceSeconds: 0, cutSeconds: (end - firstStart) / fps, removed: { fillers: 0, repeats: 0, pauses: 0, pauseSeconds: 0 } } };
   const issues = lintCut(compiled);
   let liveSteps = 0;
   if (captions) liveSteps += await addCaptions(imp.sequenceId, compiled, captions);
@@ -523,6 +543,11 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
     const t = await placeTitles(imp.sequenceId, resolved, tpf);
     liveSteps += t.steps;
     warnings.push(...t.missing.map((m) => `title ${m}`));
+  }
+  if (aeJobs.length) {
+    const a = await placeAeTemplates(imp.sequenceId, aeJobs, tpf);
+    liveSteps += a.steps;
+    warnings.push(...a.missing.map((m) => `template ${m}`));
   }
   const contact = await sequenceContactSheet(imp.sequenceId, pieces.slice(0, 16).map((pc) => ({ frame: Math.floor((pc.start + pc.end) / 2), label: pc.id })), R, `${imp.name} — ${framesToTimecode(end, R)}`).catch(() => null);
   const strips = pieces.length > 1 && pieces.length <= 13 ? await cutStrips(imp.sequenceId, pieces.slice(1).map((pc) => ({ frame: pc.start, label: pc.id })), R, imp.name).catch(() => null) : null;

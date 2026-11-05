@@ -41,6 +41,8 @@ export interface Compiled {
   pieces: Piece[];
   segments: { id: string; beat?: string; src: string; words: [number, number] | null; start: number; end: number; text: string; match?: { score: number; text: string } }[];
   titles: ResolvedTitle[];
+  /** Caption templates (`captions.mogrt`, resolved) and their track, above the titles. */
+  captionMogrt?: { mogrt: string; track: number };
   transcripts: Record<string, Transcript>;
   warnings: string[];
   stats: { sourceSeconds: number; cutSeconds: number; removed: { fillers: number; repeats: number; pauses: number; pauseSeconds: number } };
@@ -340,9 +342,15 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     titles.push({ id: tid, mogrt: media.path(t.mogrt), start, end: start + dur, track: t.track ?? Math.max(3, ...[...occupied.keys()].map((k) => k + 1)), fields: t.fields ?? {} });
   }
   if (titles.length) timeline.minVideoTracks = Math.max(...titles.map((t) => t.track));
+  // Caption templates go on their own track above the titles (created by the import like the title tracks).
+  let captionMogrt: Compiled['captionMogrt'];
+  if (typeof plan.captions === 'object' && plan.captions.mogrt) {
+    captionMogrt = { mogrt: media.path(plan.captions.mogrt), track: Math.max(1, ...occupied.keys(), ...titles.map((t) => t.track)) + 1 };
+    timeline.minVideoTracks = captionMogrt.track;
+  }
 
   return {
-    plan, timeline, pieces, segments: segs, titles, transcripts, warnings,
+    plan, timeline, pieces, segments: segs, titles, captionMogrt, transcripts, warnings,
     stats: { sourceSeconds: Math.round(sourceSeconds * 100) / 100, cutSeconds: Math.round((dialogueEnd / fps) * 100) / 100, removed: { ...removed, pauseSeconds: Math.round(removed.pauseSeconds * 100) / 100 } },
   };
 }

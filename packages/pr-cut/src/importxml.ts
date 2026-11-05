@@ -21,7 +21,7 @@ export async function importTimeline(t: Timeline, opts: { bin?: string } = {}): 
   fs.mkdirSync(dir, { recursive: true });
   const xmlFile = path.join(dir, `${safe(t.name)}_${Date.now().toString(36)}.xml`);
   fs.writeFileSync(xmlFile, w.xml);
-  const r = await runEs<{ ok: boolean; id?: string; name?: string; u0: number; u1: number; project: string; error?: string }>(`
+  const r = await runEs<{ ok: boolean; id?: string; name?: string; u0: number; u1: number; project: string; projects: number; error?: string }>(`
 if (!app.project || !app.project.rootItem) throw new Error('no project is open in Premiere');
 var before = prcSeqIds(), u0 = prcUndo();
 var bin = app.project.rootItem, want = ${lit(opts.bin ?? '')};
@@ -33,10 +33,12 @@ for (var j = 0; j < after.length; j++) { var seen = false; for (var k = 0; k < b
 if (named) id = named;
 var s = id ? prcSeq(id) : null;
 if (s) app.project.openSequence(id);
-prcJson({ ok: !!ok && !!id, id: id, name: s ? s.name : null, u0: u0, u1: prcUndo(), project: app.project.path });
+prcJson({ ok: !!ok && !!id, id: id, name: s ? s.name : null, u0: u0, u1: prcUndo(), project: app.project.path, projects: app.projects.numProjects });
 `, { timeoutMs: 300_000 });
   if (r.u1 > r.u0) recordChange(r.u0, r.u1, r.id ?? undefined, r.project, t.name);
   if (!r.ok || !r.id) throw new Error(`Premiere did not create a sequence from ${xmlFile}`);
   // One Ctrl+Z reverts an XML import (sequence and any media it brought in), whatever the undo index moved by.
-  return { sequenceId: r.id, name: r.name ?? t.name, xmlFile, undoSteps: 1, warnings: w.warnings, durationFrames: w.durationFrames };
+  // Premiere's undo index is read through QE, which can follow another open project: then pr-cut can't journal it.
+  const untracked = r.u1 <= r.u0 ? [`pr-cut couldn't follow this import in Premiere's undo history${r.projects > 1 ? ` (${r.projects} projects are open: close the others)` : ''}, so its undo can't revert it; Ctrl+Z in this project can`] : [];
+  return { sequenceId: r.id, name: r.name ?? t.name, xmlFile, undoSteps: 1, warnings: [...w.warnings, ...untracked], durationFrames: w.durationFrames };
 }

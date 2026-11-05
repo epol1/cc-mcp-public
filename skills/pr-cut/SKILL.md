@@ -83,6 +83,7 @@ Look at the contact sheet and the strips; read the lint; play the story in your 
 - `titles`: `{ "mogrt": "path.mogrt", "at": { "seg": "turn", "offset": "0.5s" }, "duration": "4s", "fields": { "Name": "Ana Ruiz", "Title": "Founder" } }`. Field names are the template's Essential Graphics property names. Titles go on their own track above the picture and B-roll (V3 by default; `track` to choose); a color field reads back as a packed number in Premiere, so set colors in the template.
 - **Montage** (instead of `segments`): `"montage": { "music": "…", "clips": ["lib:3", "lib:7", …], "cut": "bar" | "beat" | 2, "length": "30s", "level": 0 }` cuts the picture on the track's bars or beats, cycling the clips (each shot takes the next stretch of its source), and ends on the track's own ending. Give the clips in story order; check the strips for shots that start on a bad frame.
 - Plan-wide: `fps`, `size` (`[w,h]` or `"9:16"`), `jumpCuts`, `grade` (per alias or `"*"`), `markers` (segment markers with beat and quote, default on), `captions`.
+- `captions: true` makes a Premiere caption track (editable in the Text panel). For styled or **karaoke** captions (each word lights up as it's said), build a caption template in ae-compose (`<Captions style="karaoke" template cues={[…one placeholder cue…]} />`, a comp of 8–10 s at the sequence size, then `export_mogrt`) and pass `captions: { "mogrt": "path.mogrt" }`: pr-cut places one per caption on its own top track with its text and word times filled in.
 - Times anywhere: `3.5`, `"3.5s"`, `"250ms"`, `"12f"`, `"1:02.5"`, `"00:01:02:12"`.
 
 ## 4. Editing an existing sequence (yours or the user's)
@@ -108,7 +109,7 @@ Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `mo
 - Jump cuts an edit creates (tighten, cut-words) get the alternating punch-in, as in a build.
 - Dialogue audio that isn't linked to its picture doesn't follow word edits: link it in Premiere first (the report warns).
 - `tighten` alone (`dryRun` default) lists every proposed cut with its words and seconds saved: show it before applying.
-- Caption tracks don't travel through versions; pr-cut rebuilds them from the new cut's words when the cut was built with captions (or ask with `{ "op": "captions" }`).
+- Captions don't travel through versions; pr-cut rebuilds them (track or templates) from the new cut's words when the cut was built with captions (or ask with `{ "op": "captions" }`, `mogrt` to switch to templates).
 
 ## 5. The media library
 

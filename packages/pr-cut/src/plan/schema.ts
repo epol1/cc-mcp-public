@@ -147,7 +147,8 @@ export const PlanSchema = z.object({
   /** Segment markers with ids and beats (default true). */
   markers: z.boolean().optional(),
   /** Captions from the transcript as a caption track (default false). */
-  captions: z.union([z.boolean(), z.object({ maxChars: z.number().int().min(10).max(80).optional(), maxLines: z.number().int().min(1).max(3).optional() })]).optional(),
+  /** Caption track (SRT), or with `mogrt` an ae-compose caption template per caption (karaoke from the word times). */
+  captions: z.union([z.boolean(), z.object({ maxChars: z.number().int().min(10).max(80).optional(), maxLines: z.number().int().min(1).max(3).optional(), mogrt: z.string().optional() })]).optional(),
 }).strict().superRefine((p, ctx) => {
   if (!p.segments?.length && !p.montage) ctx.addIssue({ code: 'custom', message: 'give segments (dialogue) or a montage' });
   if (p.segments?.length && p.montage) ctx.addIssue({ code: 'custom', message: 'a plan is either dialogue segments or a montage; build the montage as its own cut' });

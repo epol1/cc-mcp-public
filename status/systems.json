@@ -1622,7 +1622,13 @@
         {
           "id": "pr-karaoke",
           "name": "Karaoke captions via an ae-compose mogrt",
-          "status": "todo",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "pr-ae-titles-edit",
+          "name": "AE-made titles keep their fields through edits",
+          "status": "done",
           "weight": 2
         },
         {

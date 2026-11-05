@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.02.001**: 95.62% weighted, 248/257 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.02.002**: 96.05% weighted, 250/258 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -280,7 +280,7 @@
 - [x] Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete _(w2)_
 - [x] Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6
 
-# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (80.2%)
+# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (82.4%)
 
 ## Pr · Shared core (100%)
 - [x] Shared modules moved to packages/core (bridge, watchdog, visual, captions, beats, motion, lint report, reframe targets, templates, units, assets) _(w4)_
@@ -304,13 +304,14 @@
 - [x] Edits on any sequence as versions (adopt Premiere XML) _(w5)_
 - [x] tighten (dry-run diff, apply) _(w2)_
 
-## Pr · Dress and finish (91%)
+## Pr · Dress and finish (100%)
 - [x] B-roll over segments/jump cuts, snap to beats _(w2)_
 - [x] Music: ducking on words, backtimed endings, montage on bars/beats _(w3)_
 - [x] Captions from transcripts (caption track) _(w2)_
 - [x] Place .mogrt titles and fill fields (Premiere-authored verified) _(w2)_
 - [x] export_mogrt in ae-compose → place_mogrt round trip _(w3)_
-- [ ] Karaoke captions via an ae-compose mogrt _(w2)_
+- [x] Karaoke captions via an ae-compose mogrt _(w2)_
+- [x] AE-made titles keep their fields through edits _(w2)_
 - [x] Lumetri grades in plans and edits _(w2)_
 - [x] match_shots verified in Premiere (difference 85 → 17) _(w2)_
 - [x] audio_finish: -14 LUFS / -1 dBTP measured _(w2)_

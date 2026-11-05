@@ -56,7 +56,7 @@ const planDescription = `An edit plan (JSON). Shape:
   titles?: [{ mogrt, at?: time | { seg, offset? }, duration?, track?, fields?: { "Name": "Ana Ruiz" } }],
   music?: [{ src, at?, until?, level?: dB under dialogue (-20), open?: dB in gaps (-12), duck?, ending?: "backtime"|"fade"|"cut", fadeIn?, fadeOut? }],
   tighten?: {...} | false, jumpCuts?: "punch-in"|"none", grade?: { alias|"*": { exposure, contrast, temperature, tint, saturation, ... } },
-  markers?: bool, captions?: bool | { maxChars, maxLines } }
+  markers?: bool, captions?: bool | { maxChars, maxLines, mogrt?: ae-compose caption template (karaoke, one per caption) } }
 Times: seconds, "3.5s", "250ms", "12f", "1:02.5" or timecode. Tightening is on by default (fillers, repeats, pauses > 0.6 s).`;
 
 server.registerTool('build_cut', {
