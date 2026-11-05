@@ -6,7 +6,7 @@ import { AecError, newCtx, warn } from './ctx';
 import type { IrAsset } from './project';
 import { ensureFolder, findTaggedComp, importAsset } from './project';
 import type { IrLayer } from './layers';
-import { applyAnchorBox, applyFootage, createLayer, fitScale, lockIfNeeded, setLayerAttrs, tagOf, TAG, wireLayer } from './layers';
+import { applyAnchorBox, applyFootage, createLayer, fitScale, lockIfNeeded, setLayerAttrs, tagOf, TAG, vectorToShapes, wireLayer } from './layers';
 import type { Pending } from './groups';
 import { applyProps, buildGroups, flushExpressions } from './groups';
 import { setTextDocument } from './text';
@@ -217,6 +217,7 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     setLayerAttrs(ctx, layer, L);
     if (L.text) { setTextDocument(ctx, layer as TextLayer, L.text); applyAnchorBox(layer, L); measureLeaf(ctx, layer, L, sizes); }
     if (L.type === 'footage' || L.type === 'model') applyFootage(ctx, layer, comp, L);
+    if ((L as any).toShapes) ctx.layers[L.id] = vectorToShapes(ctx, comp, layer, L);
   });
   each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
   // Re-assigning the renderer refreshes 3D property visibility: right after threeDLayer = true AE reports
@@ -238,7 +239,7 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
   each(c.layers, (L) => { if (L.anchorBox) anchors[L.id] = L.anchorBox; });
   const slots = c.layouts && c.layouts.length ? solveComp(ctx, c.layouts, sizes, anchors) : {};
   // Pass 4: values and keyframes.
-  each(c.layers, (L) => { ctx.cur = L.id; (ctx as any).layoutBase = slots[L.id] || null; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); fitScale(ctx, ctx.layers[L.id], comp, L); });
+  each(c.layers, (L) => { ctx.cur = L.id; (ctx as any).layoutBase = slots[L.id] || null; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); if (!(L as any).toShapes) fitScale(ctx, ctx.layers[L.id], comp, L); });
   (ctx as any).layoutBase = null;
   // Pass 5: expressions (all targets exist now).
   // Comp markers before expressions: expressions may read them (thisComp.marker.key("reveal")).

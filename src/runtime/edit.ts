@@ -3,12 +3,12 @@
 import type { Ctx } from './ctx';
 import { AecError, fail, newCtx, warn } from './ctx';
 import type { GroupSpec, Pending, PropSpec } from './groups';
-import { applyProps, buildGroups, flushExpressions } from './groups';
+import { applyPresetToProperty, applyProps, buildGroups, flushExpressions } from './groups';
 import type { IrKey } from './keys';
 import { applyKeys, captureKeys } from './keys';
-import { mustResolve, resolve, setStatic } from './props';
+import { indexPath, mustResolve, resolve, setStatic } from './props';
 import type { IrLayer } from './layers';
-import { applyAnchorBox, applyFootage, createLayer, setLayerAttrs, tagOf, wireLayer } from './layers';
+import { applyAnchorBox, applyFootage, createLayer, setLayerAttrs, tagOf, wireLayer, vectorToShapes } from './layers';
 import { findItem, importFile, itemCandidates } from './tools';
 import { makeTextDocument, setTextDocument } from './text';
 import { findComp } from './inspect';
@@ -190,6 +190,23 @@ function runOp(ctx: Ctx, comp: CompItem, op: EditOp, pending: Pending, changes: 
       changes.push({ layer: L!.name, moved: op.path, to: op.to });
       break;
     }
+    case 'applyGradient': {
+      // Gradient stops on an existing Gradient Fill/Stroke (hand-built or ours): a generated .ffx preset applied to
+      // the selected property. Never reads the Colors property (crashes AE 26.5, D15). The stops are noted in the
+      // group name, the only place they can be read back from by script.
+      const L = findLayer(ctx, comp, op.layer);
+      const g = mustResolve(ctx, L, op.path) as PropertyGroup;
+      if (g.matchName !== 'ADBE Vector Graphic - G-Fill' && g.matchName !== 'ADBE Vector Graphic - G-Stroke') fail(ctx, '"' + op.path + '" is a ' + g.matchName + ', not a Gradient Fill or Gradient Stroke');
+      const base = String(g.name).replace(/\s*\[[^\]]*\]\s*$/, '');
+      const ip = indexPath(g);
+      applyPresetToProperty(ctx, L, ip, op.ffx);
+      // Re-resolve by index: references go stale after a preset.
+      let g2: any = L;
+      for (let k = 0; k < ip.length; k++) g2 = g2.property(ip[k]);
+      if (op.tag) g2.name = base + ' [' + op.tag + ']';
+      changes.push({ layer: L.name, gradient: g2.name });
+      break;
+    }
     case 'setProps': {
       const owner = op.owner ? mustResolve(ctx, L!, op.owner) : L!;
       applyProps(ctx, L!, owner, op.props as PropSpec[], pending);
@@ -315,7 +332,10 @@ function runOp(ctx: Ctx, comp: CompItem, op: EditOp, pending: Pending, changes: 
       else if (op.above !== undefined) nl.moveBefore(findLayer(ctx, comp, op.above));
       else if (op.index) nl.moveBefore(comp.layer(Math.min(op.index, comp.numLayers)));
       applyFootage(ctx, nl, comp, { fit: op.fit || 'none', muted: op.muted, loop: op.loop } as any);
-      changes.push({ placed: it.name, itemId: it.id, layer: nl.name, index: nl.index, in: nl.inPoint, out: nl.outPoint });
+      let placed: Layer = nl;
+      // Vector art (.ai/.eps/.pdf) as editable shapes: Create Shapes from Vector Layer, source removed.
+      if (op.shapes) placed = vectorToShapes(ctx, comp, nl, { id: 'placed', name: nl.name, vectorWidth: op.width } as any);
+      changes.push({ placed: it.name, itemId: it.id, layer: placed.name, index: placed.index, in: placed.inPoint, out: placed.outPoint, shapes: op.shapes ? true : undefined });
       break;
     }
     case 'ripple':

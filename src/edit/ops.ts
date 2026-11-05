@@ -7,6 +7,9 @@ import { parseColor, parseTime } from '../shared/units.ts';
 import { parseSvgPath } from '../shared/svgpath.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
 import { curveKnots, knotsToKeys } from '../compile/keys.ts';
+import { cameraProps, geometryProps, lightProps, materialProps } from '../compile/threed.ts';
+import { ControlRegistry } from '../compile/controls.ts';
+import { gradientFfx } from '../compile/gradients.ts';
 import { callRuntime } from '../bridge/index.ts';
 import { sampleScreenColor } from '../visual/keycolor.ts';
 import type { ScreenSample } from '../visual/keycolor.ts';
@@ -101,6 +104,8 @@ export const AgentOp = z.discriminatedUnion('op', [
     in: TimeV.optional(), out: TimeV.optional(),
     fit: z.enum(['cover', 'contain', 'fill', 'none', 'width', 'height']).optional().describe('default none (native size, centered)'),
     muted: z.boolean().optional(), loop: z.boolean().optional(),
+    shapes: z.boolean().optional().describe('vector art (.ai, .eps, .pdf): convert to an editable shape layer (Create Shapes from Vector Layer)'),
+    width: z.number().optional().describe('with shapes: scale the artwork to this width in px'),
   }).describe('Add project media (footage, still, comp) or a file to the comp as a layer'),
   z.object({
     op: z.literal('key'),
@@ -111,12 +116,42 @@ export const AgentOp = z.discriminatedUnion('op', [
     cleanup: z.boolean().optional().describe('add Key Cleaner for hair / soft edges (default false: it softens solid foregrounds)'),
     spill: z.boolean().optional().describe('add Advanced Spill Suppressor (default true)'),
   }).describe('Chroma key a greenscreen/bluescreen layer: Keylight + Advanced Spill Suppressor (+ Key Cleaner with cleanup: true), all built into AE'),
+  z.object({ op: z.literal('camera'), layer: Layer.optional().describe('default: the top camera layer'), set: z.record(z.string(), z.any()).describe('lens (mm), zoom, dof, focusDistance, focusOn (layer), aperture, fStop, blurLevel. Each a value or { keys: [{ t, v, easing }] }') }).describe('Camera options with the DSL names'),
+  z.object({ op: z.literal('light'), layer: Layer, set: z.record(z.string(), z.any()).describe('intensity, color, coneAngle, coneFeather, falloff (none|smooth|inverseSquare), radius, falloffDistance, castsShadows, shadowDarkness, shadowDiffusion. Each a value or { keys: [...] }') }).describe('Light options with the DSL names'),
+  z.object({ op: z.literal('material'), layer: Layer, set: z.record(z.string(), z.any()).describe('Material Options with the DSL names: castsShadows, acceptsShadows, acceptsLights, ambient, diffuse, specular, shininess, metal, reflection, lightTransmission…') }).describe('3D material options'),
+  z.object({ op: z.literal('geometry'), layer: Layer, set: z.record(z.string(), z.any()).describe('text/shape: extrusion, bevel { style, depth, direction }, holeBevelDepth; footage/solid: curvature, segments') }).describe('3D geometry options (Advanced 3D)'),
+  z.object({ op: z.literal('particles'), layer: Layer, effect: z.string().optional().describe('which particle effect (default: the first one on the layer)'), set: z.record(z.string(), z.any()).describe('params by display name or camelCase ("Birth Rate" or birthRate, velocity, gravity, "Longevity (sec)", "Birth Color"…)') }).describe('Particle parameters. When an ae-compose preset drives a parameter from a live control, the control is set instead'),
+  z.object({
+    op: z.literal('gradient'), layer: Layer,
+    prop: z.string().describe('the Gradient Fill / Gradient Stroke, e.g. "Contents/Card/Contents/Gradient Fill 1"'),
+    stops: z.array(z.object({ offset: z.number().min(0).max(1), color: z.any(), opacity: z.number().min(0).max(1).optional(), midpoint: z.number().min(0).max(1).optional() })).min(2),
+    type: z.enum(['linear', 'radial']).optional(), start: z.tuple([z.number(), z.number()]).optional(), end: z.tuple([z.number(), z.number()]).optional(),
+  }).describe('Set the color stops (and type / start / end) of an existing gradient fill or stroke, also on hand-built layers'),
   z.object({ op: z.literal('raw'), runtime: z.any().describe('a runtime op passed through as-is') }),
 ]);
 export type AgentOp = z.infer<typeof AgentOp>;
 export interface EditInput { comp?: string | number; ops: AgentOp[]; /** Comp frame rate if known (skips a lookup). */ fps?: number }
 
 const RENDER = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' }; // D36
+
+/** Particle systems an `particles` op looks for, by matchName. */
+const PARTICLE_MN = ['CC Particle World', 'CC Particle Systems II', 'ADBE Playgrnd', 'CC Star Burst', 'CC Rainfall', 'CC Snowfall', 'CC Pixel Polly', 'ADBE Shatter', 'ADBE Card Dance', 'CC Ball Action', 'CC Drizzle', 'CC Bubbles', 'CC Hair', 'CC Mr. Mercury'];
+
+/** Edit values for the DSL prop mappers: a value, or { keys: [{ t, v, easing, hold }] } (→ DSL keys()). */
+function dslValue(v: any): any {
+  if (v && typeof v === 'object' && !Array.isArray(v) && Array.isArray(v.keys)) return { $anim: 'keys', keys: v.keys.map((k: any) => ({ ...k, v: conv(k.v) })) };
+  if (v && typeof v === 'object' && !Array.isArray(v)) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, dslValue(x)]));
+  return conv(v);
+}
+const dslSet = (set: Record<string, any>) => Object.fromEntries(Object.entries(set).map(([k, v]) => [k, dslValue(v)]));
+
+/** IR property specs (from the compiler's 3D mappers) → runtime setProperty ops. */
+const specsToOps = (layer: any, specs: any[]) => specs.map((s) => ({ op: 'setProperty', layer, path: s.p, value: s.keys ? undefined : s.v, keys: s.keys, expr: s.expr }));
+
+/** "birthRate" / "Birth Rate" / "birth_rate" → a key for matching effect parameter names. */
+const paramKey = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_\s]+/g, ' ').trim().toLowerCase();
+/** A control reference written by the compiler: `thisComp.layer("Controls").effect("Name")(1)`, maybe in clamp(). */
+const CONTROL_REF = /(thisComp|comp\("((?:[^"\\]|\\.)*)"\))\.layer\("((?:[^"\\]|\\.)*)"\)\.effect\("((?:[^"\\]|\\.)*)"\)\(1\)/;
 
 function conv(v: any): any {
   if (typeof v === 'string' && /^(#|rgb|hsl)/i.test(v)) return parseColor(v);
@@ -164,6 +199,15 @@ export async function compileEditOps(input: EditInput, notes?: string[]): Promis
     }
     return fps!;
   };
+  // Comp size/fps and a layer's type and full property tree, read on demand.
+  let compInfo: any = null;
+  const getComp = async () => (compInfo ??= (await callRuntime('inspect', [{ comp: input.comp }, { detail: 'outline', layers: ['__aec_no_layer__'] }], { timeoutMs: 60_000 })).comp);
+  const layerFull = async (layer: any) => {
+    const j = await callRuntime('inspect', [{ comp: input.comp }, { detail: 'full', layers: [layer] }], { timeoutMs: 120_000 });
+    if (!j.ok || !j.layers?.length) throw new Error(`layer ${layer} not found`);
+    return j.layers[0];
+  };
+  const vctxFor = async () => { const c = await getComp(); return { fps: c?.fps ?? 30, t0: 0, controls: new ControlRegistry(), seed: 1 } as any; };
   const parsed = input.ops.map((o) => AgentOp.parse(o));
   for (let idx = 0; idx < parsed.length; idx++) {
     const op = parsed[idx];
@@ -294,7 +338,7 @@ export async function compileEditOps(input: EditInput, notes?: string[]): Promis
         // Times stay as given: the runtime parses them with the comp's own fps.
         const t = (v: any) => v;
         if (op.item === undefined && !op.file) throw new Error('place needs item or file');
-        out.push({ op: 'placeItem', item: op.item, file: op.file, name: op.name, below: op.below, above: op.above, index: op.index, start: t(op.start), in: t(op.in), out: t(op.out), fit: op.fit, muted: op.muted, loop: op.loop });
+        out.push({ op: 'placeItem', item: op.item, file: op.file, name: op.name, below: op.below, above: op.above, index: op.index, start: t(op.start), in: t(op.in), out: t(op.out), fit: op.fit, muted: op.muted, loop: op.loop, shapes: op.shapes, width: op.width });
         break;
       }
       case 'key': {
@@ -322,6 +366,70 @@ export async function compileEditOps(input: EditInput, notes?: string[]): Promis
         // (verified in AE 26.5); it helps on hair and motion-blurred edges with a small radius.
         if (op.cleanup === true) out.push({ op: 'addEffect', layer: op.layer, effect: { mn: 'ADBE KeyCleaner', props: [{ p: 'ADBE KeyCleaner-0006', v: 3 }] } });
         if (op.spill !== false) out.push({ op: 'addEffect', layer: op.layer, effect: { mn: 'ADBE Spill2', props: [{ p: 'ADBE Spill2-0003', v: [...color, 1] }] } });
+        break;
+      }
+      case 'camera': {
+        const c = await getComp();
+        let layer = op.layer;
+        if (layer === undefined) {
+          const j = await callRuntime('inspect', [{ comp: input.comp }, { detail: 'outline' }], { timeoutMs: 120_000 });
+          const cam = (j.layers ?? []).find((L: any) => L.type === 'camera' && L.enabled !== false);
+          if (!cam) throw new Error('no camera layer in this comp');
+          layer = cam.id ?? cam.name;
+        }
+        out.push(...specsToOps(layer, cameraProps(dslSet(op.set), await vctxFor(), c.w, c.h).props.filter((s) => !/ADBE Camera Zoom$/.test(s.p) || op.set.lens !== undefined || op.set.zoom !== undefined)));
+        break;
+      }
+      case 'light': {
+        const c = await getComp();
+        out.push(...specsToOps(op.layer, lightProps(dslSet(op.set), await vctxFor(), c.w, c.h)));
+        break;
+      }
+      case 'material': {
+        const L = await layerFull(op.layer);
+        out.push(...specsToOps(op.layer, materialProps(dslSet(op.set), await vctxFor(), L.type === 'model')));
+        break;
+      }
+      case 'geometry': {
+        const L = await layerFull(op.layer);
+        out.push(...specsToOps(op.layer, geometryProps(dslSet(op.set), await vctxFor(), L.type)));
+        break;
+      }
+      case 'particles': {
+        const L = await layerFull(op.layer);
+        const parade = (L.props ?? []).find((n: any) => n.m === 'ADBE Effect Parade');
+        const fxs: any[] = parade?.c ?? [];
+        const want = op.effect?.toLowerCase();
+        const fx = want ? fxs.find((f) => f.n?.toLowerCase() === want || f.m?.toLowerCase() === want) : fxs.find((f) => PARTICLE_MN.includes(f.m));
+        if (!fx) throw new Error(op.effect ? `effect "${op.effect}" not found on layer ${op.layer}` : `no particle effect on layer ${op.layer} (effects: ${fxs.map((f) => f.n).join(', ') || 'none'})`);
+        const direct: Record<string, any> = {};
+        for (const [k, v] of Object.entries(op.set)) {
+          const node = (fx.c ?? []).find((p: any) => paramKey(p.n ?? '') === paramKey(k));
+          if (!node) throw new Error(`"${fx.n}" has no parameter "${k}" (params: ${(fx.c ?? []).map((p: any) => p.n).filter(Boolean).join(', ')})`);
+          const ref = node.expr ? CONTROL_REF.exec(node.expr) : null;
+          if (ref && ref[1] === 'thisComp') {
+            // An ae-compose preset drives this param from a live control: set the control, keep the rig.
+            out.push({ op: 'setProps', layer: ref[3], owner: `ADBE Effect Parade/${ref[4]}`, props: [{ p: '#1', v: conv(v) }] });
+            notes?.push(`${fx.n} › ${node.n} is driven by the "${ref[4]}" control: set that control instead`);
+          } else if (ref) throw new Error(`"${node.n}" is driven by a control in comp "${ref[2]}"; edit that comp's Controls layer`);
+          else direct[node.n] = v;
+        }
+        if (Object.keys(direct).length) out.push({ op: 'setProps', layer: op.layer, owner: `ADBE Effect Parade/${fx.n}`, props: paramProps(direct) });
+        break;
+      }
+      case 'gradient': {
+        const gpath = propPath(op.prop);
+        const warns: string[] = [];
+        const ffx = gradientFfx(op.stops as any, warns);
+        notes?.push(...warns);
+        const hex = (c: any) => '#' + parseColor(c).slice(0, 3).map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
+        const tag = [...op.stops].sort((a, b) => a.offset - b.offset).map((s) => `${hex(s.color)}@${+s.offset.toFixed(3)}`).join(' ');
+        out.push({ op: 'applyGradient', layer: op.layer, path: gpath, ffx, tag });
+        // The group was renamed with the stop tag; later props address it by its new name.
+        const named = gpath.replace(/[^/]+$/, (base) => `${base.replace(/\s*\[[^\]]*\]\s*$/, '')} [${tag}]`);
+        if (op.type) out.push({ op: 'setProperty', layer: op.layer, path: `${named}/ADBE Vector Grad Type`, value: op.type === 'radial' ? 2 : 1 });
+        if (op.start) out.push({ op: 'setProperty', layer: op.layer, path: `${named}/ADBE Vector Grad Start Pt`, value: op.start });
+        if (op.end) out.push({ op: 'setProperty', layer: op.layer, path: `${named}/ADBE Vector Grad End Pt`, value: op.end });
         break;
       }
       case 'raw':

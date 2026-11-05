@@ -243,7 +243,7 @@ export function inspectProject(): any {
       try { if (it.hasAudio) o.audio = true; if (!it.hasVideo) o.audioOnly = true; } catch (e) {}
     }
     try { if (it.usedIn) o.usedIn = it.usedIn.length; } catch (e) {}
-    items.push(o);
+    items.push(raw(o)); // serialized right away: a big live object graph makes ExtendScript's GC crawl (json.ts)
   }
   const active: any = app.project.activeItem;
   return { ok: true, file: app.project.file ? app.project.file.fsName : null, bpc: app.project.bitsPerChannel, numItems: app.project.numItems, active: active ? active.name : null, items: items };

@@ -6,6 +6,7 @@ import type { TextProps } from '../dsl/primitives.ts';
 import { resolveEasing } from '../shared/easing.ts';
 import { parseColor, parseTime, rgb } from '../shared/units.ts';
 import type { ValueCtx } from './values.ts';
+import { curveKnots, knotsToKeys } from './keys.ts';
 
 export function textDoc(p: TextProps, text: string): any {
   const color = isControl(p.color) ? (p.color as any).default : (p.color as any);
@@ -79,8 +80,67 @@ export function unitAmountExpr(a: TextUnitsAnim, ctx: ValueCtx, layerStartOffset
   return lines.join('\n');
 }
 
+/** How many units AE counts for "Based On" (Characters include spaces). */
+export function unitCount(text: string, by: TextUnitsAnim['by']): number {
+  if (by === 'char') return text.replace(/\r\n|\r|\n/g, '').length;
+  if (by === 'charNoSpaces') return text.replace(/\s/g, '').length;
+  if (by === 'word') return text.split(/\s+/).filter(Boolean).length;
+  return text.split(/\r\n|\r|\n/).length;
+}
+
+/**
+ * Range Selector selector props: a Ramp window of width W % swept by keyed Offset. Ramp Up selects everything past
+ * its End edge fully, so Offset −W → 100 % reveals from the start of the text; Ramp Down is the mirror (verified in
+ * AE with a scale-to-0 animator). W is chosen so one unit's transition lasts `duration` while the sweep staggers
+ * units by `each`: W = 100·dur / ((n − 1)·each).
+ */
+function rangeSelector(a: TextUnitsAnim, ctx: ValueCtx, text: string, layer: { in: number; out: number }): any {
+  const fixed = (v: any, name: string, def: number) => {
+    if (v === undefined) return def;
+    if (isControl(v)) throw new Error(`text animator with selector: 'range' needs a fixed ${name}, not a live control (use the default expression selector for live timing)`);
+    return parseTime(v, ctx.fps);
+  };
+  if (a.spring) throw new Error("text animator with selector: 'range' takes an easing, not a spring (springs need the expression selector)");
+  const order = a.order ?? 'start';
+  if (order === 'center' || order === 'edges') throw new Error(`text animator with selector: 'range' supports order "start", "end" or "random", not "${order}"`);
+  const n = Math.max(1, unitCount(text, a.by));
+  const each = fixed(a.each, 'each', DEFAULT_EACH[a.by]), dur = Math.max(fixed(a.duration, 'duration', 0.5), 1 / ctx.fps), delay = fixed(a.delay, 'delay', 0);
+  const t0 = a.anchor === 'end' ? layer.out - delay : layer.in + delay;
+  const reveal = a.direction !== 'out';
+  const curve = resolveEasing(a.easing ?? 'linear');
+  const keyed = (from: number, to: number, T: number) => knotsToKeys(curveKnots(curve, T, ctx.fps, 0.002), [from], [to], t0, 'oneD').map((k) => ({ ...k, v: Array.isArray(k.v) ? k.v[0] : k.v }));
+  const base = [
+    { p: 'ADBE Text Range Advanced/ADBE Text Range Units', v: 1 },
+    { p: 'ADBE Text Range Advanced/ADBE Text Range Type2', v: BASED_ON[a.by] },
+  ];
+  // All units together (no stagger): select everything and key the selector's Amount (exact easing).
+  if (n === 1 || each <= 0) {
+    return { mn: 'ADBE Text Selector', props: [...base, { p: 'ADBE Text Range Advanced/ADBE Text Range Shape', v: 1 }, { p: 'ADBE Text Range Advanced/ADBE Text Selector Max Amount', keys: reveal ? keyed(100, 0, dur) : keyed(0, 100, dur) }] };
+  }
+  // AE limits Start/End/Offset to ±100 %, so the window is at most 100 %: a looser stagger is stretched.
+  const Wexact = (100 * dur) / ((n - 1) * each);
+  const W = Math.min(100, Math.max(1, Wexact));
+  const T = W < Wexact ? (dur * (100 + W)) / W : (n - 1) * each + dur;
+  if (W < Wexact) ctx.warnings?.push(`text animator with selector: 'range': ${n} units × ${each}s stagger with a ${dur}s duration needs a window wider than AE's 100 %; the stagger is stretched (sweep ${T.toFixed(2)}s)`);
+  // Which ramp, and which way the window travels: forward = Offset −W → 100.
+  const fromStart = order !== 'end';
+  const rampUp = reveal === fromStart;
+  const [o0, o1] = fromStart ? [-W, 100] : [100, -W];
+  return {
+    mn: 'ADBE Text Selector',
+    props: [
+      ...base,
+      { p: 'ADBE Text Range Advanced/ADBE Text Range Shape', v: rampUp ? 2 : 3 },
+      ...(order === 'random' ? [{ p: 'ADBE Text Range Advanced/ADBE Text Randomize Order', v: 1 }, { p: 'ADBE Text Range Advanced/ADBE Text Random Seed', v: a.seed ?? ctx.seed }] : []),
+      { p: 'ADBE Text Percent Start', v: 0 },
+      { p: 'ADBE Text Percent End', v: W },
+      { p: 'ADBE Text Percent Offset', keys: keyed(o0, o1, T) },
+    ],
+  };
+}
+
 /** GroupSpec for a text animator (plus the layer-level More Options it needs). */
-export function unitAnimator(a: TextUnitsAnim, ctx: ValueCtx, layerStartOffset: number, threeD: boolean): { group: any; moreOptions: any[] } {
+export function unitAnimator(a: TextUnitsAnim, ctx: ValueCtx, layerStartOffset: number, threeD: boolean, text = '', layer: { in: number; out: number } = { in: 0, out: 0 }): { group: any; moreOptions: any[] } {
   const items: any[] = [];
   const f = a.from;
   if (f.x !== undefined || f.y !== undefined || f.z !== undefined) items.push({ mn: 'ADBE Text Position 3D', set: { v: [f.x ?? 0, f.y ?? 0, f.z ?? 0] } });
@@ -100,7 +160,7 @@ export function unitAnimator(a: TextUnitsAnim, ctx: ValueCtx, layerStartOffset: 
     name: a.name ?? `${a.direction === 'out' ? 'Exit' : 'Reveal'} (${a.by}s)`,
     kids: [
       { at: 'ADBE Text Animator Properties', items },
-      { at: 'ADBE Text Selectors', items: [{ mn: 'ADBE Text Expressible Selector', props: [{ p: 'ADBE Text Range Type2', v: BASED_ON[a.by] }, { p: 'ADBE Text Expressible Amount', expr: unitAmountExpr(a, ctx, layerStartOffset) }] }] },
+      { at: 'ADBE Text Selectors', items: [a.selector === 'range' ? rangeSelector(a, ctx, text, layer) : { mn: 'ADBE Text Expressible Selector', props: [{ p: 'ADBE Text Range Type2', v: BASED_ON[a.by] }, { p: 'ADBE Text Expressible Amount', expr: unitAmountExpr(a, ctx, layerStartOffset) }] }] },
     ],
   };
   const moreOptions: any[] = [];

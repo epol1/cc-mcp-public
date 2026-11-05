@@ -46,6 +46,24 @@ export default scene({ name: 'Hello', width: 1920, height: 1080, fps: 30, durati
 ));
 ```
 
+### Brand tokens: `brand()`
+
+One place for a brand's colors, fonts and type sizes, shared by scenes. Colors listed in `live` become live controls named "<Name> Color" wherever they're used, so the whole piece re-colors from one slider in AE.
+
+```tsx
+// brand.ts
+export const BRAND = brand({
+  colors: { ink: '#0b0d12', white: '#eef1f6', accent: '#4683c4' },
+  fonts: { display: 'Inter-Black', body: 'Inter-Medium' },
+  sizes: { hero: 190, body: 44 },
+  live: ['accent'],                       // → "Accent Color" control
+});
+// scene.tsx
+<Text font={BRAND.fonts.display} size={BRAND.sizes.hero} color={BRAND.colors.accent}>LAUNCH</Text>
+```
+
+`BRAND.value('ink')` gives a plain hex for places that need a fixed color (gradient stops). The showcases share `examples/brand.ts`.
+
 ### `SceneConfig`
 
 | Prop | Type | Default | Meaning |
@@ -291,7 +309,7 @@ Inside a precomp, layer ids still need to be scene-unique, and `parent`, `matte`
 
 ### `<Svg>`
 
-An SVG file becomes one Shape layer with a group per `<path>`/`<rect>`/`<circle>`/`<ellipse>`/`<polygon>`/`<polyline>`. Fills and strokes come from attributes, inline styles or `<style>` classes. It's centred on the layer and scaled, and every path stays pen-editable. All Shape/LayerProps apply.
+An SVG file becomes one Shape layer with a group per drawn element: `<path>`, `<rect>` (with `rx`/`ry`), `<circle>`, `<ellipse>`, `<line>`, `<polygon>`, `<polyline>`, and `<use>` of any of them. The SVG is walked as a tree: `<g>` and element `transform`s are baked into the points, and paint is inherited the SVG way (`fill`, `stroke`, `stroke-width`, `opacity`, `fill-opacity`, `stroke-opacity`, `fill-rule`, linecap/linejoin; default fill black), from attributes, `<style>` classes or inline styles. The SVG's own strokes are kept (widths scaled with the drawing). Linear and radial gradients become native Gradient Fills. `<defs>`, `<clipPath>`, `<mask>` and `<symbol>` contents aren't drawn (a `<use>` of a symbol is). It's centred on the layer and scaled, and every path stays pen-editable. All Shape/LayerProps apply.
 
 | Prop | Type | Default | Meaning |
 |---|---|---|---|
@@ -310,6 +328,8 @@ An SVG file becomes one Shape layer with a group per `<path>`/`<rect>`/`<circle>
   fillOpacity={tween({ from: 0, to: 100, duration: '0.5s', delay: 1.2 })}
   effects={[<Effect name="Glow" params={{ 'Glow Radius': 30, 'Glow Threshold': 40 }} />]} />
 ```
+
+**Illustrator / EPS / PDF art**: `<Vector src="logo.ai" width={800} />` imports the file and runs Layer > Create Shapes from Vector Layer during the build, then removes the source layer: the result is an editable shape layer with every path (animate Trim, color, morph by edits). All LayerProps apply. Very detailed artwork makes `inspect_comp` with `detail: "full"` slow (every vertex is listed). In edits: `place` with `shapes: true` (and `width`).
 
 Effects can also be children: `<Svg src="brand/logo.svg"><Effect name="Glow" /></Svg>`. Group names come from the SVG element ids/classes (`<id> 1`, `<id> 2`…, or `Path n`), so edits can target `Contents/<id> 1/...`.
 
@@ -542,6 +562,25 @@ One prop takes one animation. To fade in *and* out, use `seq(fade.in(), fade.out
 ```
 
 The exit above starts 0.8 s before the layer ends, wherever that end ends up.
+
+**Range Selector mode** (`selector: 'range'`): instead of the Expression Selector, a native Range Selector whose Offset is keyframed, the way designers build reveals by hand: the sweep is ordinary keys in the graph editor, easy to retime by dragging. A Ramp window (Ramp Up for reveals from the start, Ramp Down for exits or `order: 'end'`) of width W = 100·duration / ((n−1)·each) % sweeps Offset from −W to 100 %, so each unit takes `duration` and units are `each` apart. With no stagger (`each: 0`) the selector's Amount is keyed instead. Limits: fixed times (no live controls), an easing rather than a spring, orders `start` / `end` / `random`; AE caps the window at 100 %, so a very loose stagger is stretched (a build warning says by how much).
+
+```tsx
+<Text animate={{ text: perWord({ from: { y: 60, opacity: 0 }, easing: 'easeOutCubic', each: '300ms', duration: '0.5s', selector: 'range' }) }}>
+  NATIVE RANGE KEYS
+</Text>
+```
+
+**Per-character 3D** turns on by itself when a unit animator uses `rotationX`, `rotationY` or `z` (AE ignores them otherwise), or set `perCharacter3D`.
+
+**Text on a path**: `path` (an SVG `d` or pen points, in comp pixels unless the layer is positioned) becomes a mask (mode None) that Path Options follow; `pathOptions` sets `firstMargin` / `lastMargin` (animatable: tween `firstMargin` to run the text along the curve), `reverse`, `perpendicular` and `forceAlign`.
+
+```tsx
+<Text font="Inter-Bold" size={64} align="left" path="M260 980 C 700 700, 1220 700, 1660 980"
+  pathOptions={{ firstMargin: tween({ from: -560, to: 260, duration: '2.4s', easing: 'easeOutCubic' }) }}>
+  TEXT ON A PATH
+</Text>
+```
 
 Unit animators and layer animations combine: `animate={{ text: perChar(...), scale: tween(...) }}`.
 
@@ -923,6 +962,23 @@ A two-node camera parented to a 3D null that turns around Y; all speeds and angl
 {OrbitCamera({ target: [960, 520, 0], radius: 1600, height: 250, speed: control('Orbit Speed', 12), startAngle: -25, lens: 50, dof: true, focusOn: 'hero', aperture: 50 })}
 ```
 
+**Camera moves**: `CameraMove({ target, move: [x, y, z], aim, duration, delay, easing, shake, distance, ...CameraProps })` builds a target null, a "move" null and the camera parented to it at AE's 1:1 framing distance for the lens (read live from its zoom, or `distance`). `aim: 'follow'` moves the aim with the camera (truck, pedestal, push-in); `'fixed'` keeps looking at the target (crane, arc). With `duration` the move is keys on the move null (graph-editable); without it an eased expression spans the layer, so it follows Sequence length and ripple edits. `shake: { amount, freq, seed }` adds a handheld wiggle (amount/freq may be controls). Presets:
+
+| Helper | Move | Aim |
+|---|---|---|
+| `PushIn({ travel = 400 })` | toward the target | follow |
+| `PullOut({ travel = 400 })` | away from the target | follow |
+| `Truck({ travel = 500 })` | sideways (+ right) | follow |
+| `Pedestal({ travel = 300 })` | up | follow |
+| `Crane({ travel = 400 })` | up, view tilts down onto the subject | fixed |
+
+```tsx
+<Crane name="Camera" lens={35} target={[640, 360, 0]} travel={350} duration="3s" delay={0.4} shake={{ amount: 4, freq: 1 }} />
+<ThreePointLights target={[640, 360, 0]} intensity={control('Key Intensity', 110)} />
+```
+
+**`ThreePointLights({ target, intensity, color, distance, castsShadows })`**: key spot high front-left (casts shadows), soft fill front-right (45 %), rim behind and above (70 %), all aimed at `target`. `intensity` may be a control.
+
 ### 13.4 `<Light>`
 
 | Prop | Type | Default | Meaning |
@@ -1086,6 +1142,8 @@ The live params become controls named `"<name> <param>"`, e.g. `Sparks Birth Rat
 ```
 
 A `texture` element must be a layer (`<Shape>`, `<Text>`, `<Footage>`…). It's wrapped in a hidden precomp of `textureSize`. To use a layer that's already in the comp, pass its id instead.
+
+**Multi-color confetti**: `<Confetti colors={['#ffd23f', '#ee4266', '#3bceac']} burst={{ at: { marker: 'pop' }, rate: 30 }} />`. CC Particle World has one color ramp per system, so this stacks one confetti system per color (same position, emitter and burst, own seed, birth rate split evenly). One set of live controls drives them all: "<name> Amount" (total birth rate, continuous emission only), "<name> Velocity", "<name> Gravity". Default colors: yellow, pink, teal, blue, white.
 
 ### 14.3 Other systems
 
@@ -1275,7 +1333,25 @@ This is how to fix "the text in the scene at 1:02 isn't on screen long enough": 
 - **`place`** adds project media (footage, still or comp, found by item id, exact name or a unique name/file substring) or a file (imported first) as a layer. Position it with `below`/`above`/`index`. Timing is `start` (comp time where the clip starts), `in`, `out`. `fit` defaults to `none` (native size, centred); `muted` and `loop` are also available. Find media with `list_project_items` (filter by `kind: "video" | "still" | "audio" | "comp" | "solid"`) and look at it with `preview_item` before placing.
 - **`key`** chroma-keys a greenscreen/bluescreen layer with built-in effects: Keylight, plus Advanced Spill Suppressor (`spill`, default on), plus Key Cleaner only with `cleanup: true` (for hair and motion-blurred edges; on solid foregrounds it softens the matte into a speckled, semi-transparent one, so it is off by default). Each batch is atomic: if any op fails, the whole batch is rolled back. `color: "auto"` (default) samples the screen color from the layer's own source frame (at `at`, default mid-layer) and reports it in the result's `notes`. Otherwise use `"green"`, `"blue"` or a hex color. `strength`: `soft` / `normal` / `hard` presets for clip black/white and choke.
 
-### 16.8 `addLayer` (IR layer spec) and `raw`
+### 16.8 3D, particles and gradients
+
+```json
+{ "ops": [
+  { "op": "camera", "set": { "lens": 85, "focusDistance": 900, "aperture": { "keys": [{ "t": 0, "v": 10 }, { "t": 2, "v": 60, "easing": "easeInOutSine" }] } } },
+  { "op": "light", "layer": "Key Light", "set": { "intensity": 140, "color": "#ffe8cc", "coneAngle": 50 } },
+  { "op": "material", "layer": "card", "set": { "specular": 80, "shininess": 60, "castsShadows": false } },
+  { "op": "geometry", "layer": "word", "set": { "extrusion": 60, "bevel": { "style": "convex", "depth": 4 } } },
+  { "op": "particles", "layer": "sparks", "set": { "birthRate": 5, "Longevity (sec)": 1.6 } },
+  { "op": "gradient", "layer": "card", "prop": "Contents/Gradient Fill 1", "stops": [{ "offset": 0, "color": "#ffff00" }, { "offset": 1, "color": "#00ff00" }], "type": "radial" }
+] }
+```
+
+- **`camera`** (default: the top camera layer), **`light`**, **`material`**, **`geometry`**: the same names as the DSL props (§13). A value, or `{ "keys": [{ t, v, easing }] }`.
+- **`particles`** finds the layer's particle effect (CC Particle World, Particle Systems II, Playground, Star Burst, Rainfall, Snowfall, …; or name it with `effect`). Params by display name or camelCase. When an ae-compose preset drives a param from a live control, the control is set instead (the result's `notes` says which), so the rig keeps working.
+- **`gradient`** sets the stops (2–8, more are resampled), and optionally type/start/end, of an existing Gradient Fill or Gradient Stroke, hand-built ones included. Stops go in through a generated .ffx preset (the Colors property is never read: that crashes AE 26.5), and the group name records them (`Gradient Fill 1 [#ffff00@0 #00ff00@1]`), the only place a script can read them back.
+- **`place`** with `"shapes": true` (and `"width"`) converts vector art (.ai, .eps, .pdf) into an editable shape layer.
+
+### 16.9 `addLayer` (IR layer spec) and `raw`
 
 `addLayer` takes a layer in IR form, the JSON the compiler emits (see the `IR:` file path in any build report). Colors are `[r, g, b(, a)]` in 0–1, times are seconds, and `props[].p` paths are relative to the layer. `groups` adds contents/effects under an indexed group. It's best for small additions. For anything bigger, add it to the TSX and rebuild.
 
@@ -1309,6 +1385,7 @@ Every `build_scene` and `apply_edits` result carries a **lint report** for the c
 | `off-frame` | warn | A readable text is cut off by the frame edge. Entrances and exits from off-screen don't count. |
 | `safe-area` | warn | A readable text is outside action-safe (5 % inset per side; `safe: 'title'` for 10 %, or a fraction). |
 | `overlap` | warn | Two visible texts overlap (≥ 15 % of the smaller one) for 0.3 s or more. |
+| `occlusion` | warn / note | A readable 2D text is ≥ 40 % covered for 0.3 s or more by a normal-blend layer stacked above it: a warning for solids and opaque footage, a note ("may be hidden") for footage with alpha and shape layers, whose bounding boxes overstate their pixels. Precomps, adjustment layers, 3D layers and solids with effects are not judged. |
 | `overflow` | warn | Box text that doesn't fit its box (AE hides the last lines). |
 | `missing-font` | warn | AE substituted a font that isn't installed. |
 | `blank-frame` | warn | A rendered frame mid-comp is almost empty (background only). The first and last frame are ignored (fades from and to black are normal). |
@@ -1316,7 +1393,7 @@ Every `build_scene` and `apply_edits` result carries a **lint report** for the c
 
 How it measures: inside the build's (or edit's) own undo group, one temporary text layer samples every visible text layer every 0.1 s in comp coordinates with `sourceRectAtTime` + `toComp`. That is exact for parenting, 3D layers, cameras and nested precomps; 3D text behind the camera counts as off screen. Per-unit animators are read too: ae-compose reveals and exits use the current values of their live controls (stagger, delay, spring physics), and hand-built Range Selectors are read from their Start/End/Offset keys. Blank frames are judged from the contact sheet frames. A build or edit is still one undo step.
 
-Lint only sees text against text and empty frames: it can't tell when footage or a shape covers a word, or whether a composition reads well. That's what the contact sheet is for.
+Lint judges text against text, layers stacked above text (by their bounds) and empty frames. It can't judge pixels inside precomps, 3D occlusion, or whether a composition reads well. That's what the contact sheet is for.
 
 Tune or skip it:
 
@@ -1350,6 +1427,7 @@ scene({ name: 'Promo', duration: '6s', lint: { safe: 'title', readingRate: 4, ig
 | `list_dialogs` | Modal dialogs blocking AE, each with an image capture (AE draws its own controls, so read the image). |
 | `answer_dialog` | Press a dialog button by label, or Cancel/Close, or Enter for the default. |
 | `undo` | Undo the last ae-compose change(s) with AE's own Edit > Undo (`steps`, default 1). An edit batch or a single build is one step; a build with variants is one step per variant plus one for the compare comp (the report says `undo steps`). Read-only probes in between are skipped; manual changes made in AE since then are undone first. |
+| `recover_ae` | Get AE working again: answers known dialogs (Crash Repair → Continue) and reports others with captures, launches AE when it isn't running and waits for the bridge, reports a hung AE. `force: true` kills a hung AE and relaunches it (unsaved work is lost): only with the user's go-ahead. |
 | `doctor` | Check AE, the CEP bridge, the runtime and tools, with a fix for each failure. |
 | `run_extendscript` | Raw ES3 escape hatch (logged). Never touch shape-gradient properties with it. Wrap mutations in an undo group. |
 
@@ -1370,6 +1448,7 @@ aec render [comp] [--format mp4|mov|mov-alpha|prores|prores4444|png|tiff|avi] [-
 aec effects [query] [--describe <name>] [--refresh]
 aec import <file> [--folder name]
 aec dialogs [--answer <hwnd> <button>]
+aec recover [--force]
 aec eval "<extendscript>"
 ```
 
@@ -1399,7 +1478,7 @@ Most commands accept `--json` for machine-readable output. Review outputs (IR, f
 
 - **Vanilla AE only.** Third-party effects aren't in the catalog and are never applied (D2, D19).
 - **8/16 bpc only.** 32 bpc projects get a passive capture fix and no other support (D29).
-- **Gradients:** 2–8 stops (more are resampled). Hand-built gradients show as "stops not readable by script". Gradient stops can't be animated.
+- **Gradients:** 2–8 stops (more are resampled). Stops can be set on any gradient (`gradient` edit op) and are read back for gradients ae-compose built or edited (from the group name); a hand-built gradient's existing stops can't be read by script (reading them crashes AE 26.5). Gradient stops can't be animated.
 - **Renderer quality, shadow and environment settings aren't scriptable**; only the renderer choice is.
 - **Advanced 3D:** no motion blur, no effects/masks/mattes/blend modes on 3D text/shape/model layers, no point-light shadows. Snapshots are slow (~3.5 s per frame with HDRI and DOF, ~100 s first-render warm-up) (D37, D40).
 - **`fStop` follows AE's px definition** and produces extreme blur at real-world values, so use `aperture` (D39).
@@ -1409,7 +1488,9 @@ Most commands accept `--json` for machine-readable output. Review outputs (IR, f
 - **Sticky controls** keep values you changed in AE; untouched controls take new code defaults on rebuild (`resetControls` / `--reset-controls` drops the tweaks too) (§11.5).
 - **Rebuilds replace in place**, and `version` only renames.
 - **Seeds:** particle components default to a hash of their `id`. Pass `seed={p.seed}` to make the scene/variant `seed` param drive them. The same seed rebuilds pixel-identical frames (tests/integration/renderer-seeds.ts).
-- **No automatic lint yet** (text overflow, safe areas, reading time, blank frames). Review the contact sheets yourself.
-- **Not available yet:** choosing a glTF animation clip on `<Model>`, camera move helpers beyond `OrbitCamera` (animate `x`/`z`/`position` keys, see showcase 11), and text wrapping from layout `maxWidth` (use `box`).
+- **Lint** judges bounds, not pixels: occlusion by footage with alpha or shapes is only a note, and precomps and 3D occlusion aren't judged (§17).
+- **A scripted render (and a full cache purge) clears AE's undo history**: `undo` then only reaches the steps made since, and says so.
+- **Not available:** choosing a glTF animation clip on `<Model>` (AE 26.5 exposes no scripting for it; re-verified), and text wrapping from layout `maxWidth` (use `box`).
+- **Range Selector mode** (`selector: 'range'`) takes fixed times, an easing (not a spring) and orders start/end/random; AE caps the window at 100 %.
 - **Edit ops:** frame strings (`"12f"`) use the comp's own fps. `ease` can't name a spring (use a bezier preset, `bounce` or `elastic`). `x`/`y`/`z` only exist on separated positions.
 - **Typing:** `Parallax` reads each child's `depth` prop (any number), which isn't in the layer prop types.

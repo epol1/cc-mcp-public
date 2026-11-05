@@ -115,7 +115,8 @@ Each animatable prop accepts a static value, a **track descriptor** or a functio
 - Per-range styling uses `runs={[{ start, end, fill, font, size }]}` (→ `characterRange`).
 - `animate` on `<Text>` can target **units**: `perChar`, `perWord`, `perLine`. These compile to **native text animators**:
   - **Expression Selector mode** (default for eased/spring staggers): animator properties hold the "from" offsets (Position, Scale, Rotation, Opacity, Blur, Fill, Tracking…). The selector's Amount expression evaluates the exact easing or spring per unit at `time − inPoint − delay − textIndex·each`, with `each`, `duration`, `delay` and overshoot linked to controls. This gives the same per-unit curves as Remotion and is fully live-tweakable.
-  - *(planned, not built)* **Range Selector mode**: classic Start/End/Offset keys for designers who prefer native keys. Today every per-unit animator uses the Expression Selector.
+  - **Range Selector mode** (`selector: 'range'`): a Ramp window swept by keyed Offset (or keyed Amount when there's no stagger), for designers who prefer native keys (D69). Fixed times only.
+  - **Text on a path** (`path`, `pathOptions`) and per-character 3D (automatic for rotationX/Y and z unit animators).
 - Presets (`textPresets`): `riseIn`, `fadeUp`, `blurIn`, `popIn`, `trackingIn`, `typewriter`, `flipIn` (per-character 3D), `slideMask`, `scramble` (Character Offset). Exits use `direction: 'out'`, optionally `anchor: 'end'` (D51).
 
 ### 2.7 Controls
@@ -217,7 +218,7 @@ How controls drive animation without rebuilding:
   - shape contents and pen paths; masks; mattes;
   - 3D: renderer, material, geometry, camera/light options, environment source;
   - model layers, markers, controls and EG properties.
-- It skips `CUSTOM_VALUE` and fenced matchNames (D15): shape gradient colors are reported as opaque. Gradients are written through generated `.ffx` presets (`src/compile/gradients.ts`). *(planned, not built)* reading stops back from a temporary `.aepx` copy.
+- It skips `CUSTOM_VALUE` and fenced matchNames (D15): shape gradient colors are reported as opaque. Gradients are written through generated `.ffx` presets (`src/compile/gradients.ts`, and the `gradient` edit op for any existing gradient), which record their stops in the group name for read-back. *(not built)* reading a hand-built gradient's stops: AE has no save-a-copy, and `serializeToXML` needs an enum AE doesn't publish, so it would need the saved .aep (verified 2026-11-04).
 - Properties with expressions are read pre-expression (`valueAtTime(t, true)`) unless `evalExpressions` is asked for, so a full inspect of a heavy project takes seconds, not minutes (D55).
 - The Node side turns the JSON into:
   - (a) lossless IR, for round-trip tests and "edit then rebuild",
@@ -241,7 +242,7 @@ How controls drive animation without rebuilding:
 
 Targets are ids, names or paths. Ambiguous targets fail with candidates listed. Every op result reports what changed (before → after), so the agent can confirm.
 
-*As built:* the agent-facing op names are `set`, `ease`, `easeKey`, `interpolation`, `retime`, `layerTiming`, `addEffect`, `setEffect`, `removeEffect`, `moveEffect`, `text`, `path`, `layer`, `removeLayer`, `duplicateLayer`, `addLayer`, `comp`, `precompose`, `duplicateComp`, `addControls`, `ripple`, `place`, `key` and `raw` (`src/edit/ops.ts`; reference in `docs/DSL.md` §16). Planned but not built: `reshapeCurve` presets, `addTextAnimator`, `setGradient`, typed `setParticle` and `set3D` (use `set` on AE paths and `addEffect` meanwhile).
+*As built:* the agent-facing op names are `set`, `ease`, `easeKey`, `interpolation`, `retime`, `layerTiming`, `addEffect`, `setEffect`, `removeEffect`, `moveEffect`, `text`, `path`, `layer`, `removeLayer`, `duplicateLayer`, `addLayer`, `comp`, `precompose`, `duplicateComp`, `addControls`, `ripple`, `place`, `key` and `raw` (`src/edit/ops.ts`; reference in `docs/DSL.md` §16). Built since: typed `camera`, `light`, `material`, `geometry`, `particles` and `gradient` ops (D68), and `place` with `shapes` for vector art (D66). Planned but not built: `reshapeCurve` presets and `addTextAnimator`.
 
 ### 6.1 Atomic batches
 Every batch is all or nothing (D53): a net-zero sentinel change makes the undo group non-empty, and a failure part-way undoes it, so the project is exactly as before (`rolledBack: true`). One `undo` call undoes the last batch or build. Read-only tools that need temporary comps record counted no-op groups, which `undo` skips.
@@ -278,7 +279,7 @@ The TSX-side equivalent is `<Series>` plus exits with `anchor: 'end'` (D51).
   - auto-answer known safe dialogs (Crash Repair → Continue),
   - report the rest to the agent with the image, or say that AE is busy or not running.
 - **Probe dialogs**: read-only probes (effect description, catalog harvest) run with `cancelDialogs`, which presses Cancel on any titled dialog that opens while they run (D54).
-- *(planned, not built)* **Automatic recovery** (save a copy, relaunch, Crash Repair, wait for the bridge). Today a hung or crashed AE is reported, and the user restarts it.
+- **Recovery** (`recover_ae`, `aec recover`, D67): answers known dialogs and reports others with captures; launches AE when it isn't running and waits for the bridge (answering Crash Repair on the way); reports a hung AE and only kills and relaunches it with `force` (unsaved work is lost, so only after the user agrees). The launch and force paths are unit-tested with mocks; they have not been exercised on a live crash.
 
 ## 8. 3D system (first-class)
 1. **Renderer control:** `renderer: "advanced3d" | "cinema4d" | "classic3d"` (`ADBE Calder` / `ADBE Ernst` / `ADBE Advanced 3d`, see D36). `src/compile/renderers.ts` holds the **feature table**: extrusion/bevel, environment light, HDRI, reflections, shadows, 3D models, DOF, motion blur, per renderer. Compile fails with a clear message and the suggested renderer when a scene uses an unsupported feature. Renderer quality options are not scriptable in 26.5, so the docs say so.
@@ -288,9 +289,9 @@ The TSX-side equivalent is `<Series>` plus exits with `anchor: 'end'` (D51).
    - `geometry={{ extrude, bevel: { style, depth, direction }, holeBevelDepth }}`.
 3. **Cameras:**
    - one-node or two-node; `lens` (mm) or zoom; DOF (`focusDistance`, `aperture`/`fStop`, `blurLevel`, iris settings);
-   - rigs: `<OrbitCamera>` (parented null + expression, live speed), camera `lookAt` and `focusOn` (expressions). Dolly/truck/crane/push-in moves are keyed `position`/`pointOfInterest` animations (see showcase 11); dedicated helpers are planned;
+   - rigs: `<OrbitCamera>` (parented null + expression, live speed), `CameraMove` and its presets `PushIn`, `PullOut`, `Truck`, `Pedestal`, `Crane` (target null → move null → camera at the 1:1 framing distance; aim fixed or follow; keys with `duration`, else an eased expression over the layer; optional handheld `shake`), camera `lookAt` and `focusOn` (expressions);
    - speeds, angles and focus are exposed as controls.
-4. **Lights:** parallel/spot/point/ambient/environment with intensity, color, falloff, cone, shadows. `environment={{ hdri: "studio.hdr", visible, blur }}`. Rigs: three-point, rim and key/fill.
+4. **Lights:** parallel/spot/point/ambient/environment with intensity, color, falloff, cone, shadows. `environment={{ hdri: "studio.hdr", visible, blur }}`. Rig: `ThreePointLights` (key, fill, rim aimed at a target).
 5. **3D layout:** `ZStack` (depth spacing), `Grid3D`, `Circle3D`/`Arc3D`, `Parallax` (depth from a factor), `Orbit` placement. Unit convention: 1 unit = 1 px at z = 0.
 6. **Models:** `<Model src="dog.gltf" animation="Walk" />` → `ThreeDModelLayer`, with transform, material assignment and animation option.
 

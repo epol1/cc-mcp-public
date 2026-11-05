@@ -105,7 +105,7 @@ export function flushExpressions(ctx: Ctx, pending: Pending, out: { prop: Proper
  * Applies an animation preset to one property: clear the comp selection, select only that property,
  * layer.applyPreset (the AEUX technique for gradient stops). Never reads the gradient Colors property.
  */
-function applyPresetToProperty(ctx: Ctx, layer: Layer, path: number[], file: string): void {
+export function applyPresetToProperty(ctx: Ctx, layer: Layer, path: number[], file: string): void {
   const comp = layer.containingComp;
   const f = new File(file);
   if (!f.exists) fail(ctx, 'preset file missing: ' + file);

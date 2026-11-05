@@ -35,7 +35,7 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 | Check any comp (timing, safe areas, overlaps) | `lint_comp` (builds and edits include it) |
 | Final file the user asked for | `render` (`format`: mp4, mov, prores4444 for alpha, png…). It clears AE's undo history, so render when the work is approved, and say where the file is |
 | Effect params | `list_effects`, `describe_effect` |
-| AE stuck | `list_dialogs` → `answer_dialog`; `doctor` |
+| AE stuck, crashed or closed | `recover_ae` (answers known dialogs, launches AE, waits for the bridge; `force` only after the user agrees: it discards unsaved work); `list_dialogs` → `answer_dialog`; `doctor` |
 
 ## 2. Direct it like a motion designer
 
@@ -340,15 +340,9 @@ Small UI and accent moves take 200–400 ms. Text unit reveals take 400–700 ms
 ## 7. 3D cinematography basics
 
 - **Lens:** 24 mm or wider for drama and scale (perspective exaggeration), 35–50 mm for a natural look, 85 mm or longer for product and portrait compression (flatter, more premium). `lens` converts mm to AE zoom for the comp width.
-- **Moves:** animate the camera with offset tweens:
-  - push-in: `z: tween({ from: -500 })`;
-  - truck: `x`;
-  - pedestal: `y`;
-  - orbit: `OrbitCamera({...})`.
-
-  A two-node camera keeps aiming at its point of interest, so moving `x` arcs around the subject. For a flat truck, use `oneNode` or move the point of interest too. Camera moves should be slow, continuous and `easeInOutSine`, and each shot gets one move.
+- **Moves:** use the rigs (DSL §13.3): `PushIn`, `PullOut`, `Truck`, `Pedestal`, `Crane` (rises while still looking at the subject), `CameraMove` for any `move: [x, y, z]`, and `OrbitCamera`. They frame 1:1 for the lens by default, take `duration`/`delay`/`easing` (keys) or span the layer, and add a handheld feel with `shake: { amount: 4, freq: 1 }`. Camera moves should be slow, continuous and `easeInOutSine`, and each shot gets one move. To let words or products read, stop the camera on them (a stop-and-go dolly, as in showcase 11) instead of flying past.
 - **DOF:** `dof` + `focusOn="<id>"` keeps the subject sharp. **Aperture 20–60 is subtle and 80–200 cinematic**, so don't use real f-stops (AE's `fStop` gives extreme blur). For a rack focus, animate `focusDistance` between the subjects' distances from the camera.
-- **Lighting:**
+- **Lighting:** `ThreePointLights({ target, intensity })` sets up the classic rig below in one line.
   - key: spot, 30–45° off axis and above, with shadows and shadow diffusion 20–40;
   - fill: about 30–50 % of the key, from the other side;
   - rim/back light: behind the subject toward the camera, often tinted, to separate it from the background;
@@ -361,7 +355,7 @@ Small UI and accent moves take 200–400 ms. Text unit reveals take 400–700 ms
 - **Start from a preset** (`dustBokeh`, `sparks`, `confettiBurst`, `energyTrail`, `magicSparkle`, `logoDisintegrate`, `snowfall`) and adjust in ±30–50 % steps. Presets expose Birth Rate/Velocity/Gravity or Size as live controls named `<Name> <Param>`.
 - **Scale and density:** fewer, larger particles read as premium (bokeh, embers), and dense tiny ones read as texture (dust, snow). Keep the hero readable, and particles should never cover the message.
 - **Depth layering:** use 2–3 layers. Far: small, slow, dim. Mid: the main effect. Near: few, large, soft or blurred. Each gets its own `id`, `seed` and `name` (names prefix the controls).
-- **Color and transfer modes:** light-like particles (sparks, glow, bokeh) use `blend: 'ADD'`/`'SCREEN'` and warm-to-cool color shifts. Solid objects (confetti) stay `NORMAL`. Tie particle colors to the palette.
+- **Color and transfer modes:** light-like particles (sparks, glow, bokeh) use `blend: 'ADD'`/`'SCREEN'` and warm-to-cool color shifts. Solid objects (confetti) stay `NORMAL`. Tie particle colors to the palette; for multi-color confetti use `<Confetti colors={[...]} />` (one system per color, shared controls).
 - **Motion links:** `emitter: { follow: '<null id>' }` for trails, `texture` for logo dissolves, and `burst` or markers for hits synced to animation beats. CC Particle World follows the comp camera automatically.
 - **Seeds for variants:** pass `seed={p.seed}` and build variants with different seeds. Rebuilds are deterministic.
 - **Judge over time:** particles start empty and evolve, so use `contact_sheet` with 12–16 frames across the duration plus a `render_preview` GIF. If frame 0 must already be full, pre-roll with `{"op": "layerTiming", "layer": "dust", "start": -2, "out": 6}` and check frame 0 with `snapshot`.
@@ -396,8 +390,9 @@ Ops:
 - `addLayer`/`removeLayer`/`duplicateLayer`;
 - `comp`, `precompose`, `duplicateComp`;
 - `ripple` (insert/remove/stretch time, or add a hold to a named scene, with everything after it shifting);
-- `place` (project media or a file as a layer, `below`/`above` another layer);
+- `place` (project media or a file as a layer, `below`/`above` another layer; `shapes: true` turns .ai/.eps/.pdf art into editable shapes);
 - `key` (chroma key with Keylight and Advanced Spill Suppressor; the screen color is sampled automatically; add `cleanup: true` for Key Cleaner on hair or soft edges only);
+- `camera`, `light`, `material`, `geometry` (DSL names, values or keys), `particles` (by param name; sets a preset's live control when one drives the param), `gradient` (new stops on any gradient fill/stroke);
 - `addControls`, `raw`.
 
 Props are friendly names (`position`, `scale`, `opacity`…) or AE paths (`"Effects/Glow/Glow Radius"`, `"Contents/Group 1/Contents/Fill 1/Color"`). Full vocabulary with examples: DSL.md §16. On hand-built comps, read the `inspect_comp` outline first: it names eases (`easeOutCubic≈`), shows overshoot, and lists changed effect params only.

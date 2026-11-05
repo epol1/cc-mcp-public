@@ -262,3 +262,32 @@ export function lockIfNeeded(layer: Layer, L: IrLayer): void {
 export function warnUnused(ctx: Ctx, L: IrLayer): void {
   if (L.type === 'text' && !L.text) warn(ctx, 'text layer without text');
 }
+
+/**
+ * Layer > Create Shapes from Vector Layer on an imported .ai/.eps/.pdf layer (D66): the command works on the
+ * selected layer of the active comp and inserts "<name> Outlines" above it. The source layer is removed and the
+ * shape layer takes over its name, tag and timing, so every later pass targets the shapes.
+ */
+export function vectorToShapes(ctx: Ctx, comp: CompItem, layer: Layer, L: IrLayer): Layer {
+  try { comp.openInViewer(); } catch (e) { /* headless */ }
+  for (let i = 1; i <= comp.numLayers; i++) comp.layer(i).selected = false;
+  layer.selected = true;
+  const n0 = comp.numLayers, idx = layer.index;
+  app.executeCommand(app.findMenuCommandId('Create Shapes from Vector Layer'));
+  const shape = comp.numLayers === n0 + 1 ? comp.layer(idx) : null;
+  if (!shape || !(shape instanceof ShapeLayer)) fail(ctx, 'Create Shapes from Vector Layer did not convert "' + L.name + '" (is it vector art: .ai, .eps or .pdf?)');
+  const s = shape as ShapeLayer;
+  s.selected = false;
+  s.name = L.name;
+  s.comment = layer.comment;
+  s.startTime = layer.startTime;
+  s.inPoint = layer.inPoint;
+  s.outPoint = layer.outPoint;
+  layer.remove();
+  const w = (L as any).vectorWidth;
+  if (w) {
+    const r = s.sourceRectAtTime(s.inPoint, false);
+    if (r.width > 0) { const k = (w / r.width) * 100; (s.property('ADBE Transform Group').property('ADBE Scale') as Property).setValue([k, k]); }
+  }
+  return s;
+}

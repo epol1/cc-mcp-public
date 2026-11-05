@@ -20,6 +20,8 @@ export interface ValueCtx {
   t0: number;
   controls: ControlRegistry;
   seed: number;
+  /** Build warnings (compile-time notes the agent should see). */
+  warnings?: string[];
 }
 
 export interface PropTarget {

@@ -5,6 +5,7 @@ import type { Anim, TextUnitsAnim, Vec } from './anim.ts';
 import type { ControlRef } from './control.ts';
 import type { EasingSpec } from '../shared/easing.ts';
 import type { ColorSpec, Time } from '../shared/units.ts';
+import { jsx } from './jsx-runtime.ts';
 
 type V<T> = T | Anim | ControlRef;
 type Children = any;
@@ -129,6 +130,13 @@ export interface TextProps extends LayerProps {
   eg?: boolean | string;
   /** Animate each letter in 3D (needed for rotationX/Y text animation). */
   perCharacter3D?: boolean;
+  /**
+   * Text on a path: an SVG path `d` (or pen points) in comp pixels, unless the layer is positioned (then relative
+   * to its position). It becomes a mask (mode None) that Path Options follow.
+   */
+  path?: string | PathPoint[];
+  /** Path Options. `firstMargin` / `lastMargin` (px along the path) are animatable: tween firstMargin to run text along the curve. */
+  pathOptions?: { firstMargin?: V<number>; lastMargin?: V<number>; reverse?: boolean; perpendicular?: boolean; forceAlign?: boolean };
 }
 export const Text = prim<TextProps>('text');
 
@@ -159,6 +167,20 @@ export interface FootageProps extends LayerProps {
   muted?: boolean;
 }
 export const Footage = prim<FootageProps>('footage');
+export interface VectorProps extends Omit<FootageProps, 'fit' | 'speed' | 'trim' | 'loop' | 'muted' | 'crop'> {
+  /** Vector artwork to convert: .ai, .eps or .pdf (imported, then turned into an editable shape layer). */
+  src: string;
+  /** Target width in px of the artwork (keeps aspect); default: its own size. */
+  width?: number;
+}
+/**
+ * Illustrator / EPS / PDF artwork as an editable shape layer: AE imports the file and runs Layer > Create Shapes from
+ * Vector Layer, then the source layer is removed. Every path is a shape path you can animate (Trim, morph, color).
+ * For .svg use <Svg> (converted in Node, with draw-on and fill controls).
+ */
+export function Vector(p: VectorProps) {
+  return jsx(Footage as any, { ...p, fit: 'none', toShapes: true, vectorWidth: p.width });
+}
 
 // ---------- Shape contents ----------
 interface ShapeItemProps { name?: string; children?: Children }

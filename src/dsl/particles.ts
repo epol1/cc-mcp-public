@@ -121,6 +121,41 @@ var m = thisComp.marker.key(${JSON.stringify(at.marker)}).time;
   return jsx(Fragment, { children: out });
 }
 
+/**
+ * Multi-colour confetti. CC Particle World has one colour ramp per system, so this stacks one confetti system per
+ * colour (same position, emitter and burst; its own seed; birth rate split evenly). One set of live controls drives
+ * them all: "<name> Amount" (total birth rate, not with `burst`), "<name> Velocity", "<name> Gravity".
+ */
+export function Confetti(p: ParticleProps & { colors?: string[]; rate?: number; width?: number; height?: number }) {
+  const id = p.id ?? autoId('confetti');
+  const name = p.name ?? 'Confetti';
+  const colors = p.colors?.length ? p.colors : ['#ffd23f', '#ee4266', '#3bceac', '#4683c4', '#f5f5f5'];
+  const n = colors.length;
+  const live = p.controls !== false;
+  const base = particlePresets.confettiBurst.live;
+  const total = p.rate ?? base['Birth Rate'];
+  // A burst sets its own birth-rate keys, so an Amount control would do nothing there.
+  const amount = live && !p.burst ? control(`${name} Amount`, total, { min: 0, max: total * 4 }) : total;
+  const velocity = live ? control(`${name} Velocity`, base.Velocity) : base.Velocity;
+  const gravity = live ? control(`${name} Gravity`, base.Gravity) : base.Gravity;
+  const seed0 = p.seed ?? seedFrom(id);
+  const { colors: _c, rate: _r, ...rest } = p;
+  return jsx(Fragment, { children: colors.map((color, i) => ParticleWorld({
+    ...rest,
+    id: `${id}.${i + 1}`,
+    name: `${name} ${i + 1}`,
+    preset: 'confettiBurst',
+    controls: false,
+    seed: seed0 + i * 101,
+    burst: p.burst ? { ...p.burst, rate: (p.burst.rate ?? total) / n } : undefined,
+    params: {
+      'Birth Color': color, 'Death Color': color, Velocity: velocity, Gravity: gravity,
+      'Birth Rate': typeof amount === 'number' ? amount / n : expr(`__AEC_CONTROL(${name} Amount)__ / ${n}`, [amount as ControlRef]),
+      ...(p.params ?? {}),
+    },
+  })) });
+}
+
 /** a + b without knowing the fps: numbers add; anything else becomes a sum string parseTime understands ("12f+6f"). */
 function addTime(a: Time, b: Time): Time {
   if (typeof a === 'number' && typeof b === 'number') return a + b;

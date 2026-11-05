@@ -125,3 +125,15 @@ describe('lint: blank frames', () => {
     expect(issues[0].message).toMatch(/from 2\.0s to 3\.0s/);
   });
 });
+
+describe('lint: occlusion', () => {
+  const occ = (name: string, idx: number, kind: string, shape: Shape) => ({ name, idx, kind, s: TIMES.map((t) => { const v = shape(t); return v ? quad(...v) : null; }) });
+  it('warns when an opaque layer above covers readable text, notes when it is only a bounding box', () => {
+    const t = { ...text('Title', 1, still(0, 3, CENTER)), idx: 5 };
+    const d = { ...data([t]), occluders: [occ('Card', 2, 'solid', still(1, 2, [600, 400, 1300, 700])), occ('Logo', 3, 'shape', still(0.5, 1, [800, 450, 1100, 650])), occ('Below', 7, 'solid', still(0, 3, [0, 0, 1920, 1080]))] };
+    const issues = lintRules(d).filter((i) => i.rule === 'occlusion');
+    expect(issues).toHaveLength(2);
+    expect(issues[0]).toMatchObject({ severity: 'warn', layers: ['Title', 'Card'], t: [1, 1.9] });
+    expect(issues[1]).toMatchObject({ severity: 'info', layers: ['Title', 'Logo'] });
+  });
+});

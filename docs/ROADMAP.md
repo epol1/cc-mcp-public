@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.015**: 94.21% weighted, 158/170 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.016**: 99.61% weighted, 169/170 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -14,14 +14,14 @@
 - [x] Status dashboard + release flow
 - [x] README status image (SVG/PNG)
 
-## Bridge & Execution (93%)
+## Bridge & Execution (100%)
 - [x] CEP extension (hot reload) _(w2)_
 - [x] Eval wrapping, structured errors
 - [x] Backend interface (TS client)
 - [x] CEP HTTP backend
 - [x] AfterFX.com fallback backend
 - [x] Dialog watchdog _(w2)_
-- [~] Crash recovery + relaunch _(w2)_
+- [x] Recovery: dialogs, relaunch, hung AE (force with user approval) _(w2)_
 - [x] Large results (eager serialization; 500 KB verified)
 - [x] aec doctor
 - [x] Non-blocking watchdog (no UIA on busy AE)
@@ -45,7 +45,7 @@
 - [x] Stable ids + source locations
 - [x] Units/time/color normalization
 
-## TSX DSL (92%)
+## TSX DSL (100%)
 - [x] JSX runtime (jsxDEV sources)
 - [x] Scene loader (esbuild)
 - [x] Composition/Sequence/Series _(w2)_
@@ -54,7 +54,7 @@
 - [x] Text primitive
 - [x] Shape primitives _(w2)_
 - [x] Effect/Mask/TrackMatte
-- [ ] Brand tokens/theme helpers
+- [x] Brand tokens (brand(), live colors, examples/brand.ts)
 - [x] Exits anchored to layer end (ripple-friendly)
 
 ## Animation & Easing (100%)
@@ -69,21 +69,21 @@
 - [x] Color ease calibration (255 units)
 - [x] Motion blur: comp/layer/forced (CC Force MB, Pixel MB) _(w2)_
 
-## Text Animation (64%)
+## Text Animation (100%)
 - [x] Full TextDocument + style runs _(w2)_
-- [ ] Range-selector animators _(w2)_
+- [x] Range-selector animators (keyed Offset / Amount) _(w2)_
 - [x] Expression-selector per char/word/line _(w3)_
 - [x] Text presets (riseIn, typewriter…) _(w2)_
-- [ ] 3D per-character
-- [ ] Text on path
+- [x] 3D per-character (automatic for rotationX/Y/z)
+- [x] Text on path (mask + Path Options, animatable margins)
 
-## Shapes & Paths (85%)
+## Shapes & Paths (100%)
 - [x] Rect/Ellipse/Star/Group
 - [x] Pen paths + SVG d _(w2)_
 - [x] Fill/Stroke/dashes/taper
 - [x] Trim/Repeater/Merge/Offset/… _(w2)_
 - [x] Gradients via .ffx _(w3)_
-- [ ] SVG/AI → shape layers _(w2)_
+- [x] SVG tree import + <Vector> for .ai/.eps/.pdf _(w2)_
 - [x] Masks + track mattes
 - [x] SVG path parser (M/L/C/S/Q/T/A/Z)
 
@@ -112,19 +112,19 @@
 - [x] Safe areas + aspect presets
 - [x] Solver in runtime + DSL containers _(w3)_
 
-## 3D System (85%)
+## 3D System (100%)
 - [x] 3D layers + transforms
 - [x] Renderer control + feature table _(w2)_
 - [x] Cameras + DOF _(w2)_
-- [~] Camera rigs (orbit/dolly/lookAt…) _(w3)_
+- [x] Camera rigs (orbit, push-in/out, truck, pedestal, crane, shake) + three-point lights _(w3)_
 - [x] Lights + HDRI environment _(w2)_
 - [x] Material options
 - [x] Extrusion + bevel
-- [~] 3D models + animations _(w2)_
+- [x] 3D models (import, transforms, materials; clip selection not scriptable in AE 26.5) _(w2)_
 - [x] 3D layout helpers _(w2)_
 - [x] Correct renderer IDs from AE strings
 
-## Particles (94%)
+## Particles (100%)
 - [x] Catalog coverage (9 systems)
 - [x] Typed components _(w2)_
 - [x] Layer-ref source precomps _(w2)_
@@ -134,27 +134,27 @@
 - [x] Presets (7) _(w3)_
 - [x] Seeds + determinism
 - [x] Producer unit + camera calibration
-- [ ] Multi-color confetti (layered)
+- [x] Multi-color confetti (one system per color, shared controls)
 
-## Inspector (87%)
+## Inspector (93%)
 - [x] Project/comp/layer walk _(w2)_
 - [x] Keys, eases, tangents _(w2)_
 - [x] Effect trees
 - [x] Text, shapes, masks _(w2)_
 - [x] 3D + particles
-- [ ] .aepx gradient parse _(w2)_
+- [~] Gradient read-back (built/edited: done; hand-built: needs a saved .aep to verify) _(w2)_
 - [x] Compact agent outline _(w2)_
 - [x] Project media search + preview_item
 - [x] Scenes (named Sequences → comp marker ranges)
 - [x] Fast full inspect (pre-expression reads)
 
-## Edit Operations (97%)
+## Edit Operations (100%)
 - [x] Property/keys/easing ops _(w2)_
 - [x] Curve reshaping _(w2)_
 - [x] Effect add/remove/reorder/params
 - [x] Retime + replace footage
 - [x] Text/shape/path edits _(w2)_
-- [~] 3D + particle edits
+- [x] Typed 3D, particle and gradient edit ops
 - [x] addControls/variant/precompose _(w2)_
 - [x] One-step undo verified
 - [x] Ripple edits (insert/remove/stretch time, scenes, quiet-point holds) _(w3)_
@@ -162,7 +162,7 @@
 - [x] Chroma key op (Keylight + Spill, auto screen color) _(w2)_
 - [x] Atomic edit batches (rollback on failure)
 
-## Visual Feedback (92%)
+## Visual Feedback (100%)
 - [x] Snapshot (+32bpc fix)
 - [x] Contact sheets
 - [x] aerender preview MP4/GIF _(w2)_
@@ -170,7 +170,7 @@
 - [x] Auto-attach to results
 - [x] Lint reads per-unit animator timing (live controls, range selectors)
 - [x] Final render tool (MP4, ProRes, PNG/TIFF; honest undo after render) _(w2)_
-- [ ] Lint: occlusion of text by footage/shapes
+- [x] Lint: occlusion by layers above text (bounds)
 - [x] Undo knows when AE cleared its history (render, purge)
 
 ## Interfaces (100%)

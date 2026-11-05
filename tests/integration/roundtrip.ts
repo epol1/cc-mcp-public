@@ -11,6 +11,8 @@ import { inspect } from '../../src/api/index.ts';
 
 const DEFAULT_SCENES = [
   'tests/integration/matrix-scene.tsx',
+  'tests/integration/text-features.tsx',
+  'tests/integration/rigs-scene.tsx',
   'examples/01-kinetic-type/scene.tsx',
   'examples/05-data-chart/scene.tsx',
   'examples/10-3d-product-hero/scene.tsx',

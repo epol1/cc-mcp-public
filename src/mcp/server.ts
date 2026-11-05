@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
 import { lintSummary } from '../api/lint.ts';
 import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
+import { recover } from '../api/recover.ts';
 import { LINT_RULES } from '../lint/index.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
@@ -267,6 +268,17 @@ server.registerTool('undo', {
   description: 'Undo the last ae-compose change(s) with After Effects\' own Edit > Undo. Each apply_edits batch and each single build is one step; a build with variants is one step per variant comp plus one for the compare comp (the build report says "undo steps"). Read-only probes in between are skipped. Changes made by hand in AE after the last ae-compose call are undone first, so check the result with inspect_comp when the user has been working in AE. AE clears its undo history when it renders or purges its caches; undo then only reaches the steps made since, and says so.',
   inputSchema: { steps: z.number().int().min(1).max(50).optional().describe('how many ae-compose changes to undo (default 1)') },
 }, async (a) => wrap(async () => [text(JSON.stringify(await undo(a.steps ?? 1)))]));
+
+server.registerTool('recover_ae', {
+  title: 'Recover After Effects',
+  description: 'Get After Effects working again when calls time out or fail: answers known dialogs (Crash Repair → Continue) and reports others with captures, launches AE when it is not running and waits for the bridge, and reports a hung AE. Pass force: true ONLY after the user agreed: it kills the hung After Effects and relaunches it, losing unsaved work.',
+  inputSchema: { force: z.boolean().optional().describe('kill a hung After Effects and relaunch it (unsaved work is lost): only with the user\'s go-ahead'), timeoutSec: z.number().int().min(10).max(900).optional() },
+}, async (a) => wrap(async () => {
+  const r = await recover({ force: a.force, timeoutSec: a.timeoutSec });
+  const out: Content[] = [text(`${r.ok ? 'OK' : 'NOT READY'} (${r.state}) in ${(r.ms / 1000).toFixed(1)} s\n${r.steps.map((s) => `- ${s}`).join('\n')}`)];
+  for (const d of r.dialogs ?? []) if (d.capture) out.push(await image(d.capture, 800));
+  return out;
+}));
 
 server.registerTool('doctor', {
   title: 'Check environment',

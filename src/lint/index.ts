@@ -6,8 +6,8 @@
 import { cssBezier } from '../shared/bezier.ts';
 import { springUnit } from '../shared/spring.ts';
 
-export type LintRule = 'off-frame' | 'safe-area' | 'overflow' | 'overlap' | 'reading-time' | 'missing-font' | 'linear-motion' | 'blank-frame';
-export const LINT_RULES: LintRule[] = ['off-frame', 'safe-area', 'overflow', 'overlap', 'reading-time', 'missing-font', 'linear-motion', 'blank-frame'];
+export type LintRule = 'off-frame' | 'safe-area' | 'overflow' | 'overlap' | 'occlusion' | 'reading-time' | 'missing-font' | 'linear-motion' | 'blank-frame';
+export const LINT_RULES: LintRule[] = ['off-frame', 'safe-area', 'overflow', 'overlap', 'occlusion', 'reading-time', 'missing-font', 'linear-motion', 'blank-frame'];
 
 export interface LintOptions {
   /** Safe-area margin per side: 'action' (5 %, default), 'title' (10 %), or a fraction of the frame. */
@@ -34,6 +34,8 @@ export interface LintText {
   path: string; name: string; id?: string | null; text?: string; words?: number; font?: string; size?: number;
   substitute?: boolean; box?: boolean; overflow?: boolean; in: number; out: number; threeD?: boolean; err?: string;
   s: (number[] | null)[];
+  /** Index in the top comp (top-level 2D texts only; occlusion compares stacking order). */
+  idx?: number;
   /** The layer's own in/out point in top-comp time (anchors for per-unit animator timing). */
   lin?: number; lout?: number;
   units?: { char: number; charNoSpaces: number; word: number; line: number; firstWord: number };
@@ -50,6 +52,8 @@ export interface LintData {
   ok: boolean; comp: string; itemId?: number; w: number; h: number; fps: number; dur: number; step: number;
   times: number[]; texts: LintText[]; linear: { layer: string; prop: string; segments: number; t: [number, number] }[];
   truncated?: boolean; ms?: number;
+  /** 2D layers stacked above the top-level texts, sampled like texts. kind: solid | footage (opaque) | footage-alpha | shape | precomp. */
+  occluders?: { name: string; idx: number; kind: string; s: (number[] | null)[] }[];
 }
 
 interface Box { x0: number; y0: number; x1: number; y1: number }
@@ -220,6 +224,32 @@ export function lintRules(d: LintData, opts: LintOptions = {}): LintIssue[] {
     if (run && dur(d, run) >= 0.3 - 1e-6) {
       const pct = Math.round(100 * Math.max(...frac.slice(run[0], run[1] + 1)));
       add({ rule: 'overlap', severity: 'warn', layers: [d.texts[a].path, d.texts[b].path], t: spanOf(d, run), message: `${q(d.texts[a].path)} and ${q(d.texts[b].path)} overlap (${pct} % of the smaller one) ${range(spanOf(d, run))}` });
+    }
+  }
+
+  // Text covered by a layer stacked above it, while the text should be readable.
+  for (let k = 0; k < d.texts.length; k++) {
+    const T = d.texts[k];
+    if (T.idx === undefined) continue;
+    for (const O of d.occluders ?? []) {
+      if (O.idx >= T.idx) continue;
+      const cov: number[] = [];
+      const hit = (i: number) => {
+        const t = A[k].S[i], v = O.s[i];
+        if (!A[k].readable[i] || !t || !v || v[0] < 50) return false;
+        const ob = boxOf(v);
+        if (!ob) return false;
+        cov[i] = area({ x0: Math.max(t.b.x0, ob.x0), y0: Math.max(t.b.y0, ob.y0), x1: Math.min(t.b.x1, ob.x1), y1: Math.min(t.b.y1, ob.y1) }) / t.area;
+        return cov[i] >= 0.4;
+      };
+      const run = longestRun(d.times.length, hit);
+      if (!run || dur(d, run) < 0.3 - 1e-6) continue;
+      const pct = Math.round(100 * Math.max(...cov.slice(run[0], run[1] + 1).filter((x) => x !== undefined)));
+      const sure = O.kind === 'solid' || O.kind === 'footage';
+      add({ rule: 'occlusion', severity: sure ? 'warn' : 'info', layers: [T.path, O.name], t: spanOf(d, run),
+        message: sure
+          ? `${q(T.path)} is covered by ${q(O.name)} above it (${pct} % of the text) ${range(spanOf(d, run))}`
+          : `${q(T.path)} may be hidden behind ${q(O.name)} (${O.kind === 'shape' ? 'a shape layer' : O.kind === 'precomp' ? 'a precomp' : 'footage with alpha'} above it whose bounds cover ${pct} % of the text) ${range(spanOf(d, run))}; check the contact sheet` });
     }
   }
 

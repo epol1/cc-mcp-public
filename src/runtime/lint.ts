@@ -7,9 +7,10 @@ import { findComp } from './inspect';
 import { tagOf } from './layers';
 import { errText } from './util';
 
-export interface LintSampleOpts { step?: number; maxSamples?: number; maxTexts?: number }
+export interface LintSampleOpts { step?: number; maxSamples?: number; maxTexts?: number; maxOccluders?: number }
 
 interface Target { L: TextLayer; chain: AVLayer[]; path: string; in0: number; out0: number; shift: number }
+interface Occluder { L: AVLayer; kind: string; chain: AVLayer[]; path: string; in0: number; out0: number; shift: number }
 
 const MAX_DEPTH = 3;
 
@@ -32,7 +33,7 @@ function collect(c: CompItem, chain: AVLayer[], prefix: string, out: Target[], m
 }
 
 /** Expression code: one entry per target, "-" when inactive, "!" on error, else "op,x1,y1,...,x4,y4". */
-function probeExpression(targets: Target[]): string {
+function probeExpression(targets: (Target | Occluder)[]): string {
   const s: string[] = [
     'function n(v){return Math.round(v*10)/10;}',
     'function on(L,t){return t>=L.inPoint&&t<L.outPoint;}',
@@ -206,6 +207,32 @@ function textInfo(T: Target, mid: number): any {
   return o;
 }
 
+/**
+ * 2D layers stacked above the comp's top-level 2D texts that could cover them: normal blend mode, not adjustment,
+ * guide or 3D. Solids with effects (particles, generators) and precomps are skipped: their pixels aren't their
+ * bounds. Kinds: solid and footage (opaque) are reliable; footage with alpha and shapes only by their bounding box.
+ */
+function occluders(c: CompItem, texts: Target[], max: number): Occluder[] {
+  let top = 0;
+  for (let k = 0; k < texts.length; k++) if (!texts[k].chain.length && !(texts[k].L as any).threeDLayer) top = Math.max(top, texts[k].L.index);
+  const out: Occluder[] = [];
+  for (let i = 1; i < top && out.length < max; i++) {
+    const L: any = c.layer(i);
+    if (!(L instanceof AVLayer) || L instanceof TextLayer) continue;
+    if (!L.enabled || L.guideLayer || L.adjustmentLayer || L.threeDLayer || L.blendingMode !== BlendingMode.NORMAL) continue;
+    const fx: any = L.property('ADBE Effect Parade');
+    const hasFx = !!fx && fx.numProperties > 0;
+    let kind = '';
+    if (L instanceof ShapeLayer) kind = 'shape';
+    else if (L.source instanceof CompItem) continue; // a precomp's bounds say nothing about its pixels (transitions, overlays)
+    else if (L.source && L.source.mainSource instanceof SolidSource) { if (hasFx) continue; kind = 'solid'; }
+    else if (L.source && L.source.mainSource) kind = L.source.mainSource.hasAlpha || hasFx ? 'footage-alpha' : 'footage';
+    else continue;
+    out[out.length] = { L: L, kind: kind, chain: [], path: L.name, in0: L.inPoint, out0: L.outPoint, shift: 0 };
+  }
+  return out;
+}
+
 /** Position/scale keys whose moving segments are all linear (motion that feels mechanical), top-level layers. */
 function linearMoves(c: CompItem): any[] {
   const out: any[] = [];
@@ -219,13 +246,18 @@ function linearMoves(c: CompItem): any[] {
       let p: any = null;
       try { p = tr.property(names[k]); } catch (e) {}
       if (!p || !p.numKeys || p.numKeys < 2 || (p.expressionEnabled && p.expression)) continue;
+      // Separated dimensions: the combined Position is hidden (its keys are stale); otherwise X/Y/Z Position are.
+      try { const sep = tr.property('ADBE Position').dimensionsSeparated; if ((names[k] === 'ADBE Position') === !!sep) continue; } catch (e) {}
       let moving = 0, linear = 0;
       for (let j = 1; j < p.numKeys; j++) {
         if (String(p.keyValue(j)) === String(p.keyValue(j + 1))) continue;
         moving++;
         if (p.keyOutInterpolationType(j) === KeyframeInterpolationType.LINEAR && p.keyInInterpolationType(j + 1) === KeyframeInterpolationType.LINEAR) linear++;
       }
-      if (moving > 0 && linear === moving) out[out.length] = { layer: L.name, id: tagOf(L), prop: p.name, segments: moving, t: [p.keyTime(1), p.keyTime(p.numKeys)] };
+      // Dense linear keys are a baked curve (sampled motion), linear on purpose.
+      const span = p.keyTime(p.numKeys) - p.keyTime(1);
+      const baked = moving >= 4 && span / (p.numKeys - 1) <= 0.15;
+      if (moving > 0 && linear === moving && !baked) out[out.length] = { layer: L.name, id: tagOf(L), prop: p.name, segments: moving, t: [p.keyTime(1), p.keyTime(p.numKeys)] };
     }
   }
   return out;
@@ -251,7 +283,16 @@ export function lintSample(ref: any, opts: LintSampleOpts): any {
     for (let k = 0; k < targets.length; k++) if (t >= targets[k].in0 - fd / 2 && t < targets[k].out0) { o.times[o.times.length] = t; break; }
   }
   o.step = stepF * fd;
-  for (let k = 0; k < targets.length; k++) o.texts[k] = textInfo(targets[k], (targets[k].in0 + targets[k].out0) / 2);
+  for (let k = 0; k < targets.length; k++) {
+    o.texts[k] = textInfo(targets[k], (targets[k].in0 + targets[k].out0) / 2);
+    if (!targets[k].chain.length && !(targets[k].L as any).threeDLayer) o.texts[k].idx = targets[k].L.index;
+  }
+  const occ = occluders(c, targets, opts.maxOccluders || 30);
+  const all: (Target | Occluder)[] = [];
+  for (let k = 0; k < targets.length; k++) all[all.length] = targets[k];
+  for (let k = 0; k < occ.length; k++) all[all.length] = occ[k];
+  o.occluders = [];
+  for (let k = 0; k < occ.length; k++) o.occluders[k] = { name: occ[k].L.name, idx: occ[k].L.index, kind: occ[k].kind, s: [] };
 
   const probe: any = c.layers.addText('');
   try {
@@ -261,7 +302,7 @@ export function lintSample(ref: any, opts: LintSampleOpts): any {
     probe.name = '__aec_lint_probe';
     probe.enabled = false;
     const sp: any = probe.property('ADBE Text Properties').property('ADBE Text Document');
-    sp.expression = probeExpression(targets); // indices read after the probe was added (it shifted them)
+    sp.expression = probeExpression(all);
     const rows: string[] = [];
     for (let i = 0; i < o.times.length; i++) {
       rows[i] = String(sp.valueAtTime(o.times[i], false).text);
@@ -271,12 +312,13 @@ export function lintSample(ref: any, opts: LintSampleOpts): any {
     for (let k = 0; k < targets.length; k++) o.texts[k].s = [];
     for (let i = 0; i < rows.length; i++) {
       const cells = rows[i].split(';');
-      for (let k = 0; k < targets.length; k++) {
+      for (let k = 0; k < all.length; k++) {
+        const dest = k < targets.length ? o.texts[k].s : o.occluders[k - targets.length].s;
         const cell = cells[k];
-        if (cell === undefined || cell === '-' || cell === '!' || cell === '') { o.texts[k].s[i] = null; continue; }
+        if (cell === undefined || cell === '-' || cell === '!' || cell === '') { dest[i] = null; continue; }
         const nums = cell.split(','), v: number[] = [];
         for (let j = 0; j < nums.length; j++) v[j] = +nums[j];
-        o.texts[k].s[i] = v;
+        dest[i] = v;
       }
     }
   } finally {

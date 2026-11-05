@@ -4,6 +4,7 @@ import path from 'node:path';
 import { buildScene, inspect, applyEdits, contactSheet, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
 import { lintFlags, lintSummary } from '../api/lint.ts';
 import { renderComp, renderSummary } from '../api/render.ts';
+import { recover } from '../api/recover.ts';
 import { doctor } from '../api/doctor.ts';
 import { renderPreview } from '../visual/preview.ts';
 import { watchScene } from './watch.ts';
@@ -12,7 +13,7 @@ const argv = process.argv.slice(2);
 const cmd = argv[0];
 const flags: Record<string, any> = {};
 const pos: string[] = [];
-const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep', 'no-lint', 'draft', 'work-area'];
+const BOOLEAN = ['json', 'refresh', 'no-variants', 'full', 'gif', 'project', 'undo', 'reset-controls', 'keep', 'no-lint', 'draft', 'work-area', 'force'];
 const REPEATABLE = ['param'];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -51,6 +52,7 @@ const HELP = `aec — ae-compose CLI (native After Effects from TSX)
     build/edit/lint take --safe action|title|0.07, --reading-rate 3.5, --ignore rule,..; build/edit: --no-lint
   aec render [comp] [--format mp4|mov|mov-alpha|prores|prores4444|png|tiff|avi] [--quality high] [--out path] [--range 0-5] [--work-area] [--draft]
                                      final file through AE's Render Queue (default: renders/ next to the project)
+  aec recover [--force]              answer known dialogs, launch AE if needed, report a hung AE (--force kills and relaunches it: unsaved work is lost)
   aec undo [steps]                   undo the last ae-compose build/edit (AE's Edit > Undo)
   aec snapshot [comp] --times 0,1.5,3
   aec sheet [comp] [--frames 12]     contact sheet
@@ -104,6 +106,12 @@ async function main() {
       const [a, b] = flags.range ? String(flags.range).split('-').map(Number) : [undefined, undefined];
       const r = await renderComp(pos[0], { format: flags.format as any, quality: flags.quality as any, settings: flags.draft ? 'draft' : 'best', start: a, end: b, workArea: !!flags['work-area'], out: flags.out as string, template: flags.template as string });
       out(renderSummary(r), r);
+      process.exitCode = r.ok ? 0 : 1;
+      break;
+    }
+    case 'recover': {
+      const r = await recover({ force: !!flags.force });
+      out(`${r.ok ? '✔' : '✘'} ${r.state} in ${(r.ms / 1000).toFixed(1)} s\n  ${r.steps.join('\n  ')}`, r);
       process.exitCode = r.ok ? 0 : 1;
       break;
     }

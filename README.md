@@ -96,6 +96,7 @@ aec render [comp] [--format mp4|mov|prores4444|png|…] [--out path]   final fil
 aec effects [query] [--describe n] [--refresh]   search the vanilla effect catalog (391 effects with params); --refresh re-harvests it from the installed AE
 aec import <file>                            import footage into the project
 aec dialogs [--answer <hwnd> <button>]       list/answer AE modal dialogs
+aec recover [--force]                        answer known dialogs, launch AE, report a hung AE (--force kills it: unsaved work is lost)
 aec eval "<extendscript>"                    escape hatch
 ```
 
@@ -127,7 +128,7 @@ For **Claude Desktop**, open Settings → Developer → Edit Config (the file is
 
 Use the absolute path of your clone. After Effects must be running with a project open; `doctor` (a tool in both apps) checks the setup.
 
-The server has 20 tools. Images come back as JPEG of at most 1600 px.
+The server has 21 tools. Images come back as JPEG of at most 1600 px.
 
 | Area | Tools |
 |---|---|
@@ -138,7 +139,7 @@ The server has 20 tools. Images come back as JPEG of at most 1600 px.
 | Edit | `apply_edits` (ops include `ripple`, `place` and `key`), `undo` |
 | Effects | `list_effects`, `describe_effect` |
 | Media | `import_footage` |
-| AE health | `doctor`, `list_dialogs`, `answer_dialog` |
+| AE health | `doctor`, `recover_ae`, `list_dialogs`, `answer_dialog` |
 | Escape hatch | `run_extendscript` |
 
 ### Claude skill
@@ -239,7 +240,7 @@ npx tsx tests/integration/edit-ops.ts
 npx tsx tests/integration/renderer-seeds.ts
 ```
 
-The round-trip check covers 588 properties: values, keys and eases inside groups, effects and masks, plus 3D and particles. The edit-op suite applies every op to a hand-built project and checks that one undo restores it exactly. Renderer switching, seed determinism and live controls each have their own check. `npx tsx tests/quality/compare.ts` renders the kinetic-type spec in Remotion and in AE side by side, written to [docs/quality/kinetic-compare.png](docs/quality/kinetic-compare.png).
+The round-trip check covers 652 properties: values, keys and eases inside groups, effects and masks, 3D, particles, Range Selector text, text on a path and camera rigs. The edit-op suite applies every op to a hand-built project and checks that one undo restores it exactly. `edit-3d.ts` (camera, light, material, geometry, particles), `gradient-edit.ts`, `render.ts` (every render format, the queue left untouched, honest undo afterwards), renderer switching, seed determinism and live controls each have their own check. `npx tsx tests/quality/compare.ts` renders the kinetic-type spec in Remotion and in AE side by side, written to [docs/quality/kinetic-compare.png](docs/quality/kinetic-compare.png).
 
 ### AE disk cache
 Every snapshot and contact sheet renders frames that AE caches on disk. ae-compose purges AE's caches automatically when the disk cache passes 30 GB or the drive drops below 15 GB free (`AEC_CACHE_LIMIT_GB`; set `AEC_NO_CACHE_PURGE=1` to disable). AE clears its undo history when it purges, so this only happens when space is really tight, and the result says so. It's still worth capping **Edit > Preferences > Media & Disk Cache > Maximum Disk Cache Size** (for example 20 GB).

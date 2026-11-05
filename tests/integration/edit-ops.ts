@@ -52,6 +52,7 @@ const CASES: Case[] = [
 
 let fails = 0;
 for (const c of CASES) {
+  const t0 = Date.now();
   const comp = c.comp ?? COMP;
   const items0 = await projectCount();
   const before = await full(comp);
@@ -68,7 +69,7 @@ for (const c of CASES) {
     if (after !== before) { ok = false; why += ' | one undo did not restore the comp exactly'; }
     if (items1 !== items0 && !(c.name === 'place + key')) { ok = false; why += ` | project items ${items0} → ${items1} after undo`; }
   }
-  console.log(`${ok ? 'PASS' : 'FAIL'} ${c.name}${why ? ' — ' + why : ''}`);
+  console.log(`${ok ? 'PASS' : 'FAIL'} ${c.name}${why ? ' — ' + why : ''} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
   if (!ok) fails++;
 }
 console.log(fails ? `${fails} of ${CASES.length} FAILED` : `all ${CASES.length} edit ops OK (applied, asserted, undone in one step)`);

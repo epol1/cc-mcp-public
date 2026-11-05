@@ -315,7 +315,7 @@ export class Compiler {
     if (p.parent) L.parent = p.parent;
     if (p.matte) L.matte = { layer: p.matte.layer, type: p.matte.type ?? 'alpha', ...(p.matte.showSource ? { showSource: true } : {}) };
     if (p.markers) L.markers = p.markers.map((m: any) => ({ t: inT + parseTime(m.t, fps), comment: m.comment, dur: m.duration !== undefined ? parseTime(m.duration, fps) : undefined }));
-    const vctx: ValueCtx = { fps, t0: inT, controls: ctx.comp.controls, seed: ctx.seed };
+    const vctx: ValueCtx = { fps, t0: inT, controls: ctx.comp.controls, seed: ctx.seed, warnings: this.warnings };
     const anim: Record<string, any> = { ...(p.animate ?? {}) };
     const textAnims: TextUnitsAnim[] = [];
     if (anim.text) { textAnims.push(...(Array.isArray(anim.text) ? anim.text : [anim.text])); delete anim.text; }
@@ -336,13 +336,34 @@ export class Compiler {
         if (!text) this.warnings.push(`[${id}] <Text> has no text`);
         L.text = textDoc(p, text);
         if (p.eg) ((ctx.comp as any).egText ??= []).push({ layer: id, p: 'ADBE Text Properties/ADBE Text Document', name: p.eg === true ? L.name : String(p.eg) });
-        if (p.perCharacter3D) { L.threeD = true; L.threeDPerChar = true; }
+        // Per-character 3D: asked for, or needed by a unit animator that rotates letters in X/Y or moves them in z
+        // (without it AE silently ignores those).
+        const needs3D = textAnims.some((ta: any) => ta.from && (ta.from.rotationX !== undefined || ta.from.rotationY !== undefined || ta.from.z !== undefined));
+        if (p.perCharacter3D || needs3D) { L.threeD = true; L.threeDPerChar = true; }
+        if (p.path) {
+          // Text on a path: the path is a mask (mode None, index 1: built before child masks) that Path Options follow.
+          // Comp coordinates (the layer rests at 0,0, see compSpace below) unless the layer is positioned.
+          const shape = typeof p.path === 'string' ? parseSvgPath(p.path)[0] : pointsToShape(p.path, false);
+          if (!shape) throw new Error(`[${id}] <Text path> needs a path (SVG d or pen points)`);
+          groups.push({ at: 'ADBE Mask Parade', items: [{ mn: 'ADBE Mask Atom', name: 'Text Path', attrs: { maskMode: 'NONE', inverted: false }, props: [{ p: 'ADBE Mask Shape', v: shape }] }] });
+          const PO = 'ADBE Text Properties/ADBE Text Path Options/';
+          props.push({ p: PO + 'ADBE Text Path', v: 1 });
+          const po = p.pathOptions ?? {};
+          if (po.reverse) props.push({ p: PO + 'ADBE Text Reverse Path', v: 1 });
+          if (po.perpendicular === false) props.push({ p: PO + 'ADBE Text Perpendicular To Path', v: 0 });
+          if (po.forceAlign) props.push({ p: PO + 'ADBE Text Force Align Path', v: 1 });
+          for (const [k, mn] of [['firstMargin', 'ADBE Text First Margin'], ['lastMargin', 'ADBE Text Last Margin']] as const) {
+            if (po[k] === undefined) continue;
+            const s = lowerValue(po[k], { path: PO + mn, rest: [0], dims: 1, tol: TOL.px }, vctx);
+            if (s) props.push(s);
+          }
+        }
         // (Property values in expressions are array-like, not Arrays: index them, don't call .slice.)
         if (isControl(p.color)) props.push({ p: 'ADBE Text Properties/ADBE Text Document', expr: `var c = ${ctx.comp.controls.use(p.color)}; style.setFillColor([c[0], c[1], c[2]]);` });
-        const ab = anchorBox(p.anchor, 'center');
+        const ab = p.path ? null : anchorBox(p.anchor, 'center');
         if (ab) L.anchorBox = ab;
         for (const ta of textAnims) {
-          const r = unitAnimator(ta, vctx, 0, threeD);
+          const r = unitAnimator(ta, vctx, 0, threeD, text, { in: inT, out: outT });
           groups.push({ at: 'ADBE Text Properties/ADBE Text Animators', items: [r.group] });
           props.push(...r.moreOptions);
         }
@@ -368,6 +389,7 @@ export class Compiler {
         } else throw new Error(`[${id}] <Footage> needs src (file path) or item (project item name)`);
         L.footage = { asset: asset.id };
         L.fit = p.fit ?? 'cover';
+        if (p.toShapes) { L.toShapes = true; if (p.vectorWidth) L.vectorWidth = p.vectorWidth; }
         const speed = p.speed ?? 1;
         if (p.trim) {
           const s = parseTime(p.trim[0], fps), e = parseTime(p.trim[1], fps);
@@ -422,8 +444,8 @@ export class Compiler {
     // Transform
     const isCam = kind === 'camera';
     const camInfo = isCam ? cameraProps(p, vctx, ctx.comp.w, ctx.comp.h) : null;
-    // <Shape space="comp">: contents are drawn in comp pixels (like SVG/Remotion), so the layer sits at 0,0.
-    const compSpace = kind === 'shape' && p.space === 'comp';
+    // <Shape space="comp"> and text on a path: drawn in comp pixels (like SVG/Remotion), so the layer sits at 0,0.
+    const compSpace = (kind === 'shape' && p.space === 'comp') || (kind === 'text' && !!p.path);
     const rest = { x: compSpace ? 0 : ctx.comp.w / 2, y: compSpace ? 0 : ctx.comp.h / 2, z: isCam ? camInfo!.restZ : kind === 'light' ? -600 : 0 };
     if (ctx.inLayout) { rest.x = 0; rest.y = 0; } // laid-out layers: position is an offset from the solved slot
     for (const k of ['x', 'y', 'z'] as const) if (typeof p[k] === 'number') rest[k] = p[k];

@@ -98,8 +98,8 @@
         },
         {
           "id": "recovery",
-          "name": "Crash recovery + relaunch",
-          "status": "wip",
+          "name": "Recovery: dialogs, relaunch, hung AE (force with user approval)",
+          "status": "done",
           "weight": 2
         },
         {
@@ -278,8 +278,8 @@
         },
         {
           "id": "brand",
-          "name": "Brand tokens/theme helpers",
-          "status": "todo",
+          "name": "Brand tokens (brand(), live colors, examples/brand.ts)",
+          "status": "done",
           "weight": 1
         },
         {
@@ -368,8 +368,8 @@
         },
         {
           "id": "range-sel",
-          "name": "Range-selector animators",
-          "status": "todo",
+          "name": "Range-selector animators (keyed Offset / Amount)",
+          "status": "done",
           "weight": 2
         },
         {
@@ -386,14 +386,14 @@
         },
         {
           "id": "text-3d",
-          "name": "3D per-character",
-          "status": "todo",
+          "name": "3D per-character (automatic for rotationX/Y/z)",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "text-path",
-          "name": "Text on path",
-          "status": "todo",
+          "name": "Text on path (mask + Path Options, animatable margins)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -434,8 +434,8 @@
         },
         {
           "id": "vector-import",
-          "name": "SVG/AI → shape layers",
-          "status": "todo",
+          "name": "SVG tree import + <Vector> for .ai/.eps/.pdf",
+          "status": "done",
           "weight": 2
         },
         {
@@ -608,8 +608,8 @@
         },
         {
           "id": "cam-rigs",
-          "name": "Camera rigs (orbit/dolly/lookAt…)",
-          "status": "wip",
+          "name": "Camera rigs (orbit, push-in/out, truck, pedestal, crane, shake) + three-point lights",
+          "status": "done",
           "weight": 3
         },
         {
@@ -632,8 +632,8 @@
         },
         {
           "id": "models",
-          "name": "3D models + animations",
-          "status": "wip",
+          "name": "3D models (import, transforms, materials; clip selection not scriptable in AE 26.5)",
+          "status": "done",
           "weight": 2
         },
         {
@@ -710,8 +710,8 @@
         },
         {
           "id": "p-confetti-multi",
-          "name": "Multi-color confetti (layered)",
-          "status": "todo",
+          "name": "Multi-color confetti (one system per color, shared controls)",
+          "status": "done",
           "weight": 1
         }
       ]
@@ -752,8 +752,8 @@
         },
         {
           "id": "insp-aepx",
-          "name": ".aepx gradient parse",
-          "status": "todo",
+          "name": "Gradient read-back (built/edited: done; hand-built: needs a saved .aep to verify)",
+          "status": "wip",
           "weight": 2
         },
         {
@@ -818,8 +818,8 @@
         },
         {
           "id": "ed-3d-particles",
-          "name": "3D + particle edits",
-          "status": "wip",
+          "name": "Typed 3D, particle and gradient edit ops",
+          "status": "done",
           "weight": 1
         },
         {
@@ -908,8 +908,8 @@
         },
         {
           "id": "lint-occlusion",
-          "name": "Lint: occlusion of text by footage/shapes",
-          "status": "todo",
+          "name": "Lint: occlusion by layers above text (bounds)",
+          "status": "done",
           "weight": 1
         },
         {

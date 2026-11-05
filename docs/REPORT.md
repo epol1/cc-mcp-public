@@ -1,7 +1,7 @@
 # ae-compose — Report
 
 What was built, how it was verified against the installed After Effects 2026 (26.5), and what is limited or
-left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D65); the roadmap with live status is
+left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D70); the roadmap with live status is
 [`status/systems.json`](../status/systems.json) / [ROADMAP.md](ROADMAP.md).
 
 ## Definition of Done (GOAL §7)
@@ -147,10 +147,10 @@ It reported the comp, its fixes, the ripple result and the final contact sheet, 
 
 ## Next 5 improvements, ranked by impact
 
-Lint (D63) and final renders (D65), the top items on earlier versions of this list, are built. The list now:
+Lint (D63), final renders (D65), recovery (D67) and occlusion lint (D70), top items on earlier versions of this list, are built. The list now:
 
 1. **Motion previews the agent can judge.** Contact sheets show layout, not feel. Sending a short low-res GIF strip or a per-layer velocity graph after builds would let the agent check easing, springs and pacing, the parts motion design is judged on.
-2. **Gradient read-back and editing** (`.aepx` parse plus a `setGradient` op). Gradients are common in client projects, and today the inspector reports them as opaque, so an agent can't edit what it can't see.
-3. **Automatic recovery from hangs and crashes.** Detect a hung AE, save a copy, relaunch, answer Crash Repair and reconnect the bridge. Three restarts in this build needed a person; a long autonomous session needs this.
-4. **Occlusion-aware lint.** Lint can't see footage or shapes covering a word (showcase 11 needed a visual check for that).
-5. **Bezier-aware ripple and a stagger helper.** Ripple stretches bezier segments that span an insert point instead of splitting them, and `stagger()` / `interpolate()` would remove hand-written timing arithmetic from scenes.
+2. **A crash test of recovery.** `recover_ae` launches AE and answers Crash Repair, and kills a hung AE only with `force`; those paths are unit-tested with mocks but have not run against a real crash.
+3. **Pixel-level lint.** Occlusion and overlap are judged by bounds (D70): checking rendered alpha inside the boxes would turn the "may be hidden" notes into certain answers and cover 3D and precomps.
+4. **Bezier-aware ripple and a stagger helper.** Ripple stretches bezier segments that span an insert point instead of splitting them, and `stagger()` / `interpolate()` would remove hand-written timing arithmetic from scenes.
+5. **Hand-built gradient read-back** from the saved .aep (gradients are XML blobs inside its RIFX chunks): stops can be set on any gradient, but an existing hand-built gradient's stops can't be read yet.

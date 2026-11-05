@@ -62,7 +62,7 @@ export default scene({ name: 'DataChart', width: W, height: H, fps: 30, duration
       ))}
       {DATA.map((d, i) => (
         <Text name={`Label ${d.label}`} font="Inter-SemiBold" size={28} color="#8b95a5" tracking={120} x={cx(i)} y={CHART.base + 46}
-          animate={{ opacity: tween({ from: 0, duration: '0.4s', delay: 0.3 + i * each }), y: spring({ from: CHART.base + 70, delay: 0.3 + i * each, damping: 18 }) }}>
+          animate={{ opacity: tween({ from: 0, duration: '0.4s', delay: 0.3 + i * each }), y: spring({ from: 24, delay: 0.3 + i * each, damping: 18 }) }}>
           {d.label}
         </Text>
       ))}

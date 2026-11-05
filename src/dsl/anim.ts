@@ -123,6 +123,13 @@ export interface TextUnitsAnim {
    * follows the end when a Sequence gets longer or a ripple edit moves it.
    */
   anchor?: 'start' | 'end';
+  /**
+   * "expression" (default): an Expression Selector evaluates the exact easing/spring per unit, and every timing can
+   * be a live control. "range": a native Range Selector (Ramp shape) whose Offset is keyframed, the way designers
+   * build it by hand, so the reveal is ordinary keys in the graph editor. Range mode takes fixed times (no
+   * controls), orders "start", "end" or "random", and an easing (not a spring) for the Offset sweep.
+   */
+  selector?: 'expression' | 'range';
   name?: string;
 }
 
