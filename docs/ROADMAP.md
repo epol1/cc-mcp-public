@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.016**: 99.61% weighted, 169/170 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.017**: 100.00% weighted, 170/170 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 ## Research & Design (100%)
 - [x] Environment discovery
@@ -136,13 +136,13 @@
 - [x] Producer unit + camera calibration
 - [x] Multi-color confetti (one system per color, shared controls)
 
-## Inspector (93%)
+## Inspector (100%)
 - [x] Project/comp/layer walk _(w2)_
 - [x] Keys, eases, tangents _(w2)_
 - [x] Effect trees
 - [x] Text, shapes, masks _(w2)_
 - [x] 3D + particles
-- [~] Gradient read-back (built/edited: done; hand-built: needs a saved .aep to verify) _(w2)_
+- [x] Gradient read-back from the saved .aep (all gradients, opacity, midpoints) _(w2)_
 - [x] Compact agent outline _(w2)_
 - [x] Project media search + preview_item
 - [x] Scenes (named Sequences → comp marker ranges)

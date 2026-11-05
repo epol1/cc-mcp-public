@@ -752,8 +752,8 @@
         },
         {
           "id": "insp-aepx",
-          "name": "Gradient read-back (built/edited: done; hand-built: needs a saved .aep to verify)",
-          "status": "wip",
+          "name": "Gradient read-back from the saved .aep (all gradients, opacity, midpoints)",
+          "status": "done",
           "weight": 2
         },
         {
@@ -1218,8 +1218,8 @@
     },
     {
       "area": "AE API",
-      "text": "project.serializeToXML needs an undocumented enum; reading gradient stops back from a saved .aepx copy is planned (insp-aepx)",
-      "status": "open"
+      "text": "serializeToXML needs an unpublished enum and there is no save-a-copy: gradient stops are read from the saved .aep instead (D72)",
+      "status": "mitigated"
     },
     {
       "area": "AE API",

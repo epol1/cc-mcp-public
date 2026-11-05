@@ -1,7 +1,7 @@
 # ae-compose — Report
 
 What was built, how it was verified against the installed After Effects 2026 (26.5), and what is limited or
-left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D70); the roadmap with live status is
+left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D72); the roadmap with live status is
 [`status/systems.json`](../status/systems.json) / [ROADMAP.md](ROADMAP.md).
 
 ## Definition of Done (GOAL §7)
@@ -54,6 +54,7 @@ left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D70); t
   - `aec` CLI (doctor/build/watch/inspect/edit/undo/snapshot/sheet/preview/effects/import/dialogs/eval);
   - MCP server (18 tools; images come back automatically after builds and edits);
   - Claude skill (`skills/ae-compose`).
+- **Gradient read-back** (D72): `inspect_comp` reports the stops of every shape gradient, hand-built included, read from the saved .aep, and flags unsaved changes.
 - **Final renders** (D65): the `render` tool writes MP4, ProRes 422 / 422 HQ / 4444 with alpha, PNG or TIFF sequences or lossless AVI through AE's Render Queue, checks the file and returns a poster frame (`tests/integration/render.ts`: every format, the user's queue untouched, no overwrite, honest undo afterwards).
 - **Lint** (D63): every build and edit returns a lint report, and `lint_comp` checks any comp. It flags text on screen too briefly to read, text cut off or outside action-safe, overlapping texts, box overflow, missing fonts, near-empty frames and linear-only moves, each with the layer and the time range.
 - **Visual feedback:**
@@ -153,4 +154,4 @@ Lint (D63), final renders (D65), recovery (D67) and occlusion lint (D70), top it
 2. **A crash test of recovery.** `recover_ae` launches AE and answers Crash Repair, and kills a hung AE only with `force`; those paths are unit-tested with mocks but have not run against a real crash.
 3. **Pixel-level lint.** Occlusion and overlap are judged by bounds (D70): checking rendered alpha inside the boxes would turn the "may be hidden" notes into certain answers and cover 3D and precomps.
 4. **Bezier-aware ripple and a stagger helper.** Ripple stretches bezier segments that span an insert point instead of splitting them, and `stagger()` / `interpolate()` would remove hand-written timing arithmetic from scenes.
-5. **Hand-built gradient read-back** from the saved .aep (gradients are XML blobs inside its RIFX chunks): stops can be set on any gradient, but an existing hand-built gradient's stops can't be read yet.
+5. **Typed animation of gradients and text animator presets** (`addTextAnimator`, gradient stop keys): the last edit ops still planned. Gradient stops can be set and read back (D72) but not keyframed by ae-compose.

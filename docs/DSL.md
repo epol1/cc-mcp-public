@@ -1478,7 +1478,7 @@ Most commands accept `--json` for machine-readable output. Review outputs (IR, f
 
 - **Vanilla AE only.** Third-party effects aren't in the catalog and are never applied (D2, D19).
 - **8/16 bpc only.** 32 bpc projects get a passive capture fix and no other support (D29).
-- **Gradients:** 2–8 stops (more are resampled). Stops can be set on any gradient (`gradient` edit op) and are read back for gradients ae-compose built or edited (from the group name); a hand-built gradient's existing stops can't be read by script (reading them crashes AE 26.5). Gradient stops can't be animated.
+- **Gradients:** 2–8 stops (more are resampled). Stops can be set on any gradient (`gradient` edit op). `inspect_comp` reports every gradient's stops (colors, midpoints, opacity) read from the saved .aep, because AE can't read them by script (touching them crashes AE 26.5); unsaved changes since the last save aren't included (the outline says so), and an unsaved project falls back to the stop tag ae-compose writes in gradient names. Gradient stops can't be animated by ae-compose.
 - **Renderer quality, shadow and environment settings aren't scriptable**; only the renderer choice is.
 - **Advanced 3D:** no motion blur, no effects/masks/mattes/blend modes on 3D text/shape/model layers, no point-light shadows. Snapshots are slow (~3.5 s per frame with HDRI and DOF, ~100 s first-render warm-up) (D37, D40).
 - **`fStop` follows AE's px definition** and produces extreme blur at real-world values, so use `aperture` (D39).

@@ -74,6 +74,12 @@ function propLines(node: any, prefix: string, out: string[], depth: number): voi
   }
   if (/^ADBE Position_\d$/.test(node.m) && !node.keys && !node.expr) return; // hidden separated dims
   if (node.skipped) { out.push(`${prefix}${label}: (${node.skipped})`); return; }
+  if (node.gradient) {
+    const stops = node.stops ? node.stops.map((s: any) => `${s.color}@${fmt(s.offset)}`).join(' → ') : 'stops unknown (save the project)';
+    const alpha = node.alphaStops ? `; opacity ${node.alphaStops.map((a: any) => `${Math.round(a.opacity * 100)}%@${fmt(a.offset)}`).join(' → ')}` : '';
+    out.push(`${prefix}${label}: gradient ${stops}${alpha}${node.animatedStops ? ` (animated, ${node.animatedStops} keys)` : ''}`);
+    return;
+  }
   if (node.m === 'ADBE Marker') {
     // Layer markers: list them, or nothing when there are none.
     if (node.markers?.length) out.push(`${prefix}Markers: ${node.markers.map((m: any) => `${fmt(m.t)}s${m.comment ? ` "${m.comment}"` : ''}${m.dur ? ` (${fmt(m.dur)}s)` : ''}`).join(', ')}`);
@@ -98,6 +104,7 @@ export function outlineComp(j: any): string {
   const cues = (c.markers ?? []).filter((m: any) => !(m.dur > 0));
   if (scenes.length) lines.push(`Scenes (ripple targets): ${scenes.map((m: any) => `"${m.comment}" ${fmt(m.t)}–${fmt(m.t + m.dur)}s`).join(', ')}`);
   if (cues.length) lines.push(`Markers: ${cues.map((m: any) => `${fmt(m.t)}s${m.comment ? ` "${m.comment}"` : ''}`).join(', ')}`);
+  if (j.gradientNote) lines.push(`Note: ${j.gradientNote}`);
   for (const L of j.layers) {
     const flags = [L.threeD && '3D', L.enabled === false && 'hidden', L.locked && 'locked', L.solo && 'solo', L.motionBlur && 'mb', L.blend && `blend ${L.blend}`, L.isMatte && 'is matte', L.matte && `matte←"${L.matte.layer}"`, L.parent && `parent "${L.parent.name}"`].filter(Boolean).join(', ');
     lines.push(`${L.index}. [${L.type}] "${L.name}"${L.id ? ` aec:${L.id}` : ''} ${fmt(L.in)}–${fmt(L.out)}s${flags ? ` (${flags})` : ''}${L.source && !['text', 'shape', 'camera', 'light', 'null'].includes(L.type) ? ` src "${L.source.name}"${L.source.w ? ` ${L.source.w}×${L.source.h}` : ''}` : ''}`);

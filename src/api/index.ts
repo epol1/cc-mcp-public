@@ -11,6 +11,7 @@ import { compileEditOps } from '../edit/ops.ts';
 import type { EditInput } from '../edit/ops.ts';
 import { OUT_ROOT } from './build.ts';
 import { guardDiskCache } from './cache.ts';
+import { attachGradients } from '../inspect/aep.ts';
 import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
 import type { LintOptions } from './lint.ts';
 
@@ -30,6 +31,7 @@ export async function inspect(target: { comp?: string | number; project?: boolea
   }
   const j = await callRuntime('inspect', [{ comp: target.comp }, { detail: target.detail ?? 'outline', layers: target.layers, time: target.time }], { timeoutMs: 180_000 });
   if (!j.ok) throw new Error(j.error);
+  attachGradients(j); // shape-gradient stops from the saved .aep (AE can't read them by script)
   return { outline: outlineComp(j), json: j };
 }
 

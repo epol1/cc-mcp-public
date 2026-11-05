@@ -392,7 +392,7 @@ Ops:
 - `ripple` (insert/remove/stretch time, or add a hold to a named scene, with everything after it shifting);
 - `place` (project media or a file as a layer, `below`/`above` another layer; `shapes: true` turns .ai/.eps/.pdf art into editable shapes);
 - `key` (chroma key with Keylight and Advanced Spill Suppressor; the screen color is sampled automatically; add `cleanup: true` for Key Cleaner on hair or soft edges only);
-- `camera`, `light`, `material`, `geometry` (DSL names, values or keys), `particles` (by param name; sets a preset's live control when one drives the param), `gradient` (new stops on any gradient fill/stroke);
+- `camera`, `light`, `material`, `geometry` (DSL names, values or keys), `particles` (by param name; sets a preset's live control when one drives the param), `gradient` (new stops on any gradient fill/stroke; `inspect_comp` shows current stops, read from the saved project, so save before inspecting hand-built gradients);
 - `addControls`, `raw`.
 
 Props are friendly names (`position`, `scale`, `opacity`…) or AE paths (`"Effects/Glow/Glow Radius"`, `"Contents/Group 1/Contents/Fill 1/Color"`). Full vocabulary with examples: DSL.md §16. On hand-built comps, read the `inspect_comp` outline first: it names eases (`easeOutCubic≈`), shows overshoot, and lists changed effect params only.

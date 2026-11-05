@@ -218,7 +218,7 @@ How controls drive animation without rebuilding:
   - shape contents and pen paths; masks; mattes;
   - 3D: renderer, material, geometry, camera/light options, environment source;
   - model layers, markers, controls and EG properties.
-- It skips `CUSTOM_VALUE` and fenced matchNames (D15): shape gradient colors are reported as opaque. Gradients are written through generated `.ffx` presets (`src/compile/gradients.ts`, and the `gradient` edit op for any existing gradient), which record their stops in the group name for read-back. *(not built)* reading a hand-built gradient's stops: AE has no save-a-copy, and `serializeToXML` needs an enum AE doesn't publish, so it would need the saved .aep (verified 2026-11-04).
+- It skips `CUSTOM_VALUE` and fenced matchNames (D15): shape gradient colors are reported as opaque. Gradients are written through generated `.ffx` presets (`src/compile/gradients.ts`, and the `gradient` edit op for any existing gradient), which record their stops in the group name for read-back. Stops of every gradient, hand-built included, are read from the saved .aep (`src/inspect/aep.ts`, D72): RIFX chunks, gradients as `GCst`/`GCky` XML, matched to the live property tree by "k-th group with this matchName" paths (AE saves only non-default properties). AE has no save-a-copy and `serializeToXML` needs an enum it doesn't publish, so the saved file is the source; unsaved changes are flagged.
 - Properties with expressions are read pre-expression (`valueAtTime(t, true)`) unless `evalExpressions` is asked for, so a full inspect of a heavy project takes seconds, not minutes (D55).
 - The Node side turns the JSON into:
   - (a) lossless IR, for round-trip tests and "edit then rebuild",

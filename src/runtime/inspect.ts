@@ -94,6 +94,26 @@ function keyData(p: Property, maxChars: number): any[] {
   return out;
 }
 
+/**
+ * "matchName[k]/…" from the layer down to `g`: k = the k-th sibling group with that matchName. The saved-file reader
+ * computes the same path (AE saves only non-default properties, so plain indices differ there). Reads matchNames
+ * only, never a gradient's Colors.
+ */
+function gradientPath(g: any): string {
+  const segs: string[] = [];
+  let p: any = g;
+  for (let depth = 0; p && depth < 40; depth++) {
+    const parent: any = p.parentProperty;
+    if (!parent) break;
+    let k = 0;
+    for (let j = 1; j <= p.propertyIndex; j++) if (parent.property(j).matchName === p.matchName) k++;
+    segs.unshift(p.matchName + '[' + k + ']');
+    if (parent instanceof AVLayer || parent.parentProperty === null) break;
+    p = parent;
+  }
+  return segs.join('/');
+}
+
 /** Recursive property walk. Returns null when nothing worth reporting (outline mode). */
 function walk(g: any, opts: InspectOpts, depth: number): any {
   const full = opts.detail === 'full';
@@ -125,7 +145,8 @@ function walk(g: any, opts: InspectOpts, depth: number): any {
     return o;
   }
   if (isCrashyParent(g.matchName)) {
-    return { m: g.matchName, n: g.name, gradient: true, note: 'stops read from .aepx when requested' };
+    // Stops come from the saved project file (Node side, src/inspect/aep.ts), matched by this path.
+    return { m: g.matchName, n: g.name, gradient: true, gp: gradientPath(g) };
   }
   const indexed = g.propertyType === PropertyType.INDEXED_GROUP;
   const kids: any[] = [];
@@ -213,7 +234,7 @@ export function findComp(ref: any): CompItem | null {
 export function inspectComp(ref: any, opts: InspectOpts): any {
   const c = findComp(ref);
   if (!c) return { ok: false, error: 'comp not found: ' + ref };
-  const o: any = { ok: true, comp: { name: c.name, itemId: c.id, id: tagOf(c), w: c.width, h: c.height, fps: c.frameRate, dur: c.duration, par: c.pixelAspect, bg: arr(c.bgColor), renderer: c.renderer, motionBlur: c.motionBlur, shutterAngle: c.shutterAngle, numLayers: c.numLayers, workArea: [c.workAreaStart, c.workAreaDuration] } };
+  const o: any = { ok: true, projectFile: app.project.file ? app.project.file.fsName : null, dirty: app.project.dirty, comp: { name: c.name, itemId: c.id, id: tagOf(c), w: c.width, h: c.height, fps: c.frameRate, dur: c.duration, par: c.pixelAspect, bg: arr(c.bgColor), renderer: c.renderer, motionBlur: c.motionBlur, shutterAngle: c.shutterAngle, numLayers: c.numLayers, workArea: [c.workAreaStart, c.workAreaDuration] } };
   try { if (c.motionGraphicsTemplateName && c.motionGraphicsTemplateName !== 'Untitled') o.comp.mgt = c.motionGraphicsTemplateName; } catch (e) {}
   try { const mk = (c as any).markerProperty; if (mk && mk.numKeys) { o.comp.markers = []; for (let k = 1; k <= mk.numKeys; k++) { const mv: any = mk.keyValue(k); o.comp.markers.push({ t: mk.keyTime(k), comment: mv.comment, dur: mv.duration }); } } } catch (e) {}
   o.layers = [];

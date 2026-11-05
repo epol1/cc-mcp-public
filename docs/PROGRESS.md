@@ -24,6 +24,7 @@
   - gradients via .ffx (D47), variants + Compare (D48);
   - named Sequences → scene markers.
 - **Effect catalog:** 391/397 vanilla effects harvested → `src/catalog/params.json` + `src/dsl/effects.generated.ts`.
+- **Gradient read-back (D72):** stops of every shape gradient from the saved .aep (fixture tests/fixtures/gradient-test.aep).
 - **Roadmap gaps closed (D66–D70):** Range Selector text mode, text on a path, automatic per-character 3D; camera move rigs (PushIn, PullOut, Truck, Pedestal, Crane, CameraMove with shake) and ThreePointLights; multi-color Confetti; brand tokens (`brand()`, `examples/brand.ts`); SVG tree import (transforms, strokes, gradients, `<use>`) and `<Vector>` for .ai/.eps/.pdf; typed camera/light/material/geometry/particles/gradient edit ops; `recover_ae`; occlusion lint.
 - **Final renders (D65):** `render` / `aec render` → `renders/` next to the project (or `~/.ae-compose/renders/`); MP4, ProRes 422/HQ/4444, PNG/TIFF sequences, AVI. A scripted render (and a full cache purge) clears AE's undo history; `undo` now knows and says so.
 - **Lint (D63):** every build and edit returns a lint report (reading time, frame edges, action/title safe, text overlap, box overflow, missing fonts, near-empty frames, linear-only moves); `lint_comp` / `aec lint` for any comp. All 13 scene showcases lint clean after re-staging 01, 10, 11, 12 and 14 (D64).
@@ -51,7 +52,7 @@ The ranked list is in `docs/REPORT.md` ("Next 5 improvements"):
 2. A live crash test of `recover_ae` (the launch and force paths are only mock-tested).
 3. Pixel-level lint (occlusion and overlap are judged by bounds today).
 4. Bezier-aware ripple splits; `stagger()` / `interpolate()` helpers.
-5. Hand-built gradient read-back from the saved .aep: needs a saved project with a shape gradient to verify against.
+5. Keyframed gradient stops and `addTextAnimator` (the last planned edit ops).
 
 Also: `undo` should detect an AE session whose undo history is not recording (D61) and say so instead of reporting success; dolly/push-in rig helpers, Range Selector text mode, text on path, multi-color confetti.
 
