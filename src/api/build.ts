@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { loadScene } from '../scene/load.ts';
-import { compileScene } from '../compile/compile.ts';
+import { compileScene, REFRAMES } from '../compile/compile.ts';
+import type { Reframe } from '../compile/compile.ts';
 import type { SceneDef } from '../dsl/scene.ts';
 import { validateIr } from '../ir/schema.ts';
 import { guardDiskCache } from './cache.ts';
@@ -37,6 +38,11 @@ export interface BuildOptions {
   lint?: boolean | LintOptions;
   /** Motion previews + style lint (default on): a speed graph, a motion summary and the craft rules. */
   motion?: boolean | MotionOptions;
+  /**
+   * Responsive reframe (A4): also (or only) build the scene at other frame sizes as sibling comps ("Name_v001_9x16"):
+   * '9:16' (vertical social, platform-safe zones, type ×0.8), '1:1', '4:5', '16:9', or { width, height, typeScale }.
+   */
+  reframe?: string | Reframe | (string | Reframe)[];
 }
 
 export interface BuiltComp { id: string; name: string; itemId: number; layers: number }
@@ -73,7 +79,7 @@ function sheetTimes(dur: number, fps: number, n: number): number[] {
 export async function buildScene(input: { file?: string; source?: string; def?: SceneDef<any>; ir?: any; cwd?: string }, opts: BuildOptions = {}): Promise<BuildReport> {
   const t0 = Date.now();
   const report: BuildReport = { ok: true, scene: '', comps: [], warnings: [], exprErrors: [], contactSheets: [], frames: [], restoredControls: 0, ms: 0 };
-  let irs: { ir: any; sources: Record<string, SourceLoc | undefined>; label?: string; params?: Record<string, any> }[] = [];
+  let irs: { ir: any; sources: Record<string, SourceLoc | undefined>; label?: string; params?: Record<string, any>; reframe?: Reframe }[] = [];
   let compareWanted = false;
   let sceneLint: LintOptions | false | undefined;
   if (input.ir) irs = [{ ir: input.ir, sources: {} }];
@@ -84,10 +90,16 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     sceneLint = def.config.lint;
     const vkeys = def.config.variants && opts.variants !== false ? Object.keys(def.config.variants).filter((k) => opts.variants === true || opts.variants === undefined || (opts.variants as string[]).includes(k)) : [];
     const runs = vkeys.length ? vkeys.map((k) => ({ variant: k, params: { ...def.config.variants![k], ...(opts.params ?? {}) } })) : [{ variant: undefined as string | undefined, params: opts.params }];
-    for (const r of runs) {
-      const c = compileScene(def, { version: opts.version, variant: r.variant, params: r.params, sceneFile: loaded.file });
-      report.warnings.push(...c.warnings.map((w) => (r.variant ? `[${r.variant}] ${w}` : w)));
-      irs.push({ ir: c.ir, sources: c.sources, label: r.variant, params: r.variant ? { ...(def.config.params ?? {}), ...(r.params ?? {}) } : undefined });
+    const frames: (Reframe | undefined)[] = opts.reframe === undefined ? [undefined] : (Array.isArray(opts.reframe) ? opts.reframe : [opts.reframe]).map((f) => {
+      if (typeof f !== 'string') return f;
+      if (!REFRAMES[f]) throw new Error(`reframe "${f}": use ${Object.keys(REFRAMES).join(', ')} or { width, height }`);
+      return REFRAMES[f];
+    });
+    for (const r of runs) for (const fr of frames) {
+      const c = compileScene(def, { version: opts.version, variant: r.variant, params: r.params, sceneFile: loaded.file, reframe: fr });
+      const label = [r.variant, fr?.label].filter(Boolean).join('_') || undefined;
+      report.warnings.push(...c.warnings.map((w) => (label ? `[${label}] ${w}` : w)));
+      irs.push({ ir: c.ir, sources: c.sources, label, params: r.variant ? { ...(def.config.params ?? {}), ...(r.params ?? {}) } : undefined, reframe: fr });
     }
   }
   report.scene = irs[0].ir.scene;
@@ -95,11 +107,11 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   fs.mkdirSync(outDir, { recursive: true });
   const nFrames = opts.frames ?? 8;
   const lint = lintSettings(sceneLint, opts.lint);
-  const lintRuns: { label?: string; data: any; frames: { t: number; file: string }[]; bpc: number }[] = [];
+  const lintRuns: { label?: string; data: any; frames: { t: number; file: string }[]; bpc: number; reels?: boolean }[] = [];
   const motionOpts: MotionOptions | false = opts.motion === false ? false : opts.motion === true || opts.motion === undefined ? {} : opts.motion;
   const motionRuns: { label?: string; data: any; ir: any }[] = [];
   for (const { ir } of irs) validateIr(ir); // fail in Node with a path, before anything reaches AE
-  for (const { ir, sources, label } of irs) {
+  for (const { ir, sources, label, reframe } of irs) {
     // Variant keys come from scene code or MCP input: never let one escape outDir (it feeds a recursive delete).
     const safeLabel = label === undefined ? undefined : (String(label).replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+$/, '') || 'variant');
     const irFile = path.join(outDir, `ir${safeLabel ? '_' + safeLabel : ''}.json`);
@@ -122,7 +134,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
       break;
     }
     report.comps.push(...r.comps);
-    if (r.lint) lintRuns.push({ label, data: r.lint, frames: [], bpc: 8 });
+    if (r.lint) lintRuns.push({ label, data: r.lint, frames: [], bpc: 8, reels: reframe?.platform === 'reels' });
     if (r.motion) motionRuns.push({ label, data: r.motion, ir });
     for (const s of r.snapshots ?? []) {
       const frames = s.frames.filter((f: any) => f.ok).map((f: any) => ({ file: f.file, t: f.t }));
@@ -141,7 +153,9 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   if (lint && lintRuns.length) {
     report.lint = [];
     for (const run of lintRuns) {
-      try { report.lint.push({ ...(await lintFromSamples(run.data, lint, run.frames, run.bpc)), label: run.label }); } catch (e: any) { report.warnings.push(`lint failed: ${e.message}`); }
+      // A vertical-platform reframe is judged against the platform's UI-free zone.
+      const lo = run.reels && (lint.safe === undefined || lint.safe === 'title') ? { ...lint, safe: 'reels' as const } : lint;
+      try { report.lint.push({ ...(await lintFromSamples(run.data, lo, run.frames, run.bpc)), label: run.label }); } catch (e: any) { report.warnings.push(`lint failed: ${e.message}`); }
     }
   }
   if (motionOpts && motionRuns.length) {

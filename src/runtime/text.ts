@@ -24,6 +24,8 @@ export interface TextDocSpec {
   ligature?: boolean;
   kerning?: 'metrics' | 'optical' | 'none';
   box?: { w: number; h: number };
+  /** Shrink the font (to at most 60 %) until the text is no wider than this, in layer pixels (reframe, auto-fit). */
+  fitWidth?: number;
   runs?: { start: number; end: number; font?: string; size?: number; fill?: number[]; stroke?: number[]; tracking?: number; baselineShift?: number; fauxBold?: boolean }[];
 }
 
@@ -90,6 +92,15 @@ export function setTextDocument(ctx: Ctx, layer: TextLayer, s: TextDocSpec): voi
   const sp = layer.property('ADBE Text Properties').property('ADBE Text Document') as Property;
   const td = makeTextDocument(ctx, sp.value as TextDocument, s);
   sp.setValue(td);
+  if (s.fitWidth && !s.box) {
+    // Measured before any animator exists, at the layer's own time 0 equivalent.
+    const r = layer.sourceRectAtTime(layer.inPoint, false);
+    if (r.width > s.fitWidth) {
+      const k = Math.max(0.6, s.fitWidth / r.width), d = sp.value as TextDocument;
+      d.fontSize = d.fontSize * k;
+      sp.setValue(d);
+    }
+  }
   if (s.font) {
     const got = (sp.value as TextDocument).font;
     if (got !== s.font) warn(ctx, 'font "' + s.font + '" not available; AE used "' + got + '"');

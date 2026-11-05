@@ -1308,13 +1308,13 @@
         {
           "id": "p5-reframe",
           "name": "Responsive reframe 16:9 → 9:16 / 1:1 (safe areas, type, camera)",
-          "status": "todo",
+          "status": "done",
           "weight": 4
         },
         {
           "id": "p5-delivery",
           "name": "Delivery packs: every format rendered in one call",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {

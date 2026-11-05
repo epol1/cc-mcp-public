@@ -14,6 +14,11 @@ type Children = any;
 export interface LayerProps {
   /** Stable id for edits/rebuilds. Defaults to a path-derived id. */
   id?: string;
+  /**
+   * Style-lint hints (D78): 'bg' (background), 'persistent' (a logo bug or progress line that is meant to stay),
+   * 'hero', 'transition:<kind>' (transitions library: repeats are flagged). Not visible in AE.
+   */
+  tags?: string[];
   /** Layer name in AE. */
   name?: string;
   x?: V<number>; y?: V<number>; z?: V<number>;

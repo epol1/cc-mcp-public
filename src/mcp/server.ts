@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp, motionPreview } from '../api/index.ts';
+import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp, motionPreview, deliverScene } from '../api/index.ts';
 import type { MotionReport } from '../api/index.ts';
 import { lintSummary } from '../api/lint.ts';
 import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
@@ -28,7 +28,7 @@ async function image(file: string, maxW = 1600): Promise<Content> {
 }
 const fail = (e: any) => ({ isError: true, content: [text(`error: ${e?.message ?? e}${e?.dialogs?.length ? `\nA dialog is blocking After Effects: ${e.dialogs.map((d: any) => `hwnd ${d.hwnd} "${d.title}" capture ${d.capture}`).join('; ')}. Use list_dialogs / answer_dialog.` : ''}`)] });
 const lintInput = z.union([z.boolean(), z.object({
-  safe: z.union([z.enum(['action', 'title']), z.number().min(0).max(0.3)]).optional().describe('safe-area margin per side: action (5 %, default), title (10 %), or a fraction'),
+  safe: z.union([z.enum(['action', 'title', 'reels']), z.number().min(0).max(0.3)]).optional().describe('safe-area margin per side: action (5 %, default), title (10 %), reels (vertical platform UI-free zone), or a fraction'),
   readingRate: z.number().min(0.5).max(20).optional().describe('words per second a viewer reads (default 3.5)'),
   ignore: z.array(z.enum(LINT_RULES as [string, ...string[]])).optional(),
 })]).optional().describe('lint the result (default on): false skips it, or tune it');
@@ -60,9 +60,10 @@ server.registerTool('build_scene', {
     resetControls: z.boolean().optional().describe('rebuild with the control values written in the code (default: keep values tweaked in AE)'),
     lint: lintInput,
     motion: motionInput,
+    reframe: z.union([z.string(), z.array(z.string())]).optional().describe("responsive reframe: also build the scene at '9:16' (vertical social: platform-safe zone, type ×0.8), '1:1', '4:5' or '16:9' as sibling comps (Name_v001_9x16); layouts re-solve, positions map, long lines shrink to fit"),
   },
 }, async (a) => wrap(async () => {
-  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls, lint: a.lint as any, motion: a.motion });
+  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls, lint: a.lint as any, motion: a.motion, reframe: a.reframe });
   const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.scene} → ${r.comps.map((c) => `"${c.name}" (${c.layers} layers)`).join(', ')} in ${r.ms} ms`];
   if (r.error) lines.push(`error: ${r.error}`);
   if (r.warnings.length) lines.push('warnings:', ...r.warnings.map((w) => `- ${w}`));
@@ -235,6 +236,26 @@ server.registerTool('render_preview', {
   const r = await renderPreview(a.comp, a);
   const out: Content[] = [text(`${r.method}: ${r.frames} frames → ${r.file} (${r.ms} ms)${r.warnings.length ? '\n' + r.warnings.join('\n') : ''}`)];
   if (a.gif) out.push({ type: 'image', data: fs.readFileSync(r.file).toString('base64'), mimeType: 'image/gif' });
+  return out;
+}));
+
+server.registerTool('deliver', {
+  title: 'Delivery pack: every format in one call',
+  description: 'Build a scene in every target frame (responsive reframe: 16:9, 9:16 vertical social, 1:1, 4:5) and render each (mp4 by default) plus a ProRes master of the first target, into renders/ next to the saved project. Renders clear the undo history of AE, so deliver after the piece is approved. Returns every file with its size, codec and duration.',
+  inputSchema: {
+    file: z.string().optional().describe('scene .tsx'), source: z.string().optional(), cwd: z.string().optional(),
+    targets: z.array(z.string()).optional().describe("default ['16:9', '9:16', '1:1']"),
+    format: z.enum(RENDER_FORMATS as [string, ...string[]]).optional().describe('format for every target (default mp4)'),
+    master: z.union([z.enum(RENDER_FORMATS as [string, ...string[]]), z.literal(false)]).optional().describe("master of the first target: 'prores' (default), 'mov', 'prores4444' or false"),
+    quality: z.enum(['draft', 'standard', 'high']).optional(),
+    out: z.string().optional().describe('output folder'),
+    params: z.record(z.string(), z.any()).optional(),
+  },
+}, async (a) => wrap(async () => {
+  const r = await deliverScene({ file: a.file, source: a.source, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, a as any);
+  const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.renders.length} file(s) in ${(r.ms / 1000).toFixed(1)} s`, ...r.renders.map((x) => `- ${x.target}${x.master ? ' master' : ''}: ${x.ok ? `${x.file} (${(x.bytes / 1e6).toFixed(1)} MB, ${x.codec ?? x.format}, ${x.w}×${x.h}, ${x.duration?.toFixed(2)} s)` : `failed: ${x.error}`}`), ...r.errors.map((e) => `error: ${e}`)];
+  const out: Content[] = [text(lines.join('\n'))];
+  for (const x of r.renders.filter((y) => y.poster).slice(0, 3)) out.push(await image(x.poster!, 640));
   return out;
 }));
 

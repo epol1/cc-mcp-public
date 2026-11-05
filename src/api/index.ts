@@ -20,6 +20,8 @@ import { STYLE_RULES } from '../motion/types.ts';
 
 export { buildScene } from './build.ts';
 export { motionOfComp, motionPreview, motionReport } from './motion.ts';
+export { deliverScene } from './deliver.ts';
+export type { DeliverOptions, DeliverReport } from './deliver.ts';
 export type { MotionOptions, MotionReport } from './motion.ts';
 export { lintComp } from './lint.ts';
 export { renderComp, renderSummary, RENDER_FORMATS } from './render.ts';

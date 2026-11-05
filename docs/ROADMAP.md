@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.021**: 83.10% weighted, 181/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.022**: 84.52% weighted, 183/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -216,7 +216,7 @@
 - [x] AGENT_GUIDE.md
 - [x] REPORT.md
 
-# Phase 5: creative toolkit (docs/TOOLKIT.md) (36.0%)
+# Phase 5: creative toolkit (docs/TOOLKIT.md) (41.4%)
 
 ## P5 · Foundations (100%)
 - [x] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
@@ -244,12 +244,12 @@
 - [ ] Type FX: word emphasis, decode, split-flap, variable fonts, auto-fit _(w3)_
 - [ ] Transitions library built from scene elements _(w4)_
 
-## P5 · Agent tools (39%)
+## P5 · Agent tools (66%)
 - [x] Motion previews: GIF strips + speed graphs after builds/edits _(w3)_
 - [x] Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture) _(w3)_
 - [ ] Storyboard first: beat sheet → scene scaffold (plan_scene) _(w3)_
-- [ ] Responsive reframe 16:9 → 9:16 / 1:1 (safe areas, type, camera) _(w4)_
-- [ ] Delivery packs: every format rendered in one call
+- [x] Responsive reframe 16:9 → 9:16 / 1:1 (safe areas, type, camera) _(w4)_
+- [x] Delivery packs: every format rendered in one call
 - [~] Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts _(w3)_
 - [ ] Recipe library: save and re-instantiate scenes with params _(w2)_
 

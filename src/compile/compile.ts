@@ -29,7 +29,21 @@ import { drainDslWarnings } from '../dsl/warn.ts';
 // Internal names verified from AE's localized UI strings (D36): Calder = Advanced 3D; 'ADBE Advanced 3d' is the legacy ID of Classic 3D.
 const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' } as const;
 
-export interface CompileOpts { version?: number; variant?: string; params?: Record<string, any>; sceneFile?: string }
+/**
+ * Responsive reframe (A4): build the scene at another frame size as a sibling comp. Layout containers re-solve in
+ * AE; static absolute positions map from the old frame to the new one (offsets from the centre scaled per axis);
+ * type scales by `typeScale`; with `platform`, title-safe areas become the vertical platform's UI-free zone.
+ */
+export interface Reframe { width: number; height: number; label?: string; typeScale?: number; platform?: 'reels' | 'none' }
+export interface CompileOpts { version?: number; variant?: string; params?: Record<string, any>; sceneFile?: string; reframe?: Reframe }
+
+/** Reframe presets: 9:16 vertical social (platform zones), 1:1, 4:5 feed, 16:9. */
+export const REFRAMES: Record<string, Reframe> = {
+  '9:16': { width: 1080, height: 1920, label: '9x16', typeScale: 0.8, platform: 'reels' },
+  '1:1': { width: 1080, height: 1080, label: '1x1', typeScale: 0.85 },
+  '4:5': { width: 1080, height: 1350, label: '4x5', typeScale: 0.85 },
+  '16:9': { width: 1920, height: 1080, label: '16x9', typeScale: 1 },
+};
 export interface CompileResult { ir: any; warnings: string[]; sources: Record<string, SourceLoc | undefined> }
 
 interface CompBuild { id: string; name: string; w: number; h: number; fps: number; dur: number; bg?: number[]; renderer?: string; rendererReq?: RendererKey; features: Set<Feature>; has3D?: boolean; shutterPhase?: number; samples?: number; adaptive?: number; motionBlur?: boolean; shutterAngle?: number; part?: boolean; layers: any[]; controls: ControlRegistry; markers?: any[] }
@@ -48,6 +62,8 @@ export class Compiler {
   mainName = '';
   libMode: LibMode = 'inline';
   libUsed = false;
+  /** Active reframe: per-axis scale of static positions around the centre, type scale, source size. */
+  rf: { sx: number; sy: number; type: number; w0: number; h0: number; w: number; h: number; platform?: string; cx: number; cy: number; fit: number } | null = null;
 
   constructor(private def: SceneDef<any>, private opts: CompileOpts = {}) {}
 
@@ -60,10 +76,19 @@ export class Compiler {
     this.libMode = cfg.lib ?? 'inline';
     const version = this.opts.version ?? cfg.version ?? 1;
     const vtag = `v${String(version).padStart(3, '0')}`;
-    const compName = `${cfg.name}_${vtag}${this.opts.variant ? '_' + this.opts.variant : ''}`;
-    const mainId = slug(cfg.name) + (this.opts.variant ? '-' + slug(this.opts.variant) : '');
+    const rfm = this.opts.reframe;
+    const w0 = cfg.width ?? 1920, h0 = cfg.height ?? 1080;
+    if (rfm) {
+      // Positions map into the target's usable area: the whole frame, or for vertical platforms the zone free of
+      // their UI (left 60, top 250, right 120, bottom 400 px at 1080×1920), centred on that zone.
+      const z = rfm.platform === 'reels' ? { x0: 60 * rfm.width / 1080, y0: 250 * rfm.height / 1920, x1: rfm.width - 120 * rfm.width / 1080, y1: rfm.height - 400 * rfm.height / 1920 } : { x0: 0, y0: 0, x1: rfm.width, y1: rfm.height };
+      this.rf = { sx: (z.x1 - z.x0) / w0, sy: (z.y1 - z.y0) / h0, type: rfm.typeScale ?? Math.min(1, Math.max(0.6, Math.sqrt((rfm.width * rfm.height) / (w0 * h0)) * 1.1)), w0, h0, w: rfm.width, h: rfm.height, platform: rfm.platform, cx: (z.x0 + z.x1) / 2, cy: (z.y0 + z.y1) / 2, fit: Math.round((z.x1 - z.x0) * (rfm.platform === 'reels' ? 0.95 : 0.9)) };
+    }
+    const suffix = [this.opts.variant, rfm ? rfm.label ?? `${rfm.width}x${rfm.height}` : undefined].filter(Boolean).join('_');
+    const compName = `${cfg.name}_${vtag}${suffix ? '_' + suffix : ''}`;
+    const mainId = slug(cfg.name) + (suffix ? '-' + slug(suffix) : '');
     const comp: CompBuild = {
-      id: mainId, name: compName, w: cfg.width ?? 1920, h: cfg.height ?? 1080, fps, dur: parseTime(cfg.duration, fps),
+      id: mainId, name: compName, w: rfm ? rfm.width : w0, h: rfm ? rfm.height : h0, fps, dur: parseTime(cfg.duration, fps),
       bg: cfg.bg ? rgb(cfg.bg) : undefined, renderer: undefined, motionBlur: undefined,
       layers: [], controls: new ControlRegistry(), features: new Set(), rendererReq: cfg.renderer,
     };
@@ -211,14 +236,21 @@ export class Compiler {
         throw new Error(`<${el.type.displayName}> must be a child of a layer (Solid, Text, Shape, Footage, Adjustment, ...)`);
       case 'layout.safe': {
         const k = p.kind ?? 'title';
-        const ins = Array.isArray(k) ? k : k === 'action' ? [5, 5, 5, 5].map((v, i) => (i % 2 ? ctx.comp.w : ctx.comp.h) * v / 100) : [10, 10, 10, 10].map((v, i) => (i % 2 ? ctx.comp.w : ctx.comp.h) * v / 100);
+        // Vertical platform reframe: title-safe is the zone free of the platform's UI (top 250, right 120,
+        // bottom 400, left 60 px at 1080×1920, scaled), SKILL.md §6.7.
+        const reels = this.rf?.platform === 'reels' && k === 'title' ? [250, 120, 400, 60].map((v, i) => v * (i % 2 ? ctx.comp.w / 1080 : ctx.comp.h / 1920)) : null;
+        const ins = Array.isArray(k) ? k : reels ? reels : k === 'action' ? [5, 5, 5, 5].map((v, i) => (i % 2 ? ctx.comp.w : ctx.comp.h) * v / 100) : [10, 10, 10, 10].map((v, i) => (i % 2 ? ctx.comp.w : ctx.comp.h) * v / 100);
         const area = { x: ins[3], y: ins[0], w: ctx.comp.w - ins[1] - ins[3], h: ctx.comp.h - ins[0] - ins[2] };
         for (const c of childrenOf(p.children)) if (typeof c !== 'string') for (const root of this.layoutNodes(c, ctx)) this.addLayout(ctx, root, area);
         return;
       }
       default:
         if (kind.startsWith('layout.')) {
-          for (const root of this.layoutNodes(el, ctx)) this.addLayout(ctx, root, { x: 0, y: 0, w: ctx.comp.w, h: ctx.comp.h });
+          // A vertical-platform reframe lays top-level containers out in the zone free of the platform's UI.
+          const zone = this.rf?.platform === 'reels' && ctx.comp.w === this.rf.w && ctx.comp.h === this.rf.h
+            ? { x: 60 * this.rf.w / 1080, y: 250 * this.rf.h / 1920, w: this.rf.w - 180 * this.rf.w / 1080, h: this.rf.h - 650 * this.rf.h / 1920 }
+            : { x: 0, y: 0, w: ctx.comp.w, h: ctx.comp.h };
+          for (const root of this.layoutNodes(el, ctx)) this.addLayout(ctx, root, zone);
           return;
         }
         this.layer(kind, el, ctx);
@@ -326,6 +358,7 @@ export class Compiler {
     if (p.shy) L.shy = true;
     if (p.guide) L.guide = true;
     if (p.label !== undefined) L.label = p.label;
+    if (p.tags?.length) L.tags = p.tags; // style-lint hints, read back by layer id (src/api/motion.ts)
     if (p.parent) L.parent = p.parent;
     if (p.matte) L.matte = { layer: p.matte.layer, type: p.matte.type ?? 'alpha', ...(p.matte.showSource ? { showSource: true } : {}) };
     if (p.markers) L.markers = p.markers.map((m: any) => ({ t: inT + parseTime(m.t, fps), comment: m.comment, dur: m.duration !== undefined ? parseTime(m.duration, fps) : undefined }));
@@ -349,7 +382,10 @@ export class Compiler {
       case 'text': {
         const text = p.text ?? childrenOf(p.children).filter((c) => typeof c === 'string').join('');
         if (!text) this.warnings.push(`[${id}] <Text> has no text`);
-        L.text = textDoc(p, text);
+        const inFrame = this.rf && ctx.comp.w === this.rf.w && ctx.comp.h === this.rf.h;
+        L.text = textDoc(inFrame ? { ...p, size: Math.round((p.size ?? 72) * this.rf!.type) } : p, text);
+        // Reframe: a line too wide for the new frame's safe width shrinks to fit (AE measures it).
+        if (inFrame && !p.box && !p.path) L.text.fitWidth = this.rf!.fit;
         if (p.eg) ((ctx.comp as any).egText ??= []).push({ layer: id, p: 'ADBE Text Properties/ADBE Text Document', name: p.eg === true ? L.name : String(p.eg) });
         // Per-character 3D: asked for, or needed by a unit animator that rotates letters in X/Y or moves them in z
         // (without it AE silently ignores those).
@@ -386,7 +422,7 @@ export class Compiler {
         break;
       }
       case 'shape': {
-        const items = shapeItems(p.children, vctx, this.warnings);
+        const items = shapeItems(this.rf && ctx.comp.w === this.rf.w && ctx.comp.h === this.rf.h ? this.reframeShapes(p.children, id) : p.children, vctx, this.warnings);
         if (items.length) groups.push({ at: 'ADBE Root Vectors Group', items });
         const ab = anchorBox(p.anchor, null);
         if (ab) L.anchorBox = ab;
@@ -467,6 +503,16 @@ export class Compiler {
     if (ctx.inLayout) { rest.x = 0; rest.y = 0; } // laid-out layers: position is an offset from the solved slot
     for (const k of ['x', 'y', 'z'] as const) if (typeof p[k] === 'number') rest[k] = p[k];
     if (Array.isArray(p.position)) { rest.x = p.position[0]; rest.y = p.position[1]; rest.z = p.position[2] ?? rest.z; }
+    // Reframe: static absolute positions in the main frame keep their place relative to the centre, per axis.
+    if (this.rf && !ctx.inLayout && !compSpace && ctx.comp.w === this.rf.w && ctx.comp.h === this.rf.h && !isCam && kind !== 'light') {
+      // Given positions map from the old frame; centred ones move to the usable zone's centre, except layers that
+      // fill the frame (solids, adjustment layers, footage, full-frame rectangles), which stay on the frame's centre.
+      const fills = kind === 'solid' || kind === 'adjustment' || kind === 'footage' || (kind === 'shape' && this.filledFrame.has(L.id));
+      if (typeof p.x === 'number' || Array.isArray(p.position)) rest.x = this.rf.cx + (rest.x - this.rf.w0 / 2) * this.rf.sx;
+      else if (!fills) rest.x = this.rf.cx;
+      if (typeof p.y === 'number' || Array.isArray(p.position)) rest.y = this.rf.cy + (rest.y - this.rf.h0 / 2) * this.rf.sy;
+      else if (!fills) rest.y = this.rf.cy;
+    }
     const tProps = { ...p };
     if (typeof p.x === 'number' && !anim.x) delete (tProps as any).x;
     if (typeof p.y === 'number' && !anim.y) delete (tProps as any).y;
@@ -582,6 +628,20 @@ export class Compiler {
     if (p.opacity !== undefined) { const s = lowerValue(p.opacity, { path: 'ADBE Mask Opacity', rest: [100], dims: 1, tol: TOL.opacity }, vctx); if (s) props.push(s); }
     const MODE: Record<string, string> = { add: 'ADD', subtract: 'SUBTRACT', intersect: 'INTERSECT', none: 'NONE', lighten: 'LIGHTEN', darken: 'DARKEN', difference: 'DIFFERENCE' };
     return { mn: 'ADBE Mask Atom', name: p.name, attrs: { maskMode: MODE[p.mode ?? 'add'], inverted: !!p.inverted }, props };
+  }
+
+  /** Reframe: rectangles that fill the source frame fill the new one (backgrounds, glows, scrims). */
+  private filledFrame = new Set<string>();
+  private reframeShapes(children: any, layerId: string): any {
+    const rf = this.rf!;
+    const fix = (c: any): any => {
+      if (!c || typeof c !== 'object' || !c.type) return c;
+      const kind = c.type.aec;
+      if (kind === 'rect' && Array.isArray(c.props.size) && c.props.size[0] >= rf.w0 - 1 && c.props.size[1] >= rf.h0 - 1) { this.filledFrame.add(layerId); return { ...c, props: { ...c.props, size: [c.props.size[0] * rf.w / rf.w0, c.props.size[1] * rf.h / rf.h0] } }; }
+      if (kind === 'group') return { ...c, props: { ...c.props, children: childrenOf(c.props.children).map(fix) } };
+      return c;
+    };
+    return childrenOf(children).map(fix);
   }
 
   private defaultName(kind: string, p: any, id: string): string {

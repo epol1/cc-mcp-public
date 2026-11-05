@@ -15,7 +15,7 @@ export const LINT_RULES: LintRule[] = ['off-frame', 'safe-area', 'overflow', 'ov
 
 export interface LintOptions {
   /** Safe-area margin per side: 'action' (5 %, default), 'title' (10 %), or a fraction of the frame. */
-  safe?: 'action' | 'title' | number;
+  safe?: 'action' | 'title' | 'reels' | number;
   /** Reading speed in words per second (default 3.5, about 210 words a minute). */
   readingRate?: number;
   /** Time to notice a text before reading starts, seconds (default 0.5). */
@@ -167,7 +167,9 @@ export function lintRules(d: LintData, opts: LintOptions = {}): LintIssue[] {
   const skip = new Set(opts.ignore ?? []);
   const add = (i: LintIssue) => { if (!skip.has(i.rule)) issues.push(i); };
   const margin = opts.safe === 'title' ? 0.1 : typeof opts.safe === 'number' ? opts.safe : 0.05;
-  const safeName = opts.safe === 'title' ? 'title-safe' : typeof opts.safe === 'number' ? `${Math.round(opts.safe * 100)} % safe` : 'action-safe';
+  const safeName = opts.safe === 'title' ? 'title-safe' : opts.safe === 'reels' ? 'vertical platform (UI-free)' : typeof opts.safe === 'number' ? `${Math.round(opts.safe * 100)} % safe` : 'action-safe';
+  // Vertical social (SKILL.md §6.7): keep out of the top 250, bottom 400, right 120 and left 60 px at 1080×1920.
+  const reels = opts.safe === 'reels' ? { top: 250 * d.h / 1920, right: 120 * d.w / 1080, bottom: 400 * d.h / 1920, left: 60 * d.w / 1080 } : null;
   const rate = opts.readingRate ?? 3.5, minRead = opts.minRead ?? 0.5;
   const A = d.texts.map((T) => analyzeText(T, d));
 
@@ -189,7 +191,7 @@ export function lintRules(d: LintData, opts: LintOptions = {}): LintIssue[] {
       const b = S[i]!.b, t = d.times[i];
       const o = { left: -b.x0, right: b.x1 - d.w, top: -b.y0, bottom: b.y1 - d.h };
       const mx = margin * d.w, my = margin * d.h;
-      const u = { left: mx - b.x0, right: b.x1 - (d.w - mx), top: my - b.y0, bottom: b.y1 - (d.h - my) };
+      const u = reels ? { left: reels.left - b.x0, right: b.x1 - (d.w - reels.right), top: reels.top - b.y0, bottom: b.y1 - (d.h - reels.bottom) } : { left: mx - b.x0, right: b.x1 - (d.w - mx), top: my - b.y0, bottom: b.y1 - (d.h - my) };
       let off = false, uns = false;
       for (const e of ['left', 'right', 'top', 'bottom'] as const) {
         if (o[e] > 2) { over[e] = Math.max(over[e], o[e]); off = true; }
