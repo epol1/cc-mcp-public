@@ -1,0 +1,23 @@
+{
+  "manifestVersion": 5,
+  "id": "com.prcut.uxp",
+  "name": "pr-cut bridge",
+  "version": "0.1.0",
+  "main": "index.html",
+  "host": { "app": "premierepro", "minVersion": "25.0.0" },
+  "requiredPermissions": {
+    "network": { "domains": ["http://127.0.0.1:47812", "http://localhost:47812"] },
+    "localFileSystem": "fullAccess",
+    "allowCodeGenerationFromStrings": true
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "prcutPanel",
+      "label": { "default": "pr-cut" },
+      "minimumSize": { "width": 230, "height": 120 },
+      "preferredDockedSize": { "width": 260, "height": 160 },
+      "preferredFloatingSize": { "width": 260, "height": 160 }
+    }
+  ]
+}

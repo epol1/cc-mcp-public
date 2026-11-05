@@ -6,7 +6,8 @@ import { resolveEasing } from '../../src/shared/easing.ts';
 import { parseColor } from '@ae-mcp/core/units.ts';
 import { parseSvgPath } from '../../src/shared/svgpath.ts';
 
-const run = (...ops: any[]) => compileEditOps({ comp: 'Promo_v001', ops });
+// fps given so the test never asks a live After Effects for the comp's frame rate (it may be busy).
+const run = (...ops: any[]) => compileEditOps({ comp: 'Promo_v001', ops, fps: 30 });
 const TG = 'ADBE Transform Group';
 
 describe('ease', () => {

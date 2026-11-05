@@ -13,6 +13,7 @@ import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
 import { fromTicksPerFrame, parseTime, secondsToFrames } from '@ae-mcp/core/time/timecode.ts';
 import { es, uxp } from '../bridge.ts';
 import { buildCut, type BuildReport } from '../build.ts';
+import { reportText } from '../report.ts';
 import { doctor, formatChecks } from '../doctor.ts';
 import { cutStrips, sequenceContactSheet } from '../frames.ts';
 import { inspectSequenceRaw } from '../inspect.ts';
@@ -35,19 +36,6 @@ async function image(file: string, maxW = 1600): Promise<Content> {
 }
 async function wrap(fn: () => Promise<Content[]>) {
   try { return { content: await fn() }; } catch (e: any) { return { isError: true, content: [text(`error: ${e?.message ?? e}`)] }; }
-}
-
-export function reportText(r: BuildReport): string {
-  const lines = [
-    `${r.sequence ? `sequence "${r.sequence.name}" (${r.sequence.id})` : 'dry run (Premiere untouched)'} — ${r.timecode} (${r.durationSeconds} s), built via ${r.path}, ${r.undoSteps} undo step${r.undoSteps === 1 ? '' : 's'} (undo reverts it in one call)`,
-    `tightening: ${r.stats.sourceSeconds} s of source in ${r.stats.pieces} pieces; removed ${r.stats.removed.fillers} fillers, ${r.stats.removed.repeats} repeated words, ${r.stats.removed.pauses} pauses (${r.stats.removed.pauseSeconds} s); ${r.stats.jumpCuts} jump cuts; ${r.stats.broll} B-roll, ${r.stats.music} music, ${r.stats.titles} titles`,
-    'segments:',
-    ...r.segments.map((s) => `- ${s.id}${s.beat ? ` [${s.beat}]` : ''} @${s.at} ${s.seconds}s ${s.pieces} piece${s.pieces === 1 ? '' : 's'}: "${s.text}"${s.match ? ` (quote ${Math.round(s.match.score * 100)} %)` : ''}`),
-    `lint: ${r.lintSummary}`, ...r.lint.map((l) => `- ${l}`),
-    ...(r.warnings.length ? ['warnings:', ...r.warnings.map((w) => `- ${w}`)] : []),
-    ...(r.contactSheet ? [`contact sheet: ${r.contactSheet}`] : []), ...(r.strips ? [`cut strips: ${r.strips}`] : []),
-  ];
-  return lines.join('\n');
 }
 
 async function withImages(r: BuildReport): Promise<Content[]> {
