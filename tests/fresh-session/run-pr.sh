@@ -3,14 +3,14 @@
 # testimonial cut from an interview, reviews it and fixes it, unaided. Empty working folder; --strict-mcp-config
 # with only pr-cut; tools limited to the MCP tools and reading the skill folder.
 set -u
-REPO=${REPO:-/e/Projects/ae-mcp}
+REPO=${REPO:-$(cd "$(dirname "$0")/../.." && pwd)}
 WIN=$(cygpath -m "$REPO")
 WORK=$(mktemp -d)
 OUT=${OUT:-$REPO/scratch/pr/fresh/session}; mkdir -p "$OUT"
 cat > "$WORK/mcp.json" <<JSON
 { "mcpServers": { "pr-cut": { "command": "node", "args": ["$WIN/bin/prc-mcp.mjs"] } } }
 JSON
-BRIEF=$(cat "$REPO/tests/fresh-session/pr-brief.md")
+BRIEF=$(sed "s#E:/Projects/ae-mcp/#$WIN/#g" "$REPO/tests/fresh-session/pr-brief.md")
 cd "$WORK"
 echo "work folder: $WORK"
 claude -p "$BRIEF" \
