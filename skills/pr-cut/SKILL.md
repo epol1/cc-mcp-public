@@ -48,6 +48,7 @@ For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `s
 ### 2.6 Pace for the platform
 - Social (9:16): hook in the first 2 s, segments 3–8 s, tight pauses, captions on. Long-form (16:9): let answers breathe, 8–20 s segments, B-roll every 10–15 s.
 - Vary shot lengths; a cut where every shot is the same length feels mechanical (lint note `monotone`).
+- Comedy, live shows, banter: laughs are pauses in the transcript, and cutting them kills the timing. Keep them with `tighten: { maxPause: 1.6, keepPause: 0.7 }` and keep repeats that are the joke (`"no, no, no, no"`: `tighten: { repeats: false }` on that segment). The `long-pause` notes are then expected.
 
 ### 2.7 Before you call it done
 Look at the contact sheet and the strips; read the lint; play the story in your head from the segment list in the report (it prints what each segment says). Then tell the user the length, the story in one line per beat, what you removed, and what you'd try next.

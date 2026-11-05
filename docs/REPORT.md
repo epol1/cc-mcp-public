@@ -1,8 +1,33 @@
 # ae-compose — Report
 
 What was built, how it was verified against the installed After Effects 2026 (26.5), and what is limited or
-left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D104); the roadmap with live status is
+left, for After Effects 2026 (26.5) and, since Phase 7, Premiere Pro 2026 (26.5.2). Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D130); the roadmap with live status is
 [`status/systems.json`](../status/systems.json) / [ROADMAP.md](ROADMAP.md).
+
+## Phase 7: pr-cut, editing in Premiere Pro (in progress)
+
+Goal: the user's `/goal` (Claude turns raw footage into native, editable Premiere sequences); design [PRCUT.md](PRCUT.md), verified Premiere behaviour [research/premiere/spike.md](research/premiere/spike.md), skill `skills/pr-cut/SKILL.md`, decisions D105–D130. Releases v0.02.001–v0.02.004.
+
+### Done when (the goal's three conditions)
+
+| Condition | Status | Evidence |
+|---|---|---|
+| A 30-minute interview becomes a 2-minute cut the user would keep | built, **waiting for the user's verdict** | The first 30 min of a 64-min Keith and the Girl live show from the user's depot → "KATG Live - Roommates (2-min cut)", 2:08 (`scratch/pr/katg/KATG highlight (pr-cut).prproj`): pizza-murder theme → One-Eyed Davis and the force → Tracy's co-op board → the mice that jumped. Laughs kept, an ae-compose lower third, karaoke caption templates. Reviewed from the contact sheet, all 13 cut strips and full frames; fixes from that review: D128, D129. |
+| Edits and undo work on the user's own sequences | ✅ (on a copy) | `QiaoBio.prproj` (the user's presentation edit: slides on V1, a keyed presenter cutout on V2, her sound on A1 from the original take) copied to `scratch/pr/qiao/`. `tighten` → v002: 24 trims, 565.4 → 548.2 s, cutout keeps alpha and position, slides re-timed; the original sequence unchanged and the original file byte-identical; `undo` removed v002 in one call. Needed D126 and D127. |
+| A fresh Claude session makes a cut using only the skill doc | ✅ | `tests/fresh-session/run-pr.sh`: headless `claude -p` with only the pr-cut MCP tools and the skill folder. Re-run on the final skill doc (2026-11-05, 22 turns, 3.5 min, unaided): corrected the transcript first, dry-ran the plan, built "Loop testimonial – Dana v1", reviewed contact sheet and cut strips, and fixed what it saw in v002 (B-roll of a woman talking read as out of sync, a shot starting mid-sentence and stacked on another): 42.4 s, hook → problem → turn → nurse story → 200,000 people → tagline, six B-roll shots on sentence starts, music ducked to −28 dB, captions. Checked here in Premiere from its own contact sheet. Its open notes: punch-ins can't be judged on a test pattern; the music is a stock preview. The first run (10 min) also passed. |
+
+### Verified in Premiere
+
+- `pnpm test:pr` (throwaway project): XML round trip at 23.976/24/25/29.97/30/59.94 with 0-frame error; build (quotes, tightening, B-roll, dissolve, markers, captions, undo in one call); edits on a hand cut (delete/trim/move/grade; grade and title carried; original untouched; one undo); finishing (loudness within ±1 LU and ≤ −1 dBTP; 1920×1080, 1080×1920, 1080×1080 deliveries); `match_shots` (difference 85 → 17); ae-compose templates (`mogrt.ts`: fields by name, own track over an untouched picture, AE titles keep their text through edits, karaoke captions placed, partly lit mid-caption, rebuilt after an edit).
+- AE side: `pnpm test:ae` 12/12 after the core extraction; `export_mogrt` and the karaoke template, 20 checks.
+
+### Limits
+
+- **UXP plugin unverified**: it needs Developer Mode in Premiere (the user's checklist), so Premiere's own transcripts aren't used; Whisper (local, large-v3-turbo) is.
+- **Undo** steps back through Premiere's history (32 states by default); longer batches (many caption templates) are undone by removing the sequence they created (D129). QE's undo index can follow the wrong project when two open projects share a file name (D130).
+- **Caption templates** are 16:9; a 9:16 delivery needs a vertical template.
+- An AE title's own Motion/Opacity changes don't survive an edit yet (its fields do, D124).
+- Premiere property writes (Lumetri values in `match_shots`, caption lifts) aren't undo steps; they are undone with the sequence.
 
 ## Phase 6: asset sources
 

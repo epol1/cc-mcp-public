@@ -3,7 +3,7 @@
 # testimonial cut from an interview, reviews it and fixes it, unaided. Empty working folder; --strict-mcp-config
 # with only pr-cut; tools limited to the MCP tools and reading the skill folder.
 set -u
-REPO=${REPO:-/e/Projects/ae-mcp-prcut}
+REPO=${REPO:-/e/Projects/ae-mcp}
 WIN=$(cygpath -m "$REPO")
 WORK=$(mktemp -d)
 OUT=${OUT:-$REPO/scratch/pr/fresh/session}; mkdir -p "$OUT"
