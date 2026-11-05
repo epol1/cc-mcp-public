@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.01.002**: 98.26% weighted, 211/216 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.01.003**: 99.60% weighted, 214/216 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -266,19 +266,19 @@
 - [x] Fresh-session test with only the skill + MCP
 - [x] REPORT.md: Phase 5 results, limits, next improvements
 
-# Phase 6: asset sources (docs/ASSETS.md) (69.0%)
+# Phase 6: asset sources (docs/ASSETS.md) (92.9%)
 
-## Assets · Free asset sources (69%)
+## Assets · Free asset sources (93%)
 - [x] Verify first: API response shapes, AE import of each kind, font install probe
 - [x] Core: hit record, source adapters, cache, API keys, license allowlist, CREDITS.md _(w3)_
 - [x] Keyless adapters: Iconify, Poly Haven, ambientCG, local folders _(w3)_
-- [~] find_assets (thumbnail grid) + fetch_asset (download, copy into project, import) + doctor _(w3)_
+- [x] find_assets (thumbnail grid) + fetch_asset (download, copy into project, import) + doctor _(w3)_
 - [x] Key-based adapters: Pixabay, Unsplash, Openverse (Pexels built, waiting on a key: Pexels isn't issuing keys) _(w2)_
-- [~] Fonts via Fontsource, after probing font installs in AE _(w2)_
+- [x] Fonts via Fontsource, after probing font installs in AE _(w2)_
 - [x] asset: src scheme in the DSL (fetched at compile time, cached) _(w2)_
 - [~] Skill + DSL docs, unit tests on recorded responses, AE fetch-import-collect test _(w2)_
-- [ ] Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete _(w2)_
-- [ ] Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6
+- [x] Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete _(w2)_
+- [~] Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6
 
 ## Definition of done
 - [x] aec doctor passes

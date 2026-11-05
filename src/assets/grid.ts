@@ -10,6 +10,7 @@ import { request } from './http.ts';
 import { assetHome } from './config.ts';
 import { sniff } from './sniff.ts';
 import { writeContactSheet } from '../visual/images.ts';
+import { insideLocalRoots } from './adapters/local.ts';
 import type { AssetHit } from './types.ts';
 
 const CELL_W = 240, CELL_H = 160;
@@ -23,15 +24,20 @@ function card(lines: string[], accent = '#30363d'): Buffer {
 /** The image bytes of a hit's preview (cached), or null. Untrusted: sniffed, SVGs only rasterized. */
 async function previewBytes(h: AssetHit): Promise<Buffer | null> {
   if (!h.preview) return null;
-  if (!/^https?:/i.test(h.preview)) {
+  // Disk paths only for the local source (its own index); everything else must be https.
+  if (h.source === 'local' && !/^https?:/i.test(h.preview)) {
     const p = h.preview.startsWith('file:') ? fileURLToPath(h.preview) : h.preview;
+    if (!insideLocalRoots(p)) return null;
     try { return fs.statSync(p).size < 80e6 ? fs.readFileSync(p) : null; } catch { return null; }
   }
+  if (!/^https:\/\//i.test(h.preview)) return null;
   const f = path.join(assetHome(), '_thumbs', crypto.createHash('sha1').update(h.preview).digest('hex').slice(0, 20));
   if (fs.existsSync(f)) return fs.readFileSync(f);
   try {
     // Own budget, no back-off wait: a missing thumbnail becomes a placeholder card.
-    const r = await request(h.preview, { source: 'thumbs', retry: false });
+    // API-hosted thumbnails (Openverse's) count against that API's own limits.
+    const viaApi = /^https:\/\/api\.openverse\.org\//i.test(h.preview);
+    const r = await request(h.preview, { source: viaApi ? 'openverse' : 'thumbs', retry: false, noWait: true });
     if (r.body.length > 15e6) return null;
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(f, r.body);

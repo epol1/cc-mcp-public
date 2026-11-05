@@ -1779,7 +1779,7 @@ Material ae-compose can't draw (icons, photos, stock video, textures, HDRIs, 3D 
 | Source | Kinds | Key | License |
 |---|---|---|---|
 | `local` | everything AE imports | none | the user's own files (credited as "license unknown") |
-| `iconify` | icon | none | per set: MIT, ISC, Apache-2.0, OFL, CC0, CC BY (GPL/NC/MPL/BSD sets are left out) |
+| `iconify` | icon | none | per set: MIT, ISC, Apache-2.0, OFL, CC0, CC BY, CC BY-SA (flagged); GPL/NC/MPL/BSD sets are left out; brand sets flagged as trademarks |
 | `polyhaven` | hdri, texture, model | none | CC0 |
 | `ambientcg` | texture, hdri | none | CC0 |
 | `pixabay` | photo, video | `pixabay` | Pixabay Content License |
@@ -1801,12 +1801,12 @@ Keys live in `~/.ae-compose/keys.json` (`{ "pixabay": "…", "unsplash": "…" }
 `{ id, variant?, import?, folder?, install? }`:
 1. Gets the record (`variant` = a label from the results, e.g. `1k-hdr`, `2k-jpg`, `1080p`, `web`, `full`; a prefix like `2k` works; default: the source's recommended one) and refuses anything off the allowlist.
 2. Downloads into the cache `~/.ae-compose/assets/<source>/<id>/<variant>/` (5 GB, least recently used evicted first; `AEC_ASSET_CACHE_GB`), with a size cap per kind.
-3. Checks every file **by its content** (executables, scripts and HTML pages are refused; the extension follows the content), strips scripts and external references from SVGs, converts what AE can't import (WebP/AVIF → PNG, OGG/FLAC → WAV, WebM → H.264 MP4), unpacks ambientCG ZIPs (the color map is the main file; the other maps come along), and packs Poly Haven glTF models with their `.bin` and textures into **one `.glb`**.
+3. Checks every file **by its content** (executables, scripts and HTML pages are refused; the extension follows the content; a glTF's `.bin` buffers are copied into the `.glb` as data, never opened otherwise), strips scripts and external references from SVGs, converts what AE can't import (WebP/AVIF → PNG, OGG/FLAC → WAV, WebM → H.264 MP4), unpacks ambientCG ZIPs (the color map is the main file; the other maps come along), and packs Poly Haven glTF models with their `.bin` and textures into **one `.glb`**.
 4. Copies the files into `footage/<source>/<id>/` **next to the saved project**, so Collect Files and a moved project folder keep them. With an unsaved project the files stay in the cache and the result says so.
 5. Imports them in one undo step (not icons, which are for `<Svg>`, and not fonts), tagged `aec:asset=<id>` in the item comment.
 6. Adds the credit line to `CREDITS.md` next to the project: `- "Title" by Author (url), Source (page), License (url). Files: … [id]`.
 
-**Fonts** download the full-coverage files from google/fonts (variable fonts list every named instance as a PostScript name, e.g. `SpaceGrotesk-Bold`). `install: true` installs them for the current user (Windows, no admin), only with the user's OK. A running AE only reads fonts at launch (D93): the result says which PostScript names AE sees, and when it doesn't, the user has to restart AE. Until then, use an installed font; lint's missing-font check flags substitutes.
+**Fonts** download the full-coverage files from google/fonts (variable fonts list every named instance as a PostScript name, e.g. `SpaceGrotesk-Bold`). `install: true` installs them for the current user (Windows, no admin), only with the user's OK. The files are loaded into the Windows session, so the running AE sees them at once (D102), and the result lists the PostScript names AE now resolves. Use those in `font=`; lint's missing-font check flags any substitute.
 
 ### 22.4 `asset:` sources in scenes
 
@@ -1819,6 +1819,8 @@ Any `src` (and `hdri`) takes `asset:<id>[@variant]`:
 <Light kind="environment" hdri="asset:polyhaven:brown_photostudio_02@1k-hdr" />
 <Audio src="asset:openverse:audio:eab8a6e2-0ac8-4615-9e0d-ebde30523783" />
 ```
+
+An asset the scene uses some other way than a `src` (a font it names by PostScript name, a file an expression reads) is recorded with `asset('fontsource:space-grotesk@full')` inside the scene function, which returns its cached path; the build then copies and credits it like the rest.
 
 They resolve at compile time, synchronously like `beatsOf`: from the cache, or by fetching in a child process. The build copies each into the project's footage folder, points the comp at the copy, and credits it in `CREDITS.md` next to the project **and** next to the scene file, so a scene folder carries its credits. The build report lists `assets` and `credits`. Use the refs in JSX props (resolved during the compile), not in module-level code that runs once per process. `deliver` copies `CREDITS.md` next to the renders.
 

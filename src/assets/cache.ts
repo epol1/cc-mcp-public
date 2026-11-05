@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { assetHome, cacheCapBytes } from './config.ts';
+import type { AssetHit } from './types.ts';
 
 export interface CacheEntry {
   /** "<asset id>@<variant>" */
@@ -29,9 +30,18 @@ function load(): Index {
 }
 function save(ix: Index): void {
   fs.mkdirSync(assetHome(), { recursive: true });
-  const tmp = indexFile() + '.tmp';
+  // A unique temp name per writer (an MCP server and a build's child process may write at the same time).
+  const tmp = `${indexFile()}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(ix));
   fs.renameSync(tmp, indexFile());
+}
+
+/** The hit record stored next to a cached asset's files (not a project file). */
+export const HIT_FILE = '.hit.json';
+
+/** The hit stored with a cached file (by the file's path), or undefined. */
+export function cachedHit(mainFile: string): AssetHit | undefined {
+  try { return JSON.parse(fs.readFileSync(path.join(path.dirname(mainFile), HIT_FILE), 'utf8')); } catch { return undefined; }
 }
 
 export const cacheKey = (id: string, variant: string) => `${id}@${variant}`;
@@ -59,6 +69,21 @@ export function lookup(id: string, variant: string): CacheEntry | undefined {
   return e;
 }
 
+/**
+ * A cached entry for an id spelled loosely (case-insensitive id; variant exact or as a prefix, case-insensitive).
+ * Without a variant only the source's default matches (`defaultOf(entry folder)`), so a scene that names no
+ * variant gets the same file on every machine, not whatever size was fetched last.
+ */
+export function findCached(id: string, variant: string | undefined, defaultOf: (dir: string) => string | undefined): CacheEntry | undefined {
+  const want = id.toLowerCase(), v = variant?.toLowerCase();
+  const cands = Object.values(load().entries).filter((e) => e.key.slice(0, e.key.lastIndexOf('@')).toLowerCase() === want);
+  const label = (e: CacheEntry) => e.key.slice(e.key.lastIndexOf('@') + 1);
+  const pick = v
+    ? cands.find((e) => label(e).toLowerCase() === v) ?? cands.find((e) => label(e).toLowerCase().startsWith(v))
+    : cands.find((e) => defaultOf(path.join(assetHome(), e.dir)) === label(e));
+  return pick ? lookup(pick.key.slice(0, pick.key.lastIndexOf('@')), label(pick)) : undefined;
+}
+
 /** Any cached variant of an asset (the `asset:` resolver prefers what is already here). */
 export function lookupAny(id: string): CacheEntry | undefined {
   const ix = load();
@@ -78,6 +103,32 @@ export function record(id: string, variant: string, main: string, files: string[
   save(ix);
   evict([e.key]);
   return e;
+}
+
+let housekept = false;
+/**
+ * Once per process: drop what lives beside the indexed files and outside the cap, inside the cache root only:
+ * API responses older than 7 days, thumbnails older than 30 days, temp downloads older than a day (a killed fetch).
+ */
+export function housekeeping(): void {
+  if (housekept) return;
+  housekept = true;
+  const now = Date.now(), DAY = 24 * 3600_000;
+  const sweep = (dir: string, maxAge: number) => {
+    let entries: fs.Dirent[] = [];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      const p = path.join(dir, e.name);
+      try {
+        if (e.isSymbolicLink()) continue;
+        if (now - fs.statSync(p).mtimeMs <= maxAge) { if (e.isDirectory()) sweep(p, maxAge); continue; }
+        fs.rmSync(p, { recursive: true, force: true });
+      } catch { /* in use */ }
+    }
+  };
+  sweep(path.join(assetHome(), '_responses'), 7 * DAY);
+  sweep(path.join(assetHome(), '_thumbs'), 30 * DAY);
+  sweep(path.join(assetHome(), '_tmp'), DAY);
 }
 
 export function cacheStats(): { bytes: number; entries: number; cap: number; root: string } {

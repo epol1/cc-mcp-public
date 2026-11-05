@@ -193,7 +193,7 @@ Results come with a numbered thumbnail grid. Only commercially usable licenses c
 - **API keys** (free accounts) go in `~/.ae-compose/keys.json`, never in the repo: `{ "pixabay": "…", "unsplash": "<Access Key>", "pexels": "…" }`. Sources without a key are skipped; `aec doctor` lists which are on.
 - **Fetched files** are copied into `footage/<source>/<id>/` next to the saved project (so Collect Files keeps them), imported, and credited in `CREDITS.md` next to the project (and next to the scene file for `asset:` sources). `deliver` copies `CREDITS.md` next to the renders.
 - **Download cache**: `~/.ae-compose/assets/`, capped at 5 GB (`AEC_ASSET_CACHE_GB`), least recently used first.
-- **Fonts** are installed for your user only when you agree (`install: true`); After Effects needs a restart to see a new font.
+- **Fonts** are installed for your user only when you agree (`install: true`); the running After Effects sees them right away.
 
 Details: [`docs/DSL.md` §22](docs/DSL.md#22-asset-sources-phase-6); design: [`docs/ASSETS.md`](docs/ASSETS.md).
 
@@ -226,6 +226,7 @@ Each scene in [`examples/`](examples) is built from your own assets and exposes 
 | 16 | [Product UI demo](examples/16-product-ui/scene.tsx) | UI kit: phones, a data-driven feed that scrolls, taps and typing from one `uiSteps` script, a shape wipe from the underline |
 | 17 | [Data story](examples/17-data-story/scene.tsx) | data viz kit: counter, area, donut, bars, each live on one effect; hand-off, liquid wipe, push-through |
 | 18 | [Beat-synced promo](examples/18-beat-promo/scene.tsx) | `beatsOf` grid: words and colorway swaps on beats, a light-leak cut on the downbeat, a beat-pulsing disc that becomes the end card |
+| 19 | [Launch teaser](examples/19-launch-teaser/scene.tsx) | built from fetched assets (`asset:` refs, [CREDITS.md](examples/19-launch-teaser/CREDITS.md)): a Pixabay crowd clip, Lucide icons drawn on as shapes, an ambientCG paper sheet that tears in (Roughen Edges matte, fibre fringe, drop shadow), a Poly Haven camera model lit by a Poly Haven HDRI, Space Grotesk |
 
 ## Docs
 - [docs/DSL.md](docs/DSL.md): the full DSL and edit-op reference

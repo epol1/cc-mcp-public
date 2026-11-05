@@ -53,14 +53,14 @@ export async function fetchAssetTool(a: { id: string; variant?: string; import?:
         const c = await evalAE(aeFontCheckScript(want), { timeoutMs: 30_000 });
         if (c.ok) { const [ok, miss] = String(c.result).split('|'); r.aeSees = ok ? ok.split(',') : []; r.aeMissing = miss ? miss.split(',') : []; }
       }
-      if (r.aeMissing?.length) r.notes.push(`After Effects only reads fonts at launch (D93): ask the user to restart AE (never restart it yourself); until then text in this font renders as a substitute`);
+      if (r.aeMissing?.length) r.notes.push(`After Effects doesn't list these yet; check the PostScript names (variable fonts list their named instances), and if they are right, ask the user to restart AE (never restart it yourself); until then text in this font renders as a substitute`);
     }
   }
   return r;
 }
 
 export function fetchSummary(r: FetchToolResult): string {
-  const lines = [`OK: ${r.id} (${r.kind}, ${r.variant}) "${r.title}"`, `file: ${r.file}${r.inProject ? ' (in the project\'s footage folder)' : ''}`];
+  const lines = [`OK: ${r.id} (${r.kind}, ${r.variant}) "${r.title}" · ${r.license}`, ...r.flags.map((f) => `FLAG: ${f} (tell the user)`), `file: ${r.file}${r.inProject ? ' (in the project\'s footage folder)' : ''}`];
   if (r.files.length) lines.push(`with: ${r.files.map((f) => path.basename(f)).join(', ')}`);
   if (r.imported) lines.push(`imported: "${r.imported.name}" #${r.imported.itemId} in ${r.imported.folder} (one undo step)`);
   if (r.kind === 'icon') lines.push(`use it as <Svg src="${r.file.replace(/\\/g, '/')}" … /> or src="asset:${r.id}" (native shape layers; draw={tween(...)} for a draw-on)`);

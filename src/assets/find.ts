@@ -3,6 +3,7 @@
 // alternate between sources so one API doesn't fill the page.
 import { ADAPTERS, sourceStatus } from './registry.ts';
 import { adapterContext } from './context.ts';
+import { housekeeping } from './cache.ts';
 import { licenseRefusal, licenseFlags, licenseLabel } from './license.ts';
 import type { AdapterContext, AssetHit, SearchQuery } from './types.ts';
 
@@ -17,6 +18,7 @@ export interface FindResult {
 }
 
 export async function findAssets(q: SearchQuery & { sources?: string[] }, ctx: AdapterContext = adapterContext()): Promise<FindResult> {
+  housekeeping();
   const limit = Math.max(1, Math.min(48, q.limit ?? 12));
   const wanted = ADAPTERS.filter((a) => (!q.sources || q.sources.includes(a.id)) && (!q.kind || a.kinds.includes(q.kind)));
   const status = await sourceStatus(ctx, wanted.map((a) => a.id));

@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { cachedHit, projectAssetDir, unsavedCreditsDir } from './fetch.ts';
 import { appendCredit } from './credits.ts';
+import { licenseFlags } from './license.ts';
 import type { AssetRef } from './resolve.ts';
 
 export interface PlacedAsset { id: string; ref: string; file: string; inProject: boolean }
@@ -33,8 +34,18 @@ export function placeSceneAssets(irs: { ir: any }[], refs: AssetRef[], o: { proj
     }
     out.assets.push({ id: r.id, ref: r.ref, file, inProject });
     if (!hit) { out.warnings.push(`${r.ref}: no stored record to credit (fetch it again with fetch_asset)`); continue; }
+    // ShareAlike and trademark flags reach the build report, not only CREDITS.md (tell the user).
+    for (const f of licenseFlags(hit.license)) out.warnings.push(`${r.ref}: ${f}`);
     for (const d of [o.projectDir ?? unsavedCreditsDir(), o.sceneDir].filter(Boolean) as string[]) {
-      const rel = (f: string) => { const x = path.relative(d, f); return x.startsWith('..') || path.isAbsolute(x) ? f.replace(/\\/g, '/') : x.replace(/\\/g, '/'); };
+      // Paths relative to the folder holding this CREDITS.md, else to the project (footage/…), never a machine path.
+      const rel = (f: string) => {
+        for (const base of [d, o.projectDir]) {
+          if (!base) continue;
+          const x = path.relative(base, f);
+          if (!x.startsWith('..') && !path.isAbsolute(x)) return x.replace(/\\/g, '/');
+        }
+        return path.basename(f);
+      };
       const c = appendCredit(d, hit, [file, ...files].map(rel));
       if (!out.credits.includes(c.file)) out.credits.push(c.file);
     }

@@ -40,6 +40,12 @@ export function localRoots(): string[] {
   return [...new Set(list.map(normRoot).filter(Boolean))];
 }
 
+/** Is this path inside one of the configured roots? (Only such files may be read or copied as local assets.) */
+export function insideLocalRoots(p: string): boolean {
+  const abs = path.resolve(p).toLowerCase();
+  return localRoots().some((r) => { const root = path.resolve(r).toLowerCase(); return abs === root || abs.startsWith(root.endsWith(path.sep) ? root : root + path.sep); });
+}
+
 function normRoot(r: string): string {
   const s = r.trim().replace(/^"(.*)"$/, '$1');
   if (!s) return '';

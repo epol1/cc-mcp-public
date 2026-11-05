@@ -1,7 +1,7 @@
-// Fonts (ASSETS §6, D93): read a font's names (incl. a variable font's named instances, which AE lists as
+// Fonts (ASSETS §6, D93, D102): read a font's names (incl. a variable font's named instances, which AE lists as
 // separate PostScript names), install it per-user on Windows (no admin: %LOCALAPPDATA%\Microsoft\Windows\Fonts
-// plus an HKCU value), and ask AE whether it sees it. A running AE 26.5 only reads the font list at launch, so a
-// fresh install needs an AE restart, which only the user may do.
+// plus an HKCU value, loaded into the session with AddFontResource), and ask AE whether it sees it. A running AE
+// 26.5 picks a font up once it is loaded into the session; no restart needed.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -75,10 +75,12 @@ export function installFonts(files: string[]): { file: string; names: FontNames;
     execFileSync('reg', ['add', REG, '/v', `${names.full} (${kind})`, '/t', 'REG_SZ', '/d', dest, '/f'], { stdio: 'ignore', windowsHide: true });
     out.push({ file: dest, names, already });
   }
-  // Tell running apps the font list changed (AE ignores it until a restart, D93; other apps pick it up).
+  // Load the files into this logon session (AddFontResource, as Explorer's Install does), then tell running apps the
+  // font list changed. Without the load, a running AE never sees the font, not even after an AE restart (D102).
+  const ps = out.map((o) => `[void][W.U]::AddFontResourceW('${o.file.replace(/'/g, "''")}');`).join(' ');
   try {
-    execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `Add-Type -Namespace W -Name U -MemberDefinition '[DllImport("user32.dll")] public static extern IntPtr SendMessageTimeout(IntPtr h,uint m,UIntPtr w,IntPtr l,uint f,uint t,out UIntPtr r);'; $r=[UIntPtr]::Zero; [W.U]::SendMessageTimeout([IntPtr]0xffff,0x001D,[UIntPtr]::Zero,[IntPtr]::Zero,2,3000,[ref]$r) | Out-Null`], { stdio: 'ignore', windowsHide: true, timeout: 15_000 });
-  } catch { /* best effort */ }
+    execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `Add-Type -Namespace W -Name U -MemberDefinition '[DllImport("gdi32.dll", CharSet=CharSet.Unicode)] public static extern int AddFontResourceW(string f); [DllImport("user32.dll")] public static extern IntPtr SendMessageTimeout(IntPtr h,uint m,UIntPtr w,IntPtr l,uint f,uint t,out UIntPtr r);'; ${ps} $r=[UIntPtr]::Zero; [W.U]::SendMessageTimeout([IntPtr]0xffff,0x001D,[UIntPtr]::Zero,[IntPtr]::Zero,2,3000,[ref]$r) | Out-Null`], { stdio: 'ignore', windowsHide: true, timeout: 15_000 });
+  } catch { /* best effort: the font is still installed for the next logon */ }
   return out;
 }
 

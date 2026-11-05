@@ -26,18 +26,29 @@ export const sourceName = (id: string) => SOURCE_NAME[id] ?? id;
  * `"Title" by Author (author url), Source (page), License (license url).`
  */
 export function creditLine(p: { title: string; author?: string; authorUrl?: string; source: string; page?: string; license: AssetHit['license']; via?: string }): string {
+  // One line per asset: titles and names from APIs can hold newlines, which would split the entry from its [id].
+  const one = (s?: string) => (s ?? '').replace(/\s+/g, ' ').trim();
+  p = { ...p, title: one(p.title), author: one(p.author) || undefined };
   const by = p.author ? ` by ${p.author}${p.authorUrl ? ` (${p.authorUrl})` : ''}` : '';
   const src = `${sourceName(p.source)}${p.via ? ` via ${p.via}` : ''}${p.page ? ` (${p.page})` : ''}`;
   const lic = p.license.id === 'local' ? 'license unknown (your own library: check the rights before publishing)' : `${licenseLabel(p.license)}${p.license.url ? ` (${p.license.url})` : ''}`;
   return `"${p.title.replace(/"/g, "'")}"${by}, ${src}, ${lic}.`;
 }
 
-/** The full CREDITS.md line for a fetched asset: credit, flags, the files in the project, and the id tag. */
+/**
+ * The full CREDITS.md line for a fetched asset: credit, license flags (ShareAlike, trademark), the files in the
+ * project, and the id tag. Search hints from the adapters (hit.notes) stay out: credits are for people.
+ */
 export function creditEntry(hit: AssetHit, files: string[]): string {
-  const flags = licenseFlags(hit.license);
-  const notes = [...flags, ...(hit.notes ?? [])];
-  return `- ${hit.credit}${notes.length ? ` ${notes.map((n) => `**${n}.**`).join(' ')}` : ''}${files.length ? ` Files: ${files.map((f) => `\`${f.replace(/\\/g, '/')}\``).join(', ')}.` : ''} [${hit.id}]`;
+  const flags = licenseFlags(hit.license).map((n) => n.replace(/\s+/g, ' '));
+  return `- ${hit.credit.replace(/\s+/g, ' ')}${flags.length ? ` ${flags.map((n) => `**${n}.**`).join(' ')}` : ''}${files.length ? ` Files: ${files.map((f) => `\`${f.replace(/\\/g, '/')}\``).join(', ')}.` : ''} [${hit.id}]`;
 }
+
+/** The file list of an existing entry (only the "Files: …" part: notes can hold backticks too). */
+const entryFiles = (line: string): string[] => {
+  const m = / Files: (.*)\. \[[^\]]+\]\s*$/.exec(line);
+  return m ? [...m[1].matchAll(/`([^`]+)`/g)].map((x) => x[1]) : [];
+};
 
 /**
  * Appends the asset's line to `<dir>/CREDITS.md` (creating it with a header), or updates the file list of an
@@ -52,15 +63,15 @@ export function appendCredit(dir: string, hit: AssetHit, files: string[]): { fil
   const at = lines.findIndex((l) => l.startsWith('- ') && l.endsWith(tag));
   if (at >= 0) {
     // Merge file lists: same asset, maybe another variant.
-    const old = [...lines[at].matchAll(/`([^`]+)`/g)].map((m) => m[1]);
-    const merged = [...new Set([...old, ...files.map((f) => f.replace(/\\/g, '/'))])];
+    const merged = [...new Set([...entryFiles(lines[at]), ...files.map((f) => f.replace(/\\/g, '/'))])];
     const next = creditEntry(hit, merged);
     if (next === lines[at]) return { file, added: false };
     lines[at] = next;
     fs.writeFileSync(file, lines.join('\n'));
     return { file, added: false };
   }
-  fs.writeFileSync(file, cur.replace(/\s*$/, '\n') + creditEntry(hit, files) + '\n');
+  // A blank line between the header and the first entry, none between entries.
+  fs.writeFileSync(file, cur.replace(/\s*$/, /\n- /.test(cur) ? '\n' : '\n\n') + creditEntry(hit, files) + '\n');
   return { file, added: true };
 }
 

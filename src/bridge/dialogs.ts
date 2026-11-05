@@ -40,10 +40,22 @@ export async function pressDialog(hwnd: number, button: string): Promise<{ press
   return JSON.parse(raw || '{"pressed":false}');
 }
 
-/** Types text into a native dialog's edit box (the file name of a Save dialog), e.g. to drive Collect Files in tests. */
-export async function setDialogText(hwnd: number, text: string): Promise<{ set: boolean; via?: string; error?: string }> {
+/** AE's open dialogs by Win32 only (fast; no captures, no UI Automation). */
+export async function quickDialogs(): Promise<{ hwnd: number; title: string }[]> {
+  if (process.platform !== 'win32') return [];
+  return JSON.parse((await ps(['-Action', 'dialogs'])) || '[]');
+}
+
+/** Types text into a common file dialog's "File name:" box (Win32; never another field), e.g. for Collect Files. */
+export async function setDialogText(hwnd: number, text: string): Promise<{ set: boolean; via?: string; value?: string; error?: string }> {
   const raw = await ps(['-Action', 'settext', '-Hwnd', String(hwnd), '-Button', text]);
   return JSON.parse(raw || '{"set":false}');
+}
+
+/** Clicks a dialog's child button by control id (1 = OK/Save, 2 = Cancel). */
+export async function clickDialogButton(hwnd: number, id: number): Promise<{ pressed: boolean; via?: string; error?: string }> {
+  const raw = await ps(['-Action', 'click', '-Hwnd', String(hwnd), '-Button', String(id)]);
+  return JSON.parse(raw || '{"pressed":false}');
 }
 
 /** Dialogs we answer automatically because there is only one sensible answer. Matched on UIA text when available. */

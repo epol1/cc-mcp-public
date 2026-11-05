@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { absEntry, lookup, lookupAny } from './cache.ts';
+import { absEntry, cachedHit, findCached } from './cache.ts';
 
 export interface AssetRef { ref: string; id: string; variant?: string; main: string; files: string[] }
 
@@ -34,7 +34,8 @@ export function resolveAssetRef(ref: string): AssetRef {
   const known = resolvedRefs().find((r) => r.ref === ref);
   if (known && fs.existsSync(known.main)) return known;
   let main: string | undefined, files: string[] = [];
-  const e = variant ? lookup(id, variant) : lookupAny(id);
+  // Loose spelling (case, a variant prefix), and without @variant only the source's default variant.
+  const e = findCached(id, variant, (dir) => cachedHit(path.join(dir, 'x'))?.variants?.[0]?.label);
   if (e) { const a = absEntry(e); main = a.main; files = a.files; }
   else {
     let out: string;
@@ -56,4 +57,13 @@ export function resolveAssetRef(ref: string): AssetRef {
 export function resolveSrc(src: string, dir: string): string {
   if (isAssetRef(src)) return resolveAssetRef(src).main;
   return path.isAbsolute(src) ? src : path.resolve(dir, src);
+}
+
+/**
+ * `asset('fontsource:space-grotesk@full')` in a scene: the cached file of an asset the scene uses some other way
+ * than a `src` (a font it names by PostScript name, a texture an expression reads), recorded so the build copies
+ * and credits it like any `asset:` source.
+ */
+export function asset(id: string): string {
+  return resolveAssetRef(id.startsWith('asset:') ? id : `asset:${id}`).main;
 }

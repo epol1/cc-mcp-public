@@ -45,7 +45,7 @@ export function licenseRefusal(l: AssetLicense, mode: 'cc0' | 'commercial' = 'co
   if (/-ND-|-ND$|NoDerivatives/i.test(l.id) || (l as any).noDerivatives) return `${l.id}: NoDerivatives (no edits allowed)`;
   if (!ALLOWED.some((r) => r.test(l.id))) return `${l.id}: not on the license allowlist (ASSETS §5)`;
   if (!l.commercial) return `${l.id}: not licensed for commercial use`;
-  if (mode === 'cc0' && l.id !== 'local' && !PUBLIC_DOMAIN.test(l.id)) return `${l.id}: not public domain (license: 'cc0' asked for)`;
+  if (mode === 'cc0' && !PUBLIC_DOMAIN.test(l.id)) return l.id === 'local' ? `a local file of unknown license (license: 'cc0' asked for)` : `${l.id}: not public domain (license: 'cc0' asked for)`;
   return null;
 }
 

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { buildScene } from './build.ts';
 import { CREDITS_FILE } from '../assets/credits.ts';
+import { unsavedCreditsDir } from '../assets/fetch.ts';
 import { callRuntime } from '../bridge/index.ts';
 import type { BuildReport } from './build.ts';
 import { renderComp } from './render.ts';
@@ -56,7 +57,8 @@ export async function deliverScene(input: { file?: string; source?: string; cwd?
   // Fetched assets travel with the renders: CREDITS.md (next to the project, else next to the scene) is copied
   // into every folder the renders went to.
   const p = await callRuntime('ping', [], { timeoutMs: 20_000 }).catch(() => null);
-  const credits = [build.credits ?? [], p?.project ? [path.join(path.dirname(p.project), CREDITS_FILE)] : [], input.file ? [path.join(path.dirname(path.resolve(input.file)), CREDITS_FILE)] : []].flat().find((f) => fs.existsSync(f));
+  // Never the shared credits of unsaved projects (they list other projects' fetches too).
+  const credits = [(build.credits ?? []).filter((c) => !path.resolve(c).startsWith(path.resolve(unsavedCreditsDir()))), p?.project ? [path.join(path.dirname(p.project), CREDITS_FILE)] : [], input.file ? [path.join(path.dirname(path.resolve(input.file)), CREDITS_FILE)] : []].flat().find((f) => fs.existsSync(f));
   if (credits) {
     for (const dir of new Set(report.renders.filter((x) => x.ok && x.file).map((x) => path.dirname(x.file!)))) {
       const dest = path.join(dir, CREDITS_FILE);

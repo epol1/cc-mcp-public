@@ -32,6 +32,26 @@ public class AeWin {
   public static string Cls(IntPtr h) { var sb = new StringBuilder(256); GetClassName(h, sb, 256); return sb.ToString(); }
   // WM_GETTEXT with a timeout so a busy AE never blocks us.
   public static string Title(IntPtr h) { var sb = new StringBuilder(512); IntPtr r; SendMessageTimeout(h, 0x000D, (IntPtr)512, sb, 0x0002, 300, out r); return sb.ToString(); }
+  // Child controls by Win32 (fast, unlike UI Automation on a Save dialog's folder view).
+  [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr p, EnumProc cb, IntPtr l);
+  [DllImport("user32.dll")] public static extern int GetDlgCtrlID(IntPtr h);
+  [DllImport("user32.dll")] public static extern IntPtr GetParent(IntPtr h);
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern IntPtr SendMessageTimeout(IntPtr h, uint msg, IntPtr w, string l, uint flags, uint timeout, out IntPtr res);
+  [DllImport("user32.dll")] public static extern IntPtr SendMessageTimeout(IntPtr h, uint msg, IntPtr w, IntPtr l, uint flags, uint timeout, out IntPtr res);
+  public static List<IntPtr> Children(IntPtr p) { var res = new List<IntPtr>(); EnumChildWindows(p, (h, l) => { res.Add(h); return true; }, IntPtr.Zero); return res; }
+  // The "File name:" edit of a common Save/Open dialog: an Edit inside the ComboBox with id 1001 (Vista style) or
+  // inside ComboBoxEx32 1148 (classic); a bare Edit with id 1001/1152 as a fallback.
+  public static IntPtr FileNameEdit(IntPtr dlg) {
+    IntPtr loose = IntPtr.Zero;
+    foreach (var h in Children(dlg)) {
+      if (Cls(h) != "Edit") continue;
+      var p = GetParent(h); int pid = GetDlgCtrlID(p), id = GetDlgCtrlID(h);
+      if ((Cls(p) == "ComboBox" && (pid == 1001 || GetDlgCtrlID(GetParent(p)) == 1148)) ) return h;
+      if (id == 1001 || id == 1152) loose = h;
+    }
+    return loose;
+  }
+  public static IntPtr ChildById(IntPtr dlg, int id) { foreach (var h in Children(dlg)) if (GetDlgCtrlID(h) == id && Cls(h) == "Button") return h; return IntPtr.Zero; }
 }
 "@
 [void][AeWin]::SetProcessDPIAware()
@@ -41,6 +61,8 @@ Get-Process -Name AfterFX -ErrorAction SilentlyContinue | ForEach-Object { [void
 if ($Action -eq "press") {
   $target = [IntPtr][int64]$Hwnd
   if ([AeWin]::Cls($target) -ne "#32770") { '{"pressed":false,"error":"not a dialog window"}'; exit 0 }
+  # Cancel-like answers close the dialog directly (no UI Automation search, which is slow on file dialogs).
+  if ($Button -match "^(cancel|escape|esc|close)$") { [void][AeWin]::PostMessage($target, 0x0010, [IntPtr]0, [IntPtr]0); '{"pressed":true,"via":"wm_close"}'; exit 0 }
   try {
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
     $el = [System.Windows.Automation.AutomationElement]::FromHandle($target)
@@ -57,25 +79,35 @@ if ($Action -eq "press") {
   exit 0
 }
 
+if ($Action -eq "dialogs") {
+  # Fast Win32-only list of AE's dialogs (no UI Automation, no captures): JSON [{ hwnd, title }].
+  $list = @()
+  foreach ($h in [AeWin]::ForPids($pids)) { if ([AeWin]::Cls($h) -eq "#32770") { $list += [pscustomobject]@{ hwnd = [int64]$h; title = [AeWin]::Title($h) } } }
+  ConvertTo-Json -InputObject @($list) -Compress
+  exit 0
+}
+
 if ($Action -eq "settext") {
-  # Types -Button's text into the first edit box of a native dialog (the file name box of a Save dialog).
+  # Types -Button's text into the "File name:" box of a common Save/Open dialog -Hwnd (Win32 only; never another
+  # field: the folder view's items are editable too, and UI Automation over them takes minutes).
   $target = [IntPtr][int64]$Hwnd
   if ([AeWin]::Cls($target) -ne "#32770") { '{"set":false,"error":"not a dialog window"}'; exit 0 }
-  try {
-    Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
-    $el = [System.Windows.Automation.AutomationElement]::FromHandle($target)
-    $typeCond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Edit)
-    # The "File name:" box (AutomationId 1001 in common dialogs), not the read-only address or search fields.
-    $edit = $null
-    foreach ($e in $el.FindAll([System.Windows.Automation.TreeScope]::Descendants, $typeCond)) {
-      $vp = $null; try { $vp = $e.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern) } catch {}
-      if (-not $vp -or $vp.Current.IsReadOnly) { continue }
-      if ($e.Current.AutomationId -eq "1001" -or $e.Current.Name -like "File name*") { $edit = $e; break }
-      if (-not $edit) { $edit = $e }
-    }
-    if ($edit) { $edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($Button); ('{"set":true,"via":"uia","id":' + (ConvertTo-Json ([string]$edit.Current.AutomationId)) + '}'); exit 0 }
-  } catch { ('{"set":false,"error":' + (ConvertTo-Json ([string]$_)) + '}'); exit 0 }
-  '{"set":false,"error":"no edit box"}'
+  $edit = [AeWin]::FileNameEdit($target)
+  if ($edit -eq [IntPtr]::Zero) { '{"set":false,"error":"no File name box (not a common file dialog?)"}'; exit 0 }
+  $r = [IntPtr]::Zero
+  [void][AeWin]::SendMessageTimeout($edit, 0x000C, [IntPtr]0, $Button, 0x0002, 2000, [ref]$r)
+  $sb = New-Object System.Text.StringBuilder 1024; [void][AeWin]::SendMessageTimeout($edit, 0x000D, [IntPtr]1024, $sb, 0x0002, 2000, [ref]$r)
+  ('{"set":' + ($(if ($sb.ToString() -eq $Button) { 'true' } else { 'false' })) + ',"via":"win32","value":' + (ConvertTo-Json $sb.ToString()) + '}')
+  exit 0
+}
+
+if ($Action -eq "click") {
+  # Clicks the child button with control id -Button (1 = OK/Save, 2 = Cancel) of dialog -Hwnd (BM_CLICK).
+  $target = [IntPtr][int64]$Hwnd
+  $btn = [AeWin]::ChildById($target, [int]$Button)
+  if ($btn -eq [IntPtr]::Zero) { '{"pressed":false,"error":"no such button"}'; exit 0 }
+  [void][AeWin]::PostMessage($btn, 0x00F5, [IntPtr]0, [IntPtr]0)
+  '{"pressed":true,"via":"bm_click"}'
   exit 0
 }
 
@@ -96,9 +128,19 @@ foreach ($h in [AeWin]::ForPids($pids)) {
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
     $el = [System.Windows.Automation.AutomationElement]::FromHandle($h)
     $buttons = @(); $texts = @()
-    foreach ($e in $el.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
-      $nm = $e.Current.Name; if (-not $nm) { continue }
-      if ($e.Current.ControlType.ProgrammaticName -eq "ControlType.Button") { $buttons += $nm } elseif ($nm -ne "OS_ViewContainer") { $texts += $nm }
+    # A bounded walk: at most 400 elements / 3 s, never into lists, trees or grids (a Save dialog's folder view has
+    # thousands of items, and walking them took minutes).
+    $walker = [System.Windows.Automation.TreeWalker]::ControlViewWalker
+    $stack = New-Object System.Collections.Stack; $stack.Push($el); $n = 0; $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($stack.Count -gt 0 -and $n -lt 400 -and $sw.ElapsedMilliseconds -lt 3000) {
+      $e = $stack.Pop(); $n++
+      $type = $e.Current.ControlType.ProgrammaticName
+      $nm = $e.Current.Name
+      if ($nm -and $e -ne $el) { if ($type -eq "ControlType.Button") { $buttons += $nm } elseif ($nm -ne "OS_ViewContainer") { $texts += $nm } }
+      if ($type -match "ControlType\.(List|Tree|DataGrid|Table)$") { continue }
+      $c = $walker.GetFirstChild($e); $kids = @()
+      while ($c) { $kids += $c; $c = $walker.GetNextSibling($c) }
+      for ($i = $kids.Count - 1; $i -ge 0; $i--) { $stack.Push($kids[$i]) }
     }
     $d.buttons = $buttons; $d.texts = $texts
   } catch {}

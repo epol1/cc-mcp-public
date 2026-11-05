@@ -74,6 +74,15 @@ describe('credits', () => {
   it('writes the flags into the line', () => {
     expect(creditEntry(hit({ license: normalizeLicense('by-sa', '2.0') }), [])).toMatch(/\*\*ShareAlike/);
   });
+  it('keeps adapter hints out, and backticks in them out of the merged file list', () => {
+    const h = hit({ notes: ['outline icon: draws on with `draw`'] });
+    expect(creditEntry(h, ['a.glb'])).not.toMatch(/draws on/);
+    appendCredit(dir, h, ['footage/a.glb']);
+    appendCredit(dir, h, ['footage/b.glb']);
+    const line = fs.readFileSync(path.join(dir, 'CREDITS.md'), 'utf8').split('\n').find((l) => l.endsWith('[polyhaven:rubber_duck_toy]'))!;
+    expect(line).toMatch(/Files: `footage\/a\.glb`, `footage\/b\.glb`\. \[/);
+    expect(fs.readFileSync(path.join(dir, 'CREDITS.md'), 'utf8')).toMatch(/\.\n\n- /); // a blank line after the header
+  });
 });
 
 describe('download cache (LRU, cap)', () => {

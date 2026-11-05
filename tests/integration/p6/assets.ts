@@ -14,12 +14,13 @@ import { buildScene } from '../../../src/api/index.ts';
 import { fetchAssetTool } from '../../../src/api/assets.ts';
 import { creditedIds } from '../../../src/assets/credits.ts';
 import { callRuntime } from '../../../src/bridge/index.ts';
-import { aeWindows, pressDialog, setDialogText } from '../../../src/bridge/dialogs.ts';
+import { clickDialogButton, pressDialog, quickDialogs, setDialogText } from '../../../src/bridge/dialogs.ts';
 
-const ROOT = path.join(os.tmpdir(), 'aec-p6');
+// A fresh folder per run: AE keeps handles on footage of a closed project (an older run's MP4 can't be deleted).
+const RUN = path.join(os.tmpdir(), 'aec-p6', String(Date.now()));
+const ROOT = path.join(RUN, 'project');
 const AEP = path.join(ROOT, 'p6-assets.aep');
-const COLLECTED = path.join(os.tmpdir(), 'aec-p6-collected');
-const MOVED = path.join(os.tmpdir(), 'aec-p6-moved');
+const COLLECTED = path.join(RUN, 'collected');
 const SCENE = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'assets-scene.tsx');
 const js = (s: string) => JSON.stringify(s.replace(/\\/g, '/'));
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -45,15 +46,21 @@ async function itemCount(): Promise<number> { return +(await es('app.project.num
  */
 async function closeDialogs(): Promise<boolean> {
   for (let i = 0; i < 20; i++) {
-    const w = await aeWindows();
-    if (!w.dialogs.length) return true;
-    for (const d of w.dialogs.slice().reverse()) await pressDialog(d.hwnd, 'Cancel');
+    let ds: { hwnd: number; title: string }[];
+    try { ds = await quickDialogs(); } catch { await sleep(1000); continue; }
+    if (!ds.length) return true;
+    // Innermost first (the last listed is usually on top): WM_CLOSE answers Cancel.
+    for (const d of ds.slice().reverse()) await pressDialog(d.hwnd, 'Cancel').catch(() => undefined);
     await sleep(1000);
   }
   return false;
 }
 
-/** Drives File > Dependencies > Collect Files (command 2482) into `dest` through its two dialogs. */
+/**
+ * Drives File > Dependencies > Collect Files (command 2482) into `dest`: AE's own options dialog (Enter = "Collect…"),
+ * then the Windows "Collect files into folder" dialog, where only the File name box is filled (Win32, by control
+ * id) and Save (button 1) is clicked. Any surprise: every dialog is cancelled before returning (D99).
+ */
 async function collectFiles(dest: string): Promise<{ ok: boolean; detail: string }> {
   const log: string[] = [];
   const fail = async (detail: string) => {
@@ -62,32 +69,35 @@ async function collectFiles(dest: string): Promise<{ ok: boolean; detail: string
   };
   await es(`app.scheduleTask("app.executeCommand(2482)", 300, false); "scheduled"`);
   let stage = 0;
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 180; i++) {
     await sleep(1000);
-    const w = await aeWindows({ capture: true });
-    const d = w.dialogs[w.dialogs.length - 1];
+    let ds: { hwnd: number; title: string }[];
+    try { ds = await quickDialogs(); } catch (e: any) { log.push(`list failed: ${e.message}`); continue; }
+    const d = ds[ds.length - 1];
     if (!d) {
       // Done when the dialogs are gone and the collected project is on disk.
       if (stage === 2 && fs.existsSync(dest) && listFiles(dest).some((f) => /\.aep$/i.test(f))) return { ok: true, detail: log.join('; ') };
+      if (stage === 2 && i > 150) return fail('the dialogs closed but no collected project appeared');
       continue;
     }
-    const isSave = (d.texts ?? []).some((t) => /File name/i.test(t)) || /into folder|save/i.test(d.title);
-    if (stage === 0 && !isSave) {
-      log.push(`${d.title || '(untitled)'}`);
-      // AE's own Collect Files dialog (drawn by AE): Enter presses its default button, "Collect…".
+    if (stage === 0 && /^Collect Files$/i.test(d.title)) {
+      log.push(d.title);
       const r = await pressDialog(d.hwnd, 'Collect...');
       log.push(`collect: ${r.via}`);
       stage = 1;
-    } else if (stage <= 1 && isSave) {
-      log.push(`${d.title}`);
+    } else if (stage === 1 && /into folder/i.test(d.title)) {
+      log.push(d.title);
       const t = await setDialogText(d.hwnd, dest);
-      if (!t.set) return fail(`could not type the folder: ${t.error} (capture ${d.capture})`);
-      await sleep(400);
-      const r = await pressDialog(d.hwnd, 'Save');
-      log.push(`save: ${r.via}`);
+      if (!t.set) return fail(`could not fill the File name box: ${t.error ?? `it reads "${t.value}"`}`);
+      await sleep(300);
+      const r = await clickDialogButton(d.hwnd, 1);
+      if (!r.pressed) return fail(`could not press Save: ${r.error}`);
+      log.push('save: bm_click');
       stage = 2;
-    } else if (stage === 2 && i > 100) return fail(`dialog "${d.title}" still open after saving (capture ${d.capture})`);
-    else if (stage !== 2) return fail(`unexpected dialog "${d.title}" (capture ${d.capture})`);
+    } else if (stage === 2) {
+      // Collecting: a progress window may come and go. Anything that stays a long time is a problem.
+      if (i > 150) return fail(`dialog "${d.title}" still open after saving`);
+    } else if (i > 20) return fail(`unexpected dialog "${d.title}" at stage ${stage}`);
   }
   return fail('timed out');
 }
@@ -97,7 +107,8 @@ const listFiles = (dir: string): string[] => fs.existsSync(dir) ? fs.readdirSync
 async function main() {
   const ping = await callRuntime('ping', [], { timeoutMs: 20_000 });
   const dev: string | null = ping.project;
-  for (const d of [ROOT, COLLECTED, MOVED]) fs.rmSync(d, { recursive: true, force: true });
+  // Older runs, best effort (files AE still holds stay until AE lets go).
+  for (const old of fs.existsSync(path.dirname(RUN)) ? fs.readdirSync(path.dirname(RUN)) : []) { try { fs.rmSync(path.join(path.dirname(RUN), old), { recursive: true, force: true }); } catch { /* in use */ } }
   fs.mkdirSync(ROOT, { recursive: true });
   // The dev project is ours (scratch/): save it so a new project can open without a prompt, reopen it at the end.
   if (dev) await es('if (app.project.dirty) app.project.save(); "saved"', 600_000);
@@ -149,16 +160,17 @@ async function main() {
     const missing = used.filter((n) => !collected.includes(n));
     check('Collect Files kept every fetched file the scene uses', col.ok && used.length >= 7 && missing.length === 0, `missing: ${missing.join(', ')} (collected ${collected.length} files)`);
 
-    // 4. Move the project folder and reopen it: nothing missing. Never touch the project while a dialog is open.
+    // 4. Open the collected project: every footage item resolves inside the collection, none missing. (Renaming the
+    // project folder instead failed with EPERM: AE keeps handles on footage after the project closes.) Never touch
+    // the project while a dialog is open.
     if (!(await closeDialogs())) throw new Error('a dialog is still open in After Effects: stopping without touching the project');
-    await es(`app.newProject(); "closed"`);
-    // AE (or a virus scanner) may hold the new files for a moment after the project closes.
-    for (let i = 0; ; i++) {
-      try { fs.renameSync(ROOT, MOVED); break; } catch (e: any) { if (i >= 15 || e.code !== 'EPERM') throw e; await sleep(2000); }
+    const collectedAep = listFiles(COLLECTED).find((f) => /\.aep$/i.test(f));
+    if (col.ok && collectedAep) {
+      await es(`app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES); app.open(new File(${js(collectedAep)})); "opened"`, 600_000);
+      const r = JSON.parse(await es(`(function(){var root=${js(COLLECTED)}.toLowerCase(),miss=[],out=[],n=0;for(var i=1;i<=app.project.numItems;i++){var it=app.project.item(i);if(!(it instanceof FootageItem)||!it.file)continue;n++;if(it.footageMissing)miss.push(it.name);var p=it.file.fsName.replace(/\\\\/g,"/").toLowerCase();if(p.indexOf(root)!==0)out.push(it.name);}return '{"n":'+n+',"miss":"'+miss.join("|")+'","out":"'+out.join("|")+'"}';})()`));
+      check('collected project: every footage item found', r.n >= 7 && r.miss === '', `${r.n} items, missing: ${r.miss}`);
+      check('collected project: footage relinked inside the collection', r.out === '', `outside: ${r.out}`);
     }
-    await es(`app.open(new File(${js(path.join(MOVED, path.basename(AEP)))})); "opened"`, 600_000);
-    const miss = await es('(function(){var m=[];for(var i=1;i<=app.project.numItems;i++){var it=app.project.item(i);if(it instanceof FootageItem&&it.file&&it.footageMissing)m.push(it.name);}return m.join(",");})()');
-    check('moved project folder: no footage missing', miss === '', miss);
   } catch (e: any) {
     check('phase 6 asset checks ran to the end', false, e.message);
   } finally {

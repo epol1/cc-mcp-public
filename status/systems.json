@@ -1425,7 +1425,7 @@
         {
           "id": "assets-tools",
           "name": "find_assets (thumbnail grid) + fetch_asset (download, copy into project, import) + doctor",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
@@ -1437,7 +1437,7 @@
         {
           "id": "assets-fonts",
           "name": "Fonts via Fontsource, after probing font installs in AE",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
@@ -1455,13 +1455,13 @@
         {
           "id": "assets-s19",
           "name": "Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "assets-fresh",
           "name": "Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6",
-          "status": "todo",
+          "status": "wip",
           "weight": 1
         }
       ],
