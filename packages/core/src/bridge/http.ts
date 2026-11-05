@@ -58,7 +58,9 @@ export class HttpBridge implements Backend {
 export function postJson(port: number, route: string, headers: Record<string, string>, body: unknown, timeoutMs: number): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const data = Buffer.from(JSON.stringify(body), 'utf8');
-    const req = http.request({ host: '127.0.0.1', port, path: route, method: 'POST', headers: { ...headers, 'content-type': 'application/json', 'content-length': data.length } }, (res) => {
+    // agent: false = a fresh connection per request. Node 22 reuses keep-alive sockets, which the bridges' older
+    // CEP Node closes after 5 s idle; reusing one mid-close resets the request (seen as ECONNRESET).
+    const req = http.request({ host: '127.0.0.1', port, path: route, method: 'POST', agent: false, headers: { ...headers, 'content-type': 'application/json', 'content-length': data.length } }, (res) => {
       const chunks: Buffer[] = [];
       res.on('data', (c: Buffer) => chunks.push(c));
       res.on('end', () => {

@@ -260,13 +260,23 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
         break;
       }
       case 'level': {
-        const cs = e.target === 'dialogue' ? spine.map((s) => s.clip) : e.target === 'music' ? other('music') : (() => { try { return resolve(e.target, tag).map((s) => s.clip); } catch { return other(e.target); } })();
+        const cs = e.target === 'all' ? [...spine.map((s) => s.clip), ...others.filter((c) => c.aTrack)]
+          : e.target === 'dialogue' ? spine.map((s) => s.clip) : e.target === 'music' ? other('music') : (() => { try { return resolve(e.target, tag).map((s) => s.clip); } catch { return other(e.target); } })();
+        let flattened = 0;
         for (const c of cs) {
-          const cur = c.level ?? levelFromRaw(c) ?? 0;
-          c.level = e.db !== undefined ? e.db : cur + (e.delta ?? 0);
-          delete c.levelKeys;
+          if (e.db === undefined && e.delta !== undefined) {
+            // Relative change: shift keyframes (ducking, fades) instead of flattening them.
+            if (c.levelKeys?.length) { c.levelKeys = c.levelKeys.map((k) => ({ ...k, db: k.db + e.delta })); if (c.level !== undefined) c.level += e.delta; continue; }
+            const rawLv = c.raw?.audio?.findIndex((f) => /<effectid>audiolevels<\/effectid>/.test(f)) ?? -1;
+            if (rawLv >= 0 && /<keyframe>/.test(c.raw!.audio![rawLv])) { c.raw!.audio![rawLv] = scaleRawLevels(c.raw!.audio![rawLv], e.delta); continue; }
+            c.level = (c.level ?? levelFromRaw(c) ?? 0) + e.delta;
+          } else {
+            if (c.levelKeys?.length || c.raw?.audio?.some((f) => /<keyframe>/.test(f) && /audiolevels/.test(f))) flattened++;
+            c.level = e.db;
+            delete c.levelKeys;
+          }
         }
-        log.push(`${tag}: ${cs.length} clip(s) ${e.db !== undefined ? `to ${e.db} dB` : `${e.delta > 0 ? '+' : ''}${e.delta} dB`}${cs.some((c) => c.raw?.audio?.some((f) => /<keyframe>/.test(f) && /audiolevels/.test(f))) ? ' (their level keyframes were replaced by a flat level)' : ''}`);
+        log.push(`${tag}: ${cs.length} clip(s) ${e.db !== undefined ? `to ${e.db} dB` : `${e.delta > 0 ? '+' : ''}${e.delta} dB`}${flattened ? ` (${flattened} had level keyframes; an absolute level replaced them; use delta to keep them)` : ''}`);
         break;
       }
       case 'broll': {
@@ -403,6 +413,12 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
   };
   const summary = [`edited "${t0.name}" → new version "${imp.name}" (${imp.sequenceId}); the original is untouched. ${was.toFixed(2)} s → ${report.durationSeconds} s, ${imp.undoSteps} undo step.`, ...log].join('\n');
   return { report, summary };
+}
+
+/** Multiply every gain value (static and keyframes) of a carried Audio Levels filter by a dB change. */
+function scaleRawLevels(filter: string, deltaDb: number): string {
+  const k = Math.pow(10, deltaDb / 20);
+  return filter.replace(/(<value>)([\d.]+)(<\/value>)/g, (_m, a, v, b) => `${a}${Math.min(3.98109, Math.round(Number(v) * k * 1e6) / 1e6)}${b}`);
 }
 
 function levelFromRaw(c: TLClip): number | undefined {

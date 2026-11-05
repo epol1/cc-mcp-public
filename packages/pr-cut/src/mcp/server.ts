@@ -23,6 +23,7 @@ import { journaled, undoLast } from '../undo.ts';
 import { applyCutEdits, EDIT_OPS_HELP } from '../edit.ts';
 import { tightenSequence } from '../tighten.ts';
 import { libraryTools } from '../library-tools.ts';
+import { audioFinish, deliver, matchShots } from '../finish.ts';
 import { libraryPath } from '@ae-mcp/core/library/db.ts';
 
 const server = new McpServer({ name: 'pr-cut', version: '0.1.0' }, {
@@ -170,6 +171,38 @@ server.registerTool('export', {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const r = await exportSequence(seq.id, file, preset);
   return [text(`exported ${r.file} in ${(r.ms / 1000).toFixed(1)} s`)];
+}));
+
+server.registerTool('audio_finish', {
+  title: 'Loudness to a delivery target',
+  description: 'Measure the sequence mix (EBU R128: integrated LUFS, true peak, loudness range) and bring it to a target: -14 web/social (default), -16 podcast, -23 broadcast. Applies one gain change to every audio clip (keyframes such as music ducking are kept) as a new version, then measures again and says whether it is within ±1 LU. Peaks are kept under the ceiling (default -1 dBTP) by limiting the gain.',
+  inputSchema: { sequence: z.string().optional(), target: z.union([z.number(), z.enum(['web', 'social', 'podcast', 'broadcast', 'ebu', 'atsc'])]).optional(), truePeak: z.number().optional(), dryRun: z.boolean().optional() },
+}, async ({ sequence, target, truePeak, dryRun }) => wrap(async () => {
+  const seq = await resolveSequence(sequence);
+  if (dryRun) return [text((await audioFinish(seq.id, { target, truePeak, dryRun: true })).summary)];
+  const r = await journaled('audio_finish', seq.name, async () => { const b = await audioFinish(seq.id, { target, truePeak }); return { ...b, sequenceId: b.report?.sequence?.id }; });
+  return [text(r.summary), ...(r.report ? await withImages(r.report) : [])];
+}));
+
+server.registerTool('match_shots', {
+  title: 'Match shots to a reference',
+  description: 'Colour-match clips to a reference clip (exposure, temperature, tint, saturation from frame statistics) with Lumetri, as a new version. Use for two cameras on one interview, or a B-roll shot that sticks out. dryRun shows the corrections. Clips are V1/<n> ids from inspect_sequence.',
+  inputSchema: { sequence: z.string().optional(), reference: z.string(), targets: z.union([z.array(z.string()), z.literal('*')]).optional(), dryRun: z.boolean().optional() },
+}, async ({ sequence, reference, targets, dryRun }) => wrap(async () => {
+  const seq = await resolveSequence(sequence);
+  if (dryRun) return [text((await matchShots(seq.id, reference, targets ?? '*', { dryRun: true })).summary)];
+  const r = await journaled('match_shots', seq.name, async () => { const b = await matchShots(seq.id, reference, targets ?? '*'); return { ...b, sequenceId: b.report?.sequence?.id }; });
+  return [text(r.summary), ...(r.report ? await withImages(r.report) : [])];
+}));
+
+server.registerTool('deliver', {
+  title: 'Delivery pack',
+  description: 'Export the master (16:9 H.264) and social versions (9:16, 1:1, 4:5) into one folder. Social versions are editable sequences made with Premiere\'s Auto Reframe ("<name> 9x16"; adjust them in Premiere and deliver again to re-export), exported and scaled to 1080×1920 / 1080×1080 / 1080×1350. Captions travel with Auto Reframe. CREDITS.md is written when the project has asset credits.',
+  inputSchema: { sequence: z.string().optional(), aspects: z.array(z.enum(['9:16', '1:1', '4:5'])).optional(), outDir: z.string().optional(), master: z.boolean().optional() },
+}, async ({ sequence, aspects, outDir, master }) => wrap(async () => {
+  const seq = await resolveSequence(sequence);
+  const r = await deliver(seq.id, { aspects, outDir, master });
+  return [text(r.summary)];
 }));
 
 server.registerTool('undo', {
