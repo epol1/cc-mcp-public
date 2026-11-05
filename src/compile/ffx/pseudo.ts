@@ -135,10 +135,14 @@ function flatten(params: PseudoParam[]): any[] {
   return out;
 }
 
-/** Stable matchName: "Pseudo/aec <name> <hash>", the hash of the definition (a changed rig gets a new effect). */
+/**
+ * Stable matchName: "Pseudo/<name> <hash>", the hash of the definition (a changed rig gets a new effect). AE
+ * registers a pseudo effect only when its matchName fits 31 bytes (D84), so the name part is cut to 17 characters;
+ * the effect's display name keeps the full name.
+ */
 export function pseudoMatchName(def: PseudoEffectDef): string {
   const h = crypto.createHash('sha1').update(JSON.stringify(def)).digest('hex').slice(0, 6);
-  const base = def.name.replace(/[^A-Za-z0-9 ]+/g, '').slice(0, 39 - 7 - 5 - 7);
+  const base = def.name.replace(/[^A-Za-z0-9 ]+/g, '').slice(0, 31 - 'Pseudo/'.length - 7).trimEnd();
   return `Pseudo/${base} ${h}`;
 }
 

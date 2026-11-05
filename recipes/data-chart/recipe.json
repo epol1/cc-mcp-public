@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "name": "data-chart",
+  "title": "Data chart",
+  "intent": "An animated bar chart with a trend line from data rows: bars grow with staggered springs, values count up, the line draws through the tops and a callout lands.",
+  "tags": [
+    "chart",
+    "data",
+    "data viz",
+    "bar chart",
+    "graph",
+    "statistics",
+    "infographic",
+    "numbers",
+    "trend"
+  ],
+  "scene": "scene.tsx",
+  "sceneName": "DataChart",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 6,
+  "params": {
+    "title": {
+      "type": "string",
+      "default": "Custom builds per month",
+      "description": "Chart title"
+    },
+    "subtitle": {
+      "type": "string",
+      "default": "First half of 2026 · units shipped",
+      "description": "Units or source line"
+    },
+    "data": {
+      "type": "data",
+      "default": [
+        {
+          "label": "JAN",
+          "value": 42
+        },
+        {
+          "label": "FEB",
+          "value": 58
+        },
+        {
+          "label": "MAR",
+          "value": 51
+        },
+        {
+          "label": "APR",
+          "value": 77
+        },
+        {
+          "label": "MAY",
+          "value": 96
+        },
+        {
+          "label": "JUN",
+          "value": 128
+        }
+      ],
+      "description": "Rows of { label, value } (3–10 read best)"
+    },
+    "max": {
+      "type": "number",
+      "default": 0,
+      "description": "Axis top (0: rounded up from the data)"
+    },
+    "callout": {
+      "type": "string",
+      "default": "+205%",
+      "description": "Callout on the last point (empty: none)"
+    }
+  },
+  "controls": [
+    "Bar Color",
+    "Chart Delay",
+    "Line Color"
+  ],
+  "scenes": [],
+  "brand": "brand.ts",
+  "files": [
+    "brand.ts"
+  ],
+  "thumbnails": [],
+  "source": "examples/05-data-chart/scene.tsx",
+  "created": "2026-11-05T14:19:31.088Z"
+}

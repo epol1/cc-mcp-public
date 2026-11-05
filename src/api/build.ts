@@ -77,6 +77,12 @@ function sheetTimes(dur: number, fps: number, n: number): number[] {
   return Array.from({ length: n }, (_, i) => Math.round(((last * i) / (n - 1)) * fps) / fps);
 }
 
+/** Build calls get 5 min, plus 1.5 s per layer past 100: a 170-layer chart scene takes 2–5 min in a long AE session. */
+function buildTimeout(ir: any): number {
+  const layers = (ir.comps ?? []).reduce((n: number, c: any) => n + (c.layers?.length ?? 0), 0);
+  return 300_000 + Math.max(0, layers - 100) * 1500;
+}
+
 export async function buildScene(input: { file?: string; source?: string; def?: SceneDef<any>; ir?: any; cwd?: string }, opts: BuildOptions = {}): Promise<BuildReport> {
   const t0 = Date.now();
   const report: BuildReport = { ok: true, scene: '', comps: [], warnings: [], exprErrors: [], contactSheets: [], frames: [], restoredControls: 0, ms: 0 };
@@ -122,7 +128,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     const times = nFrames > 0 ? [...sheetTimes(main.dur, main.fps, nFrames), ...(opts.times ?? [])] : opts.times ?? [];
     const snapDir = path.join(outDir, 'frames', label ?? 'main').replace(/\\/g, '/');
     fs.rmSync(snapDir, { recursive: true, force: true });
-    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined, lint: lint ? SAMPLE_OPTS : undefined, motion: motionOpts ? MOTION_SAMPLE_OPTS : undefined }], { timeoutMs: 300_000 });
+    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined, lint: lint ? SAMPLE_OPTS : undefined, motion: motionOpts ? MOTION_SAMPLE_OPTS : undefined }], { timeoutMs: buildTimeout(ir) });
     report.undoSteps = (report.undoSteps ?? 0) + 1;
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;

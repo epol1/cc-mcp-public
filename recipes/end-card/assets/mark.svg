@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Placeholder mark for the recipes (a ring with a play triangle). Replace it with the brand's logo via the `logo` param. -->
+  <path d="M100 20 A80 80 0 0 1 100 180 A80 80 0 0 1 100 20 Z M100 50 A50 50 0 0 0 100 150 A50 50 0 0 0 100 50 Z" fill="#ffffff" fill-rule="evenodd"/>
+  <path d="M86 74 L132 100 L86 126 Z" fill="#ffffff"/>
+</svg>

@@ -234,12 +234,27 @@ export async function saveRecipe(o: SaveRecipeOptions): Promise<SaveRecipeResult
     const files = [...where.entries()].filter(([f, rel]) => rel && f !== scene).map(([, rel]) => rel!);
     const recipe = await indexRecipe(tmp, { name, title: o.title ?? o.name, intent: o.intent, description: o.description, tags: o.tags ?? [], params: o.params, brand, thumbnails: thumbs, files, linked: linked.map((l) => l.replace(/\\/g, '/')), source: scene.replace(/\\/g, '/') });
     fs.rmSync(dir, { recursive: true, force: true });
-    fs.renameSync(tmp, dir);
+    await moveDir(tmp, dir);
     return { dir, recipe, copied: files, linked, warnings };
   } catch (e) {
     fs.rmSync(tmp, { recursive: true, force: true });
     throw e;
   }
+}
+
+/**
+ * Renames a freshly written folder into place. Windows briefly locks new files (Defender, the indexer), so a
+ * rename can fail with EPERM/EBUSY: retry for about a second, then copy and remove instead.
+ */
+async function moveDir(from: string, to: string): Promise<void> {
+  for (let i = 0; i < 8; i++) {
+    try { fs.renameSync(from, to); return; } catch (e: any) {
+      if (e.code !== 'EPERM' && e.code !== 'EBUSY' && e.code !== 'EACCES') throw e;
+      await new Promise((r) => setTimeout(r, 50 * (i + 1)));
+    }
+  }
+  fs.cpSync(from, to, { recursive: true });
+  fs.rmSync(from, { recursive: true, force: true });
 }
 
 /** Every recipe in the libraries (first library wins on a name clash). */

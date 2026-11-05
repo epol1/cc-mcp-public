@@ -10,7 +10,9 @@ import type { PropKind } from '../../src/compile/keys.ts';
 const FPS = 30;
 interface Case { name: string; curve: EasingCurve; T: number; path: string; kind: PropKind; from: number[]; to: number[]; layer: 'solid' | 'shape'; tolPx: number }
 
-const spring = (cfg: any): EasingCurve => { const s = springProgress(cfg, FPS); return { name: 'spring', fn: (t: number) => s.fn(t * s.settleSec) }; };
+// Natural springs are asymptotic like in the compiler (src/compile/values.ts): their keys run on past the settle time
+// until the rest of the move is within tolerance, so the comparison covers every key.
+const spring = (cfg: any): EasingCurve => { const s = springProgress(cfg, FPS); return { name: 'spring', fn: (t: number) => s.fn(t * s.settleSec), asymptotic: true } as EasingCurve; };
 const settle = (cfg: any) => springProgress(cfg, FPS).settleSec;
 
 export const CASES: Case[] = [
@@ -30,10 +32,12 @@ export const CASES: Case[] = [
 export async function runEaseVerification(): Promise<{ name: string; keys: number; maxErr: number; tol: number; pass: boolean }[]> {
   const layers: any[] = [];
   const START = 0.5;
+  const spans: number[] = [];
   CASES.forEach((c, i) => {
     const range = Math.max(...c.to.map((t, d) => Math.abs(t - c.from[d])));
     const knots = curveKnots(c.curve, c.T, FPS, c.tolPx / Math.max(range, 1e-9) * 0.6);
     const keys = knotsToKeys(knots, c.from, c.to, START, c.kind);
+    spans[i] = Math.max(c.T, keys[keys.length - 1].t - START);
     const props: any[] = [];
     if (c.path.includes('ADBE Position_')) props.push({ p: 'ADBE Transform Group/ADBE Position', sep: true });
     props.push({ p: c.path, keys });
@@ -47,7 +51,7 @@ export async function runEaseVerification(): Promise<{ name: string; keys: numbe
   if (!r.ok) throw new Error('build failed: ' + r.error + ' @' + r.node);
   // Sample valueAtTime in AE at half frames over each animation.
   const samplesScript = `(function(){ var c=null; for(var i=1;i<=app.project.numItems;i++){var it=app.project.item(i); if(it instanceof CompItem && it.comment.indexOf("aec:easeverify")===0) c=it;}
-    var out=[]; var cases=${JSON.stringify(CASES.map((c) => ({ path: c.path, T: c.T })))};
+    var out=[]; var cases=${JSON.stringify(CASES.map((c, i) => ({ path: c.path, T: spans[i] })))};
     for (var k=0;k<cases.length;k++){ var L=null; for (var j=1;j<=c.numLayers;j++) if (c.layer(j).comment==="aec:case"+k) L=c.layer(j);
       var segs=cases[k].path.split("/"); var p=L; for (var s=0;s<segs.length;s++) p=p.property(segs[s]);
       var vals=[]; var n=Math.round(cases[k].T*${FPS}*2); for (var f=0; f<=n; f++){ var v=p.valueAtTime(${START}+f/${FPS * 2}, true); vals.push(v instanceof Array ? v.join(",") : String(v)); }
@@ -61,7 +65,8 @@ export async function runEaseVerification(): Promise<{ name: string; keys: numbe
     let maxErr = 0;
     vals.split(';').forEach((s, f) => {
       const got = s.split(',').map(Number);
-      const p = c.curve.fn(Math.min(1, (f / (FPS * 2)) / c.T));
+      const u = (f / (FPS * 2)) / c.T;
+      const p = (c.curve as any).asymptotic ? c.curve.fn(u) : c.curve.fn(Math.min(1, u));
       const exp = c.from.map((fv, d) => fv + (c.to[d] - fv) * p);
       for (let d = 0; d < exp.length && d < got.length; d++) maxErr = Math.max(maxErr, Math.abs(got[d] - exp[d]));
     });

@@ -35,6 +35,8 @@ export interface RigInput {
   data: ChartData;
   /** One color per category (donut, pie) instead of one per series. */
   categoryColors?: boolean;
+  /** Category colors (default: the kit palette from the series color). */
+  palette?: string[];
   scale?: NiceScale;
   look: { param: PseudoParam; value: any }[];
   anim: Required<Omit<ChartAnimation, 'exit'>> & { exit: boolean | 'auto' };
@@ -126,7 +128,7 @@ export function buildRig(o: RigInput): Rig {
     dataGroups.push({ kind: 'group', name: seriesGroups[k], params: ps });
   });
   const colorParams: PseudoParam[] = colorNames.map((n, k) => {
-    const c = o.categoryColors ? (data.series[0].colors[k] ?? PALETTE_AT(k, data)) : data.series[k].color;
+    const c = o.categoryColors ? (data.series[0].colors[k] ?? o.palette?.[k] ?? PALETTE_AT(k, data)) : data.series[k].color;
     values[n] = c;
     return { kind: 'color', name: n, default: parseColor(c) };
   });
@@ -169,7 +171,7 @@ export class ChartRig {
   exit(): string[] {
     return [
       `var XD = ${this.P('Exit Duration')}, xm = Math.round(${this.P('Exit')});`,
-      'var X = XD > 0 && (xm == 2 || (xm == 1 && outPoint < thisComp.duration - thisComp.frameDuration / 2)) ? 1 - L.eased([0.3333, 0, 0.6667, 0], (time - outPoint + XD) / XD) : 1;',
+      'var X = XD > 0 && (xm == 2 || (xm == 1 && outPoint < thisComp.duration - thisComp.frameDuration / 2)) ? 1 - L.eased([0.3333, 0, 0.6667, 0], (time - outPoint + thisComp.frameDuration + XD) / XD) : 1;',
     ];
   }
   /** ax(d, len): axis/label arrival (expo out), draw(d, len): gridline draw-on (in-out cubic); both start just before the data. */

@@ -55,7 +55,7 @@ export function checkPlan(sheet: BeatSheet, tl: PlanTimeline): PlanIssue[] {
       const lead = first.elements.find((e) => e.role === 'title') ?? first.elements[0];
       if (startAt > 1 + EPS)
         out.push({ rule: 'hook', severity: 'warn', beat: first.name, t: [0, startAt], message: `the first element only starts at ${s1(startAt)}: the hook must register within 1 s` });
-      else if (lead.role === 'title' && lead.arrive[1] > 1.5 + EPS)
+      else if (lead.role === 'title' && lead.arrive[1] > 1.2 + EPS)
         out.push({ rule: 'hook', severity: 'info', beat: first.name, t: [lead.arrive[0], lead.arrive[1]], message: `the hook "${clip(lead.text ?? '')}" takes ${s1(lead.arrive[1])} to land (${lead.words} words): keep the opening line to 1–4 punchy words so it registers in the first second, and put the detail in the next beat` });
     }
     if (first.duration < 1 - EPS)

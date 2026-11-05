@@ -3,7 +3,7 @@
 // direction rules of skills/ae-compose/SKILL.md §2 and §6 checked on the plan). Pure data.
 
 /** Transition kinds the planner knows (the K4 transitions library names). Other strings are allowed and flagged. */
-export const TRANSITION_KINDS = ['hand-off', 'match-cut', 'shape-wipe', 'zoom-through', 'push-through', 'parallax-split', 'liquid-wipe', 'slice-wipe', 'cut'] as const;
+export const TRANSITION_KINDS = ['hand-off', 'match-cut', 'shape-wipe', 'zoom-through', 'push-through', 'parallax-split', 'liquid-wipe', 'slice-wipe', 'grid-wipe', 'light-leak', 'cut'] as const;
 export type KnownTransition = (typeof TRANSITION_KINDS)[number];
 export type TransitionKind = KnownTransition | (string & {});
 /** Kinds that cut on the boundary: no overlap, and the outgoing beat needs no exit animation. */
@@ -46,6 +46,8 @@ export interface BeatSheet {
   name: string;
   /** The one message of the piece. */
   message: string;
+  /** Canvas shorthand (the reframe targets): '16:9' (1920×1080, default), '9:16' (1080×1920), '1:1', '4:5'. width/height win. */
+  format?: '16:9' | '9:16' | '1:1' | '4:5';
   width?: number;
   height?: number;
   fps?: number;

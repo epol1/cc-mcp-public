@@ -62,6 +62,11 @@ export interface TransitionIO {
   w: number;
   h: number;
   fps: number;
+  /**
+   * <Beats> only: re-parent a carrier null made by an earlier transition (e.g. ZoomThrough's settle null) to `parent`,
+   * so layers already parented to it follow this transition too.
+   */
+  adopt?: (carrier: string, parent: string) => void;
 }
 
 /** A transition's result. `under`/`over` layers are timed from the window start (0); `over` sits above the incoming beat. */
@@ -178,13 +183,22 @@ export function matteAll(node: any, layer: string, opts: { type?: 'alpha' | 'alp
   });
 }
 
-/** Parents every unparented layer of a beat (except cameras and lights) to `parent`. */
-export function parentAll(node: any, parent: string, who = 'transition'): El[] {
+/**
+ * Parents every unparented layer of a beat (except cameras and lights) to `parent`. `carrier` marks the new parent as
+ * a transition carrier that is at rest (identity) outside its window: later transitions may move such layers, and
+ * (in <Beats>) re-parent the carrier itself through io.adopt.
+ */
+export function parentAll(node: any, parent: string, who = 'transition', opts: { carrier?: boolean; adopt?: TransitionIO['adopt'] } = {}): El[] {
   return mapLayers(node, (el) => {
     const k = kindOf(el);
     if (k === 'camera' || k === 'light') return el;
-    if (el.props.parent) { if (el.props.parent !== parent) dslWarn(`${who}: layer ${el.props.id ?? el.props.name ?? k} already has a parent (${el.props.parent}); it does not follow the transition`); return el; }
-    return withProps(el, { parent });
+    if (el.props.parent) {
+      if (el.props.parent === parent) return el;
+      if (el.props.carrierParent && opts.adopt) { opts.adopt(el.props.parent, parent); return el; }
+      dslWarn(`${who}: layer ${el.props.id ?? el.props.name ?? k} already has a parent (${el.props.parent}); it does not follow the transition`);
+      return el;
+    }
+    return withProps(el, opts.carrier ? { parent, carrierParent: true } : { parent });
   });
 }
 

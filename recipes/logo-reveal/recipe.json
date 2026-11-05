@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "name": "logo-reveal",
+  "title": "Logo reveal",
+  "intent": "A logo reveal: the SVG logo draws on with trim paths, fills, blooms with a glow and a light sweep, then the tagline draws out between two rules.",
+  "tags": [
+    "logo",
+    "logo reveal",
+    "brand",
+    "sting",
+    "ident",
+    "svg",
+    "draw on",
+    "outro"
+  ],
+  "scene": "scene.tsx",
+  "sceneName": "LogoReveal",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 5,
+  "params": {
+    "logo": {
+      "type": "file",
+      "default": "./assets/mark.svg",
+      "description": "Logo .svg (paths, fills, strokes)"
+    },
+    "logoWidth": {
+      "type": "number",
+      "default": 420,
+      "description": "Logo width in px",
+      "min": 100,
+      "max": 1400
+    },
+    "tagline": {
+      "type": "string",
+      "default": "CUSTOM CONTROLLERS. MADE YOURS.",
+      "description": "Tagline under the logo (caps, short)"
+    }
+  },
+  "controls": [
+    "Draw Duration",
+    "Logo Color",
+    "Glow Amount"
+  ],
+  "scenes": [],
+  "brand": "brand.ts",
+  "files": [
+    "brand.ts",
+    "assets/mark.svg"
+  ],
+  "thumbnails": [],
+  "source": "examples/02-logo-reveal/scene.tsx",
+  "created": "2026-11-05T14:19:30.613Z"
+}

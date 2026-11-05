@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "name": "lower-third",
+  "title": "Lower third",
+  "intent": "A name-and-role lower third (super) for interviews and talking heads, over footage or a placeholder plate, with live in/out timing.",
+  "tags": [
+    "lower third",
+    "super",
+    "name",
+    "title",
+    "interview",
+    "talking head",
+    "caption",
+    "broadcast"
+  ],
+  "scene": "scene.tsx",
+  "sceneName": "LowerThird",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 6,
+  "params": {
+    "person": {
+      "type": "string",
+      "default": "Jordan Reyes",
+      "description": "Name line"
+    },
+    "role": {
+      "type": "string",
+      "default": "CREATIVE DIRECTOR, CUSTOM CONTROLLERZ",
+      "description": "Role / title line (caps read best)"
+    },
+    "plate": {
+      "type": "file",
+      "default": "",
+      "optional": true,
+      "description": "Footage or still under the lower third (empty: a neutral placeholder backdrop)"
+    }
+  },
+  "controls": [
+    "Accent Color",
+    "In Delay",
+    "Out Delay"
+  ],
+  "scenes": [],
+  "brand": "brand.ts",
+  "files": [
+    "brand.ts"
+  ],
+  "thumbnails": [],
+  "source": "examples/03-lower-third/scene.tsx",
+  "created": "2026-11-05T14:19:30.556Z"
+}

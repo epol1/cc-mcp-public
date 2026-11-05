@@ -1210,19 +1210,19 @@
         {
           "id": "p5-paths",
           "name": "Path tools: follow path, trails/echo, draw helpers",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
           "id": "p5-morph",
           "name": "Shape morph with vertex matching",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
           "id": "p5-bg",
           "name": "Procedural backgrounds and textures (vanilla effects, brand palettes)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         }
       ],
@@ -1235,49 +1235,49 @@
         {
           "id": "p5-ui",
           "name": "UI kit components on the layout engine (button, toggle, input, toast…)",
-          "status": "todo",
+          "status": "wip",
           "weight": 5
         },
         {
           "id": "p5-ui-cursor",
           "name": "Cursor with clicks + component states on markers",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
           "id": "p5-ui-scroll",
           "name": "ScrollView and feeds (cloner + data)",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
           "id": "p5-ui-frames",
           "name": "Device/browser frames + screen inserts with cursor-follow zoom",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
           "id": "p5-dataviz",
           "name": "Data viz kit: bar, line, area, donut, stacked + counters",
-          "status": "todo",
+          "status": "wip",
           "weight": 4
         },
         {
           "id": "p5-captions",
           "name": "Captions from SRT/VTT with word timing (karaoke)",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-typefx",
           "name": "Type FX: word emphasis, decode, split-flap, variable fonts, auto-fit",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-transitions",
           "name": "Transitions library built from scene elements",
-          "status": "todo",
+          "status": "wip",
           "weight": 4
         }
       ],
@@ -1302,7 +1302,7 @@
         {
           "id": "p5-storyboard",
           "name": "Storyboard first: beat sheet → scene scaffold (plan_scene)",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
@@ -1326,7 +1326,7 @@
         {
           "id": "p5-recipes",
           "name": "Recipe library: save and re-instantiate scenes with params",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         }
       ],
@@ -1364,7 +1364,7 @@
         {
           "id": "p5-s17",
           "name": "Showcase 17: data story (data viz kit)",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {
@@ -1382,7 +1382,7 @@
         {
           "id": "p5-docs",
           "name": "DSL reference + skill sections for every tool",
-          "status": "todo",
+          "status": "wip",
           "weight": 2
         },
         {

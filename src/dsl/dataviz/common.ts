@@ -1,7 +1,6 @@
 // Data viz kit (K2) shared pieces: data normalization (numbers, {label, value} rows, multi-series), nice-number
 // scales, number formatting (mirrors the expression library's L.num), the palette, the theme, the easing table the
 // rig's "Easing" popup offers, and the chart box (title-safe by default).
-import { libObject } from '../../aeclib/index.ts';
 import type { Time } from '../../shared/units.ts';
 
 /** One value: a number, or a row with a label (and an optional fixed color). */
@@ -54,7 +53,9 @@ export function normalizeData(p: DataProps, who: string): ChartData {
       if (!labels && ds.every((d) => d.label !== undefined)) labels = ds.map((d) => d.label!);
       series.push({ name: 'Value', color: color(0), values: ds.map((d) => d.v), colors: ds.map((d) => d.color) });
     } else {
-      if (!rows.every((r) => r && typeof r === 'object')) throw new Error(`${who}: data rows must all be numbers, { label, value } rows, or objects with numeric columns`);
+      const bad = rows.findIndex((r) => !isNum(r) && !(r && typeof r === 'object'));
+      if (bad >= 0) throw new Error(`${who}: data[${bad}] is ${JSON.stringify(rows[bad])}; give numbers, { label, value } rows, or objects with numeric columns`);
+      if (rows.some(isNum)) throw new Error(`${who}: data mixes numbers and rows; use one form`);
       const keys = p.keys ?? Object.keys(rows[0]).filter((k) => k !== 'label' && k !== 'name' && k !== 'color' && isNum(rows[0][k]));
       if (!keys.length) throw new Error(`${who}: data rows have no numeric columns; give { label, value } rows or keys: [...]`);
       if (!labels) labels = rows.map((r, i) => String(r.label ?? r.name ?? i + 1));
@@ -90,7 +91,7 @@ const decimalsOf = (x: number) => { const s = String(+x.toFixed(10)); const k = 
  * Nice-number axis: steps of 1, 2, 2.5 or 5 × 10^k, about `ticks` intervals, the smallest headroom. 0–128 gives
  * 0/25/…/150; 0–96 gives 0/20/…/100; 0–0.73 gives 0/0.2/…/0.8. A fixed `min` and `max` split into exactly `ticks`.
  */
-export function niceScale(dataMin: number, dataMax: number, opts: ScaleOpts = {}): NiceScale {
+export function niceScale(dataMin: number, dataMax: number, opts: ScaleOpts = {}, maxIntervals = 8): NiceScale {
   const zero = opts.zero !== false;
   let lo = opts.min ?? (zero ? Math.min(0, dataMin) : dataMin);
   let hi = opts.max ?? (zero ? Math.max(0, dataMax) : dataMax);
@@ -108,7 +109,7 @@ export function niceScale(dataMin: number, dataMax: number, opts: ScaleOpts = {}
     const a = opts.min !== undefined ? lo : Math.floor(lo / step + 1e-9) * step;
     const b = opts.max !== undefined ? hi : Math.ceil(hi / step - 1e-9) * step;
     const n = (b - a) / step;
-    if (Math.abs(n - Math.round(n)) > 1e-6 || n < 2 || n > 8) continue;
+    if (Math.abs(n - Math.round(n)) > 1e-6 || n < Math.min(2, maxIntervals) || n > maxIntervals) continue;
     const score = Math.abs(n - target) + ((b - a) - span) / span;
     if (!best || score < best.score - 1e-9) best = { a, b, step, score };
   }
@@ -117,14 +118,36 @@ export function niceScale(dataMin: number, dataMax: number, opts: ScaleOpts = {}
   return { min: +best.a.toFixed(10), max: +best.b.toFixed(10), step: best.step, ticks: Array.from({ length: n + 1 }, (_, k) => +(best!.a + best!.step * k).toFixed(10)), decimals: Math.min(3, decimalsOf(best.step)) };
 }
 
+/**
+ * The value axis for a plot `room` px long: the nice scale with as many intervals as fit (about 5) without tick labels
+ * crowding (vertical: 1.8 x tick size apart; horizontal: the widest label + 24 px). Returns the tick format too.
+ */
+export function fitScale(lo: number, hi: number, opts: ScaleOpts | undefined, room: number, tickSize: number, horizontal: boolean, tickFmt: (s: NiceScale) => NumberFormat): { scale: NiceScale; tickFmt: NumberFormat } {
+  const want = Math.max(1, Math.round(opts?.ticks ?? 5));
+  const fixed = opts?.min !== undefined && opts?.max !== undefined;
+  let best: { scale: NiceScale; tickFmt: NumberFormat } | null = null;
+  for (let n = Math.min(want + 1, 8); n >= 1; n--) {
+    const scale = niceScale(lo, hi, { ...opts, ticks: Math.min(want, n) }, fixed ? 64 : n);
+    const tf = tickFmt(scale), k = scale.ticks.length - 1;
+    const need = horizontal ? Math.max(...scale.ticks.map((t) => textWidth(formatNumber(t, tf), tickSize))) + 24 : tickSize * 1.8;
+    best = { scale, tickFmt: tf };
+    if (room / Math.max(k, 1) >= need) return best;
+  }
+  return best!;
+}
+
 /** Number formatting for value labels, ticks and counters (prefix, suffix, decimals, thousands separator). */
 export interface NumberFormat { prefix?: string; suffix?: string; decimals?: number; separator?: string; decimalMark?: string }
 
-let LIB: any = null;
-/** Formats like the expression library's L.num (same code), so build-time text equals the live text. */
+/** L.num of the expression library, line for line (tests check parity), so build-time text equals the live text. */
+function num(v: number, decimals: number, sep: string, dec: string): string {
+  const d = decimals || 0, neg = v < 0, x = Math.abs(v).toFixed(d), parts = x.split('.'), ip = parts[0];
+  let out = '';
+  for (let i = 0; i < ip.length; i++) { if (i > 0 && (ip.length - i) % 3 === 0) out += sep; out += ip.charAt(i); }
+  return (neg ? '-' : '') + out + (d > 0 ? (dec || '.') + parts[1] : '');
+}
 export function formatNumber(v: number, f: NumberFormat = {}): string {
-  LIB ??= libObject();
-  return `${f.prefix ?? ''}${LIB.num(v, f.decimals ?? 0, f.separator ?? ',', f.decimalMark ?? '.')}${f.suffix ?? ''}`;
+  return `${f.prefix ?? ''}${num(v, f.decimals ?? 0, f.separator ?? ',', f.decimalMark ?? '.')}${f.suffix ?? ''}`;
 }
 /** The same formatting as an expression: `jsFormat('v', f)` → `"$" + L.num(v, 0, ",", ".") + "M"`. */
 export function jsFormat(expr: string, f: NumberFormat = {}, decimalsExpr?: string): string {

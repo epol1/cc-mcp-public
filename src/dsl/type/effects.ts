@@ -168,7 +168,7 @@ export function SplitFlap(p: SplitFlapProps) {
   const head = [
     'var e = effect("Split Flap"), N = Math.max(1, Math.round(e("Flips").value));',
     'var t = time - inPoint - e("Delay").value - (textIndex - 1) * e("Each").value;',
-    `var p = L.bezier(${EASE.outCubic}, t / Math.max(e("Duration").value, 0.001)), r = (1 - p) * N, s = Math.ceil(r - 1e-6);`,
+    `var p = L.bezier(${EASE.outCubic}, t / Math.max(e("Duration").value, 0.001)), r = (1 - p) * N, s = Math.max(0, Math.ceil(r - 1e-6));`,
   ];
   // Based On "Characters Excluding Spaces": spaces never roll.
   const roll: TextUnitsAnim = { $text: 'units', by: 'charNoSpaces', name: 'Flap Roll', from: { characterOffset: -8 }, each: 0, duration: 0.1 };

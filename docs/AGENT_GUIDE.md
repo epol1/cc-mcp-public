@@ -27,7 +27,10 @@ See `docs/ARCHITECTURE.md` §1. In short:
 - `src/shared` holds pure TS that runs in **both** Node and the ES3 runtime. It must follow the ES3 rules in `docs/research/toolchain.md` §6.8: no getters/setters, no async, no generators, no `JSON`/`Map`/`Set`/`Object.keys`/`[].map` (use the helpers).
 - `src/runtime` is ES3-only code compiled by Babel + Rollup. `src/**` outside those two is Node 22 TS.
 - Keep modules small and single-purpose, with explicit types at boundaries and a short header comment saying what the module is for.
-- Tests are specs: `tests/unit` (no AE), `tests/integration` (needs AE + bridge, tagged), `tests/codegen` (snapshots).
+- Tests are specs: `tests/unit` (no AE), `tests/integration` (needs AE + bridge, tagged), `tests/codegen` (snapshots). Phase 5 AE checks live in `tests/integration/p5/*.ts` (PASS/FAIL lines; `harness.ts` gives build → check → one-undo-restores-exactly → lint) and run under `pnpm test:ae`.
+- After changing `src/runtime/*`, run `pnpm build:runtime`: AE loads `dist/runtime/aec-runtime.jsx`, not the sources.
+- Hand-written ExtendScript (probes, the designer panel): parenthesize nested `?:` (ExtendScript's conditional is left-associative, D82) and avoid empty undo groups before an Edit > Undo (the undo then reverts the previous real step).
+- DSL components run bundled from a temp folder: to reach repo files they use `globalThis.__AEC_ROOT__` (set by `src/scene/load.ts`), and they report warnings with `dslWarn()`.
 
 ## Verifying in AE
 - The bridge health check is `GET http://127.0.0.1:47811/health`. The token is in `~/.ae-compose/bridge.json`.

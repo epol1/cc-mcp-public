@@ -219,7 +219,9 @@ export function scanRefs(src: string, file: string): Ref[] {
     refs.push({ start, end, value: m[3], kind: 'import', abs });
     taken.push({ start, end });
   }
-  const str = /(['"`])([^'"`\r\n]{1,400}?)\1/g;
+  // Every quote is tried as an opener (the closing quote isn't consumed), so an apostrophe in JSX text or an empty
+  // string can't shift the pairing; whatever lies between two literals is filtered out by the existence check.
+  const str = /(['"`])([^'"`\r\n]{1,400}?)(?=\1)/g;
   for (const m of src.matchAll(str)) {
     const v = m[2];
     if (!ASSET_EXT.test(v) || /^[a-z][\w+.-]*:\/\//i.test(v) || v.startsWith('data:') || v.includes('${')) continue;

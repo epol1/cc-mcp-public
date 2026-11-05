@@ -5,8 +5,7 @@
 // Check in AE: the "Bar Chart"/"Area Chart"/… effects on the chart nulls (Revenue Chart, Players Chart, …): change a
 // value and the bar/point/segment, its label and the axis follow; "Highlight" picks a bar live.
 import { scene, Composition, Sequence, Solid, Text, perWord, keys } from 'ae-compose';
-// The kit (src/dsl/dataviz); once exported from src/dsl/index.ts these can come from 'ae-compose' too.
-import { BarChart, StackedBarChart, LineChart, AreaChart, DonutChart, PieChart, Counter } from '../../src/dsl/dataviz/index.ts';
+import { BarChart, StackedBarChart, LineChart, AreaChart, DonutChart, PieChart, Counter } from 'ae-compose';
 
 const INK = '#0c0f15';
 const SMALL = { labelSize: 26, tickSize: 26, valueSize: 30, legendSize: 26 };
@@ -58,19 +57,19 @@ export default scene({ name: 'DataVizKit', width: 1920, height: 1080, fps: 30, d
 
     <Sequence name="Glance" from={6.8}>
       {headline('glance.title', '2026 at a glance', false)}
-      <DonutChart id="mix" name="Mix Chart" x={192} y={240} width={748} height={400}
+      <DonutChart id="mix" name="Mix Chart" x={192} y={240} width={748} height={360}
         data={[{ label: 'HARDWARE', value: 46 }, { label: 'SOFTWARE', value: 31 }, { label: 'SERVICES', value: 23 }]}
         center={{ format: { prefix: '$', suffix: 'k' } }} theme={SMALL}
         animation={{ delay: 0.3 }} highlight={{ at: 'SOFTWARE', after: 0.4 }} />
-      <LineChart id="retention" name="Retention Chart" x={980} y={240} width={748} height={400}
+      <LineChart id="retention" name="Retention Chart" x={980} y={240} width={748} height={360}
         series={[{ name: '2025', values: [100, 62, 48, 41, 37, 35] }, { name: '2026', values: [100, 74, 63, 57, 54, 52] }]}
         labels={['D1', 'D7', 'D14', 'D30', 'D60', 'D90']} format={{ suffix: '%' }} colors={['#8b95a5', '#ffd23f']}
         lineWidth={5} theme={SMALL} animation={{ delay: 0.55, duration: 1.2 }} />
-      <StackedBarChart id="quarters" name="Quarters Chart" x={192} y={660} width={748} height={312}
+      <StackedBarChart id="quarters" name="Quarters Chart" x={192} y={630} width={748} height={342}
         series={[{ name: 'Hardware', values: [9, 11, 12, 14] }, { name: 'Software', values: [6, 7, 8, 10] }, { name: 'Services', values: [4, 5, 6, 8] }]}
         labels={['Q1', 'Q2', 'Q3', 'Q4']} format={{ prefix: '$', suffix: 'k' }} colors={['#4683c4', '#ffd23f', '#ee4266']} theme={SMALL}
         animation={{ delay: 0.8, stagger: 0.1 }} />
-      <BarChart id="regions" name="Regions Chart" orientation="horizontal" x={980} y={660} width={748} height={312}
+      <BarChart id="regions" name="Regions Chart" orientation="horizontal" x={980} y={630} width={748} height={342}
         series={[{ name: '2025', values: [38, 44, 21] }, { name: '2026', values: [52, 57, 36] }]}
         labels={['EU', 'NA', 'APAC']} format={{ prefix: '$', suffix: 'k' }} colors={['#8b95a5', '#3bceac']} theme={SMALL}
         animation={{ delay: 1.05, stagger: 0.09 }} />

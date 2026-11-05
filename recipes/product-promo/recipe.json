@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "name": "product-promo",
+  "title": "Product promo",
+  "intent": "A three-beat product promo (hero claim, details with a media card, end card with the logo and CTA) with two different transitions, from your own footage or placeholders.",
+  "tags": [
+    "promo",
+    "product",
+    "ad",
+    "commercial",
+    "launch",
+    "footage",
+    "end card",
+    "series",
+    "transitions",
+    "social"
+  ],
+  "scene": "scene.tsx",
+  "sceneName": "ProductPromo",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 10,
+  "params": {
+    "brandLine": {
+      "type": "string",
+      "default": "CUSTOM CONTROLLERZ",
+      "description": "Small tracked line above the headline (brand or category)"
+    },
+    "headline": {
+      "type": "string",
+      "default": "CREATE YOUR OWN",
+      "description": "Hero claim (caps, ≤ 4 words)"
+    },
+    "detail": {
+      "type": "text",
+      "default": "Pick every\rpart.",
+      "description": "Details headline (use \r for the line break)"
+    },
+    "detailCopy": {
+      "type": "string",
+      "default": "Shells. Buttons. D-pads. Triggers.",
+      "description": "Supporting copy in the details beat"
+    },
+    "tagline": {
+      "type": "string",
+      "default": "Built for your hands.",
+      "description": "End card tagline"
+    },
+    "cta": {
+      "type": "string",
+      "default": "Design yours →",
+      "description": "End card call to action"
+    },
+    "hero": {
+      "type": "file",
+      "default": "",
+      "optional": true,
+      "description": "Hero footage or still (empty: a placeholder backdrop)"
+    },
+    "card": {
+      "type": "file",
+      "default": "",
+      "optional": true,
+      "description": "Footage or still for the details card (empty: a placeholder card)"
+    },
+    "logo": {
+      "type": "file",
+      "default": "./assets/mark.svg",
+      "description": "Logo .svg for the end card"
+    }
+  },
+  "controls": [
+    "Copy Delay",
+    "Accent Color"
+  ],
+  "scenes": [
+    "Hero",
+    "Details",
+    "End Card"
+  ],
+  "brand": "brand.ts",
+  "files": [
+    "brand.ts",
+    "assets/mark.svg"
+  ],
+  "thumbnails": [],
+  "source": "examples/04-product-promo/scene.tsx",
+  "created": "2026-11-05T14:19:30.765Z"
+}

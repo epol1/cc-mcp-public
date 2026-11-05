@@ -3,7 +3,6 @@
 // sharp). Transient ones carry one "Reveal" rig effect: they show during their "show" layer markers (drag a marker to
 // retime, stretch it to hold longer), spring in and ease out.
 import { Fragment, jsx } from '../jsx-runtime.ts';
-import type { AecElement } from '../jsx-runtime.ts';
 import { Effect, Ellipse, Fill, Group, Path, Precomp, Rect, RigEffect, Shape, Solid, Stroke, Text } from '../primitives.ts';
 import { Box, Stack } from '../layout.ts';
 import { expr, spring } from '../anim.ts';
@@ -89,7 +88,8 @@ export function Card(p: CardProps) {
   const [w, h] = p.size ?? [340 * s, 200 * s];
   const pad = p.padding ?? 20 * s;
   const kids: any[] = [];
-  if (p.children !== undefined) kids.push(...[p.children].flat());
+  // children={null}: a bare surface (a backdrop for absolutely placed components).
+  if (p.children !== undefined) kids.push(...[p.children].flat(Infinity).filter((k) => k !== null && k !== undefined && k !== false));
   else {
     const title = p.title ?? 'Weekly report';
     kids.push(jsx(Text, { id: `${p.id}.title`, name: `${name} Title`, font: t.fonts.semibold, size: px(17 * s), color: t.text, align: 'left', anchor: 'left', text: title }));
@@ -101,7 +101,7 @@ export function Card(p: CardProps) {
     effects: p.shadow === false ? [] : [shadow(t, s)],
     children: [
       jsx(Shape, { id: `${p.id}.bg`, name: `${name} Surface`, children: [jsx(Rect, { size: [px(w - 1), px(h - 1)], roundness: px(t.radius * s * 1.6) }), jsx(Stroke, { color: t.border, width: Math.max(1, s) }), jsx(Fill, { color: p.color ?? t.surface })] }),
-      jsx(Box, { width: w, height: h, padding: pad, align: 'start', children: column(kids, 10 * s, 'start') }),
+      ...(kids.length ? [jsx(Box, { width: w, height: h, padding: pad, align: 'start', children: column(kids, 10 * s, 'start') })] : []),
     ],
   });
   return place(p.position, card);
@@ -189,6 +189,8 @@ export interface TooltipProps extends UiBase, Pick<UiEvents, 'show'> {
   for?: string;
   /** Where the bubble sits relative to `position` (the point it points at). */
   placement?: 'top' | 'bottom';
+  /** With `for`: shows 0.25 s into a hover and stays this long after it (default 0.5 s). */
+  linger?: number;
   at?: number;
   hold?: number;
 }
@@ -204,32 +206,22 @@ export function Tooltip(p: TooltipProps) {
   const top = (p.placement ?? 'top') === 'top';
   const bg = t.mode === 'dark' ? '#f2f4f8' : '#1a1f29', fg = t.mode === 'dark' ? '#0f141c' : '#ffffff';
   const hovers = p.for && p.flow ? (p.flow.on(p.for).hover ?? []) : [];
-  const win = [...(ev.show ?? []), ...hovers.map(([a, b]): [number, number] => [a + 0.25, b === a ? a + 0.25 : b])].sort((a, b) => a[0] - b[0]);
+  const win = [...(ev.show ?? []), ...hovers.map(([a, b]): [number, number] => [a + 0.25, b === a ? a + 0.25 : b + (p.linger ?? 0.5)])].sort((a, b) => a[0] - b[0]);
   const rv = reveal(win.length ? win : showWindows({}, p, words(text), 0.5), { offset: [0, top ? 6 * s : -6 * s], startScale: 94, damping: 22, stiffness: 320, out: 0.15 });
   const cy = top ? bh / 2 : ar + bh / 2;
   const arrow = top ? `M${px(W / 2 - ar)} ${px(bh - 0.5)} L${px(W / 2)} ${px(bh + ar)} L${px(W / 2 + ar)} ${px(bh - 0.5)} Z` : `M${px(W / 2 - ar)} ${px(ar + 0.5)} L${px(W / 2)} 0 L${px(W / 2 + ar)} ${px(ar + 0.5)} Z`;
-  const tip = jsx(Precomp, {
+  // The arrow tip is the layer's anchor, so the layer sits exactly at `position` (x/y are the rest value the reveal
+  // expression offsets); no layout needed.
+  return jsx(Precomp, {
     id: p.id, name, width: W, height: H, collapse: true, ...timing(p), tags: ['ui', 'tooltip'],
-    anchor: [W / 2, top ? H : 0], markers: rv.markers, position: p.position ? undefined : rv.position, scale: rv.scale, opacity: rv.opacity,
-    ...(p.position ? { position: rv.position, x: undefined } : {}),
+    anchor: [W / 2, top ? H : 0], markers: rv.markers, scale: rv.scale, opacity: rv.opacity, position: rv.position,
+    ...(p.position ? { x: p.position[0], y: p.position[1] } : {}),
     effects: [rv.fx, shadow(t, s, 0.5)],
     children: [
       jsx(Shape, { id: `${p.id}.bubble`, name: `${name} Bubble`, space: 'comp', children: [jsx(Path, { d: arrow, name: 'Arrow' }), jsx(Rect, { size: [px(bw), px(bh)], position: [px(W / 2), px(cy)], roundness: px(8 * s) }), jsx(Fill, { color: bg })] }),
       jsx(Text, { id: `${p.id}.text`, name: `${name} Text`, font: t.fonts.medium, size: px(fs), color: fg, text, position: [W / 2, cy] }),
     ],
   });
-  // The tip is the layer's anchor, so the layer sits exactly at `position` (no layout needed).
-  if (p.position) (tip.props as any).props = { 'ADBE Transform Group/ADBE Position': undefined };
-  return p.position ? jsx(Fragment, { children: [withPos(tip, p.position)] }) : tip;
-}
-
-/** Sets a static rest position under a position expression (layer not in layout). */
-function withPos(el: AecElement, pos: [number, number]): AecElement {
-  const props = { ...el.props };
-  delete props.props;
-  // A position expression keeps its static value as `value`: give the rest as the layer's x/y.
-  props.x = pos[0]; props.y = pos[1];
-  return { ...el, props };
 }
 
 // ---------- Toast ----------
@@ -240,8 +232,7 @@ export interface ToastProps extends UiBase, Pick<UiEvents, 'show'> {
   icon?: 'success' | 'info' | 'avatar' | 'none';
   person?: string;
   width?: number;
-  /** Slides in from (default top). */
-  from?: number;
+  /** Slides in from this side (default top). */
   direction?: 'top' | 'bottom' | 'left' | 'right';
   at?: number;
   hold?: number;
@@ -277,7 +268,7 @@ export function Toast(p: ToastProps) {
     ...(bodyText ? [jsx(Text, { id: `${p.id}.body`, name: `${name} Body`, font: t.fonts.regular, size: px(14 * s), color: t.muted, align: 'left', anchor: 'left', leading: px(19 * s), text: bodyText })] : []),
   ], 3 * s, 'start');
   const toast = jsx(Precomp, {
-    id: p.id, name, width: Math.ceil(w), height: h, collapse: true, ...(p.duration !== undefined ? { duration: p.duration } : {}), tags: ['ui', 'toast'],
+    id: p.id, name, width: Math.ceil(w), height: h, collapse: true, ...timing(p), tags: ['ui', 'toast'],
     markers: rv.markers, position: rv.position, scale: rv.scale, opacity: rv.opacity,
     effects: [rv.fx, shadow(t, s)],
     children: [
@@ -302,7 +293,7 @@ export interface ModalProps extends UiBase, Pick<UiEvents, 'show'> {
   hold?: number;
 }
 
-function modalMetrics(p: ModalProps, t: UiTheme) {
+function modalMetrics(p: Partial<ModalProps>, t: UiTheme) {
   const s = t.scale;
   const w = p.width ?? 400 * s, pad = 24 * s;
   const title = p.title ?? 'Turn on notifications?';
@@ -314,7 +305,7 @@ function modalMetrics(p: ModalProps, t: UiTheme) {
 }
 
 /** Centre points of a modal's buttons (for uiSteps targets), from the same metrics the Modal uses. */
-export function modalButtonPoints(p: ModalProps, center: [number, number]): { primary: [number, number]; secondary?: [number, number] } {
+export function modalButtonPoints(p: Partial<ModalProps>, center: [number, number]): { primary: [number, number]; secondary?: [number, number] } {
   const t = uiTheme(p.theme);
   const m = modalMetrics(p, t);
   const y = center[1] + m.h / 2 - m.pad - m.bh / 2;
@@ -351,9 +342,10 @@ export function Modal(p: ModalProps) {
       jsx(Shape, { id: `${p.id}.bg`, name: `${name} Surface`, children: [jsx(Rect, { size: [px(m.w - 1), px(m.h - 1)], roundness: px(20 * s) }), jsx(Stroke, { color: t.border, width: Math.max(1, s) }), jsx(Fill, { color: t.raised })] }),
       jsx(Box, { width: m.w, height: m.h, padding: m.pad, align: 'start', children: column([
         jsx(Text, { id: `${p.id}.title`, name: `${name} Title`, font: t.fonts.bold, size: px(20 * s), color: t.text, align: 'left', anchor: 'left', text: m.title }),
-        jsx(Text, { id: `${p.id}.body`, name: `${name} Body`, font: t.fonts.regular, size: px(15 * s), color: t.muted, align: 'left', anchor: 'left', leading: px(21 * s), text: m.body, layout: { offset: [0, 0] } }),
-        jsx(Stack, { direction: 'row', width: m.w - 2 * m.pad, justify: 'end', gap: m.gap, align: 'center', layout: {}, offset: [0, 14 * s], children: buttons }),
+        jsx(Text, { id: `${p.id}.body`, name: `${name} Body`, font: t.fonts.regular, size: px(15 * s), color: t.muted, align: 'left', anchor: 'left', leading: px(21 * s), text: m.body }),
       ], 8 * s, 'start') }),
+      // Buttons pinned bottom-right (exact positions: modalButtonPoints uses the same metrics).
+      jsx(Box, { width: m.w, height: m.h, padding: m.pad, align: 'end', children: jsx(Stack, { direction: 'row', gap: m.gap, align: 'center', children: buttons }) }),
     ],
   });
   const scrim = jsx(Solid, {

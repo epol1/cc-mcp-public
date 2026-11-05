@@ -7,7 +7,7 @@ import type { AecElement } from '../jsx-runtime.ts';
 import { Ellipse, Fill, GradientFill, Group, Path, Shape, Stroke, Text, Trim } from '../primitives.ts';
 import { expr } from '../anim.ts';
 import type { EaseName, NumberFormat } from './common.ts';
-import { PALETTE, box, dataDecimals, formatNumber, jsFormat, niceScale, normalizeData, r3, textWidth } from './common.ts';
+import { PALETTE, box, dataDecimals, fitScale, formatNumber, jsFormat, normalizeData, r3, textWidth } from './common.ts';
 import type { ChartProps, Frame } from './frame.ts';
 import { calloutLayers, categoryLabels, controller, gridLayer, legend, themeOf, tickLabels } from './frame.ts';
 import { ChartRig, buildRig, categoryIndex } from './rig.ts';
@@ -37,11 +37,9 @@ export function LineChart(p: LineChartProps): AecElement {
   const data = normalizeData(p, who);
   const NS = data.series.length, N = data.labels.length;
   const all = data.series.flatMap((s) => s.values);
-  const scale = niceScale(Math.min(...all), Math.max(...all), p.scale);
   const theme = themeOf(p.theme);
   const decimals = p.format?.decimals ?? dataDecimals(all);
   const fmt: NumberFormat = { ...p.format, decimals };
-  const tickFmt: NumberFormat = p.tickFormat ?? { prefix: fmt.prefix, suffix: fmt.suffix, separator: fmt.separator, decimalMark: fmt.decimalMark, decimals: scale.decimals };
   const style = p.style ?? 'draw';
   const anim = { ...PRESETS[style], exit: 'auto' as const, exitDuration: 0.45, ...(p.animation ?? {}) };
   const showLegend = p.legend ?? NS > 1;
@@ -51,10 +49,12 @@ export function LineChart(p: LineChartProps): AecElement {
   const valueLabels = p.valueLabels ?? false;
   const b = box(p);
 
-  const top = (showLegend ? Math.round(theme.legendSize * 1.2) + 28 : 0) + (valueLabels ? theme.valueSize + 20 : 0) + Math.round(dotD * 0.9) + 8;
+  const top = (showLegend ? Math.round(theme.legendSize * 1.2) + 20 : 0) + (valueLabels ? theme.valueSize + 20 : 0) + Math.round(dotD * 0.9) + 8;
+  const bottom = p.categories === false ? Math.ceil(dotD) : theme.labelSize + 34;
+  const { scale, tickFmt } = fitScale(Math.min(...all), Math.max(...all), p.scale, b.h - top - bottom, theme.tickSize, false,
+    (s) => p.tickFormat ?? { prefix: fmt.prefix, suffix: fmt.suffix, separator: fmt.separator, decimalMark: fmt.decimalMark, decimals: s.decimals });
   const tickW = Math.max(...scale.ticks.map((t) => textWidth(formatNumber(t, tickFmt), theme.tickSize)));
   const left = p.axis === false ? Math.ceil(dotD) : Math.ceil(tickW) + 24;
-  const bottom = p.categories === false ? Math.ceil(dotD) : theme.labelSize + 34;
   const plot = { L: left, T: top, W: b.w - left - 8, H: b.h - top - bottom, B: b.h - bottom, R: b.w - 8 };
   if (plot.W < 60 || plot.H < 60) throw new Error(`${who}: the box (${b.w}×${b.h}) leaves only ${Math.round(plot.W)}×${Math.round(plot.H)} px for the plot; make it larger or turn off legend/axis/labels`);
   const slot = plot.W / N;

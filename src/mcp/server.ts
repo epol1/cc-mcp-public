@@ -13,6 +13,8 @@ import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
 import { recover } from '../api/recover.ts';
 import { LINT_RULES } from '../lint/index.ts';
 import { doctor } from '../api/doctor.ts';
+import { planSceneInput, planSceneTool, PLAN_SCENE_DESCRIPTION } from '../plan/tool.ts';
+import { saveRecipeInput, saveRecipeTool, SAVE_RECIPE_DESCRIPTION, listRecipesInput, listRecipesTool, LIST_RECIPES_DESCRIPTION, instantiateRecipeInput, instantiateRecipeTool, INSTANTIATE_RECIPE_DESCRIPTION } from '../recipes/tool.ts';
 import { renderPreview } from '../visual/preview.ts';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
@@ -267,6 +269,11 @@ server.registerTool('designer_inbox', {
   const msgs = readInbox(!a.peek);
   return [text(msgs.length ? msgs.map((m) => `- ${m.at.slice(0, 16).replace('T', ' ')}${m.comp ? ` [${m.comp} @ ${m.time?.toFixed(2)}s${m.layers?.length ? `, selected: ${m.layers.join(', ')}` : ''}]` : ''}: ${m.text}`).join('\n') : 'no unread messages from the panel')];
 }));
+
+server.registerTool('plan_scene', { title: 'Plan a scene from a beat sheet', description: PLAN_SCENE_DESCRIPTION, inputSchema: planSceneInput }, async (a) => wrap(async () => [text(await planSceneTool(a as any))]));
+server.registerTool('save_recipe', { title: 'Save a scene as a recipe', description: SAVE_RECIPE_DESCRIPTION, inputSchema: saveRecipeInput }, async (a) => wrap(async () => [text(await saveRecipeTool(a))]));
+server.registerTool('list_recipes', { title: 'Search recipes', description: LIST_RECIPES_DESCRIPTION, inputSchema: listRecipesInput }, async (a) => wrap(async () => [text(listRecipesTool(a))]));
+server.registerTool('instantiate_recipe', { title: 'New scene from a recipe', description: INSTANTIATE_RECIPE_DESCRIPTION, inputSchema: instantiateRecipeInput }, async (a) => wrap(async () => [text(await instantiateRecipeTool(a))]));
 
 server.registerTool('analyze_beats', {
   title: 'Analyze music beats',

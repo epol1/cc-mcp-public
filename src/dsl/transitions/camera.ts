@@ -64,10 +64,10 @@ const ZOOM_THROUGH: TransitionDef<ZoomThroughProps> = {
     const fadeExpr = expr(`${head(ZOOM_THROUGH, p, 'the window fades in, then zooms with the outgoing beat')}\n100 * L.clamp(P / Math.max(e("Fade In").value / 100, 0.001), 0, 1);`);
     const window = S
       ? jsx(Shape, { id: winId, name: `${ctlName(ZOOM_THROUGH, p)} Window`, tags: tagsOf(ZOOM_THROUGH), parent: p.id, from: 0, duration: io.after, position: [r3(S.pos[0]), r3(S.pos[1])], anchor: [r3(S.center[0]), r3(S.center[1])], rotation: S.rotation, scale: [r3(S.scale[0]), r3(S.scale[1])], opacity: fadeExpr, children: silhouetteContents(el.props.children, '#ffffff') })
-      : (() => { const { animate: _a, effects: _e, id: _i, name: _n, from: _f, duration: _d, matte: _m, parent: _p, markers: _k, expressions: _x, tags: _t, ...tp } = el.props; return jsx(Text, { ...tp, id: winId, name: `${ctlName(ZOOM_THROUGH, p)} Window`, tags: tagsOf(ZOOM_THROUGH), parent: p.id, from: 0, duration: io.after, opacity: fadeExpr }); })();
+      : (() => { const { animate: _a, effects: _e, id: _i, name: _n, from: _f, duration: _d, matte: _m, parent: _p, markers: _k, expressions: _x, tags: _t, eg: _g, layout: _l, ...tp } = el.props; return jsx(Text, { ...tp, id: winId, name: `${ctlName(ZOOM_THROUGH, p)} Window`, tags: tagsOf(ZOOM_THROUGH), parent: p.id, from: 0, duration: io.after, opacity: fadeExpr }); })();
     const who = `<ZoomThrough id="${p.id}">`;
-    const incoming = matteAll(parentAll(io.incoming, inId, who), winId, {}, who);
-    return { outgoing: parentAll(io.outgoing, p.id, who), incoming, under: [ctl, settleNull, window] };
+    const incoming = matteAll(parentAll(io.incoming, inId, who, { carrier: true }), winId, {}, who);
+    return { outgoing: parentAll(io.outgoing, p.id, who, { adopt: io.adopt }), incoming, under: [ctl, settleNull, window] };
   },
 };
 /**
@@ -145,7 +145,8 @@ const PARALLAX_SPLIT: TransitionDef<ParallaxSplitProps> = {
     // (Expand components once, so element identities are stable between the two passes.)
     const tree = mapLayers(io.outgoing, (el) => el);
     const movers: El[] = [];
-    mapLayers(tree, (el) => { const k = kindOf(el); if (k !== 'camera' && k !== 'light' && !el.props.parent && !isBackdrop(el)) movers.push(el); return el; });
+    // Layers parented to a carrier at rest (a ZoomThrough settle null) move too: their parent space is the comp's.
+    mapLayers(tree, (el) => { const k = kindOf(el); if (k !== 'camera' && k !== 'light' && (!el.props.parent || el.props.carrierParent) && !isBackdrop(el)) movers.push(el); return el; });
     const n = movers.length;
     let i = 0;
     const outgoing = mapLayers(tree, (el) => {
@@ -161,7 +162,7 @@ const PARALLAX_SPLIT: TransitionDef<ParallaxSplitProps> = {
         `var c = ${sep ? 'v0' : `v0[${ax}]`} + (r.${edge} + r.${size} / 2 - a[${ax}]) * sc[${ax}] / 100, m = thisComp.${size} / 2;`,
         `var s = c < m - 2 ? -1 : c > m + 2 ? 1 : ${alt};`,
         `var d = s * e("Distance").value * (1 + e("Spread").value / 100 * ${r3(f)}) * P;`,
-        sep ? 'value + d;' : `value + [${hor ? 'd, 0' : '0, d'}${threeD ? ', 0' : ''}];`,
+        sep ? 'value + d;' : `add(value, [${hor ? 'd, 0' : '0, d'}${threeD ? ', 0' : ''}]);`,
       ];
       const path = sep ? `${TG}/ADBE Position_${ax}` : `${TG}/ADBE Position`;
       return addExpression(el, path, lines.join('\n'), who) ?? el;

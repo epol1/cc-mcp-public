@@ -10,7 +10,6 @@ import { expr, keys } from '../anim.ts';
 import type { Anim } from '../anim.ts';
 import type { PseudoEffectDef, PseudoParam } from '../../compile/ffx/pseudo.ts';
 import type { UiColor } from './theme.ts';
-import { rgb3 } from './theme.ts';
 import type { UiBase } from './common.ts';
 import { at, column, events, hoverExpr, motion, overlay, place, pressExpr, px, resolve, row, textWidth, timing, toggleExpr, windows } from './common.ts';
 import type { UiEvents } from './steps.ts';
@@ -317,6 +316,8 @@ export interface InputProps extends UiBase, Pick<UiEvents, 'clickAt' | 'typeAt'>
   blurAt?: number;
   /** Show bullets instead of the text. */
   secure?: boolean;
+  /** Characters per second (default 14; the Input effect's Typing Speed). */
+  typingSpeed?: number;
 }
 
 /**
@@ -341,7 +342,7 @@ export function Input(p: InputProps) {
         jsx(Stroke, { color: expr('// ae-compose ui: focus ring ("Input" effect)\nvar e = effect("Input");\nL.mixv(e("Border Color").value, e("Focus Color").value, e("Focus").value);'), width: expr(`${lit(Math.max(1, s))} + ${lit(0.6 * s)} * effect("Input")("Focus").value;`) }),
         jsx(Fill, { color: t.surface }),
       ] }),
-      jsx(RigEffect, { def: INPUT_FX, name: 'Input', values: { 'Border Color': t.border, 'Focus Color': t.accent, Focus: expr([
+      jsx(RigEffect, { def: INPUT_FX, name: 'Input', values: { 'Typing Speed': p.typingSpeed ?? 14, 'Border Color': t.border, 'Focus Color': t.accent, Focus: expr([
         '// ae-compose ui: focus (0–1) from this layer\'s "focus" marker until a later "blur" marker',
         'var M = thisLayer.marker, f = -1, b = 1e6;',
         'for (var k = 1; k <= M.numKeys; k++) { var m = M.key(k); if (m.comment.indexOf("focus") == 0 && m.time <= time) f = m.time; }',

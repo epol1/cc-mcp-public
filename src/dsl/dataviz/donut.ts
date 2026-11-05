@@ -76,7 +76,7 @@ function ring(p: DonutChartProps, pie: boolean): AecElement {
   const R = new ChartRig(ctl, kind, title, kind.toLowerCase());
   R.land = style === 'sweep' ? 'T0 + D' : `T0 + ${N - 1} * S + D`;
   const rig = buildRig({
-    kind, data: { labels: data.labels, series: [data.series[0]] }, categoryColors: true, decimals, anim, highlight: p.highlight,
+    kind, data: { labels: data.labels, series: [data.series[0]] }, categoryColors: true, palette: p.colors, decimals, anim, highlight: p.highlight,
     highlightColor: false, defaultHighlightColor: theme.text,
     look: [
       { param: { kind: 'slider', name: 'Radius', default: radius, min: 10, max: 1000, validMin: 1, display: 'pixel', precision: 0 }, value: radius },

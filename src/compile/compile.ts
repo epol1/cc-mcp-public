@@ -95,6 +95,8 @@ export class Compiler {
     this.mainName = compName;
     if (cfg.motionBlur !== undefined) applyCompMB(comp, cfg.motionBlur);
     (globalThis as any).__AEC_SCENE_DIR__ = this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd();
+    // Components lay out in the authored frame; a reframe maps their positions like any other (w0 × h0).
+    (globalThis as any).__AEC_COMP__ = { w: w0, h: h0, fps };
     resetAutoIds();
     drainDslWarnings(); // components may run in render() (direct calls) or during the walk (JSX)
     const root = this.def.render({ ...params, seed });

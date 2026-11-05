@@ -4,11 +4,13 @@
 //                                                   and its top/bottom relative to the baseline;
 //   pre   the line up to and including the word  → the word's right edge;
 //   word  the word alone                         → the word's width.
-// Each copy is a left-aligned point-text layer whose Source Text expression reads the target's live text and
-// style (`sourceText.style.setText(...)`, so font, size, tracking and caps match), picks line j and word k, and
-// returns its piece. The mark's expressions then combine the three rects in the target's layer space:
-//   x1 = lineStart + pre.left + pre.width,  x0 = x1 − word.width,  baseline = j × leading,
-// where lineStart is 0 (left), −lineWidth/2 (centre) or −lineWidth (right). Everything is live: retyping the
+// Each copy is a point-text layer aligned like the target whose Source Text expression reads the target's live
+// text and style (`sourceText.style.setText(...)`, so font, size, tracking and caps match; in AE 26.5 it also
+// carries the paragraph's justification), picks line j and word k, and returns its piece. So the line copy is laid
+// out exactly like the target's line j, and the line up to the word starts on the same glyph, whatever the
+// justification. The mark's expressions combine the three rects in the target's layer space:
+//   x1 = line.left + pre.width,  x0 = x1 − word.width,  baseline = j × leading.
+// Everything is live: retyping the
 // target, changing its font or the word index moves the mark. Limits: point text only (no paragraph boxes, whose
 // wrapping AE decides), one style per line (style runs are measured with the first character's style), and ink
 // bounds (a few px of side bearing).
@@ -82,7 +84,7 @@ export function measureHelpers(o: MeasureOptions): AecElement[] {
     fauxBold: o.style.fauxBold,
     fauxItalic: o.style.fauxItalic,
     leading: o.style.leading,
-    align: 'left',
+    align: o.align,
     hidden: true,
     guide: true,
     shy: true,
@@ -102,15 +104,13 @@ export function boundsCode(o: MeasureOptions): string[] {
   const ids = measureIds(o.id);
   const size = o.style.size ?? 72;
   const leading = typeof o.style.leading === 'number' ? String(o.style.leading) : 'fs * 1.2'; // AE auto leading is 120 %
-  const align = o.align === 'center' || o.align === undefined ? 'center' : o.align === 'right' ? 'right' : 'left';
-  const start = align === 'center' ? '-lw / 2' : align === 'right' ? '-lw' : '0';
   return [
     'var raw = "";',
     `if (T) { ${textOf('src', 'T.text.sourceText.value')} raw = src; }`,
     ...wordScan(),
     `var Hl = __AEC_LAYER(${ids.line})__.sourceRectAtTime(time, false), Hp = __AEC_LAYER(${ids.pre})__.sourceRectAtTime(time, false), Hw = __AEC_LAYER(${ids.word})__.sourceRectAtTime(time, false);`,
     `var fs = ${size}; if (T) { try { var fz = T.text.sourceText.style.fontSize; if (fz > 0) fs = fz; } catch (err) {} }`,
-    `var lw = Hl.left + Hl.width, x1 = ${start} + Hp.left + Hp.width, x0 = x1 - Hw.width;`,
+    'var x1 = Hl.left + Hp.width, x0 = x1 - Hw.width;',
     `var base = j * ${leading}, top = base + Hl.top, bot = base + Hl.top + Hl.height;`,
   ];
 }

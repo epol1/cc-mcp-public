@@ -1,6 +1,6 @@
 ---
 name: ae-compose
-description: Make and edit motion graphics in Adobe After Effects with ae-compose. Claude writes Remotion-style TSX that compiles into native, editable AE 2026 comps (real layers, eased keyframes, text animators, shape layers, effects, live expression controls with Essential Graphics, 3D cameras/lights/extrusion/models, particles), then reviews the returned contact sheets and refines. Use when the user wants an animation, motion graphic, title or kinetic typography, lower third, logo reveal, social/ad spot, end card, product hero, 3D or particle shot made in After Effects; when they want to inspect, retime, ripple-edit, re-ease, restyle, chroma-key or add effects to an existing AE comp (generated or hand-built); or when they mention ae-compose, .aep comps, keyframes, easing curves, expression controls or the ae-compose MCP tools (build_scene, apply_edits, inspect_comp, contact_sheet).
+description: Make and edit motion graphics in Adobe After Effects with ae-compose. Claude writes Remotion-style TSX that compiles into native, editable AE 2026 comps (real layers, eased keyframes, text animators, shape layers, effects, live expression controls with Essential Graphics, 3D cameras/lights/extrusion/models, particles, MASH-style cloners, beat-synced cuts, responsive 9:16/1:1 reframes), then reviews the returned contact sheets, speed graphs and lint, and refines. Use when the user wants an animation, motion graphic, title or kinetic typography, lower third, logo reveal, social/ad spot, end card, product hero, 3D or particle shot made in After Effects; when they want to inspect, retime, ripple-edit, re-ease, restyle, chroma-key or add effects to an existing AE comp (generated or hand-built); or when they mention ae-compose, .aep comps, keyframes, easing curves, expression controls or the ae-compose MCP tools (build_scene, apply_edits, inspect_comp, contact_sheet).
 ---
 
 # ae-compose: motion design in After Effects, from TSX
@@ -12,7 +12,7 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 1. **Pin the brief** in one line: canvas (1920×1080, 1080×1920, 1080×1080), duration, platform, brand colors/fonts, the one message. Ask only if something critical is missing. Otherwise pick sensible defaults and say what you picked.
 2. **Plan the story before the code** (§2): the beats, what each one shows and why, how each hands off to the next, and how long each holds.
 3. **Write the TSX** and call `build_scene` (`source` or `file`). Give every layer you might edit an `id`. Expose key timings, colors and distances as `control()` (§5).
-4. **Read the lint report, then look at the contact sheet** before saying anything is done. Lint (in every build and edit result) lists text that is cut off or outside the safe area, overlapping texts, text on screen too briefly to read, missing fonts and near-empty frames, each with the layer and the time range. Fix every warning, or say why it is intended. Then check the sheet for what lint can't judge:
+4. **Read the lint report, then look at the contact sheet and the speed graph** before saying anything is done. Lint (in every build and edit result) lists text that is cut off or outside the safe area, overlapping texts, text on screen too briefly to read, missing fonts and near-empty frames, plus the **style lint** craft rules of §2 (repeated transitions, crowded entrances, short holds, one easing everywhere, linear moves, slide furniture, an end state under 2 s, everything moving at once, dead air, cuts just off the beat), each with the layer and the time range. The speed graph shows every move's easing and hold, and how much moves at once. Fix every warning, or say why it is intended. Then check the sheet for what lint can't judge:
    - spacing, alignment, hierarchy and contrast;
    - the first frames (is there a hook by 1 s?) and the final hold (is the end state complete and clean?);
    - does every element have a reason to be there, and does each transition come out of the previous shot (§2)?
@@ -35,6 +35,17 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 | Check any comp (timing, safe areas, overlaps) | `lint_comp` (builds and edits include it) |
 | Final file the user asked for | `render` (`format`: mp4, mov, prores4444 for alpha, png…). It clears AE's undo history, so render when the work is approved, and say where the file is |
 | Effect params | `list_effects`, `describe_effect` |
+| Judge motion feel, not just frames | `motion_preview` (a dense frame strip of the busiest second, the speed graph, the style lint) |
+| Many varied copies of one design (cards, tiles, particles of UI) | `<Cloner>` (§11.1) |
+| Music-driven cut | `analyze_beats`, then `beatsOf()` in the scene (§11.3) |
+| Vertical / square versions, final files in every format | `build_scene { reframe: ['9:16', '1:1'] }`, then `deliver` (§11.4) |
+| Plan before writing TSX (beats, holds, transitions checked) | `plan_scene` with a beat sheet → a scaffold to fill (§11.6) |
+| "Another one like X" | `list_recipes` → `instantiate_recipe` (§11.6); `save_recipe` when a scene is approved |
+| Subtitles, karaoke, emphasis on one word, decode/typewriter text | the typography kit (§11.7) |
+| Charts and counters | the data viz kit (§11.7) |
+| App / product UI demo (clicks, typing, toasts, device frames) | the UI kit + `uiSteps` (§11.7) |
+| Transitions between beats | `<Beats>` with a transition from the library (§11.7) |
+| Notes the designer left in AE | `designer_inbox` |
 | AE stuck, crashed or closed | `recover_ae` (answers known dialogs, launches AE, waits for the bridge; `force` only after the user agrees: it discards unsaved work); `list_dialogs` → `answer_dialog`; `doctor` |
 
 ## 2. Direct it like a motion designer
@@ -408,3 +419,69 @@ Props are friendly names (`position`, `scale`, `opacity`…) or AE paths (`"Effe
 - **The animation ends at the wrong value:** with `scale`/`opacity`, `from` alone animates to 100, not to your static value, so give `to`.
 - **Blank or empty frames:** check layer `from`/`duration`, opacity keys, `hidden`, a matte source that's visible or hidden, and particles that haven't emitted yet.
 - **`duplicate id`:** ids are scene-global. Particle components default to ids that collide when you use two, so give each one an `id`.
+
+## 11. The creative toolkit
+
+These make many native, live elements from one statement. Full reference: DSL.md §21.
+
+### 11.1 Cloner: one master, many live instances
+
+Use it for streams of cards, tiles, dots, logos, chips: anything "many of one thing with subtle variation".
+
+```tsx
+<Cloner id="cards" name="Cards" count={100} size={[260, 160]} seed={p.seed}
+  distribute={scatter({ width: 2700, height: 640, jitter: 0.9 })}
+  motion={{ speed: 210, direction: -4, wrap: 2900, variation: 30 }}
+  effectors={[noise({ position: 14, rotation: 6, scale: 12 }), falloff({ radius: 300, softness: 650, scale: [68, 108], opacity: [45, 100] }),
+    colorize({ field: 'Card Color', palette: ['#3f6db3', '#4683c4', '#5577cf'], mode: 'random' })]}
+  of={[<Shape><Rect size={[236, 136]} roundness={18} /><Fill color={field('Card Color', '#4683c4')} /></Shape>]} />
+```
+
+- **Direct it:** variation should be subtle (±5–8° tilt, ±10–15 % scale, a palette of 3–4 close shades); a falloff gives the eye a focal point; a stream needs a reason (it carries the story somewhere: showcase 15 lets one card stop and grow into the message panel).
+- **Live in AE:** the master comp and every param of the "Cloner" effect on the controller (Speed, Seed, Randomness, Falloff, Palette). Only `count` needs a rebuild. Tell the user which.
+- **Cost:** each distinct set of field values renders the master once per frame. A palette of 4 is cheap; a unique text label on each of 100 cards is 5–20 s a frame. Over ~300 identical shapes use `mode: 'repeater'`.
+- `data={rows}` (or `csv('file.csv')`) gives each instance its own field values and x/y/rotation/scale/opacity/delay offsets; `stagger({ each })` offsets each instance's own animation; `follow({ lag })` makes a snake behind an animated controller.
+
+### 11.2 Rig effects and live timing
+
+Put a rig's controls in one effect: `control('Delay', 0.3, { group: 'Title' })` (one "Title" effect on Controls), `perWord({ …, live: true })` (an "aec Text Reveal" effect on the text), camera moves (one "Camera Move" effect by default), `<RigEffect def={…} name="…" />` for your own rigs. In expressions, read params with `.value` (`effect("Spinner")("Reverse").value ? -1 : 1`), and call the expression library as `L.fn(...)` (`L.spring`, `L.bezier`, `L.noise1`, `L.scatter`, `L.num`, …; DSL.md §21.1): the compiler adds what you use.
+
+### 11.3 Beat sync
+
+```tsx
+const B = beatsOf('music/track.mp3');
+// …
+<Audio id="music" src="music/track.mp3" />
+<BeatMarkers beats={B} to={15} />
+<Series>
+  <Series.Sequence name="Hook" duration={B.bar(0) + B.bars(2)}>…</Series.Sequence>
+  <Series.Sequence name="Drop" duration={B.bars(4)}>…</Series.Sequence>
+</Series>
+```
+
+- Plan with `analyze_beats` first: tempo, bars, confidence (below 0.3, cut on phrasing instead).
+- **Cut on downbeats, accent on beats.** Big changes (new scene, logo hit) land on `B.bar(n)`; small accents (a pop, a flash) on `B.beat(n)`; never everything on every beat. Durations in bars (`B.bars(2)`) keep scenes on the grid; `B.snap(t)` fixes a hand-picked time.
+- Lint's `off-beat` flags cuts 1 frame–150 ms off a beat: snap them or move them clearly off. Ripples keep beat markers fixed; add `snap: 'beats'` to land the edited scene on a beat.
+
+### 11.4 Other formats and delivery
+
+`build_scene { reframe: ['9:16', '1:1'] }` builds sibling comps from the same scene: layouts re-solve, 9:16 uses the platform's UI-free zone, type scales and long lines shrink to fit. **Look at each format's contact sheet and lint**: absolute positions only map approximately, so a 16:9 composition with wide side-by-side elements may need a vertical layout (a `Stack`) to read well in 9:16. When approved, `deliver` renders every format plus a ProRes master in one call (renders clear AE's undo history, so it's the last step).
+
+### 11.5 Judge motion
+
+After a build: read the **speed graph** (moves with their easing class, holds, "layers moving"), then `motion_preview` on the transitions and the busiest moment. A strip shows 8–12 frames of a second: check that arrivals ease out, holds are real holds, things leave faster than they arrived, and one element leads at a time.
+
+### 11.6 Plan first, reuse what worked
+
+`plan_scene` takes the plan of §2 as data (message, beats with purpose, duration, text, visual, transitionIn, an end card) and reports what breaks the direction rules before any TSX exists: copy that can't be read in its beat, a final hold under 2 s, the same transition twice, no hook in the first second, a beat without a purpose. Fix the beat sheet until it's clean, then let it write the scaffold (`file`) and replace the placeholders.
+
+Recipes are approved scenes kept for reuse. When the brief is "like the last one" or a common format (kinetic title, lower third, logo reveal, end card, product promo, data chart), `list_recipes` first; `instantiate_recipe { name, params, brand, outFile }` gives an editable scene to direct from, not a finished piece. Save a scene the user approved with `save_recipe` (intent sentence + tags so it can be found).
+
+### 11.7 Kits
+
+- **Typography (DSL.md §21.9):** `<Captions src="talk.srt" style="karaoke" />` (one text layer per cue, balanced lines in the safe area, reading-speed check); `<Emphasis word="MOTION" kind="bar">` around a `<Text>` (measured in AE, follows retyping); `<Decode>`, `<Typewriter>`, `<SplitFlap>`, `<VariableFont>`, `<AutoFit>`. Emphasize one word per line at most, and only the word that carries the message.
+- **Backgrounds (§21.10):** `MeshGradient`, `GradientField`, `BokehField`, `DotGrid`, `LineGrid`, `LightSweep`, `FilmGrain`, colored from the brand. A background supports the message: keep it slow (`speed` ≤ 1) and low in contrast behind text.
+- **Data viz (§21.11):** `BarChart`, `LineChart`, `AreaChart`, `DonutChart`, `PieChart`, `Counter`. One chart per beat, one point per chart: say it in the headline, then `highlight` the bar that proves it and `annotate` it. Values stay live on the chart's effect, so the user can update numbers without a rebuild.
+- **UI (§21.14):** `BrowserFrame`/`PhoneFrame` with `Button`, `Input`, `Toggle`, `Toast`… and a `Cursor` driven by `uiSteps([...])`. Show one task the way a user does it (click, type, result), at a pace a viewer can follow: a step every 0.4–0.8 s, a beat to read the result. The interface is the story's evidence, not decoration.
+- **Transitions (§21.15):** `<Beats>` with `HandOff`, `ShapeWipe`, `ZoomThrough`, `PushThrough`, `ParallaxSplit`, `LiquidWipe`, `SliceWipe`, `GridWipe`, `LightLeakCut` between `<Beat>`s. Build each transition from something already on screen (the circle that becomes the wipe, the logo that travels), and never use the same kind twice in a row.
+- **Paths (§21.16):** `FollowPath`, `Trail`, `DrawOn`, `Morph` for connection, travel and transformation metaphors.

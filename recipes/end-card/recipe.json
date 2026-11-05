@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "name": "end-card",
+  "title": "End card",
+  "intent": "An end card with the logo, a headline and a call to action over a soft accent glow, holding still at the end of a promo or ad.",
+  "tags": [
+    "end card",
+    "cta",
+    "call to action",
+    "outro",
+    "logo",
+    "ad",
+    "promo",
+    "closing"
+  ],
+  "scene": "scene.tsx",
+  "sceneName": "EndCard",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 4.5,
+  "params": {
+    "logo": {
+      "type": "file",
+      "default": "./assets/mark.svg",
+      "description": "Logo .svg"
+    },
+    "logoWidth": {
+      "type": "number",
+      "default": 260,
+      "description": "Logo width in px",
+      "min": 80,
+      "max": 1200
+    },
+    "headline": {
+      "type": "string",
+      "default": "BUILT FOR YOUR HANDS",
+      "description": "Headline (caps, ≤ 5 words)"
+    },
+    "cta": {
+      "type": "string",
+      "default": "Design yours at the configurator",
+      "description": "Call to action under the headline"
+    },
+    "damping": {
+      "type": "number",
+      "default": 12,
+      "description": "Spring damping of the logo and headline (10 lively, 16 controlled, 22 calm)",
+      "min": 6,
+      "max": 30
+    },
+    "seed": {
+      "type": "number",
+      "default": 1,
+      "description": "Seed for the orb drift"
+    }
+  },
+  "controls": [
+    "Accent Color",
+    "Headline Delay"
+  ],
+  "scenes": [],
+  "brand": "brand.ts",
+  "files": [
+    "brand.ts",
+    "assets/mark.svg"
+  ],
+  "thumbnails": [],
+  "source": "examples/08-variants/scene.tsx",
+  "created": "2026-11-05T14:19:30.682Z"
+}

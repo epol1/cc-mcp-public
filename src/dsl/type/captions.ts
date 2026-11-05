@@ -40,7 +40,7 @@ export interface KaraokeOptions {
   mode?: 'current' | 'past';
   /** Highlight color (default the style's). Live: "Highlight". */
   color?: ColorSpec | ControlRef;
-  /** Scale of the current word, % ('current' mode; default boldPop 118, else 100). Live: "Pop Scale". */
+  /** Scale of the current word, % ('current' mode; default boldPop 112, else 100). Live: "Pop Scale". */
   scale?: number;
   /** A bar under the current word, measured in AE (adds 3 hidden measuring layers + 1 shape layer). */
   underline?: boolean | { thickness?: number };
@@ -109,7 +109,7 @@ export const captionStyles: Record<CaptionStyle, StyleSpec> = {
   clean: { font: 'Inter-SemiBold', size: 54, vsize: 52, color: '#ffffff', shadow: true },
   boxed: { font: 'Inter-Medium', size: 50, vsize: 48, color: '#ffffff', box: { color: '#000000', opacity: 72, padding: [22, 12], roundness: 10 } },
   karaoke: { font: 'Inter-Bold', size: 58, vsize: 56, color: '#ffffff', shadow: true, karaoke: { mode: 'past', color: '#ffd23f', scale: 100 } },
-  boldPop: { font: 'Inter-Black', size: 72, vsize: 68, color: '#ffffff', uppercase: true, stroke: '#000000', strokeWidth: 10, shadow: true, karaoke: { mode: 'current', color: '#ffd23f', scale: 118 }, maxLines: 2 },
+  boldPop: { font: 'Inter-Black', size: 72, vsize: 68, color: '#ffffff', uppercase: true, stroke: '#000000', strokeWidth: 10, shadow: true, karaoke: { mode: 'current', color: '#ffd23f', scale: 112 }, maxLines: 2 },
 };
 
 export interface CaptionPlan {

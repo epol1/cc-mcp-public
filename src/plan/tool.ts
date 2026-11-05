@@ -23,6 +23,7 @@ const beat = z.object({
 export const planSceneInput = {
   name: z.string().describe('scene / comp name'),
   message: z.string().describe('the one message of the piece'),
+  format: z.enum(['16:9', '9:16', '1:1', '4:5']).optional().describe('canvas shorthand (default 16:9 = 1920×1080; 9:16 = 1080×1920); width/height win'),
   width: z.number().int().positive().optional().describe('default 1920'),
   height: z.number().int().positive().optional().describe('default 1080 (1920 for vertical 9:16, 1080 for 1:1)'),
   fps: z.number().positive().optional().describe('default 30'),

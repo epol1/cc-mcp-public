@@ -284,24 +284,27 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
   ctx.eg = [];
   const pending: Pending = { exprs: [] };
   const sizes: { [id: string]: number[] } = {};
+  const mk = (ctx as any).mark || function () {};
   // Pass 1: create bottom-up so final stacking equals IR order (index 0 = top).
   for (let i = c.layers.length - 1; i >= 0; i--) {
     const L = c.layers[i];
     ctx.cur = L.id;
     ctx.layers[L.id] = createLayer(ctx, comp, L);
   }
+  mk('layers');
   // Pass 2: attributes, wiring, text documents.
   each(c.layers, (L) => {
     ctx.cur = L.id;
     const layer = ctx.layers[L.id];
     setLayerAttrs(ctx, layer, L);
-    if (L.text) { setTextDocument(ctx, layer as TextLayer, L.text); applyAnchorBox(layer, L); measureLeaf(ctx, layer, L, sizes); }
+    mk('attrs');
+    if (L.text) { setTextDocument(ctx, layer as TextLayer, L.text); mk('textDocs'); applyAnchorBox(layer, L); measureLeaf(ctx, layer, L, sizes); mk('measure'); }
     if (L.type === 'footage' || L.type === 'model') applyFootage(ctx, layer, comp, L);
     if ((L as any).toShapes) ctx.layers[L.id] = vectorToShapes(ctx, comp, layer, L);
   });
-  each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
-  const mk = (ctx as any).mark || function () {};
   mk('layers');
+  each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
+  mk('wire');
   // Re-assigning the renderer refreshes 3D property visibility: right after threeDLayer = true AE reports
   // Geometry Options as hidden until the comp's renderer is (re)set (verified, D36).
   if (c.renderer) { try { comp.renderer = c.renderer; } catch (e) { warn(ctx, 'renderer ' + c.renderer + ' unavailable'); } }

@@ -32,9 +32,12 @@ export const TIMING = {
 /** Transition length by kind (the placeholder components use the same). */
 export const TRANSITION_DUR: Record<string, number> = {
   cut: 0, 'match-cut': 0.6, 'hand-off': 1.0, 'shape-wipe': 0.9, 'zoom-through': 0.8, 'push-through': 0.8,
-  'parallax-split': 0.9, 'liquid-wipe': 0.9, 'slice-wipe': 0.8,
+  'parallax-split': 0.9, 'liquid-wipe': 0.9, 'slice-wipe': 0.8, 'grid-wipe': 0.8, 'light-leak': 0.8,
 };
 export const transitionDur = (kind: string) => TRANSITION_DUR[kind] ?? 0.9;
+
+/** Canvas sizes for the sheet's `format` shorthand (the reframe targets). */
+export const FORMAT_SIZE: Record<string, [number, number]> = { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [1080, 1080], '4:5': [1080, 1350] };
 
 export type Format = 'landscape' | 'vertical' | 'square';
 export function formatOf(w: number, h: number): Format {
@@ -99,7 +102,8 @@ interface Draft { el: PlanElement; exitSpan: number }
 
 /** The planned timeline for a sheet. `logoFound` says whether end.logo resolved to a file (draw-on vs a placeholder mark). */
 export function buildTimeline(sheet: BeatSheet, logoFound = false): { timeline: PlanTimeline; notes: PlanIssue[] } {
-  const w = sheet.width ?? 1920, h = sheet.height ?? 1080, fps = sheet.fps ?? 30;
+  const [fw, fh] = FORMAT_SIZE[sheet.format ?? '16:9'] ?? FORMAT_SIZE['16:9'];
+  const w = sheet.width ?? fw, h = sheet.height ?? fh, fps = sheet.fps ?? 30;
   const S = typeScale(w, h);
   const notes: PlanIssue[] = [];
   const T = TIMING;

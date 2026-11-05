@@ -57,7 +57,8 @@ describe('pseudo-effect presets (D74)', () => {
     expect(pseudoMatchName(DEF)).toBe(pseudoMatchName(JSON.parse(JSON.stringify(DEF))));
     expect(pseudoMatchName({ ...DEF, params: DEF.params.slice(1) })).not.toBe(pseudoMatchName(DEF));
     const long = pseudoMatchName({ name: 'aec A Very Long Rig Name Here', params: [] });
-    expect(Buffer.byteLength(long + '-0001')).toBeLessThan(40);
+    expect(Buffer.byteLength(long)).toBeLessThanOrEqual(31); // AE ignores longer pseudo matchNames (D84)
+    expect(pseudoMatchName({ name: 'aec Gradient Field', params: [] })).toMatch(/^Pseudo\/aec Gradient Fiel [0-9a-f]{6}$/);
   });
   it('rejects names AE cannot hold or paths cannot address', () => {
     expect(() => pseudoFfxBytes({ name: 'x'.repeat(32), params: [] })).toThrow(/31 bytes/);

@@ -8,7 +8,7 @@ import { expr } from '../anim.ts';
 import type { ControlRef } from '../control.ts';
 import { dslWarn } from '../warn.ts';
 import type { ColorSpec } from '../../shared/units.ts';
-import { bezierOf, controller, ctlName, defineTransition, head, lit, matteAll, r3, slider, tagsOf } from './core.ts';
+import { bezierOf, controller, ctlName, defineTransition, expand, head, kindOf, lit, matteAll, r3, slider, tagsOf } from './core.ts';
 import type { El, TransitionBase, TransitionDef, TransitionIO } from './core.ts';
 import { coverScale, paintColor, silhouetteContents, silhouetteOf } from './geometry.ts';
 
@@ -39,8 +39,8 @@ const SHAPE_WIPE: TransitionDef<ShapeWipeProps> = {
   kind: 'shape-wipe', label: 'Shape Wipe', defaultDuration: 0.7,
   build(p, io) {
     const S = silhouetteOf(p.shape, io.w, io.h);
-    const firstGeom = (p.shape.props.children ? [p.shape.props.children].flat(4) : []).find((c: any) => c?.type?.aec && ['rect', 'ellipse', 'star', 'path', 'group'].includes(c.type.aec));
-    const mode = p.grow ?? (firstGeom?.type?.aec === 'rect' ? 'fit' : 'uniform');
+    const firstGeom = expand(p.shape.props.children).find((c) => ['rect', 'ellipse', 'star', 'path', 'group'].includes(kindOf(c) ?? ''));
+    const mode = p.grow ?? (kindOf(firstGeom) === 'rect' ? 'fit' : 'uniform');
     let cover: [number, number] | null = p.scaleTo !== undefined ? (Array.isArray(p.scaleTo) ? [p.scaleTo[0], p.scaleTo[1]] : [p.scaleTo, p.scaleTo]) : coverScale(S, io.w, io.h, mode === 'uniform' ? 'uniform' : 'fit');
     if (!cover) {
       dslWarn(`<ShapeWipe id="${p.id}">: the shape's outline doesn't contain its own centre, so the cover scale is a guess; set scaleTo`);

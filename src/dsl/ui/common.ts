@@ -86,7 +86,7 @@ export type Marker = { t: number; comment: string; duration?: number };
 /** Point markers. */
 export const at = (times: number[] | undefined, comment: string): Marker[] => (times ?? []).map((t) => ({ t, comment }));
 /** Window markers ([start, end] → a marker with a duration). */
-export const windows = (w: [number, number][] | undefined, comment: string): Marker[] => (w ?? []).map(([a, b]) => ({ t: a, comment, duration: Math.max(0, b - a) }));
+export const windows = (w: [number, number][] | undefined, comment: string): Marker[] => (w ?? []).map(([a, b]) => ({ t: a, comment, duration: Math.round(Math.max(0, b - a) * 1000) / 1000 }));
 
 /** Approximate rendered width of `text` in Inter at `size` px (Helvetica advances, +6 % for Inter; bolder +3 %). */
 export function textWidth(text: string, size: number, weight: 'regular' | 'medium' | 'semibold' | 'bold' = 'regular'): number {

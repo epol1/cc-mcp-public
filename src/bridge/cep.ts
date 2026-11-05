@@ -1,5 +1,6 @@
 // CEP backend: HTTP to the ae-compose CEP extension on 127.0.0.1 (token in ~/.ae-compose/bridge.json).
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import type { Backend, EvalResult } from './types.ts';
@@ -33,17 +34,33 @@ export class CepBackend implements Backend {
     const timeoutMs = opts.timeoutMs ?? 120_000;
     const t0 = performance.now();
     try {
-      const r = await fetch(`http://127.0.0.1:${info.port}/eval`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-aec-token': info.token },
-        body: JSON.stringify({ script, timeoutMs }),
-        signal: AbortSignal.timeout(timeoutMs + 5000),
-      });
-      const j: any = await r.json();
+      const j: any = await postJson(info.port, '/eval', { 'x-aec-token': info.token }, { script, timeoutMs }, timeoutMs + 5000);
       if (j.ok) return { ok: true, result: j.result ?? '', ms: j.ms ?? Math.round(performance.now() - t0) };
       return { ok: false, error: j.error, errorName: j.errorName, line: j.line, timedOut: j.timedOut, ms: Math.round(performance.now() - t0) };
     } catch (e: any) {
-      return { ok: false, error: `bridge request failed: ${e.cause?.code ?? e.message}` };
+      return { ok: false, error: `bridge request failed: ${e.code ?? e.cause?.code ?? e.message}` };
     }
   }
+}
+
+/**
+ * POST JSON to the bridge with node:http. Not fetch: Node's fetch gives up waiting for response headers after
+ * 300 s whatever the abort signal says, and a large build can take longer.
+ */
+function postJson(port: number, route: string, headers: Record<string, string>, body: unknown, timeoutMs: number): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const data = Buffer.from(JSON.stringify(body), 'utf8');
+    const req = http.request({ host: '127.0.0.1', port, path: route, method: 'POST', headers: { ...headers, 'content-type': 'application/json', 'content-length': data.length } }, (res) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => {
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch (e) { reject(e); }
+      });
+      res.on('error', reject);
+    });
+    const timer = setTimeout(() => req.destroy(Object.assign(new Error(`no answer after ${timeoutMs} ms`), { code: 'TIMEOUT' })), timeoutMs);
+    req.on('error', (e) => { clearTimeout(timer); reject(e); });
+    req.on('close', () => clearTimeout(timer));
+    req.end(data);
+  });
 }

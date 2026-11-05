@@ -9,7 +9,7 @@ import { expr } from '../anim.ts';
 import { parseColor } from '../../shared/units.ts';
 import { dslWarn } from '../warn.ts';
 import type { EaseName, NumberFormat } from './common.ts';
-import { PALETTE, box, dataDecimals, formatNumber, jsFormat, niceScale, normalizeData, r3, textWidth } from './common.ts';
+import { PALETTE, box, dataDecimals, fitScale, formatNumber, jsFormat, normalizeData, r3, textWidth } from './common.ts';
 import type { ChartProps, Frame } from './frame.ts';
 import { calloutLayers, categoryLabels, controller, gridLayer, legend, themeOf, tickLabels } from './frame.ts';
 import { ChartRig, buildRig, categoryIndex } from './rig.ts';
@@ -42,11 +42,9 @@ export function BarChart(p: BarChartProps): AecElement {
   if (stacked && data.series.some((s) => s.values.some((v) => v < 0))) dslWarn(`${who}: stacked bars take values ≥ 0; negative values are drawn as 0`);
   const all = data.series.flatMap((s) => s.values);
   const totals = data.labels.map((_, i) => data.series.reduce((a, s) => a + Math.max(0, s.values[i]), 0));
-  const scale = niceScale(stacked ? 0 : Math.min(...all), stacked ? Math.max(...totals) : Math.max(...all), p.scale);
   const theme = themeOf(p.theme);
   const decimals = p.format?.decimals ?? dataDecimals(all);
   const fmt: NumberFormat = { ...p.format, decimals };
-  const tickFmt: NumberFormat = p.tickFormat ?? { prefix: fmt.prefix, suffix: fmt.suffix, separator: fmt.separator, decimalMark: fmt.decimalMark, decimals: scale.decimals };
   const style = p.style ?? 'grow';
   const anim = { ...PRESETS[style], exit: 'auto' as const, exitDuration: 0.45, ...(p.animation ?? {}) };
   const valueLabels = p.valueLabels ?? (NS === 1 || stacked || NS * N <= 12);
@@ -55,18 +53,24 @@ export function BarChart(p: BarChartProps): AecElement {
 
   // Layout (box-local): reserves for legend, value labels, tick and category labels.
   const valSize = NS > 1 && !stacked ? Math.round(theme.valueSize * 0.8) : theme.valueSize;
-  const top = (showLegend ? Math.round(theme.legendSize * 1.2) + 28 : 0) + (valueLabels && !horizontal ? valSize + 20 : 12);
-  const tickW = Math.max(...scale.ticks.map((t) => textWidth(formatNumber(t, tickFmt), theme.tickSize)));
+  const top = (showLegend ? Math.round(theme.legendSize * 1.2) + 20 : 0) + (valueLabels && !horizontal ? valSize + 20 : 12);
   const labelW = Math.max(...data.labels.map((l) => textWidth(l, theme.labelSize) * 1.04));
   const valW = Math.max(...(stacked ? totals : all).map((v) => textWidth(formatNumber(v, fmt), valSize, true)));
-  const left = horizontal ? (p.categories === false ? 0 : Math.ceil(labelW) + 30) : p.axis === false ? 0 : Math.ceil(tickW) + 24;
   const bottom = horizontal ? (p.axis === false ? 8 : theme.tickSize + 30) : p.categories === false ? 8 : theme.labelSize + 34;
   const right = horizontal ? (valueLabels ? Math.ceil(valW) + 26 : 16) : 8;
+  const hLeft = p.categories === false ? 0 : Math.ceil(labelW) + 30;
+  // The axis takes as many ticks as fit along the plot (H doesn't depend on the scale; horizontal W neither).
+  const { scale, tickFmt } = fitScale(stacked ? 0 : Math.min(...all), stacked ? Math.max(...totals) : Math.max(...all), p.scale,
+    horizontal ? b.w - hLeft - right : b.h - top - bottom, theme.tickSize, horizontal,
+    (s) => p.tickFormat ?? { prefix: fmt.prefix, suffix: fmt.suffix, separator: fmt.separator, decimalMark: fmt.decimalMark, decimals: s.decimals });
+  const tickW = Math.max(...scale.ticks.map((t) => textWidth(formatNumber(t, tickFmt), theme.tickSize)));
+  const left = horizontal ? hLeft : p.axis === false ? 0 : Math.ceil(tickW) + 24;
   const plot = { L: left, T: top, W: b.w - left - right, H: b.h - top - bottom, B: b.h - bottom, R: b.w - right };
   if (plot.W < 60 || plot.H < 60) throw new Error(`${who}: the box (${b.w}×${b.h}) leaves only ${Math.round(plot.W)}×${Math.round(plot.H)} px for the bars; make it larger or turn off legend/axis/labels`);
   const LEN = horizontal ? plot.W : plot.H;
   const slot = (horizontal ? plot.H : plot.W) / N;
   const centers = data.labels.map((_, i) => r3((horizontal ? plot.T : plot.L) + slot * (i + 0.5)));
+  if (!horizontal && p.categories !== false && labelW > slot * 0.95) dslWarn(`${who}: category labels (up to ~${Math.round(labelW)} px) are wider than a bar slot (${Math.round(slot)} px) and may overlap; shorten them, widen the box, or use orientation: 'horizontal'`);
   const grouped = NS > 1 && !stacked;
   const sub = grouped ? (slot * 0.8) / NS : slot;
   const off = (s: number) => (grouped ? r3((s - (NS - 1) / 2) * sub) : 0);
@@ -90,7 +94,7 @@ export function BarChart(p: BarChartProps): AecElement {
   // z0/z1: the bar's two ends along the value axis, px from the plot's start; v: the value; pc: count-up progress.
   const geom = (s: number, i: number): string[] => {
     if (!stacked) return [
-      `var v = L.clamp(${valRef(s, i)}, Math.min(A0, A1), Math.max(A0, A1)), p = prog(${delay(s, i)}), pc = Math.min(p, 1);`,
+      `var vr = ${valRef(s, i)}, v = L.clamp(vr, Math.min(A0, A1), Math.max(A0, A1)), p = prog(${delay(s, i)}), pc = Math.min(p, 1);`,
       `var z0 = (B0 - A0) / AR * ${r3(LEN)}, z1 = (B0 + (v - B0) * p * X - A0) / AR * ${r3(LEN)};`,
     ];
     return [
@@ -127,7 +131,7 @@ export function BarChart(p: BarChartProps): AecElement {
       children: shapes,
     }));
     if (!valueLabels || (stacked && !isTop)) return;
-    const shown = stacked ? 'v * pc' : 'B0 + (v - B0) * pc';
+    const shown = stacked ? 'v * pc' : 'B0 + (vr - B0) * pc';
     const posV = horizontal
       ? `z1 >= z0 ? [${plot.L} + z1 + 14, ${at[1]}] : [${plot.L} + z1 - 14 - thisLayer.sourceRectAtTime(time, false).width, ${at[1]}]`
       : `z1 >= z0 ? [${at[0]}, ${plot.B} - z1 - 14] : [${at[0]}, ${plot.B} - z1 + 14 + ${r3(valSize * 0.75)}]`;

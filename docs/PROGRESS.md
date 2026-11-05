@@ -17,8 +17,16 @@
 
 - **A1/A2 motion previews + style lint** (D78): `src/runtime/motion.ts` sampler, `src/api/motion.ts` (reports, text-reveal folding, `motionPreview`), on every build/edit and in `lint_comp`; MCP `motion_preview`. AE check `tests/integration/p5/motion.ts` (15).
 - AE was restarted once (user OK'd) after it degraded during heavy cloner tests (D79).
+- **A4 reframe + delivery** (D80): `reframe` on builds (9:16 platform zone, 1:1, 4:5), `deliver` tool (mp4 per target + ProRes master). AE check `tests/integration/p5/reframe.ts`.
+- **A5 beat sync** (D81): `beatsOf`, `<Audio>`, `<BeatMarkers>`, `<CompMarkers>`, ripple `snap: 'beats'`, `off-beat` rule, `analyze_beats`. AE check `tests/integration/p5/beats.ts`.
+- **Showcase 15** (`examples/15-cloner-cards`): 100 cards stream, one stops and grows into the message panel; lint and style lint clean.
+- **Designer panel** (D83): `packages/bridge-cep/extension/designer.js` + `panel.html`; `designer_inbox` tool.
+- **Docs**: DSL.md §21 (toolkit), style rules in §17, new MCP tools; SKILL.md §11.
+- **Kits integrated** (built by subagents, exported from `ae-compose`, documented in DSL.md §21.9–21.16 and SKILL.md §11.6–11.7): typography + captions (K3), backgrounds (P4), data viz (K2), UI kit (K1), transitions (K4), path tools + morph (P3); `plan_scene` (A3) and the recipe library (A6, 6 shipped recipes) as MCP tools.
+- **Verified in AE** (`tests/integration/p5/kits.ts`): typography, backgrounds and data viz build with no expression errors, lint, and one undo restores the comp exactly. Fixed on the way: word bounds under centred text (D85), pseudo-effect matchNames over 31 bytes (D84), the bridge's 300 s fetch limit (D86).
+- **Regression**: every earlier integration suite passes (roundtrip, edit-ops 26/26, edit-3d, renderer-seeds, gradient-edit, ease 11/11 after fixing the test's spring reference, quality compare, render).
 
-**Next:** A3 storyboard (`plan_scene`), A4 reframe + delivery packs, K1–K4 kits, A5 beat sync wiring, A6 recipes, P3/P4, panel, showcases 15–18, docs, fresh-session test, REPORT.
+**Next:** AE checks of the UI kit, transitions and path tools; showcases 16–18; fresh-session test; independent review; REPORT.
 
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.

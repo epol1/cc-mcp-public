@@ -83,15 +83,25 @@ export function splitSegment(s: AeShape, k: number, t = 0.5): AeShape {
   return r;
 }
 
-/** Adds vertices (splitting the currently longest segment each time) until the shape has `count`. */
+/**
+ * Adds vertices until the shape has `count`, without changing its outline: each extra vertex goes to the segment whose
+ * pieces are currently longest (so long segments get the most), and every segment is then split into equal parameter
+ * pieces (de Casteljau), which spreads the new vertices evenly along it.
+ */
 export function resample(s: AeShape, count: number): AeShape {
-  let r = cloneShape(s);
-  if (r.v.length < 2 && count > r.v.length) throw new Error('resample: a shape needs at least 2 vertices');
-  while (r.v.length < count) {
-    let best = 0, bestLen = -1;
-    for (let k = 0; k < segmentCount(r); k++) { const L = cubicLength(segment(r, k)); if (L > bestLen + 1e-9) { bestLen = L; best = k; } }
-    r = splitSegment(r, best, 0.5);
+  if (s.v.length < 2 && count > s.v.length) throw new Error('resample: a shape needs at least 2 vertices');
+  const n = segmentCount(s);
+  if (count <= s.v.length || !n) return cloneShape(s);
+  const lens: number[] = [], pieces: number[] = [];
+  for (let k = 0; k < n; k++) { lens.push(cubicLength(segment(s, k))); pieces.push(1); }
+  for (let extra = count - s.v.length; extra > 0; extra--) {
+    let best = 0;
+    for (let k = 1; k < n; k++) if (lens[k] / pieces[k] > lens[best] / pieces[best] + 1e-9) best = k;
+    pieces[best]++;
   }
+  // Split from the last segment back, so earlier indices stay valid; each split peels one piece off the segment's end.
+  let r = cloneShape(s);
+  for (let k = n - 1; k >= 0; k--) for (let m = pieces[k]; m > 1; m--) r = splitSegment(r, k, (m - 1) / m);
   return r;
 }
 

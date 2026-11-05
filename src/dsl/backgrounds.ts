@@ -177,7 +177,7 @@ export function LightSweep(p: BackgroundProps & { at?: number; sweep?: number; e
         '// ae-compose light sweep: crosses the frame from Start over Duration ÷ Speed, repeating every Interval (Light Sweep effect)',
         `var e = ${R}, dur = Math.max(e("Duration").value / Math.max(e("Speed").value, 0.05), 0.01), gap = e("Interval").value;`,
         'var t = time - inPoint - e("Start").value, cyc = gap > 0 ? dur + gap : 1e9, u = t < 0 ? -1 : (t % cyc) / dur;',
-        'var p = u < 0 ? 0 : u > 1 ? 1 : L.bezier(0.645, 0.045, 0.355, 1, u);',
+        'var p = u < 0 ? 0 : u > 1 ? 1 : L.bezier(0.445, 0.05, 0.55, 0.95, u);',
         '[L.lerp(-0.35 * thisComp.width, 1.35 * thisComp.width, p), thisComp.height / 2];',
       ].join('\n'),
       [fxPath('Sweep', 'CC Light Sweep-0002')]: `${R}("Direction").value;`,

@@ -4,6 +4,9 @@
 import { buildScene, inspect, undo } from '../../../src/api/index.ts';
 import type { BuildOptions, BuildReport } from '../../../src/api/index.ts';
 import { evalAE } from '../../../src/bridge/index.ts';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 let failures = 0;
 export function check(name: string, ok: boolean, detail = ''): void {
@@ -16,7 +19,7 @@ export function done(): void {
 }
 
 /** Runs ExtendScript and returns its string result (throws on errors). */
-export async function es(code: string, timeoutMs = 120_000): Promise<string> {
+export async function es(code: string, timeoutMs = 300_000): Promise<string> {
   const r = await evalAE(code, { timeoutMs });
   if (!r.ok) throw new Error(`AE: ${r.error}`);
   return r.result;
@@ -43,6 +46,18 @@ export async function buildUndoCheck(label: string, file: string, comp: string, 
   const u = await undo(r.undoSteps ?? 1);
   check(`${label}: undo succeeded`, !!u.ok, u.error ?? '');
   const after = await fingerprint(comp);
-  check(`${label}: one undo restores the comp exactly`, after === before, after === 'none' ? 'comp still exists' : before === 'none' ? 'comp should be gone' : 'fingerprint differs');
+  let where = '';
+  if (after !== before && after !== 'none' && before !== 'none') {
+    // Save both for a diff: the first differing position and the files.
+    const dir = path.join(os.tmpdir(), 'aec-fingerprints');
+    fs.mkdirSync(dir, { recursive: true });
+    const base = path.join(dir, comp.replace(/[^A-Za-z0-9_-]+/g, '_'));
+    fs.writeFileSync(base + '.before.json', before);
+    fs.writeFileSync(base + '.after.json', after);
+    let i = 0;
+    while (i < before.length && before[i] === after[i]) i++;
+    where = ` at …${before.slice(Math.max(0, i - 80), i + 40)}… (${base}.before/after.json)`;
+  }
+  check(`${label}: one undo restores the comp exactly`, after === before, after === 'none' ? 'comp still exists' : before === 'none' ? 'comp should be gone' : 'fingerprint differs' + where);
   return r;
 }

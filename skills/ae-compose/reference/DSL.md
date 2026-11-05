@@ -24,6 +24,7 @@ Source of truth is the code: `src/dsl/*.ts` (public API), `src/compile/*.ts` (ho
 17. [MCP tools and CLI](#17-mcp-tools-and-cli)
 18. [AE gotchas handled for you](#18-ae-gotchas-handled-for-you)
 19. [Known limitations](#19-known-limitations)
+21. [Creative toolkit (Phase 5)](#21-creative-toolkit-phase-5): expression library, rig effects, fields, cloner, beat sync, reframe and delivery, motion previews and style lint, designer panel, typography, backgrounds, data viz, storyboard, recipes, UI kit, transitions, path tools
 
 > **Components that make several layers** (`OrbitCamera`, `ParticleWorld`, `ZStack`, `Grid3D`, `Circle3D`, `Parallax`) return a fragment, so both the JSX form `<ParticleWorld preset="sparks" />` and the function form `{ParticleWorld({ preset: 'sparks' })}` type-check and compile to the same thing.
 
@@ -531,6 +532,8 @@ One prop takes one animation. To fade in *and* out, use `seq(fade.in(), fade.out
 - the animator's properties hold the **"from" state** (Position, Scale, Rotation, Opacity, Blur, Tracking, Fill…), and units animate from it to rest;
 - an **Expression Selector** (Based On chars / chars excluding spaces / words / lines) computes every unit's progress from its `textIndex` with the exact bezier easing or Remotion spring: `t = time − inPoint − delay − index·each`;
 - `each`, `duration`, `delay` and spring `stiffness`/`damping`/`mass` may be `control()`s, which the expression reads live;
+- `live: true` puts that timing in one "aec Text Reveal" (or "aec Spring Reveal") effect on the text layer, named like the animator, so a designer retimes it in Effect Controls (§21.2);
+- the easing is an expression-library call (`L.bezier(…)` / `L.spring(…)`, §21.1);
 - scale/rotation animators set anchor-point grouping per unit, so each unit pivots around its own centre.
 
 `TextUnitsAnim` options (`perChar(o)`, `perWord(o)`, `perLine(o)`):
@@ -962,7 +965,7 @@ A two-node camera parented to a 3D null that turns around Y; all speeds and angl
 {OrbitCamera({ target: [960, 520, 0], radius: 1600, height: 250, speed: control('Orbit Speed', 12), startAngle: -25, lens: 50, dof: true, focusOn: 'hero', aperture: 50 })}
 ```
 
-**Camera moves**: `CameraMove({ target, move: [x, y, z], aim, duration, delay, easing, shake, distance, ...CameraProps })` builds a target null, a "move" null and the camera parented to it at AE's 1:1 framing distance for the lens (read live from its zoom, or `distance`). `aim: 'follow'` moves the aim with the camera (truck, pedestal, push-in); `'fixed'` keeps looking at the target (crane, arc). With `duration` the move is keys on the move null (graph-editable); without it an eased expression spans the layer, so it follows Sequence length and ripple edits. `shake: { amount, freq, seed }` adds a handheld wiggle (amount/freq may be controls). Presets:
+**Camera moves**: `CameraMove({ target, move: [x, y, z], aim, duration, delay, easing, shake, distance, rig, ...CameraProps })` builds a target null, a "move" null and the camera parented to it at AE's 1:1 framing distance for the lens (read live from its zoom, or `distance`). `aim: 'follow'` moves the aim with the camera (truck, pedestal, push-in); `'fixed'` keeps looking at the target (crane, arc). By default the move is a **live rig**: one "Camera Move" effect on the move null holds Travel X/Y/Z, Delay, Duration (0 = until the layer ends, so it follows Sequence length and ripple edits), Easing (Ease In-Out Sine/Cubic, Ease Out Expo, Linear, or "As Built" = the `easing` given) and the handheld shake (amount, frequency); retime or retarget it in Effect Controls (§21.2). `rig: 'keys'` (needs `duration`) makes the move ordinary keys on the move null instead. `shake: { amount, freq, seed }` sets the handheld wiggle. Presets:
 
 | Helper | Move | Aim |
 |---|---|---|
@@ -1391,6 +1394,23 @@ Every `build_scene` and `apply_edits` result carries a **lint report** for the c
 | `blank-frame` | warn | A rendered frame mid-comp is almost empty (background only). The first and last frame are ignored (fades from and to black are normal). |
 | `linear-motion` | note | Position/scale keys whose moving segments are all linear. |
 
+**Style lint** (the craft rules of SKILL.md §2, judged from the motion samples, D78) joins the same list:
+
+| Rule | Severity | What it catches |
+|---|---|---|
+| `transition-repeat` | warn | The same transition kind twice in a row (layers tagged `transition:<kind>`). |
+| `crowded-entrance` | warn | More than 3 elements starting their arrival within 0.2 s (cloner instances count as one). |
+| `short-hold` | warn | A non-text element that lands and leaves within 0.8 s (text holds are `reading-time`). |
+| `easing-monotony` | note | With 4 or more moves, every move has the same easing class. |
+| `linear-move` | warn | A move judged linear that isn't a constant drift (camera drifts, tickers and loops are fine) or a fade. |
+| `slide-furniture` | warn | A small element in the outer 22 % of the frame, still across 2 scenes or 70 % of the piece (tag it `persistent` or `bg` when intended). |
+| `short-end-hold` | warn | The final state holds less than 2 s. |
+| `everything-moves` | warn | More than 70 % of at least 3 visible elements move at once for 1 s (no focal point). |
+| `dead-air` | warn | 0.6 s or more with nothing but the background on screen inside the piece. |
+| `off-beat` | warn | With beat markers on the comp (§21.5), a scene start or entrance between a frame and 150 ms off a beat. |
+
+Layer `tags` (`bg`, `persistent`, `hero`, `transition:<kind>`) tell the style lint what a layer is for.
+
 How it measures: inside the build's (or edit's) own undo group, one temporary text layer samples every visible text layer every 0.1 s in comp coordinates with `sourceRectAtTime` + `toComp`. That is exact for parenting, 3D layers, cameras and nested precomps; 3D text behind the camera counts as off screen. Per-unit animators are read too: ae-compose reveals and exits use the current values of their live controls (stagger, delay, spring physics), and hand-built Range Selectors are read from their Start/End/Offset keys. Blank frames are judged from the contact sheet frames. A build or edit is still one undo step.
 
 Lint judges text against text, layers stacked above text (by their bounds) and empty frames. It can't judge pixels inside precomps, 3D occlusion, or whether a composition reads well. That's what the contact sheet is for.
@@ -1409,7 +1429,7 @@ scene({ name: 'Promo', duration: '6s', lint: { safe: 'title', readingRate: 4, ig
 
 | Tool | What it does |
 |---|---|
-| `build_scene` | Compile TSX (`source` or `file`) into native comps. Returns a report (comps, warnings, expression errors with TSX lines, kept controls, the lint report (§17), IR path) plus contact sheets. Options: `params`, `variants` (`false` or a list of keys), `frames` (default 8, max 24), `times`, `cwd`, `resetControls`, `lint`. |
+| `build_scene` | Compile TSX (`source` or `file`) into native comps. Returns a report (comps, warnings, expression errors with TSX lines, kept controls, the lint report (§17), IR path) plus contact sheets. Options: `params`, `variants` (`false` or a list of keys), `frames` (default 8, max 24), `times`, `cwd`, `resetControls`, `lint`, `motion` (previews + style lint, default on; §21.7), `reframe` (§21.6). The result also carries the speed graph image and the motion summary. |
 | `create_variants` | Build a scene with several param sets as sibling comps (`{ A: {...}, B: {...} }`). One contact sheet per variant. |
 | `inspect_project` | Compact list of every comp/footage/folder (names, sizes, durations, aec ids). |
 | `list_project_items` | Search the Project panel: comps, footage, stills, audio, solids, folders, with size, fps, duration, alpha, file path, folder and how often each is used. Filter by `type`, `kind` (`video`, `still`, `audio`, `comp`, `solid`) or a `name`/file substring. |
@@ -1429,6 +1449,12 @@ scene({ name: 'Promo', duration: '6s', lint: { safe: 'title', readingRate: 4, ig
 | `undo` | Undo the last ae-compose change(s) with AE's own Edit > Undo (`steps`, default 1). An edit batch or a single build is one step; a build with variants is one step per variant plus one for the compare comp (the report says `undo steps`). Read-only probes in between are skipped; manual changes made in AE since then are undone first. |
 | `recover_ae` | Get AE working again: answers known dialogs (Crash Repair → Continue) and reports others with captures, launches AE when it isn't running and waits for the bridge, reports a hung AE. `force: true` kills a hung AE and relaunches it (unsaved work is lost): only with the user's go-ahead. |
 | `doctor` | Check AE, the CEP bridge, the runtime and tools, with a fix for each failure. |
+| `motion_preview` | A dense frame strip of one segment (default: a second around the busiest moment) plus the speed graph, the motion summary, the style lint, and a GIF for humans (§21.7). |
+| `deliver` | Build every target frame (`targets`, default 16:9, 9:16, 1:1) and render each (`format`, default mp4) plus a master of the first (`master`, default ProRes 422 HQ) (§21.6). |
+| `analyze_beats` | Tempo, confidence, beat and bar times of a music file, for planning a beat-synced scene (§21.5). |
+| `designer_inbox` | Unread notes a designer sent from the panel's Ask Claude box, with comp, time and selection (§21.8). |
+| `plan_scene` | Check a beat sheet against the direction rules and scaffold a buildable scene (§21.12). |
+| `list_recipes` / `instantiate_recipe` / `save_recipe` | Search the recipe library, make a new scene from a recipe with new params and brand, save a finished scene as a recipe (§21.13). |
 | `run_extendscript` | Raw ES3 escape hatch (logged). Never touch shape-gradient properties with it. Wrap mutations in an undo group. |
 
 ### CLI (`aec`)
@@ -1471,6 +1497,9 @@ Most commands accept `--json` for machine-readable output. Review outputs (IR, f
 - **Layer-reference effect params** (`LAYER_INDEX`) are set by resolving `{ layer: id }` to the layer's index.
 - **ExtendScript has no `JSON`**, so the runtime ships its own (D11). `saveFrameToPng` is async and awaited (D12). Syntax errors that would open modal alerts are caught by eval-wrapping.
 - **Undo groups don't span evals**, so every build/edit is one eval and one undo group (D34).
+- **ExtendScript's `?:` is left-associative** (`true ? 'A' : false ? 'B' : 'C'` is `'B'`): the runtime build parenthesizes nested conditionals; do the same in `run_extendscript` (D82). Expressions use the JavaScript engine and are unaffected.
+- **A Property object is always truthy in expressions**: checkbox controls and rig params are read with `.value` (D75).
+- **A long, heavy session slows AE down** (Source Text evaluation went from 11 ms to 0.6–1.5 s after many big cloner builds; a cache purge didn't help, a restart did; D79).
 - **Modal dialogs and crashes** are detected by a watchdog (`list_dialogs`/`answer_dialog`), with a recovery routine (D17).
 - **Expression re-evaluation storms** during builds are avoided by controlling what the viewer shows. The result comp opens afterwards.
 
@@ -1494,3 +1523,245 @@ Most commands accept `--json` for machine-readable output. Review outputs (IR, f
 - **Range Selector mode** (`selector: 'range'`) takes fixed times, an easing (not a spring) and orders start/end/random; AE caps the window at 100 %.
 - **Edit ops:** frame strings (`"12f"`) use the comp's own fps. `ease` can't name a spring (use a bezier preset, `bounce` or `elastic`). `x`/`y`/`z` only exist on separated positions.
 - **Typing:** `Parallax` reads each child's `depth` prop (any number), which isn't in the layer prop types.
+
+---
+
+## 21. Creative toolkit (Phase 5)
+
+Higher-level tools that make many native, live elements from one statement (docs/TOOLKIT.md). Everything here stays editable in AE: real layers, keys, expressions and one tidy effect per rig.
+
+### 21.1 Expression library (`L.*`)
+
+Any expression ae-compose writes, and any `expr()` you write, may call the expression library: `L.spring(t, fps, damping, stiffness, mass)`, `L.bezier(x1, y1, x2, y2, u)`, `L.scatter(i, n, w, h, seed, jitter)`… The compiler adds what an expression uses (D73):
+
+- **inline** (default): the functions it calls are carried in the expression on one `function aecLib() {…}` line under its header comment, then `var L = aecLib();` and the readable call lines. The project needs nothing else.
+- **footage** (`scene({ lib: 'footage' })`): expressions read `var L = footage("aec-lib.jsx").sourceData;` from one shared item in `ae-compose/_lib` (the file is copied next to the saved project as `ae-compose-lib/aec-lib-<version>.jsx`, so Collect Files takes it). Shorter expressions, but a missing file disables every expression that uses it.
+
+| Group | Functions |
+|---|---|
+| Math | `clamp(v, lo, hi)`, `lerp(a, b, t)`, `remap(v, a, b, c, d)`, `smooth(e0, e1, x)`, `step(v, size)`, `wrap(v, lo, hi)`, `mixv(a, b, t)` |
+| Random | `hash(i, k)` (0–1), `rand(i, k, lo, hi)`, `srand(i, k)` (−1–1), `pick(list, i, seed)`, `noise1(x, seed)`, `noise2(x, y, seed)` |
+| Easing, physics | `bezier(x1, y1, x2, y2, u)`, `eased(bezierArray, u)`, `tween(t, t0, dur, from, to, bezier)`, `spring(t, fps, damping, stiffness, mass)` (Remotion-exact), `overshoot(t, amp, freq, decay)`, `inertia(v, t, freq, decay)`, `bounce(t, height, gravity, elasticity, max)`, `follow(t, i, lag)` |
+| Timing | `stagger(i, n, each, order, seed)` (order 0 start, 1 end, 2 center, 3 edges, 4 random), `cascade(distance, speed)` |
+| Distributions | `line(i, n, spacing, angle, centered)`, `grid(i, n, cols, gapX, gapY)`, `circle(i, n, radius, start, arc)`, `circleAngle(…)`, `scatter(i, n, w, h, seed, jitter)` (jittered grid: even spacing), `sphere(i, n, radius)`, `helix(i, n, radius, height, turns)`, `onPath(path, u, closed)`, `pathAngle(path, u, closed)` |
+| Falloffs (1 inside → 0 outside) | `falloff(d, radius, softness)`, `radial(p, center, radius, softness)`, `box(p, center, size, softness)`, `linear(p, center, angle, width)` |
+| Color | `hsl(h, s, l, a)`, `toHsl(rgba)`, `shade(rgba, dh, ds, dl)`, `hex("#rrggbb")`, `palette(list, i)`, `gradient(list, t)` |
+| Markers | `pulse(t, starts, len)` (1 during a pulse), `since(t, starts)` (seconds since the last start, −1 before) |
+| Text | `pad(n, digits)`, `num(v, decimals, sep, dec)` (1,234.5), `scramble(text, p, seed, t, chars)`, `typed(text, p, caret, t, blink)` |
+
+`inspect_comp` shows an expression's header comment and its first `L.` call, not the inlined helpers. The same functions are available in Node (`libObject()` in `src/aeclib`) for tests.
+
+### 21.2 Rig effects, grouped controls, live rigs
+
+A **rig effect** is one pseudo effect holding exactly a rig's controls, generated as a `.ffx` preset (D74): the project stores its definition, so it opens and renders anywhere.
+
+```tsx
+const SPIN = { name: 'aec Spin', params: [
+  { kind: 'slider', name: 'Speed', default: 45, min: 0, max: 360 },
+  { kind: 'checkbox', name: 'Reverse', default: false },
+  { kind: 'group', name: 'Look', params: [{ kind: 'color', name: 'Tint', default: [1, 0.5, 0] }, { kind: 'popup', name: 'Mode', items: ['Calm', 'Wild'] }] },
+] };
+<Shape id="spinner" rotation={expr('(effect("Spinner")("Reverse").value ? -1 : 1) * effect("Spinner")("Speed").value * time;')}>
+  <Rect size={[80, 80]} /><Fill color="#f5a623" />
+  <RigEffect def={SPIN} name="Spinner" values={{ Speed: 90, Mode: 'Wild' }} />
+</Shape>
+```
+
+Param kinds: `slider` (`min`/`max` = slider range, `validMin`/`validMax`, `precision`, `display: 'percent' | 'pixel'`), `angle`, `checkbox`, `color` ([r, g, b] 0–1, or a color string in `values`), `point`, `popup` (`items`; values may be the label), `layer`, `group` (nested params, `collapsed`). Values may be numbers, colors, booleans, popup labels, animations or `control()` refs. Read a param in expressions with `.value`: a Property object is always truthy in AE's JavaScript engine, so `effect(…)(…) ? a : b` without `.value` is always `a` (D75). Names: at most 31 bytes, no `/`. Rig sliders store float32 (0.02 reads back as 0.0199999996).
+
+- **Grouped controls:** `control('Delay', 0.3, { group: 'Title' })` puts every control of that group into one "Title" rig effect on the Controls null (Essential Graphics names them "Title Delay"). Expressions read `thisComp.layer("Controls").effect("Title")("Delay").value`.
+- **Live text reveals:** `perWord({ …, live: true })` (any per-unit animator with the expression selector) adds an "aec Text Reveal" effect on the text layer, named like the animator ("Reveal (words)"), with Each, Duration, Delay (and Damping, Stiffness for springs). A designer retimes the reveal in Effect Controls.
+- **Live camera moves:** `CameraMove` and its presets (§13.3) put Travel X/Y/Z, Delay, Duration (0 = until the layer ends), Easing and the handheld shake in one "Camera Move" effect on the move null by default; `rig: 'keys'` keeps a keyframed move instead.
+- Sticky controls (§11.5) cover every rig param: rebuilds keep values changed in AE.
+
+### 21.3 Fields: `field(name, value)`
+
+`field('Card Color', '#4683c4')` marks any property of a precomp's content as an Essential Graphics property of that comp, so every layer that uses the comp gets it under Essential Properties and can override it. `<Text eg="Label">` does the same for a text's source text (also inside precomps now). Fields are how cloner instances differ (§21.4).
+
+### 21.4 `<Cloner>`
+
+One master, many instances, every parameter live (D77):
+
+```tsx
+<Cloner id="cards" name="Cards" count={100} size={[260, 160]} seed={7}
+  distribute={scatter({ width: 2700, height: 640, jitter: 0.9 })}
+  motion={{ speed: 210, direction: -4, wrap: 2900, variation: 30 }}
+  effectors={[
+    noise({ position: 14, rotation: 6, scale: 12, opacity: 20, speed: 0.35 }),
+    falloff({ radius: 300, softness: 650, scale: [68, 108], opacity: [45, 100] }),
+    colorize({ field: 'Card Color', palette: ['#3f6db3', '#4683c4', '#5577cf'], mode: 'random' }),
+  ]}
+  of={[<Shape><Rect size={[236, 136]} roundness={18} /><Fill color={field('Card Color', '#4683c4')} /></Shape>]} />
+```
+
+It builds: a **master** precomp `<name> Master` (`of`, at `size`: keep it tight around the content, since every instance renders that area); a **controller** null `<name>` carrying one "Cloner" rig effect (Seed, Scale, Rotation, Opacity, then a group per distribution and effector); and **instance 1**, whose expressions find their index from the stacking order (`i = n − (index − controller index)`: instance 1 at the bottom, later ones on top) and call the library. AE duplicates it into the rest (`Cards 001…100`). Instances are parented to the controller: move, scale or rotate it to move them all. Only `count` needs a rebuild; edit the master comp or any Cloner param in AE and every instance follows. Lint skips instances (tagged `aec:<id>;clone`).
+
+| Prop | Meaning |
+|---|---|
+| `id` (required), `name` | Ids of the parts derive from `id`; `name` names the controller and the instances. |
+| `count` | Instances (default: data rows, else 10). |
+| `of`, `size` (required), `masterDuration` | The master's content, its comp size, its duration (default the cloner's span). |
+| `distribute` | `line({ spacing, angle, centered })`, `grid({ columns, gap })`, `circle({ radius, start, arc, orient })` (0° = top, clockwise), `onPath({ d, start, end, orient, closed, show })` (SVG path in comp px; a guide layer holds it), `scatter({ width, height, jitter })`, `sphere({ radius })`, `helix({ radius, height, turns })` (sphere and helix make the instances 3D). |
+| `motion` | `{ speed, offset, direction, wrap, variation }`: travel along `direction` in px/s (circle: °/s around; path: % per second); `wrap` (px) loops them; `variation` is ±% per instance; `offset` may be animated (a rush in or out). |
+| `effectors` | `noise({ position, rotation, scale, opacity, z, speed })` (seeded; `speed` > 0 wobbles), `falloff({ shape: 'radial' \| 'linear', center, radius, softness, angle, width, scale: [out, in], opacity: [out, in], blur: [out, in] })` (a draggable "<name> Field" null; `blur` adds a Gaussian Blur per instance), `stagger({ each, order, by: 'index' \| 'distance' \| 'random' })` (time-remaps the master per instance), `follow({ lag })` (each instance replays the controller's motion `lag` s after the previous one: animate the controller), `step({ position, rotation })` (quantize), `colorize({ field, palette, mode: 'cycle' \| 'random' \| 'gradient' })` (on a master color field). A radial falloff can't be combined with circle/sphere/helix yet (both use "Radius"). |
+| `data` | One row per instance. Keys naming a master field set that instance's field (`dataMode: 'expression'`, the default: one expression per field holding all values, nothing written per instance; `'overrides'`: static Essential Properties values, slower to build, easy to retype one). Keys `x`, `y`, `z`, `rotation`, `scale`, `opacity`, `delay` offset that instance. `csv('rows.csv')` reads a CSV (header row, numbers parsed). |
+| `seed`, `scale`, `rotation`, `opacity` | Rig base values (may be animated). |
+| `mode` | `'layers'` (default) or `'repeater'`: a shape-only master as one shape layer copied by native Repeaters (line, grid, circle; `motion.speed` moves or spins them). Much cheaper to render, and the count stays live, but no effectors, data or fields. |
+
+**Performance** (measured in a 32-bpc project, warm frames; D77):
+
+| Setup | Build (fresh) | Render per frame |
+|---|---|---|
+| 100 instances, identical | 3.3 s | 1.2 s |
+| 100 instances, 4-colour palette | 3.3 s | 1.8 s |
+| 100 instances, a unique text label each | 3.3 s | 5–22 s |
+| 300 instances, palette | 12.7–19.9 s | 11 s |
+| 300 instances, unique labels | 12.7 s | 20–44 s |
+| 1000 copies, `mode: 'repeater'` | ~3 s | 0.6 s |
+
+Every distinct set of field values renders the master once per frame, so prefer a few palette values over a unique value per instance, and keep text out of masters you clone in large numbers. Rebuilds of a heavy cloner cost more (AE re-renders in the background after each call). The cloner warns past 300 instances and for per-instance text past 40.
+
+### 21.5 Beat sync
+
+```tsx
+const B = beatsOf('music/track.mp3');            // analyzed once, cached as track.mp3.beats.json
+<Audio id="music" src="music/track.mp3" />
+<BeatMarkers beats={B} to={15} />                // "bar N" on downbeats, "beat" on the others
+<Series>
+  <Series.Sequence name="Hook" duration={B.bar(0) + B.bars(2)}>…</Series.Sequence>
+  <Series.Sequence name="Drop" duration={B.bars(4)}>…</Series.Sequence>
+</Series>
+```
+
+`beatsOf(file, { minBpm, maxBpm, beatsPerBar, offset })` returns `{ bpm, confidence, beats, downbeats, beat(n), bar(bar, beat), bars(n, unit), snap(t, { tolerance, subdivision }), between(a, b), offBeat(cuts) }`. Accuracy (D81): F = 1.00 at ±70 ms and BPM within 0.07 % on synthetic house, hip-hop (swung), rock, ambient, drum & bass and drifting tracks; a low `confidence` (< 0.3) means there is no steady pulse. `<CompMarkers markers={[{ t, comment }]} />` adds any comp markers. Ripples never move beat/bar markers (the music keeps playing), and `{ op: 'ripple', scene: 'Intro', by: 0.4, snap: 'beats' }` rounds the change so the edited scene ends on a beat. The `off-beat` lint rule flags scene starts and entrances between a frame and 150 ms off a beat. The `analyze_beats` tool reports the grid for planning.
+
+### 21.6 Responsive reframe and delivery packs
+
+`build_scene { reframe: ['9:16', '1:1'] }` (or `reframe: { width, height, typeScale }`) builds sibling comps `Name_v001_9x16`, `…_1x1` from the same scene (D80). Layouts re-solve in AE (in 9:16, top-level containers and title-safe areas use the platform's UI-free zone: left 60, top 250, right 120, bottom 400 px at 1080×1920). Given positions map into the new frame (that zone in 9:16). Frame fillers (solids, footage, full-frame rectangles) fill the new frame. Type scales ×0.8 (9:16) or ×0.85 (1:1, 4:5), and a line that is still too wide shrinks to fit in AE. Lint judges 9:16 against the platform zone (`safe: 'reels'`). Cameras re-frame because `lens` converts to zoom from the comp width.
+
+`deliver { file, targets: ['16:9', '9:16', '1:1'], format: 'mp4', master: 'prores' }` builds every target and renders each, plus a ProRes master of the first, into `renders/`. Renders clear AE's undo history, so deliver approved work.
+
+### 21.7 Motion previews and style lint
+
+Every build and edit samples the comp's motion inside its undo group (D78; `motion: false` skips it) and returns a **speed graph** (one row per animated layer: speed curve, holds shaded, easing class per move, how many layers move at once), a motion **summary** ("title arrives 0.20–0.85 s (ease-out), holds 2.4 s") and the **style lint** rules (§17). Per-unit text reveals are included from their animator timing. `motion_preview { comp, start, end, frames }` renders a dense frame strip (default: one second around the busiest moment) and a GIF, plus the graph. Cost: 3–6 s per build.
+
+### 21.8 Designer panel
+
+Window > Extensions > ae-compose: **Controls** (the active comp's rig effects and expression controls, grouped by rig, editable), **Lint** (the latest lint and style lint the tools saved for the comp; click an issue to jump to it), **Variants** (sibling comps: variants, Compare, reframes), **Recipes**, and **Ask Claude** (queues a note with the comp, time and selection; the agent reads it with `designer_inbox`). D83.
+
+### 21.9 Typography kit
+
+Native text plus one "aec <Name>" rig effect each, so retiming and recoloring happen in Effect Controls.
+
+| Component | What it makes | Live in AE |
+|---|---|---|
+| `<Captions src="talk.srt" style="karaoke" />` | One Text layer per cue (fix a typo in that layer, drag it to retime), lines balanced to the title-safe area (the platform-safe zone on vertical frames), bottom-centre. `src` is .srt/.vtt/word-timing .json or the text itself; or `cues`, or `words` (Whisper-style, grouped into cues by pauses and line fit). Styles `clean`, `boxed`, `karaoke`, `boldPop`; `karaoke: { mode: 'current'\|'past', underline, scale, sync }`. Reading speed is checked (`reading: 'warn'\|'error'\|'off'`). | "Captions" effect on the controller: Text Color, Highlight, Pop Scale, Fade, Ramp, Sync Offset, box color/opacity/padding |
+| `<Emphasis word="MOTION" kind="bar">` around a `<Text>` | A bar, underline, box or hand-drawn circle that follows one word, plus an optional color pop (`wordColor`) and scale punch. The word is measured in AE (`sourceRectAtTime` on hidden measuring copies), so it stays right when the text is retyped. `emphasize(text, opts)` returns the text and the marks separately for texts inside a layout. Point text only. | "Emphasis": Word (index), Start, Draw, Out, colors, padding, thickness |
+| `<Decode duration delay chars seed>` | Characters resolve from random glyphs, left to right. | "Decode": Progress, Rate, Seed |
+| `<Typewriter cps delay caret humanize>` | Characters appear at a typing pace with a blinking caret. `typingProgress()` gives the same timing in TS. | "Typewriter": Progress, Blink, Show Caret |
+| `<SplitFlap flips each duration delay>` | Airport-board characters flip through glyphs before landing. | "Split Flap": Flips, Each, Duration, Delay |
+| `<VariableFont fonts={['Inter-Regular', …, 'Inter-Black']} from to duration>` | A weight shift by stepping through the family's PostScript names (AE doesn't expose variable axes to scripts). | "Font Weight": Weight 0–100 |
+| `<AutoFit fit={{ width, height }} minSize maxLines>` | Point text whose lines are balanced and size shrunk at build to fit the box (`autoFitLines()` does the same in TS). | "Auto Fit": Width, Height, Max Scale (re-fits live when retyped) |
+
+### 21.10 Procedural backgrounds
+
+`GradientField` (a slowly turning Gradient Ramp), `MeshGradient` (drifting 4-Color Gradient warped by Turbulent Displace; `kaleido` adds CC Kaleida), `FilmGrain` (Noise or Add Grain on an adjustment layer), `LightSweep` (CC Light Sweep passing over what's below; `at`, `sweep`, `every`), `BokehField` (soft drifting circles in two depth layers, or `mode: 'particles'`), `DotGrid` and `LineGrid` (shape Repeaters that scroll without a seam). Common props: `id`, `palette` (or `brand`; brand tokens and controls stay linked), `speed` (0 = still), `seed`. Each has one "aec <Name>" effect with its colors, Speed and a few look params; the effects underneath stay ordinary effects. Every background is tagged `bg` for the style lint.
+
+```tsx
+<MeshGradient id="bg" palette={[B.colors.deep, B.colors.violet, B.colors.accent, B.colors.ink]} speed={0.6} />
+<FilmGrain id="grain" amount={4} />
+```
+
+### 21.11 Data viz kit
+
+`BarChart` (vertical/horizontal, grouped, `stacked`, `style: 'grow'|'pop'`), `StackedBarChart`, `LineChart` (`style: 'draw'|'rise'`, `curve: 'smooth'|'linear'`, `area`, `points`), `AreaChart`, `DonutChart` and `PieChart` (`style: 'stagger'|'sweep'`, outside % labels, a centre total), and `Counter`.
+
+```tsx
+<BarChart id="rev" name="Revenue Chart" x={192} y={240} width={1536} height={732}
+  data={[{ label: 'JAN', value: 42 }, { label: 'FEB', value: 58 }, /* … */ { label: 'JUN', value: 128 }]}
+  format={{ prefix: '$', suffix: 'k' }} animation={{ delay: 0.45, stagger: 0.07, duration: 0.8 }}
+  highlight={{ at: 'JUN', after: 0.2 }} annotate={{ at: 'JUN', text: 'Record month', after: 0.3 }} />
+<Counter id="count" value={1.2} decimals={1} suffix="M" from={0} delay={0.5} countDuration={1.4} font="Inter-Black" size={150} />
+```
+
+- **Data:** `data` (numbers, `{ label, value }` rows, or rows with several numeric columns = one series each, picked with `keys`), or `series` + `labels`; `colors`.
+- **Box:** `x y width height` (default: the title-safe area). `scale` (min, max, ticks; a nice scale by default), `grid`, `axis`, `categories`, `legend`, `valueLabels`, `format` / `tickFormat` (`prefix`, `suffix`, `decimals`, `separator`).
+- **Story:** `highlight` (one category pops after the data lands, the others dim), `annotate` (a callout with a leader line), `animation` (`delay`, `stagger`, `duration`, `easing`, `exit: 'auto'` leaves only when the chart ends before the comp).
+- **Live in AE:** each chart has one controller null with one effect ("Bar Chart", "Line Chart", "Donut Chart"…): every value (named after its label), axis min/max, colors, bar/line width, timing, easing, exit and a Highlight dropdown. Change a number and the bar, its label, the ticks and the animation follow. Changing the number of categories or series needs a rebuild.
+- `niceScale(min, max)` and `formatNumber(v, format)` are exported for your own labels (`formatNumber` matches the live `L.num`).
+
+### 21.12 Storyboard first: `plan_scene`
+
+Give a beat sheet (`message`, then `beats` with `name`, `purpose`, `duration`, `text`, `visual`, `transitionIn`, `hold`; an `end` card; optional `format`, `brand`, `music`). The plan is checked before any TSX exists: reading time per text against the beat, the final hold (≥ 2 s), a hook in the first second, beats without a purpose, empty or duplicate beats, the same transition twice in a row, overlaps outside 0.2–0.4 s, one idea per beat, slide furniture, pacing, plus the style lint on the planned timing. It returns a buildable scaffold (`file` writes it): a `<Series>` of named beats, headline/subline reveals with exits anchored to each beat's end, a placeholder card per visual, transitions named by kind, an end card, and live controls (Title Delay, Word Stagger, Exit Lead, Accent Color). Fix the warnings, re-plan (`overwrite: true`), replace the TODO placeholders, build.
+
+### 21.13 Recipes
+
+A recipe is a finished scene saved for reuse: its `.tsx`, the modules and assets it reaches by relative path, a params schema read from `config.params`, its live controls, named scenes, tags and an intent sentence. Shipped: `kinetic-title`, `lower-third`, `logo-reveal`, `end-card`, `product-promo`, `data-chart` (in `recipes/`; saved ones go to `~/.ae-compose/recipes`, more folders via `AEC_RECIPES`).
+
+- `list_recipes { query: "lower third interview" }` searches by intent, tags and name.
+- `instantiate_recipe { name, params, brand, outFile }` writes a new editable scene with the params baked in as defaults and an optional new `brand.ts` (missing tokens are listed), copies its assets, and compiles it to check; then `build_scene` it.
+- `save_recipe { file, intent, tags, thumbs }` saves your finished scene. `npx tsx src/recipes/reindex.ts` refreshes the shipped manifests.
+
+### 21.14 UI kit
+
+Product-UI components drawn as native shapes and text, for app demos and onboarding pieces. Every component takes `id` (required), `theme` (`'dark'`, `'light'`, or overrides such as `{ base: 'light', accent: '#ff5a00', scale: 1.6 }`; `themeFromBrand(brand)`), `position` (absolute centre; omit inside layout containers), `enterAt` / `exitAt`, and `flow` (the events of a `uiSteps` script).
+
+| Group | Components |
+|---|---|
+| Controls | `Button` (primary, secondary, ghost, danger; the label re-fits live), `Toggle`, `Checkbox`, `Slider`, `ProgressBar`, `Input` (types its `text` with a blinking caret), `Tabs` |
+| Display | `Card`, `Avatar`, `Badge`, `Tooltip`, `Toast`, `Modal`, `ListItem`, `Feed` (a Cloner of list rows from `rows`), `ScrollView` |
+| Frames | `PhoneFrame`, `TabletFrame`, `LaptopFrame`, `BrowserFrame` (children are the screen), `ScreenInsert` (a screen recording with zoom keys and a focus point that can follow the cursor) |
+| Interaction | `Cursor` (arrow or touch dot, click ripples) driven by `uiSteps(steps, { targets, start })` |
+
+```tsx
+const flow = uiSteps([
+  { at: 1.1, click: 'email' }, { at: 1.2, type: 'email' },
+  { at: 2.3, hover: 'agree' }, { at: 2.9, click: 'agree' },
+  { at: 3.4, click: 'signup' }, { at: 3.5, show: 'toast', hold: 2 },
+], { targets: { email: [560, 337], agree: [548, 404], signup: [640, 474] }, start: [980, 610] });
+
+<BrowserFrame id="browser" url="app.example.dev" position={[960, 540]}>
+  <Input id="email" label="Work email" text="ada@example.dev" width={380} position={[640, 326]} flow={flow} />
+  <Checkbox id="agree" label="Send me product updates" position={[640, 404]} flow={flow} />
+  <Button id="signup" label="Create account" size="lg" width={380} position={[640, 474]} flow={flow} />
+  <Toast id="toast" title="Account created" body="Welcome aboard." position={[1086, 66]} flow={flow} />
+  <Cursor id="cursor" flow={flow} />
+</BrowserFrame>
+```
+
+- **Steps:** `cursor` (move), `click`, `hover`, `drag` + `to` (+ `value` for a Slider), `type`, `scroll` + `stop` (a ScrollView), `show` / `hide` (Toast, Modal, Tooltip), each at `at` seconds. `sliderPoint()` and `modalButtonPoints()` give the points to aim at.
+- **Live in AE:** each stateful component has one rig effect ("Button", "Toggle", "Reveal"…) and its states are layer markers ("press", "hover", "toggle", "select 1", "type", "show"): drag a marker to retime that state, no rebuild.
+- Cursor waypoints are points, so give clicked components a `position` (or list them in `targets`). `Modal`, `Feed`, `ScreenInsert` and `Cursor` sit at the top level of a comp or screen, not in layout containers.
+
+### 21.15 Transitions library
+
+Transitions made from the scenes' own elements, timed from the boundary between two beats. Put them between `<Beat>`s inside `<Beats>`: each beat becomes a named Sequence (a scene marker, so ripple edits work), and the next beat starts when the transition starts (or at the cut, for cut kinds).
+
+```tsx
+<Beats>
+  <Beat name="Hook" duration={3}>…</Beat>
+  <ShapeWipe id="wipe" shape={<Shape x={1500} y={300}><Ellipse size={[80, 80]} /><Fill color={B.colors.accent} /></Shape>} duration={0.7} />
+  <Beat name="Build" duration={3.5}>…</Beat>
+  <HandOff id="handoff" element={logoMark} from={{ x: 960, y: 540, scale: 100 }} to={{ layer: 'cta.slot', scale: 40 }} duration={0.9} />
+  <Beat name="End" duration={4}>…</Beat>
+</Beats>
+```
+
+| Transition | What it does |
+|---|---|
+| `HandOff` | A match cut: one element travels from its pose in the outgoing beat to its pose in the incoming one (`from`/`to` points or layer ids, `arc`, or a planned `path`; `match: 'size'`). |
+| `ShapeWipe` | A shape from the outgoing beat grows to fill the frame and reveals the next beat (`grow`, `show`, `color`). |
+| `ZoomThrough` | The camera dives into an element (`through`, `focus` on a letter for text) and comes out in the next beat. |
+| `PushThrough` | The outgoing beat recedes in depth while the incoming one arrives (`depth`, `lens`). |
+| `ParallaxSplit` | The frame splits into layers moving at different speeds (`direction`, `distance`, `spread`). |
+| `LiquidWipe`, `SliceWipe`, `GridWipe` | Organic edge, angled slices, or tiles from an origin (`direction`, `count`, `columns`/`rows`, `stagger`, `color`). |
+| `LightLeakCut` | A warm light leak flares over a hard cut (`color`, `intensity`, `flash`). |
+
+Each transition has one controller null with an "aec <Kind>" effect: keyed Progress plus its amounts, so it can be retimed or softened in AE. Its layers are tagged `transition:<kind>` (the style lint flags the same kind twice in a row). `beatTimeline()` returns the beat and transition times without building. Standalone use: `at`, `outgoing` and `children`. Scene elements a transition takes over (`shape`, `through`) need explicit positions and must be at rest when it starts.
+
+### 21.16 Path tools
+
+- `<FollowPath id d progress|duration orient>`: a layer travels along an SVG path (live progress, optional orientation).
+- `<Trail id count lag opacity>` / `<Echo>` around an animated element: copies follow it with a live lag and fading opacity.
+- `<DrawOn d color width duration>`: a stroke draws on along the path (Trim Paths), or from a `progress` control.
+- `<Morph from to | shapes={[a, b, c]} duration>`: one shape morphs into another; vertices are matched (subdivided, same winding, start point with the least travel) so the morph doesn't twist.

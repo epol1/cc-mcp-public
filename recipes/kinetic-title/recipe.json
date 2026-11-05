@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "name": "kinetic-title",
+  "title": "Kinetic title",
+  "intent": "A bold kinetic-typography title: the headline springs in word by word over an accent bar, a supporting line follows, holds, and everything exits together.",
+  "tags": [
+    "title",
+    "kinetic typography",
+    "headline",
+    "text animation",
+    "opener",
+    "intro",
+    "typography"
+  ],
+  "scene": "scene.tsx",
+  "sceneName": "KineticTitle",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 5,
+  "params": {
+    "headline": {
+      "type": "string",
+      "default": "MAKE IT MOVE",
+      "description": "The headline (1–5 words read best; the size adapts to the word count)"
+    },
+    "sub": {
+      "type": "string",
+      "default": "Native After Effects, written in code",
+      "description": "Supporting line under the bar"
+    }
+  },
+  "controls": [
+    "Word Stagger",
+    "Title Delay",
+    "Accent Color"
+  ],
+  "scenes": [],
+  "brand": "brand.ts",
+  "files": [
+    "brand.ts"
+  ],
+  "thumbnails": [],
+  "source": "examples/01-kinetic-type/scene.tsx",
+  "created": "2026-11-05T14:19:30.517Z"
+}
