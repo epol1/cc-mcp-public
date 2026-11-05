@@ -7,9 +7,11 @@ import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
 import { cachedTranscript } from '@ae-mcp/core/transcribe/index.ts';
 import type { Transcript } from '@ae-mcp/core/transcribe/types.ts';
 import { REFRAMES } from '@ae-mcp/core/deliver/targets.ts';
+import { beatsCached } from '@ae-mcp/core/audio/cached.ts';
+import { beatGrid } from '@ae-mcp/core/audio/beats.ts';
 import type { Grade, TLClip, TLMarker, Timeline } from '../timeline.ts';
 import type { MediaResolver } from './media.ts';
-import { parsePlan, type Plan, type Segment, type Tighten } from './schema.ts';
+import { parsePlan, type Montage, type Plan, type Segment, type Tighten } from './schema.ts';
 
 /** One continuous piece of a segment after tightening. */
 export interface Piece {
@@ -53,7 +55,8 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
   const warnings: string[] = [];
 
   // ---- sequence settings from the first segment's media unless given ----
-  const firstInfo = await media.info(plan.segments[0].src);
+  const segments = plan.segments ?? [];
+  const firstInfo = await media.info(segments[0]?.src ?? plan.montage!.clips[0]);
   const R: Rate = plan.fps !== undefined ? toRate(plan.fps) : firstInfo.video?.rate ?? toRate(25);
   const fps = R.num / R.den, tpf = ticksPerFrame(R);
   let [W, H] = [firstInfo.video?.width ?? 1920, firstInfo.video?.height ?? 1080];
@@ -77,8 +80,8 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
   let cursor = 0, sourceSeconds = 0;
   const usedIds = new Set<string>();
 
-  for (let si = 0; si < plan.segments.length; si++) {
-    const seg: Segment = plan.segments[si];
+  for (let si = 0; si < segments.length; si++) {
+    const seg: Segment = segments[si];
     const id = seg.id ?? `seg${si + 1}`;
     if (usedIds.has(id)) throw new Error(`segment id "${id}" is used twice`);
     usedIds.add(id);
@@ -132,10 +135,10 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const segText = a >= 0 && tr ? tr.words.slice(a, b + 1).map((w) => w.text).join(' ') : `${info.name} ${seg.from ?? 0}–${seg.to ?? 'end'}`;
     segs.push({ id, beat: seg.beat, src: seg.src, words: a >= 0 ? [a, b] : null, start: segStart, end: cursor, text: segText, ...(match ? { match } : {}) });
   }
-  if (!pieces.length) throw new Error('the plan produced no pieces (every segment was empty)');
+  if (!pieces.length && !plan.montage) throw new Error('the plan produced no pieces (every segment was empty)');
 
   // ---- A-roll clips ----
-  const segOf = new Map(plan.segments.map((s, i) => [s.id ?? `seg${i + 1}`, s]));
+  const segOf = new Map(segments.map((s, i) => [s.id ?? `seg${i + 1}`, s]));
   const gradeFor = (seg: Segment): Grade | undefined => {
     const g = { ...(plan.grade?.['*'] ?? {}), ...(plan.grade?.[seg.src] ?? {}), ...(seg.grade ?? {}) };
     return Object.keys(g).length ? g : undefined;
@@ -173,6 +176,9 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
   }
   // ---- markers ----
   if (plan.markers !== false) for (const s of segs) timeline.markers.push({ frame: s.start, name: s.id, comment: [s.beat, `"${s.text.slice(0, 80)}${s.text.length > 80 ? '…' : ''}"`].filter(Boolean).join(' · ') } as TLMarker);
+
+  // ---- montage: picture cut to the music's beats or bars ----
+  if (plan.montage) cursor = await montage(plan.montage, { timeline, addMedia, media, fr, fps, tpf, toTicks, T, segs, warnings });
 
   // ---- B-roll ----
   const dialogueEnd = cursor;
@@ -271,6 +277,25 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     keys.sort((x, y) => x.frame - y.frame);
     const inTicks = toTicks(inS);
     timeline.clips.push({ id: mid, media: key, aTrack: m.track ?? 5, start, end: mEnd, inTicks, outTicks: inTicks + playable * tpf, level: keys.length ? undefined : level, levelKeys: keys.length ? dedupeKeys(keys) : undefined, label: 'Forest' });
+  }
+
+  // ---- B-roll snapped to the music's beats or bars ----
+  const music0 = timeline.clips.find((c) => /^m\d/.test(c.id));
+  const snapping = (plan.broll ?? []).some((b) => b.snap);
+  if (snapping && !music0) warnings.push('broll snap: the plan has no music to snap to');
+  if (snapping && music0) {
+    const ba = await beatsCached(timeline.media[music0.media].path);
+    const inS = music0.inTicks / TICKS_PER_SECOND, s0 = music0.start / fps;
+    const toSeq = (t: number) => s0 + (t - inS);
+    let k = 0;
+    for (const b of plan.broll ?? []) {
+      const clip = timeline.clips.find((c) => c.id === (b.id ?? `b${++k}`)) ?? timeline.clips.filter((c) => /^b\d/.test(c.id))[k - 1];
+      if (!b.snap || !clip) continue;
+      const grid = (b.snap === 'bar' ? ba.downbeats : ba.beats).map(toSeq);
+      const near = (t: number) => grid.reduce((best, g) => (Math.abs(g - t) < Math.abs(best - t) ? g : best), grid[0] ?? t);
+      const a = fr(near(clip.start / fps)), e = fr(near(clip.end / fps));
+      if (e - a >= fr(0.5)) { const shift = a - clip.start; clip.inTicks += 0; clip.start = a; clip.end = e; clip.outTicks = clip.inTicks + (e - a) * tpf; void shift; }
+    }
   }
 
   // ---- titles (placed live after the import: mogrts cannot travel in XML) ----
@@ -379,4 +404,46 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
     pieces.push({ id: runs.length > 1 ? `${id}.${k + 1}` : id, seg: id, src: seg.src, media: mediaKey, words: [r.from, r.to], inS, outS, jump: false, ...(removedBefore ? { removedBefore } : {}) });
   });
   return pieces;
+}
+
+/**
+ * A montage: picture sources cut every N beats (or every bar) of a music track. The montage ends on the track's
+ * own ending and starts on the downbeat that gives the asked length; cuts land on the nearest frame to each beat.
+ */
+async function montage(m: Montage, x: { timeline: Timeline; addMedia: (src: string) => Promise<{ key: string; info: MediaInfo }>; media: MediaResolver; fr: (s: number, mode?: 'round' | 'floor' | 'ceil') => number; fps: number; tpf: number; toTicks: (s: number) => number; T: (t: string | number) => number; segs: Compiled['segments']; warnings: string[] }): Promise<number> {
+  const mus = await x.addMedia(m.music);
+  if (!mus.info.audio) throw new Error(`montage: ${mus.info.name} has no audio`);
+  const ba = await beatsCached(mus.info.path);
+  if (ba.beats.length < 8 || ba.confidence < 0.15) x.warnings.push(`montage: ${mus.info.name} has no clear beat (confidence ${ba.confidence.toFixed(2)}); cuts follow the detected grid anyway`);
+  const grid = beatGrid(ba);
+  const per = m.cut === 'beat' ? 1 : m.cut === undefined || m.cut === 'bar' ? ba.beatsPerBar : m.cut;
+  const want = m.length !== undefined ? x.T(m.length) : 30;
+  const end = mus.info.duration;
+  const downs = ba.downbeats.length ? ba.downbeats : ba.beats;
+  const start = downs.reduce((best, d) => (Math.abs(end - d - want) < Math.abs(end - best - want) ? d : best), downs[0] ?? 0);
+  if (end - start < want - 2) x.warnings.push(`montage: ${mus.info.name} gives only ${(end - start).toFixed(1)} s from its first downbeat`);
+  const k0 = Math.round(grid.indexAt(start));
+  const cuts: number[] = [];
+  for (let k = k0; grid.beat(k) < end - 0.5; k += per) cuts.push(grid.beat(k));
+  const len = x.fr(end - start);
+  // Picture: cycle the sources, each shot taking the next stretch of its source.
+  const infos = await Promise.all(m.clips.map((c) => x.addMedia(c)));
+  const used = new Map<string, number>();
+  for (let j = 0; j < cuts.length; j++) {
+    const a = x.fr(cuts[j] - start), b = j + 1 < cuts.length ? x.fr(cuts[j + 1] - start) : len;
+    if (b - a < 2) continue;
+    const src = infos[j % infos.length];
+    if (!src.info.video) throw new Error(`montage: ${src.info.name} has no picture`);
+    const shot = (b - a) / x.fps;
+    const avail = src.info.duration;
+    let off = used.get(src.key) ?? Math.max(0, (avail - shot * Math.ceil(cuts.length / infos.length)) / 2);
+    if (off + shot > avail) off = 0;
+    used.set(src.key, off + shot);
+    const inTicks = x.toTicks(Math.floor(off * x.fps) / x.fps);
+    x.timeline.clips.push({ id: `mt${j + 1}`, media: src.key, vTrack: 1, start: a, end: b, inTicks, outTicks: inTicks + (b - a) * x.tpf });
+  }
+  const inTicks = x.toTicks(start);
+  x.timeline.clips.push({ id: 'm1', media: mus.key, aTrack: 1, start: 0, end: len, inTicks, outTicks: inTicks + len * x.tpf, level: m.level ?? 0, label: 'Forest' });
+  x.segs.push({ id: 'montage', src: m.music, words: null, start: 0, end: len, text: `${cuts.length} shots cut every ${per} beat${per === 1 ? '' : 's'} of ${mus.info.name} (${ba.bpm.toFixed(1)} BPM), ${start.toFixed(2)}–${end.toFixed(2)} s` });
+  return len;
 }

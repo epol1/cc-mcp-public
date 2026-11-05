@@ -77,7 +77,7 @@ export function lintCut(c: Compiled, o: EditLintOptions = {}): EditIssue[] {
   const th = (o.talkingHead ?? 20) * fps;
   let runStart = 0;
   const cutsVisible = [...c.pieces.map((p) => p.start), ...broll.flatMap((b) => [b.start, b.end])].sort((a, b) => a - b);
-  for (const f of [...cutsVisible, c.pieces.at(-1)!.end]) {
+  for (const f of c.pieces.length ? [...cutsVisible, c.pieces.at(-1)!.end] : []) {
     const len = f - runStart;
     if (len > th && !broll.some((b) => b.start < f && b.end > runStart)) add({ rule: 'talking-head', severity: 'info', message: `${sec(len)} s of uninterrupted talking head: consider B-roll or a cutaway`, t: [sec(runStart), sec(f)] });
     runStart = f;

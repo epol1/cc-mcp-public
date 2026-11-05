@@ -78,6 +78,8 @@ export const BrollSchema = z.object({
   grade: GradeSchema.optional(),
   scale: z.number().min(10).max(400).optional(),
   transition: z.enum(['cut', 'dissolve']).optional(),
+  /** Snap the B-roll's start and end to the music's beats or bars (needs a music track in the plan). */
+  snap: z.enum(['beat', 'bar']).optional(),
 }).strict();
 
 export const TitleSchema = z.object({
@@ -110,6 +112,19 @@ export const MusicSchema = z.object({
   track: z.number().int().min(3).max(15).optional(),
 }).strict();
 
+export const MontageSchema = z.object({
+  /** The track the montage is cut to. */
+  music: z.string(),
+  /** Picture sources, used in order and cycled; each shot takes the next stretch of its source. */
+  clips: z.array(z.string()).min(1),
+  /** Cut every N beats, or on every bar (default "bar"). */
+  cut: z.union([z.literal('beat'), z.literal('bar'), z.number().int().min(1).max(32)]).optional(),
+  /** Montage length (default 30 s); it ends on the track's own ending, starting on the downbeat that fits. */
+  length: Time.optional(),
+  /** Music level, dB (default 0). */
+  level: z.number().min(-60).max(6).optional(),
+}).strict();
+
 export const PlanSchema = z.object({
   name: z.string().min(1),
   /** Sequence rate (default: the first segment's media rate). */
@@ -117,7 +132,9 @@ export const PlanSchema = z.object({
   /** Frame size or aspect (default: the first segment's media size). */
   size: z.union([z.tuple([z.number().int(), z.number().int()]), z.enum(['16:9', '9:16', '1:1', '4:5'])]).optional(),
   media: z.record(z.string(), z.string()).optional(),
-  segments: z.array(SegmentSchema).min(1),
+  segments: z.array(SegmentSchema).optional(),
+  /** A music-driven montage: picture cut to the beats/bars of a track (instead of dialogue segments). */
+  montage: MontageSchema.optional(),
   broll: z.array(BrollSchema).optional(),
   titles: z.array(TitleSchema).optional(),
   music: z.array(MusicSchema).optional(),
@@ -131,7 +148,10 @@ export const PlanSchema = z.object({
   markers: z.boolean().optional(),
   /** Captions from the transcript as a caption track (default false). */
   captions: z.union([z.boolean(), z.object({ maxChars: z.number().int().min(10).max(80).optional(), maxLines: z.number().int().min(1).max(3).optional() })]).optional(),
-}).strict();
+}).strict().superRefine((p, ctx) => {
+  if (!p.segments?.length && !p.montage) ctx.addIssue({ code: 'custom', message: 'give segments (dialogue) or a montage' });
+  if (p.segments?.length && p.montage) ctx.addIssue({ code: 'custom', message: 'a plan is either dialogue segments or a montage; build the montage as its own cut' });
+});
 
 export type Plan = z.infer<typeof PlanSchema>;
 export type Segment = z.infer<typeof SegmentSchema>;
@@ -139,6 +159,7 @@ export type Broll = z.infer<typeof BrollSchema>;
 export type Title = z.infer<typeof TitleSchema>;
 export type Music = z.infer<typeof MusicSchema>;
 export type Tighten = z.infer<typeof TightenSchema>;
+export type Montage = z.infer<typeof MontageSchema>;
 
 export function parsePlan(input: unknown): Plan {
   const r = PlanSchema.safeParse(input);

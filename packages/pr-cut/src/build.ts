@@ -66,7 +66,7 @@ export async function buildCut(planInput: unknown, o: BuildOptions = {}): Promis
 
   // Live additions after the import (each adds undo steps; `undo` rolls the whole build back).
   let live = 0;
-  if (c.titles.length) live += await placeTitles(imp.sequenceId, c, tpf);
+  if (c.titles.length) { const t = await placeTitles(imp.sequenceId, c.titles, tpf); live += t.steps; c.warnings.push(...t.missing.map((m) => `title ${m}`)); report.warnings.push(...t.missing.map((m) => `title ${m}`)); }
   const capOpt = c.plan.captions;
   if (capOpt) live += await addCaptions(imp.sequenceId, c, typeof capOpt === 'object' ? capOpt : {});
   report.undoSteps += live;
@@ -78,22 +78,28 @@ export async function buildCut(planInput: unknown, o: BuildOptions = {}): Promis
 
   if (o.sheet !== false) {
     // One frame per segment (its first piece's middle), plus every piece when the cut is short.
+    // Montages have no dialogue pieces: their V1 shots stand in.
+    const shots = c.pieces.length ? null : t.clips.filter((x) => x.vTrack === 1).map((x) => ({ id: x.id, seg: 'montage', words: null as [number, number] | null, media: x.media, start: x.start, end: x.end }));
+    if (shots) report.contactSheet = await sequenceContactSheet(imp.sequenceId, shots.slice(0, 16).map((p) => ({ frame: Math.floor((p.start + p.end) / 2), label: `${p.id} ${t.media[p.media].name}`.slice(0, 48) })), R, `${imp.name} — ${report.timecode}`).catch(() => null);
+    else {
     const items = (c.pieces.length <= 12 ? c.pieces : c.segments.map((s) => c.pieces.find((p) => p.seg === s.id)!)).map((p) => ({ frame: Math.floor((p.start + p.end) / 2), label: `${p.id} ${p.words ? c.transcripts[p.media].words.slice(p.words[0], Math.min(p.words[1] + 1, p.words[0] + 6)).map((w) => w.text).join(' ') : ''}`.slice(0, 48) }));
     report.contactSheet = await sequenceContactSheet(imp.sequenceId, items.slice(0, 16), R, `${imp.name} — ${report.timecode}`).catch((e) => { report.warnings.push(`contact sheet failed: ${e.message}`); return null; });
+    }
   }
-  const nCuts = c.pieces.length - 1;
+  const cutClips = c.pieces.length ? c.pieces.slice(1).map((p) => ({ frame: p.start, label: `${p.id}${p.jump ? ' (jump)' : ''}${p.removedBefore ? ` −${p.removedBefore.reason} ${p.removedBefore.seconds}s` : ''}` })) : t.clips.filter((x) => x.vTrack === 1 && x.start > 0).map((x) => ({ frame: x.start, label: `${x.id} (beat)` }));
+  const nCuts = cutClips.length;
   const wantStrips = o.strips === undefined ? nCuts > 0 && nCuts <= 12 : !!o.strips;
   if (wantStrips && nCuts > 0) {
     const limit = typeof o.strips === 'number' ? o.strips : 12;
-    const cuts = c.pieces.slice(1, 1 + limit).map((p) => ({ frame: p.start, label: `${p.id}${p.jump ? ' (jump)' : ''}${p.removedBefore ? ` −${p.removedBefore.reason} ${p.removedBefore.seconds}s` : ''}` }));
+    const cuts = cutClips.slice(0, limit);
     report.strips = await cutStrips(imp.sequenceId, cuts, R, imp.name).catch((e) => { report.warnings.push(`cut strips failed: ${e.message}`); return null; });
   }
   return { report, compiled: c, issues };
 }
 
 /** Place mogrt titles and fill their Essential Graphics fields (live ExtendScript; one undo step per title). */
-async function placeTitles(seqId: string, c: Compiled, tpf: number): Promise<number> {
-  const jobs = c.titles.map((t) => ({ id: t.id, path: nativePath(t.mogrt), start: String(t.start * tpf), end: String(t.end * tpf), vOff: t.track - 1, fields: t.fields }));
+export async function placeTitles(seqId: string, titles: Compiled['titles'], tpf: number): Promise<{ steps: number; missing: string[] }> {
+  const jobs = titles.map((t) => ({ id: t.id, path: nativePath(t.mogrt), start: String(t.start * tpf), end: String(t.end * tpf), vOff: t.track - 1, fields: t.fields }));
   for (const j of jobs) if (!fs.existsSync(j.path)) throw new Error(`title ${j.id}: no such .mogrt ${j.path}`);
   const r = await runEs<{ undo: number; missing: string[] }>(`
 var s = prcSeq(${lit(seqId)}); app.project.openSequence(s.sequenceID);
@@ -111,8 +117,7 @@ for (var i = 0; i < jobs.length; i++) {
 }
 prcJson({ undo: prcUndo() - u0, missing: missing });
 `, { timeoutMs: 60_000 + jobs.length * 10_000 });
-  if (r.missing.length) c.warnings.push(...r.missing.map((m) => `title ${m}`));
-  return jobs.length; // one undo step per placed title (field values are not undo steps in Premiere)
+  return { steps: jobs.length, missing: r.missing }; // one undo step per placed title (field values are not undo steps)
 }
 
 /** Captions from the kept words' times in the cut → SRT → Premiere caption track (two undo steps). */

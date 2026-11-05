@@ -77,9 +77,10 @@ Look at the contact sheet and the strips; read the lint; play the story in your 
 - Segment range: exactly one of `words: [from, to]` (inclusive word indices from the transcript view), `sentences: "s12" | ["s12","s14"]`, `quote: "…"`, or `from`/`to` (source time).
 - Segment options: `beat`, `tighten` (object or `false`), `j`, `l`, `transition` (`cut`, `dissolve`, `dip-black`), `transitionFrames`, `punchIn` (scale %), `grade`, `level` (dB), `channels: [1]` (use one mic channel).
 - `tighten` (plan-wide default, segment overrides): `fillers`, `repeats`, `maxPause` (0.6 s), `keepPause` (0.25 s), `handles` (0.06 s), `minPiece` (0.5 s), `cut: [wordIdx | [a, b]]` (extra words to remove: false starts).
-- `broll`: `over` a segment, a range `["seg2","seg3"]`, or a jump cut `"seg2/3"`; or `at` (sequence time). `offset`, `duration`, `in` (source in), `audio` (nat sound dB), `scale`, `grade`, `transition`.
+- `broll`: `over` a segment, a range `["seg2","seg3"]`, or a jump cut `"seg2/3"`; or `at` (sequence time). `offset`, `duration`, `in` (source in), `audio` (nat sound dB), `scale`, `grade`, `transition`, `snap: "beat" | "bar"` (start and end on the music's beats or bars).
 - `music`: `at`, `until`, `level`, `open`, `duck`, `ending` (`backtime` / `fade` / `cut`), `in`, `fadeIn`, `fadeOut`.
 - `titles`: `{ "mogrt": "path.mogrt", "at": { "seg": "turn", "offset": "0.5s" }, "duration": "4s", "fields": { "Name": "Ana Ruiz", "Title": "Founder" } }`. Field names are the template's Essential Graphics property names.
+- **Montage** (instead of `segments`): `"montage": { "music": "…", "clips": ["lib:3", "lib:7", …], "cut": "bar" | "beat" | 2, "length": "30s", "level": 0 }` cuts the picture on the track's bars or beats, cycling the clips (each shot takes the next stretch of its source), and ends on the track's own ending. Give the clips in story order; check the strips for shots that start on a bad frame.
 - Plan-wide: `fps`, `size` (`[w,h]` or `"9:16"`), `jumpCuts`, `grade` (per alias or `"*"`), `markers` (segment markers with beat and quote, default on), `captions`.
 - Times anywhere: `3.5`, `"3.5s"`, `"250ms"`, `"12f"`, `"1:02.5"`, `"00:01:02:12"`.
 
@@ -100,7 +101,7 @@ Look at the contact sheet and the strips; read the lint; play the story in your 
 ]
 ```
 
-Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `move` (`before`/`after`), `replace`, `insert`, `cut-words`, `tighten`, `grade`, `level` (`db` or `delta`; targets `music`, `dialogue` or a clip), `broll`, `transition`, `punch-in`, `remove` (a non-dialogue clip), `rename`, `captions`.
+Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `move` (`before`/`after`), `replace`, `insert`, `cut-words`, `tighten`, `grade`, `level` (`db` or `delta`; targets `music`, `dialogue`, `all` or a clip; `delta` keeps keyframes such as ducking), `broll`, `transition`, `punch-in`, `remove` (a non-dialogue clip), `title` (`mogrt`, `at`: time or `{ target, offset }`, `duration`, `fields`), `rename`, `captions`.
 
 - Clips on V2+ (B-roll, graphics) and music stay attached to the moment of dialogue they sat on, so they move with ripple edits; a clip whose moment was cut is dropped and reported.
 - `tighten` alone (`dryRun` default) lists every proposed cut with its words and seconds saved: show it before applying.
@@ -112,7 +113,12 @@ Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `mo
 - `library_search` finds by what's said (transcripts) and what's seen (shot descriptions, tags, file names) with filters (`role`, `kind`, `orientation`, `minDuration`, tempo). Hits come with `lib:<id>` and time ranges: use them directly as `src` / `in`.
 - **Describe shots** so "what's seen" works: `library_shots` shows a numbered grid of a clip's shots; look at it and store one line per shot with `library_annotate` (subject, action, setting, camera move; type `wide/medium/close/insert/aerial`; quality flags like `soft`, `shaky`, `overexposed`). Do this for B-roll you consider using.
 
-## 6. Review checklist (lint and your eyes)
+## 6. Finish and deliver
+- `audio_finish` measures the mix (EBU R128) and brings it to `-14` (web/social, default), `-16` (podcast) or `-23` (broadcast) LUFS with peaks under −1 dBTP, as a new version; it reports the measured result. When peaks would pass the ceiling it adds Premiere's Amplify + Hard Limiter to every audio clip of the version.
+- `match_shots` matches clips to a reference clip (exposure, temperature, tint, saturation) as a new version; use `dryRun` first.
+- `deliver` exports the master and 9:16 / 1:1 / 4:5 versions (editable Auto Reframe sequences named "<name> 9x16") into one folder, with CREDITS.md when the project has asset credits. Look at the 9:16 sequence before delivering: Auto Reframe follows the subject, but check that titles and faces sit inside the frame.
+
+## 7. Review checklist (lint and your eyes)
 
 | Rule | Means | Fix |
 |---|---|---|
@@ -125,14 +131,14 @@ Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `mo
 | `mixed-rate`, `vfr` | footage doesn't match the sequence | decide: conform, or transcode VFR phone footage |
 | `talking-head`, `monotone`, `long-pause` | pacing notes | B-roll, vary segment lengths, tighten |
 
-## 7. Rules
+## 8. Rules
 - Never edit the user's original sequences or media: build new sequences; edits create versions. Never relink, move or delete media.
 - One batch = one undo step for builds and edits (titles and captions add a few live steps; `undo` reverts all of them at once).
 - Vanilla Premiere only: no third-party effects or transitions.
 - If Premiere shows a dialog, `list_dialogs` shows it as an image and `answer_dialog` presses a button. Informational dialogs (the FCP translation report) are answered automatically.
 - Missing media would open a modal dialog in Premiere, so pr-cut refuses to build with files that don't exist: fix the path.
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 - "bridge info missing" / not reachable: Premiere isn't running or the pr-cut extension isn't installed (`node scripts/install-cep.mjs --pr`, restart Premiere). `doctor` checks everything.
 - "quote not found": read the transcript around it (`read_transcript`) and use `words`.
 - A segment came out with many short pieces: the speaker was hesitant there; raise `minPiece`, `maxPause`, or set `tighten: false` for that segment.

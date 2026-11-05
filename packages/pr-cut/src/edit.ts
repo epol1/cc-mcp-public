@@ -11,7 +11,7 @@ import { probe } from '@ae-mcp/core/media/probe.ts';
 import { libraryPath } from '@ae-mcp/core/library/db.ts';
 import { formatIssues, summarizeIssues } from '@ae-mcp/core/lint/report.ts';
 import { adoptSequence } from './adopt.ts';
-import { addCaptions, CUTS_DIR, type BuildReport } from './build.ts';
+import { addCaptions, CUTS_DIR, placeTitles, type BuildReport } from './build.ts';
 import { cutStrips, sequenceContactSheet } from './frames.ts';
 import { importTimeline } from './importxml.ts';
 import { lintCut } from './lint.ts';
@@ -33,6 +33,7 @@ export const EDIT_OPS_HELP = `Edits run in order; each is { op, ... }. Targets: 
 - { op: "transition", target, kind: "dissolve" | "dip-black" | "cut", frames? }
 - { op: "punch-in", target, scale }
 - { op: "remove", target }  remove a B-roll/graphic/music clip without rippling
+- { op: "title", mogrt, at?: time | { target, offset? }, duration?, track?, fields?: { "Name": "…" } }  place a .mogrt on the new version and fill its fields
 - { op: "rename", name }
 - { op: "captions", maxChars?, maxLines? } | { op: "captions", captions: false }  caption track from the new cut's words (automatic when the cut was built with captions)`;
 
@@ -150,6 +151,7 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
   };
 
   let name = o.name;
+  const titles: { op: any; anchor: SP | null; n: number }[] = [];
   // A caption track doesn't travel through XML: rebuild it from the new cut's words when the cut had captions.
   let captions: false | { maxChars?: number; maxLines?: number } = sidecar?.plan?.captions ? (typeof sidecar.plan.captions === 'object' ? sidecar.plan.captions : {}) : false;
   for (const [n, e] of edits.entries()) {
@@ -306,6 +308,13 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
         log.push(`${tag}: removed ${cs.map((c) => c.id).join(', ')}`);
         break;
       }
+      case 'title': {
+        // Placed live on the new version after its import (mogrts can't travel in XML).
+        const at = e.at === undefined ? 0 : typeof e.at === 'object' ? (() => { const s = resolve(e.at.target ?? e.at.seg, tag)[0]; return s; })() : null;
+        titles.push({ op: e, anchor: at && typeof at === 'object' ? at : null, n });
+        log.push(`${tag}: ${path.basename(e.mogrt)}${e.fields ? ` ${JSON.stringify(e.fields)}` : ''}`);
+        break;
+      }
       case 'rename': name = e.name; break;
       case 'captions': captions = e.captions === false ? false : { maxChars: e.maxChars, maxLines: e.maxLines }; log.push(`${tag}: ${captions ? 'caption track from the words of the new cut' : 'no captions'}`); break;
       default: throw new Error(`${tag}: unknown op (use ${EDIT_OPS_HELP.match(/op: "[a-z-]+"/g)?.map((x) => x.slice(5)).join(', ')})`);
@@ -404,6 +413,16 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
   const issues = lintCut(compiled, { ignore: ['mid-word'] });
   let liveSteps = 0;
   if (captions) liveSteps += await addCaptions(imp.sequenceId, compiled, captions);
+  if (titles.length) {
+    const resolved = titles.map(({ op, anchor, n: k }) => {
+      const s0 = anchor ? anchor.clip.start + (op.at.offset !== undefined ? Math.round(T(op.at.offset, fps) * fps) : 0) : Math.round(T(op.at ?? 0, fps) * fps);
+      const used = Math.max(1, ...kept.map((c) => c.vTrack ?? 0));
+      return { id: `t${k + 1}`, mogrt: srcPath(op.mogrt), start: s0, end: s0 + Math.round(T(op.duration ?? 4, fps) * fps), track: op.track ?? used + 1, fields: op.fields ?? {} };
+    });
+    const t = await placeTitles(imp.sequenceId, resolved, tpf);
+    liveSteps += t.steps;
+    warnings.push(...t.missing.map((m) => `title ${m}`));
+  }
   const contact = await sequenceContactSheet(imp.sequenceId, pieces.slice(0, 16).map((pc) => ({ frame: Math.floor((pc.start + pc.end) / 2), label: pc.id })), R, `${imp.name} — ${framesToTimecode(end, R)}`).catch(() => null);
   const strips = pieces.length > 1 && pieces.length <= 13 ? await cutStrips(imp.sequenceId, pieces.slice(1).map((pc) => ({ frame: pc.start, label: pc.id })), R, imp.name).catch(() => null) : null;
   const report: BuildReport = {
