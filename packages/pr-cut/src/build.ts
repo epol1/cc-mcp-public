@@ -127,19 +127,29 @@ prcJson({ undo: prcUndo() - u0, missing: missing });
  * a caption template (ae-compose `<Captions template>`), one template per caption on its own track with its
  * "Caption" text and "Word Times" (karaoke) filled in (one undo step each).
  */
-export async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: number; maxLines?: number }): Promise<number> {
+export async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: number; maxLines?: number }, avoid: { start: number; end: number }[] = c.titles): Promise<number> {
   const fps = c.timeline.rate.num / c.timeline.rate.den;
-  const words: { text: string; start: number; end: number }[] = [];
-  for (const p of c.pieces) {
-    if (!p.words) continue;
+  // Words in cut time, grouped by segment: a caption never runs across a cut between segments.
+  const groups: { text: string; start: number; end: number }[][] = [];
+  const bounds: number[] = [];
+  c.pieces.forEach((p, k) => {
+    if (k === 0 || p.seg !== c.pieces[k - 1].seg) { groups.push([]); if (k) bounds.push(p.start / fps); }
+    if (!p.words) return;
     const tr = c.transcripts[p.media];
     for (let i = p.words[0]; i <= p.words[1]; i++) {
       const w = tr.words[i];
       const s = p.start / fps + (w.start - p.inS), e = p.start / fps + (w.end - p.inS);
-      words.push({ text: w.text, start: Math.max(p.start / fps, s), end: Math.min(p.end / fps, e) });
+      groups[groups.length - 1].push({ text: w.text, start: Math.max(p.start / fps, s), end: Math.min(p.end / fps, e) });
     }
+  });
+  const caps = groups.filter((g) => g.length).flatMap((g) => captionsFromWords(g as any, { maxChars: o.maxChars ?? 42, maxLines: o.maxLines ?? 2 } as any));
+  const nextBound = (t: number) => bounds.find((b) => b > t + 1e-6) ?? Infinity;
+  for (let k = 0; k < caps.length; k++) {
+    const b = nextBound(caps[k].start);
+    caps[k].end = Math.min(caps[k].end, b);
+    // A caption stays up across a short pause (< 0.8 s) in the same segment instead of flickering off and on.
+    if (caps[k + 1] && caps[k + 1].start - caps[k].end < 0.8 && caps[k + 1].start <= b) caps[k].end = caps[k + 1].start;
   }
-  const caps = captionsFromWords(words as any, { maxChars: o.maxChars ?? 42, maxLines: o.maxLines ?? 2 } as any);
   if (c.captionMogrt) {
     const r3 = (x: number) => Math.round(x * 1000) / 1000;
     const jobs = caps.map((cap, k) => {
@@ -148,9 +158,16 @@ export async function addCaptions(seqId: string, c: Compiled, o: { maxChars?: nu
       const end = Math.max(start + 1, Math.min(Math.round(cap.end * fps), caps[k + 1] ? Math.round(caps[k + 1].start * fps) : Infinity));
       return { id: `cap${k + 1}`, mogrt: c.captionMogrt!.mogrt, start, end, track: c.captionMogrt!.track, fields: { Caption: cap.lines.join('\r'), 'Word Times': cap.words.map((w) => r3(Math.max(0, w.start - cap.start))).join(' ') } };
     });
-    const t = await placeTitles(seqId, jobs, ticksPerFrame(c.timeline.rate));
+    const tpf = ticksPerFrame(c.timeline.rate);
+    const t = await placeTitles(seqId, jobs, tpf);
     const missing = [...new Set(t.missing.map((m) => m.replace(/^cap\d+: /, '')))];
     if (missing.length) c.warnings.push(...missing.map((m) => `captions: ${m} (build the template with <Captions template>)`));
+    // Captions on screen with a title (a lower third) move up by 18 % of the frame, clear of it.
+    const lift = jobs.filter((j) => avoid.some((a) => j.start < a.end && j.end > a.start)).map((j) => String(j.start * tpf));
+    if (lift.length) await runEs(`var s = prcSeq(${lit(seqId)}), tr = s.videoTracks[${c.captionMogrt.track - 1}], want = ${JSON.stringify(lift)}, dy = 0.18;
+for (var i = 0; i < tr.clips.numItems; i++) { var cl = tr.clips[i]; for (var k = 0; k < want.length; k++) if (Math.abs(Number(cl.start.ticks) - Number(want[k])) <= ${Math.round(tpf / 2)}) {
+  for (var m = 0; m < cl.components.numItems; m++) if (cl.components[m].matchName === 'AE.ADBE Motion') { var p = cl.components[m].properties.getParamForDisplayName('Position'); if (p) { var v = p.getValue(); p.setValue([v[0], v[1] - dy], true); } } } }
+prcJson(1)`);
     return t.steps;
   }
   const srt = path.join(CUTS_DIR, `${seqId}.srt`);

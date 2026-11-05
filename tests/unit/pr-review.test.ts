@@ -132,3 +132,29 @@ describe('titles get their track before the import', () => {
     expect(w.xml.match(/<track>/g)?.length).toBe(3); // video tracks are bare <track>; audio tracks carry attributes
   });
 });
+
+describe('a presenter cutout over slides (a hand cut of the user)', () => {
+  const tpf = ticksPerFrame(R);
+  const file = (id: string, name: string, extra = '') => `<file id="${id}"><name>${name}</name><pathurl>file://localhost/D%3a/${encodeURIComponent(name)}</pathurl><rate><timebase>25</timebase><ntsc>FALSE</ntsc></rate><duration>2500</duration>${extra}</file>`;
+  const motion = '<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><parameter authoringApp="PremierePro"><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>43</value></parameter><parameter authoringApp="PremierePro"><parameterid>center</parameterid><name>Center</name><value><horiz>-0.73</horiz><vert>0.28</vert></value></parameter></effect></filter>';
+  const item = (id: string, f: string, s: number, e: number, inF: number, kind: 'video' | 'audio', extra = '') => `<clipitem id="${id}"><name>x</name><enabled>TRUE</enabled><duration>2500</duration><rate><timebase>25</timebase><ntsc>FALSE</ntsc></rate><start>${s}</start><end>${e}</end><in>${inF}</in><out>${inF + e - s}</out><pproTicksIn>${inF * tpf}</pproTicksIn><pproTicksOut>${(inF + e - s) * tpf}</pproTicksOut>${kind === 'video' ? '<alphatype>' + (f.includes('"f2"') ? 'straight' : 'none') + '</alphatype>' : ''}${f}${extra}${kind === 'audio' ? '<sourcetrack><mediatype>audio</mediatype><trackindex>1</trackindex></sourcetrack>' : ''}</clipitem>`;
+  const xml = `<?xml version="1.0"?><xmeml version="4"><sequence id="s"><name>talk</name><duration>200</duration><rate><timebase>25</timebase><ntsc>FALSE</ntsc></rate><media><video><format><samplecharacteristics><rate><timebase>25</timebase><ntsc>FALSE</ntsc></rate><width>1920</width><height>1080</height></samplecharacteristics></format>
+<track>${item('v1', file('f1', 'slide.png'), 0, 200, 0, 'video')}</track>
+<track>${item('v2', file('f2', 'cutout.mov'), 0, 100, 50, 'video', motion)}${item('v3', '<file id="f2"/>', 100, 200, 160, 'video', motion)}</track>
+</video><audio><track>${item('a1', file('f3', 'take.mov', '<media><audio><channelcount>2</channelcount></audio></media>'), 0, 100, 50, 'audio')}${item('a2', '<file id="f3"/>', 100, 200, 160, 'audio')}</track></audio></media></sequence></xmeml>`;
+  it('takes the cutout with its sound as the speaker, keeps its alpha, and a punch-in keeps its position', () => {
+    const a = adoptXml(xml);
+    expect(a.spine).toEqual(['V2/1', 'V2/2']);
+    const sp = a.timeline.clips.find((c) => c.id === 'V2/1')!;
+    expect(sp.aTrack).toBe(1);
+    expect(a.timeline.media[sp.media].name).toBe('take.mov');
+    expect(a.timeline.media[sp.videoMedia!].name).toBe('cutout.mov');
+    expect(sp.alpha).toBe('straight');
+    sp.motion = { scale: 48.2 };
+    const out = writeFcp7(a.timeline).xml;
+    expect(out).toContain('<alphatype>straight</alphatype>');
+    expect(out).toContain('<value>48.2</value>');
+    expect(out).toContain('<horiz>-0.73</horiz>');
+    expect(out.match(/<file id="[^"]+">\s*<name>cutout\.mov<\/name>/)).toBeTruthy();
+  });
+});

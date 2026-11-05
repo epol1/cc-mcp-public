@@ -79,7 +79,7 @@ export function adoptXml(xml: string): Adopted {
     const def = defs.get(attr(f, 'id') ?? '');
     return def ? { ...k, kids: k.kids.map((x) => (x === f ? def : x)) } : k;
   }
-  type Item = { id: string; kind: 'video' | 'audio'; track: number; index: number; start: number; end: number; inT: number; outT: number; fileId?: string; links: string[]; filters: string[]; enabled: boolean; sourceTrack?: number; raw?: XEl; name: string; graphic: boolean };
+  type Item = { id: string; kind: 'video' | 'audio'; track: number; index: number; start: number; end: number; inT: number; outT: number; fileId?: string; links: string[]; filters: string[]; enabled: boolean; sourceTrack?: number; raw?: XEl; name: string; graphic: boolean; alpha?: string };
   const items: Item[] = [];
   const prTrack: { video: number[]; audio: number[] } = { video: [], audio: [] };
   const transitions: { kind: 'video' | 'audio'; track: number; start: number; end: number; cut: number; name: string; align: string }[] = [];
@@ -115,7 +115,7 @@ export function adoptXml(xml: string): Adopted {
           id: attr(k, 'id') ?? `${kind}${ti}_${j}`, kind, track: ti + 1, index: idx, start, end, inT, outT, fileId: fid, name: txt(el(k, 'name')),
           links: els(k, 'link').map((l) => txt(el(l, 'linkclipref'))), filters: els(k, 'filter').filter((f) => txt(child(f, 'effect/effectid'))).map((f) => serialize(f)), // Premiere exports empty audio filters it can't re-import (D109)
           enabled: txt(el(k, 'enabled')).toUpperCase() !== 'FALSE', sourceTrack: Number(txt(child(k, 'sourcetrack/trackindex')) || 0) || undefined,
-          raw: graphic ? withFileDef(k) : undefined, graphic,
+          raw: graphic ? withFileDef(k) : undefined, graphic, alpha: kind === 'video' ? txt(el(k, 'alphatype')) || undefined : undefined,
         });
       });
     });
@@ -143,10 +143,26 @@ export function adoptXml(xml: string): Adopted {
       ...(v && !v.enabled ? { disabled: true } : {}),
     };
     if (v && a0 && (v.start !== a0.start || v.end !== a0.end || v.inT !== a0.inT)) c.video = { start: v.start, end: v.end, inTicks: v.inT, outTicks: v.outT };
+    if (v && a0 && !v.graphic && v.fileId !== a0.fileId) c.videoMedia = fileKey.get(v.fileId!)!;
+    if (v?.alpha && v.alpha !== 'none') c.alpha = v.alpha;
     clips.push(c);
-    if (v && v.track === 1 && !v.graphic) spine.push(id);
     if (as.length > 2) warnings.push(`${id}: ${as.length} audio channels linked; pr-cut keeps the first two`);
   }
+  // Picture and sound placed separately but in sync (same sequence span and source timing, often from two files:
+  // a keyed cutout over the original take, dual-system sound) are one speaker clip, so word edits cut both.
+  const near = (x: number, y: number) => Math.abs(x - y) <= tpf / 2;
+  for (const a of clips.filter((c) => !c.vTrack && c.aTrack)) {
+    const p = clips.find((c) => c.vTrack && !c.aTrack && !c.raw?.item && c.start === a.start && c.end === a.end && near(c.inTicks, a.inTicks));
+    if (!p) continue;
+    Object.assign(a, { id: p.id, vTrack: p.vTrack, ...(p.media !== a.media ? { videoMedia: p.media } : {}), ...(p.alpha ? { alpha: p.alpha } : {}), ...(p.disabled ? { disabled: true } : {}), raw: { ...a.raw, video: p.raw?.video ?? [] } });
+    clips.splice(clips.indexOf(p), 1);
+  }
+  // The speaker track: V1 when it holds clips with sound, else the lowest video track whose clips have sound (V1 can
+  // be slides or a background under a cutout).
+  const speaking = clips.filter((c) => c.vTrack && c.aTrack && !c.raw?.item);
+  const sTrack = speaking.some((c) => c.vTrack === 1) || !speaking.length ? 1 : Math.min(...speaking.map((c) => c.vTrack!));
+  for (const c of clips) if (c.vTrack === sTrack && !c.raw?.item && (sTrack === 1 || c.aTrack)) spine.push(c.id);
+  spine.sort((x, y) => clips.find((c) => c.id === x)!.start - clips.find((c) => c.id === y)!.start);
   // Transitions become transitionIn on the clip that starts at the cut.
   const kindOf = (t: { kind: string; name: string }) => (t.kind === 'audio' ? 'audio-crossfade' : /dip to black/i.test(t.name) ? 'dip-black' : /dip to white/i.test(t.name) ? 'dip-white' : 'dissolve') as 'dissolve';
   for (const t of transitions) {

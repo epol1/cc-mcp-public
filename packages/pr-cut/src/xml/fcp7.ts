@@ -59,6 +59,15 @@ export function patchLumetri(block: string, g: Grade): string {
 
 const effectId = (filter: string) => /<effectid>([^<]*)<\/effectid>/.exec(filter)?.[1] ?? '';
 
+/** Set the scale of a Basic Motion filter block; keyframed scale is scaled by the same ratio. */
+export function patchScale(block: string, scale: number): string {
+  return block.replace(/(<parameter[^>]*>\s*<parameterid>scale<\/parameterid>)([\s\S]*?)(<\/parameter>)/, (_m, head, body: string, tail) => {
+    const base = Number(/<value>(-?[\d.]+)<\/value>/.exec(body)?.[1] ?? 100) || 100;
+    const k = scale / base;
+    return head + body.replace(/<value>(-?[\d.]+)<\/value>/g, (_v, x) => `<value>${Math.round(Number(x) * k * 1000) / 1000}</value>`) + tail;
+  });
+}
+
 interface Ids { clip: number; file: Map<string, string>; master: Map<string, string> }
 
 function fileXml(key: string, m: MediaInfo, seqRate: Rate, ids: Ids, ind: string): string {
@@ -127,7 +136,9 @@ export function writeFcp7(t: Timeline): WriteResult {
     const group: Item[] = [];
     const ve = c.video ?? c;
     if (ve.end <= ve.start) throw new Error(`clip ${c.id}: empty picture range (${ve.start}–${ve.end})`);
-    if (c.vTrack && m.kind !== 'audio') group.push({ clip: c, e: ve, kind: 'video', track: c.vTrack, xmlId: `clipitem-${++ids.clip}`, links: [] });
+    const mv = t.media[c.videoMedia ?? c.media];
+    if (c.videoMedia && !mv) throw new Error(`clip ${c.id}: unknown picture media "${c.videoMedia}"`);
+    if (c.vTrack && mv.kind !== 'audio') group.push({ clip: c, e: ve, kind: 'video', track: c.vTrack, xmlId: `clipitem-${++ids.clip}`, links: [] });
     if (c.aTrack && m.audio) chans(c).forEach((ch, k) => group.push({ clip: c, e: c, kind: 'audio', track: c.aTrack! + k, sourceTrack: ch, xmlId: `clipitem-${++ids.clip}`, links: [] }));
     for (const it of group) it.links = group;
     items.push(...group);
@@ -142,9 +153,9 @@ export function writeFcp7(t: Timeline): WriteResult {
   }
 
   const clipItem = (it: Item, ind: string, trIn?: number, trOut?: number, edgeIn = false, edgeOut = false): string => {
-    const c = it.clip, m = t.media[c.media];
+    const c = it.clip, key = it.kind === 'video' ? c.videoMedia ?? c.media : c.media, m = t.media[key];
     if (c.raw?.item) return rawItem(c, it, ind);
-    const masterKey = c.media;
+    const masterKey = key;
     if (!ids.master.has(masterKey)) ids.master.set(masterKey, `masterclip-${ids.master.size + 1}`);
     const r = m.video?.rate ?? t.rate;
     const durFrames = Math.round(m.duration * (r.num / r.den));
@@ -166,19 +177,22 @@ export function writeFcp7(t: Timeline): WriteResult {
       `${ind}\t<in>${Math.round(inT / tpf)}</in>`, `${ind}\t<out>${Math.round(outT / tpf)}</out>`,
       `${ind}\t<pproTicksIn>${inT}</pproTicksIn>`, `${ind}\t<pproTicksOut>${outT}</pproTicksOut>`,
     ];
-    if (it.kind === 'video') lines.push(`${ind}\t<alphatype>none</alphatype>`, `${ind}\t<pixelaspectratio>square</pixelaspectratio>`, `${ind}\t<anamorphic>FALSE</anamorphic>`);
-    lines.push(fileXml(c.media, m, t.rate, ids, ind + '\t'));
+    const alpha = c.alpha ?? (/^(yuva|rgba|argb|bgra|abgr|gbrap|ya)/.test(m.video?.pixFmt ?? '') ? 'straight' : 'none');
+    if (it.kind === 'video') lines.push(`${ind}\t<alphatype>${alpha}</alphatype>`, `${ind}\t<pixelaspectratio>square</pixelaspectratio>`, `${ind}\t<anamorphic>FALSE</anamorphic>`);
+    lines.push(fileXml(key, m, t.rate, ids, ind + '\t'));
     if (it.kind === 'audio') lines.push(`${ind}\t<sourcetrack>`, `${ind}\t\t<mediatype>audio</mediatype>`, `${ind}\t\t<trackindex>${it.sourceTrack}</trackindex>`, `${ind}\t</sourcetrack>`);
     // Filters carried from an adopted sequence, minus the ones this clip now sets itself.
     const raws = (it.kind === 'video' ? c.raw?.video : c.raw?.audio) ?? [];
+    // A carried Basic Motion keeps its position, rotation, anchor and crop: only its scale is patched (a punch-in).
+    const rawBasic = it.kind === 'video' && !!c.motion && !c.motion.center && raws.some((f) => effectId(f) === 'basic');
     for (const f of raws) {
       const id = effectId(f);
-      if (it.kind === 'video' && c.motion && id === 'basic') continue;
+      if (it.kind === 'video' && c.motion && id === 'basic') { if (rawBasic) lines.push(ind + '\t' + patchScale(f, c.motion.scale ?? 100)); continue; }
       if (it.kind === 'audio' && (c.level !== undefined || c.levelKeys?.length) && id === 'audiolevels') continue;
       lines.push(ind + '\t' + (it.kind === 'video' && c.grade && id === 'Lumetri' ? patchLumetri(f, c.grade) : f));
     }
     const rawLumetri = it.kind === 'video' && raws.some((f) => effectId(f) === 'Lumetri');
-    if (it.kind === 'video' && c.motion) {
+    if (it.kind === 'video' && c.motion && !rawBasic) {
       const [h, v] = c.motion.center ?? [0, 0];
       lines.push(`${ind}\t<filter>`, `${ind}\t\t<effect>`, `${ind}\t\t\t<name>Basic Motion</name>`, `${ind}\t\t\t<effectid>basic</effectid>`, `${ind}\t\t\t<effectcategory>motion</effectcategory>`, `${ind}\t\t\t<effecttype>motion</effecttype>`, `${ind}\t\t\t<mediatype>video</mediatype>`,
         `${ind}\t\t\t<parameter authoringApp="PremierePro">`, `${ind}\t\t\t\t<parameterid>scale</parameterid>`, `${ind}\t\t\t\t<name>Scale</name>`, `${ind}\t\t\t\t<valuemin>0</valuemin>`, `${ind}\t\t\t\t<valuemax>10000</valuemax>`, `${ind}\t\t\t\t<value>${c.motion.scale ?? 100}</value>`, `${ind}\t\t\t</parameter>`,

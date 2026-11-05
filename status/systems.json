@@ -1744,13 +1744,13 @@
         {
           "id": "pr-interview",
           "name": "30-min interview → 2-min cut the user keeps (needs footage)",
-          "status": "todo",
+          "status": "doing",
           "weight": 5
         },
         {
           "id": "pr-handcut",
           "name": "Edit demo on the user's own hand cut",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {

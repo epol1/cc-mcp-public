@@ -109,6 +109,8 @@ Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `mo
 - Jump cuts an edit creates (tighten, cut-words) get the alternating punch-in, as in a build.
 - Dialogue audio that isn't linked to its picture doesn't follow word edits: link it in Premiere first (the report warns).
 - `tighten` alone (`dryRun` default) lists every proposed cut with its words and seconds saved: show it before applying.
+- Hand cuts come in many layouts: pr-cut finds the speaker (V1 if it has picture with sound, else the lowest video track that does) and treats picture and sound placed in sync as one clip even from two files (a keyed presenter over slides, dual-system sound). Check `inspect_sequence` and the `tighten` dry run before editing: if it finds nothing, the speaker wasn't found.
+- Caption templates lift themselves while a title is on screen and never run across a cut between segments.
 - Captions don't travel through versions; pr-cut rebuilds them (track or templates) from the new cut's words when the cut was built with captions (or ask with `{ "op": "captions" }`, `mogrt` to switch to templates).
 
 ## 5. The media library
@@ -137,7 +139,7 @@ Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `mo
 
 ## 8. Rules
 - Never edit the user's original sequences or media: build new sequences; edits create versions. Never relink, move or delete media.
-- A build or edit is one Ctrl+Z in Premiere for the cut itself (titles and captions add a few live steps); `undo` reverts the whole batch in one call and refuses when you've worked in Premiere since (so it never undoes your own edits). `audio_finish` with limiting adds effects per clip: use `undo`, not Ctrl+Z, to revert it.
+- A build or edit is one Ctrl+Z in Premiere for the cut itself (titles and captions add a few live steps); `undo` reverts the whole batch in one call and refuses when you've worked in Premiere since (so it never undoes your own edits). A batch longer than Premiere's undo history (a cut with many caption templates) is undone by removing the sequence it created. `audio_finish` with limiting adds effects per clip: use `undo`, not Ctrl+Z, to revert it.
 - Vanilla Premiere only: no third-party effects or transitions.
 - If Premiere shows a dialog, `list_dialogs` shows it as an image and `answer_dialog` presses a button. Informational dialogs (the FCP translation report) are answered automatically.
 - Missing media would open a modal dialog in Premiere, so pr-cut refuses to build with files that don't exist: fix the path.

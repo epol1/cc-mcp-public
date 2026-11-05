@@ -108,7 +108,7 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   });
   if (!spine.length) {
     const opaque = t0.clips.filter((c) => c.vTrack === 1 && c.raw?.item).length;
-    throw new Error(opaque ? `V1 holds only nested sequences, multicam clips or graphics (${opaque}); pr-cut edits need media clips on V1 (flatten the multicam or edit inside the nest)` : 'the sequence has no dialogue clips on V1 to edit');
+    throw new Error(opaque ? `V1 holds only nested sequences, multicam clips or graphics (${opaque}); pr-cut edits need media clips on V1 (flatten the multicam or edit inside the nest)` : 'the sequence has no speaker clips to edit (picture with sound on V1, or on the lowest video track with sound)');
   }
   const firstStart = spine[0].clip.start;
   const oldEnd = spine[spine.length - 1].clip.end;
@@ -487,7 +487,9 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   for (let k = 1; k < spine.length; k++) {
     const A = spine[k - 1], B = spine[k];
     if (!B.fresh || A.clip.media !== B.clip.media || Math.abs(A.clip.outTicks - B.clip.inTicks) <= tpf) continue;
-    if (motionScale(A.clip) === motionScale(B.clip)) B.clip.motion = { scale: motionScale(A.clip) === 100 ? 112 : 100 };
+    // Punch in by 12 % of the clip's own size (a cutout at 43 % goes to 48 %, not to 100 %).
+    const sa = motionScale(A.clip);
+    if (sa === motionScale(B.clip)) B.clip.motion = { scale: sa === 112 ? 100 : Math.round(sa * 1.12 * 10) / 10 };
   }
   // Dialogue audio not linked to its picture doesn't follow word edits.
   const wordOps = edits.some((e) => ['tighten', 'cut-words'].includes(e.op) || (e.op === 'trim' && /w$/.test(String(e.start ?? e.end ?? ''))));
@@ -506,7 +508,7 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   });
   if (aeJobs.length) timeline.minVideoTracks = Math.max(timeline.minVideoTracks ?? 0, ...aeJobs.map((j) => j.track));
   // Only media the new version uses (a deleted clip's missing file must not block the import).
-  const used = new Set(timeline.clips.map((c) => c.media));
+  const used = new Set(timeline.clips.flatMap((c) => (c.videoMedia ? [c.media, c.videoMedia] : [c.media])));
   timeline.media = Object.fromEntries(Object.entries(timeline.media).filter(([k]) => used.has(k)));
   // Title tracks must exist before the import (importMGT on a missing track lands on V1, over the picture).
   const topTrack = Math.max(1, ...kept.map((c) => c.vTrack ?? 0));
@@ -534,12 +536,11 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
   const compiled: Compiled = { plan: { name: timeline.name, segments: [{ src: '-', from: 0 }] } as any, timeline, pieces, segments: [], titles: [], captionMogrt: captions && captions.mogrt && captionTrack ? { mogrt: captions.mogrt, track: captionTrack } : undefined, transcripts, warnings, stats: { sourceSeconds: 0, cutSeconds: (end - firstStart) / fps, removed: { fillers: 0, repeats: 0, pauses: 0, pauseSeconds: 0 } } };
   const issues = lintCut(compiled);
   let liveSteps = 0;
-  if (captions) liveSteps += await addCaptions(imp.sequenceId, compiled, captions);
-  if (titles.length) {
-    const resolved = titles.map(({ op, anchor, n: k }) => {
-      const s0 = anchor ? anchor.clip.start + (op.at.offset !== undefined ? Math.round(T(op.at.offset, fps) * fps) : 0) : Math.round(T(op.at ?? 0, fps) * fps);
-      return { id: `t${k + 1}`, mogrt: srcPath(op.mogrt), start: s0, end: s0 + Math.round(T(op.duration ?? 4, fps) * fps), track: titleTrack(op), fields: op.fields ?? {} };
-    });
+  const resolved = titles.map(({ op, anchor, n: k }) => {
+    const s0 = anchor ? anchor.clip.start + (op.at.offset !== undefined ? Math.round(T(op.at.offset, fps) * fps) : 0) : Math.round(T(op.at ?? 0, fps) * fps);
+    return { id: `t${k + 1}`, mogrt: srcPath(op.mogrt), start: s0, end: s0 + Math.round(T(op.duration ?? 4, fps) * fps), track: titleTrack(op), fields: op.fields ?? {} };
+  });
+  if (resolved.length) {
     const t = await placeTitles(imp.sequenceId, resolved, tpf);
     liveSteps += t.steps;
     warnings.push(...t.missing.map((m) => `title ${m}`));
@@ -549,6 +550,9 @@ export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name
     liveSteps += a.steps;
     warnings.push(...a.missing.map((m) => `template ${m}`));
   }
+  // Captions keep clear of every title on the new version: new ones, carried AE templates and Premiere graphics.
+  const titleSpans = [...resolved, ...aeJobs.map((j) => ({ start: Math.round(j.start / tpf), end: Math.round(j.end / tpf) })), ...timeline.clips.filter((c) => c.raw?.item && (c.vTrack ?? 0) > 1 && c.vTrack !== captionTrack)];
+  if (captions) liveSteps += await addCaptions(imp.sequenceId, compiled, captions, titleSpans);
   const contact = await sequenceContactSheet(imp.sequenceId, pieces.slice(0, 16).map((pc) => ({ frame: Math.floor((pc.start + pc.end) / 2), label: pc.id })), R, `${imp.name} — ${framesToTimecode(end, R)}`).catch(() => null);
   const strips = pieces.length > 1 && pieces.length <= 13 ? await cutStrips(imp.sequenceId, pieces.slice(1).map((pc) => ({ frame: pc.start, label: pc.id })), R, imp.name).catch(() => null) : null;
   const report: BuildReport = {

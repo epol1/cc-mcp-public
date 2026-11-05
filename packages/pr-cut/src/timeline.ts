@@ -13,6 +13,10 @@ export interface TLClip {
   id: string;
   /** Key into Timeline.media. */
   media: string;
+  /** Picture from another file with the same source timing (a keyed cutout, dual-system sound); `media` is the sound. */
+  videoMedia?: string;
+  /** Alpha interpretation of the picture as Premiere had it ('straight' for a cutout with transparency). */
+  alpha?: string;
   /** 1-based video track, or undefined for audio-only use. */
   vTrack?: number;
   /** 1-based first audio track (stereo takes this and the next), or undefined for picture only. */
