@@ -32,22 +32,86 @@ export async function measureSequence(seqId: string): Promise<{ lufs: number | n
   return { ...(await loudness(file)), file };
 }
 
-export async function audioFinish(seqId: string, o: { target?: number | string; truePeak?: number; dryRun?: boolean } = {}): Promise<{ summary: string; report?: BuildReport }> {
+export async function audioFinish(seqId: string, o: { target?: number | string; truePeak?: number; dryRun?: boolean } = {}): Promise<{ summary: string; report?: BuildReport; sequenceId?: string }> {
   const target = typeof o.target === 'string' ? LOUDNESS_TARGETS[o.target] ?? Number(o.target) : o.target ?? -14;
   if (!Number.isFinite(target)) throw new Error(`loudness target "${o.target}": use a LUFS number or ${Object.keys(LOUDNESS_TARGETS).join(', ')}`);
   const ceiling = o.truePeak ?? -1;
   const m0 = await measureSequence(seqId);
   if (m0.lufs === null) throw new Error('the sequence is silent');
-  let delta = target - m0.lufs;
-  // Never push true peaks over the ceiling: limit the gain and say so (vanilla Premiere has no true-peak limiter in XML).
-  if (m0.truePeak !== null && m0.truePeak + delta > ceiling) delta = ceiling - m0.truePeak;
-  delta = Math.round(delta * 10) / 10;
-  const head = `mix: ${m0.lufs} LUFS integrated, true peak ${m0.truePeak} dBFS, LRA ${m0.lra} LU; target ${target} LUFS, peaks ≤ ${ceiling} dBTP → gain ${delta > 0 ? '+' : ''}${delta} dB on every audio clip`;
+  const delta = Math.round((target - m0.lufs) * 10) / 10;
+  const needsLimiter = m0.truePeak !== null && m0.truePeak + delta > ceiling;
+  const head = `mix: ${m0.lufs} LUFS integrated, true peak ${m0.truePeak} dBFS, LRA ${m0.lra} LU; target ${target} LUFS, peaks ≤ ${ceiling} dBTP → gain ${delta > 0 ? '+' : ''}${delta} dB${needsLimiter ? ' through a Hard Limiter on every audio clip (the peaks would pass the ceiling)' : ' on every audio clip'}`;
   if (o.dryRun || Math.abs(delta) < 0.3) return { summary: `${head}${Math.abs(delta) < 0.3 ? ' (already within 0.3 LU: nothing to do)' : ''}` };
+  if (needsLimiter) return limitTo(seqId, target, ceiling, delta, head);
   const r = await applyCutEdits(seqId, [{ op: 'level', target: 'all', delta }]);
   const m1 = await measureSequence(r.report.sequence!.id);
   const off = m1.lufs !== null ? Math.round((m1.lufs - target) * 10) / 10 : null;
   return { summary: `${head}\n${r.summary}\nafter: ${m1.lufs} LUFS (${off !== null && Math.abs(off) <= 1 ? 'within' : 'OUTSIDE'} ±1 LU of target: ${off} LU), true peak ${m1.truePeak} dBFS${m1.truePeak !== null && m1.truePeak > ceiling ? ' — peaks above the ceiling: lower the loudest clip or add a limiter by hand' : ''}`, report: r.report };
+}
+
+/**
+ * Loudness through Premiere's stock effects when the gain would push peaks over the ceiling: the next version is a
+ * clone of the sequence (one undo step); every audio clip gets Amplify (gain) then Hard Limiter (ceiling just under
+ * the true-peak target, true-peak mode). Both effects take normalized 0–1 values; measured on 26.5.2, Amplify and
+ * Input Boost map −60…+30 dB (0 dB ↔ 0.667), and the gain is still corrected from measurements (secant steps).
+ */
+async function limitTo(seqId: string, target: number, ceiling: number, delta: number, head: string): Promise<{ summary: string; sequenceId: string }> {
+  const p = await projectInfo();
+  const src = p.sequences.find((s) => s.id === seqId)!;
+  const base = src.name.replace(/\s+v\d{3}$/i, '');
+  let v = 2;
+  while (p.sequences.some((s) => s.name === `${base} v${String(v).padStart(3, '0')}`)) v++;
+  const name = `${base} v${String(v).padStart(3, '0')}`;
+  const norm = (db: number) => Math.max(0, Math.min(1, (db + 60) / 90));
+  let ampParam = 1 + (ceiling - 0.3) / 100;
+  const r = await runEs<{ id: string; clips: number }>(`
+var s = prcSeq(${lit(seqId)}), before = prcSeqIds(); s.clone(); var after = prcSeqIds(), id = null;
+for (var j = 0; j < after.length; j++) { var seen = false; for (var k = 0; k < before.length; k++) if (before[k] === after[j]) seen = true; if (!seen) id = after[j]; }
+var c = prcSeq(id); c.name = ${lit(name)}; app.project.openSequence(id);
+var q = qe.project.getActiveSequence();
+if (!q || q.guid !== id) throw new Error('Premiere did not activate the new version; nothing was changed in the original');
+var amp = qe.project.getAudioEffectByName('Amplify'), lim = qe.project.getAudioEffectByName('Hard Limiter'), n = 0;
+for (var t = 0; t < q.numAudioTracks; t++) { var tr = q.getAudioTrackAt(t); for (var i = 0; i < tr.numItems; i++) { var it = tr.getItemAt(i); if (it.type === 'Clip') { it.addAudioEffect(amp); it.addAudioEffect(lim); n++; } } }
+prcJson({ id: id, clips: n });
+`, { timeoutMs: 300_000 });
+  const set = (db: number) => runEs(`var c = prcSeq(${lit(r.id)});
+for (var a = 0; a < c.audioTracks.numTracks; a++) { var at = c.audioTracks[a]; for (var m = 0; m < at.clips.numItems; m++) { var cl = at.clips[m];
+  for (var x = 0; x < cl.components.numItems; x++) { var cp = cl.components[x], P = cp.properties;
+    if (cp.displayName === 'Amplify') { P[2].setValue(1, true); P[3].setValue(${norm(db)}, true); P[4].setValue(${norm(db)}, true); }
+    if (cp.displayName === 'Hard Limiter') { P[1].setValue(${ampParam}, true); P[2].setValue(${norm(0)}, true); P[7].setValue(1, true); } } } }
+prcJson(1)`);
+  const tryGain = async (db: number) => { await set(db); return measureSequence(r.id); };
+  // Secant search: loudness through a limiter rises monotonically with gain but not linearly.
+  let g0 = delta, m0 = await tryGain(g0);
+  let g1 = g0 + (target - (m0.lufs ?? target)), m1 = await tryGain(g1);
+  let best = Math.abs((m1.lufs ?? -99) - target) < Math.abs((m0.lufs ?? -99) - target) ? { g: g1, m: m1 } : { g: g0, m: m0 };
+  for (let i = 0; i < 2 && Math.abs((best.m.lufs ?? -99) - target) > 0.4; i++) {
+    const slope = ((m1.lufs ?? 0) - (m0.lufs ?? 0)) / (g1 - g0 || 1);
+    const g2 = Math.max(-60, Math.min(30, g1 + (target - (m1.lufs ?? target)) / (Math.abs(slope) > 0.05 ? slope : 1)));
+    const m2 = await tryGain(g2);
+    [g0, m0, g1, m1] = [g1, m1, g2, m2];
+    if (Math.abs((m2.lufs ?? -99) - target) < Math.abs((best.m.lufs ?? -99) - target)) best = { g: g2, m: m2 };
+  }
+  // Clips that overlap (dialogue, music, nat sound) add up past their own limiters, and scripts can't reach the
+  // master track: lower the per-clip ceiling by the measured overshoot (taken as a −60…0 dB scale), then re-trim the
+  // gain for loudness, at most three rounds.
+  let last = best.g === g1 ? g1 : g0;
+  for (let i = 0; i < 3 && best.m.truePeak !== null && best.m.truePeak > ceiling; i++) {
+    ampParam = Math.max(0.5, ampParam - (best.m.truePeak - ceiling + 0.3) / 60);
+    let mm = await tryGain(best.g);
+    last = best.g;
+    if (mm.lufs !== null && Math.abs(mm.lufs - target) > 0.4) { const g = Math.max(-60, Math.min(30, best.g + (target - mm.lufs))); mm = await tryGain(g); best = { g, m: mm }; last = g; }
+    else best = { g: best.g, m: mm };
+  }
+  if (best.g !== last) await set(best.g);
+  const m = best.m;
+  const off = m.lufs !== null ? Math.round((m.lufs - target) * 10) / 10 : null;
+  return {
+    sequenceId: r.id,
+    summary: `${head}
+new version "${name}" (${r.id}): clone + Amplify and Hard Limiter on ${r.clips} audio clip(s), gain ${best.g > 0 ? '+' : ''}${Math.round(best.g * 10) / 10} dB, true-peak limiting at ${ceiling} dBTP
+after: ${m.lufs} LUFS (${off !== null && Math.abs(off) <= 1 ? 'within' : 'OUTSIDE'} ±1 LU of target: ${off} LU), true peak ${m.truePeak} dBFS${m.truePeak !== null && m.truePeak > ceiling ? ' — still above the ceiling' : ''}`,
+  };
 }
 
 export interface DeliverOptions { aspects?: string[]; outDir?: string; master?: boolean; credits?: string[] }

@@ -23,7 +23,7 @@
     "mcp": "node bin/aec-mcp.mjs",
     "prc": "node bin/prc.mjs",
     "mcp:pr": "node bin/prc-mcp.mjs",
-    "test:pr": "vitest run tests/integration/pr --no-file-parallelism",
+    "test:pr": "vitest run tests/premiere --no-file-parallelism",
     "postinstall": "node build/runtime.mjs",
     "install:cep": "node scripts/install-cep.mjs"
   },

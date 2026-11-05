@@ -180,7 +180,7 @@ server.registerTool('audio_finish', {
 }, async ({ sequence, target, truePeak, dryRun }) => wrap(async () => {
   const seq = await resolveSequence(sequence);
   if (dryRun) return [text((await audioFinish(seq.id, { target, truePeak, dryRun: true })).summary)];
-  const r = await journaled('audio_finish', seq.name, async () => { const b = await audioFinish(seq.id, { target, truePeak }); return { ...b, sequenceId: b.report?.sequence?.id }; });
+  const r = await journaled('audio_finish', seq.name, async () => audioFinish(seq.id, { target, truePeak }));
   return [text(r.summary), ...(r.report ? await withImages(r.report) : [])];
 }));
 

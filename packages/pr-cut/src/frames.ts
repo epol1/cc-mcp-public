@@ -17,6 +17,7 @@ var s = prcSeq(${lit(sequenceId)});
 if (!s) throw new Error('sequence not found: ' + ${lit(sequenceId)});
 app.project.openSequence(s.sequenceID);
 var q = qe.project.getActiveSequence();
+if (!q || q.guid !== s.sequenceID) throw new Error('Premiere did not activate sequence ' + s.name + ' for frame export');
 var jobs = ${JSON.stringify(jobs)};
 for (var i = 0; i < jobs.length; i++) q.exportFramePNG(jobs[i].tc, jobs[i].base);
 prcJson({ n: jobs.length });

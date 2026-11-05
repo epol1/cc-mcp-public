@@ -1,19 +1,21 @@
 // Premiere round trip (needs Premiere + the pr-cut bridge): a Timeline written as FCP7 XML and imported must read
 // back with every clip edge within one frame (exact in ticks), plus transitions, grade, motion, levels, markers,
-// and exactly one undo step. Run: npx tsx tests/integration/pr/roundtrip.ts [fps]
+// and exactly one undo step. Run: npx tsx tests/premiere/roundtrip.ts [fps]  (default: every supported rate)
 import path from 'node:path';
 import { probe } from '@ae-mcp/core/media/probe.ts';
 import { framesToTicks, rate, secondsToFrames, ticksPerFrame } from '@ae-mcp/core/time/timecode.ts';
 import { importTimeline } from '@ae-mcp/pr-cut/importxml.ts';
 import { inspectSequenceRaw } from '@ae-mcp/pr-cut/inspect.ts';
 import type { Timeline } from '@ae-mcp/pr-cut/timeline.ts';
+import { check as harnessCheck, done, useTestProject } from './harness.ts';
 
 const SAMPLE = 'C:/Users/Public/Documents/Adobe/Premiere Pro/26.0/Sample Media';
-const fpsArg = process.argv[2] ?? '23.976';
+await useTestProject();
+const RATES = process.argv[2] ? [process.argv[2]] : ['23.976', '24', '25', '29.97', '30', '59.94'];
+for (const fpsArg of RATES) {
 const R = rate(fpsArg);
 const tpf = ticksPerFrame(R);
-let fails = 0;
-const check = (name: string, ok: boolean, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` (${detail})` : ''}`); if (!ok) fails++; };
+const check = (name: string, ok: boolean, detail = '') => harnessCheck(`[${fpsArg}] ${name}`, ok, detail);
 
 const media: Timeline['media'] = {};
 for (const n of [1, 2, 3, 5]) media[`c${n}`] = await probe(path.join(SAMPLE, `Sample Media Clip ${n}.mp4`));
@@ -59,5 +61,5 @@ const b = s.clips.filter((c) => c.track === 'V2');
 check('B-roll on V2', b.length === 1 && b[0].start / tpf === secondsToFrames(1, R) && b[0].end / tpf === secondsToFrames(2.5, R), JSON.stringify(b.map((x) => [x.start / tpf, x.end / tpf])));
 check('B-roll has no audio', s.clips.filter((c) => /Clip 5/.test(c.name) && c.track.startsWith('A')).length === 0);
 check('markers', s.markers.length === 2 && s.markers[1].name === 'seg2' && s.markers[1].start / tpf === secondsToFrames(3, R), JSON.stringify(s.markers.map((m) => [m.name, m.start / tpf])));
-console.log(fails ? `${fails} FAILED` : 'ALL PASS');
-process.exitCode = fails ? 1 : 0;
+}
+done();

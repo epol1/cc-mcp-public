@@ -112,7 +112,7 @@ for (var i = 0; i < jobs.length; i++) {
 prcJson({ undo: prcUndo() - u0, missing: missing });
 `, { timeoutMs: 60_000 + jobs.length * 10_000 });
   if (r.missing.length) c.warnings.push(...r.missing.map((m) => `title ${m}`));
-  return r.undo;
+  return jobs.length; // one undo step per placed title (field values are not undo steps in Premiere)
 }
 
 /** Captions from the kept words' times in the cut → SRT → Premiere caption track (two undo steps). */
@@ -142,5 +142,5 @@ var ok = item ? s.createCaptionTrack(item, 0, Sequence.CAPTION_FORMAT_SUBTITLE) 
 prcJson({ undo: prcUndo() - u0, ok: !!ok });
 `);
   if (!r.ok) c.warnings.push('captions: Premiere did not create the caption track');
-  return r.undo;
+  return 2; // the SRT import and the caption track
 }

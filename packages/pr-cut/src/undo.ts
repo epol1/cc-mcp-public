@@ -41,9 +41,19 @@ export async function undoLast(opts: { force?: boolean } = {}): Promise<string> 
   if (s.index !== last.after && !opts.force) {
     return `not undone: Premiere's undo history moved since ${last.tool} "${last.label}" (index ${last.after} → ${s.index}); someone edited in between. Undo by hand (Ctrl+Z ${last.after - last.before}×), or pass force to step back ${last.after - last.before} entries anyway.`;
   }
-  const steps = last.after - last.before;
-  const r = await runEs<{ index: number }>(`for (var i = 0; i < ${steps}; i++) qe.project.undo(); prcJson({ index: prcUndo() })`);
+  // The undo index is not one per action: one XML import moves it by a dozen and a single undo reverts all of it
+  // (D-PR). So step back until the index is back where the batch started, never by count, and stop if Premiere
+  // switches to another project (it can when an undo removes the open sequence) or an undo makes no progress.
+  const r = await runEs<{ index: number; done: number; reached: boolean }>(`
+var want = ${JSON.stringify(last.projectPath ?? '')}, target = ${last.before}, n = 0, idx = prcUndo();
+while (idx > target && n < 50) {
+  if (want && app.project.path !== want) break;
+  qe.project.undo(); n++;
+  var now = prcUndo(); if (now >= idx) break; idx = now;
+}
+prcJson({ index: idx, done: n, reached: idx <= target });`);
   last.undone = true;
   write(j);
-  return `undone: ${last.tool} "${last.label}" (${steps} step${steps === 1 ? '' : 's'}; undo index ${s.index} → ${r.index})`;
+  if (!r.reached) return `partly undone: ${r.done} step(s) of ${last.tool} "${last.label}" (Premiere switched to another project or stopped undoing); finish with Ctrl+Z in ${last.projectPath}`;
+  return `undone: ${last.tool} "${last.label}" in ${r.done} undo step${r.done === 1 ? '' : 's'} (undo index ${s.index} → ${r.index})`;
 }

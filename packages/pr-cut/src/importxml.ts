@@ -33,5 +33,6 @@ if (s) app.project.openSequence(id);
 prcJson({ ok: !!ok && !!id, id: id, name: s ? s.name : null, undo: prcUndo() - u0 });
 `, { timeoutMs: 300_000 });
   if (!r.ok || !r.id) throw new Error(`Premiere did not create a sequence from ${xmlFile}`);
-  return { sequenceId: r.id, name: r.name ?? t.name, xmlFile, undoSteps: r.undo, warnings: w.warnings, durationFrames: w.durationFrames };
+  // One Ctrl+Z reverts an XML import (sequence and any media it brought in), whatever the undo index moved by.
+  return { sequenceId: r.id, name: r.name ?? t.name, xmlFile, undoSteps: 1, warnings: w.warnings, durationFrames: w.durationFrames };
 }
