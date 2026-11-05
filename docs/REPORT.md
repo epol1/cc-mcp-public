@@ -1,8 +1,69 @@
 # ae-compose — Report
 
 What was built, how it was verified against the installed After Effects 2026 (26.5), and what is limited or
-left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D89); the roadmap with live status is
+left. Decisions with rationale are in [DECISIONS.md](DECISIONS.md) (D1–D104); the roadmap with live status is
 [`status/systems.json`](../status/systems.json) / [ROADMAP.md](ROADMAP.md).
+
+## Phase 6: asset sources
+
+Spec: [ASSETS.md](ASSETS.md); goal: [GOAL-PHASE6.md](../GOAL-PHASE6.md); decisions D90–D104. `find_assets` and `fetch_asset` search the user's local folders and free asset APIs, download the chosen file into the project and credit it; scenes name assets as `src="asset:<id>"`.
+
+### Definition of done (GOAL-PHASE6 §6)
+
+| Item | Status | Evidence |
+|---|---|---|
+| 1. Every ASSETS §2 source works through `find_assets` and `fetch_asset` (key-based: verified, or listed as waiting) | ✅ | Keyless, live: Iconify, Poly Haven, ambientCG, Fontsource (+ google/fonts), Openverse (anonymous), local folders. Key-based, live with the user's keys: Pixabay, Unsplash (added at the user's request, D95). **Pexels: waiting** (not issuing keys); its adapter is built and unit-tested on fixtures written from its docs. The AE check fetched and imported one asset of each kind from these sources. |
+| 2. License allowlist, credits, cache cap, `doctor` lines, `asset:` scheme | ✅ | Allowlist with ShareAlike/trademark flags, NC/ND never returned or fetched (unit tests, plus re-checks at fetch time). Every fetch credited in `CREDITS.md` next to the project (and the scene for `asset:` refs); `deliver` copies it next to the renders. 5 GB LRU cache that only deletes indexed folders inside its root (tests with a forged entry). `doctor` prints one line per source and one for the cache. `asset:` refs in `<Footage>`, `<Audio>`, `<Model>`, `<Light hdri>`, `<Svg>`, plus `asset()` for indirect use (fonts). |
+| 3. Fonts install and are used, or the probe's outcome is documented with the fallback | ✅ | A per-user install loaded into the Windows session (`AddFontResource` + `WM_FONTCHANGE`) is seen by the running AE at once (D102; D93's first probe had missed the session load). Space Grotesk (google/fonts variable file) was installed once with the user's OK and is the type of showcase 19. |
+| 4. Showcase 19 | ✅ | `examples/19-launch-teaser` "Morrow 35" (25 s): Pixabay crowd clip, 16 Lucide icons drawn on as native shapes, an ambientCG paper sheet that tears in (jagged matte, Roughen Edges, fibre fringe, drop shadow), a Poly Haven camera model lit by a Poly Haven HDRI (Advanced 3D precomp), feature icons drawn on, a paper-rip sound (Openverse CC0), Space Grotesk. Lint and style lint clean; reviewed from contact sheets, full-res frames and a motion strip of the tear. `CREDITS.md` lists all 10 assets. The model's lens carries a real maker's engraving: it is staged at angles where it isn't legible. |
+| 5. Documented in DSL.md, the skill and the README | ✅ | DSL.md §22 (+ §18 tool and CLI rows), SKILL.md §12 (+ tool table row), README "Asset sources" + showcase row, ASSETS.md marked built. |
+| 6. Tests green, fresh-session test passed, REPORT Phase 6 | ✅ | 95 asset unit tests on recorded responses (adapters, license filter, credits, eviction, `asset:`, content checks, ZIP/GLB, fetch pipeline, review fixes), the whole unit/codegen suite green on every release; `pnpm test:live` 7/7 (Pexels skipped, no key); 37/37 checks in `tests/integration/p6/assets.ts`. Earlier AE suites re-run for what this phase touched (`<Svg>`, `src` resolution, the build, the runtime, dialogs): round-trip (652 properties incl. showcase 12's recoloured SVG logo), edit ops 26/26, p5 foundations 24/24, showcase 02 rebuilt unchanged. Fresh session: below. |
+
+### Fresh-session test (2026-11-05)
+
+A headless Claude Code session (`claude -p`, empty folder, only the ae-compose MCP server, `dontAsk` mode allowing only the MCP tools and reads of the skill folder) got a brief that needs material the repo doesn't have: a 15–20 s teaser for a fictional coffee roaster, "Ember", with a stock video backdrop, at least two icons drawn on as shapes, a texture that earns its place, an end card, and no font installs. Script and brief: `tests/fresh-session/run-p6.sh`, `p6-brief.md` (transcript in `scratch/p6/fresh/`).
+
+**Result: ✅ succeeded unaided** (39 turns, 12.7 min). It ran `doctor`, read the skill and DSL §22, searched 8 times (`find_assets`, choosing from the grids), previewed two clips (`preview_item`), checked its beat sheet with `plan_scene`, fetched 5 assets and built **EmberTeaser_v001** (18 s) in 4 builds with 4 `motion_preview` reviews:
+- **Roast:** a Pixabay clip of beans over flame; a Tabler flame icon draws on; "ROASTED THIS WEEK."
+- **Pack:** an ambientCG kraft texture pulls up over the beans as the coffee bag (the texture is the story beat); a package icon draws on; "PACKED BY HAND."
+- **Ship:** the package hands off to a truck that drives along a Mon→Fri week line; "AT YOUR DOOR BY FRIDAY."
+- **End:** the Friday dot grows into an ember-orange end card with the flame as the logo mark; holds 3.3 s.
+
+It fixed what its review found (a repeated transition flagged by style lint, a dead moment before the bag rose, elements vanishing a frame before the wipe covered them, 0.4 s of empty kraft, small label sizes) and reported one kept blank-frame note (0.1 s of plain orange as the wipe lands) and a contrast decision (no orange text on kraft, 2:1). All five assets are in the project's `CREDITS.md` with their licenses (checked here, not just taken from its report); it installed no fonts.
+
+### Verified in After Effects
+
+- **Imports (D92):** JPG, PNG, H.264 MP4 + AAC, HDR, EXR, a Poly Haven glTF (and the packed `.glb`), MP3; SVG only as a 1×1 still, so icons go through `<Svg>`.
+- **`tests/integration/p6/assets.ts` (37 checks):** in a throwaway saved project, nine fetches (icon, HDRI, model, texture, two photos, video, audio, font) land in `footage/<source>/<id>/` next to the .aep, are imported (not icons and fonts) and credited; a fetch import is one undo step; a scene using every kind through `asset:` builds with no expression errors, lints, and one undo restores the comp exactly; AE's own **File > Dependencies > Collect Files** (driven through its dialogs) keeps every fetched file, and the collected project opens with every footage item found and relinked inside the collection.
+
+### Limits
+
+- **Pexels** is unverified live (no key can be had right now).
+- **Collect Files** has no scripting API: the check drives AE's dialogs (Win32 by control id, D103). A native file dialog doesn't stop bridge evals, so nothing may touch the project while one is open (D99: the first attempt crashed AE).
+- **AE keeps file handles** on footage after its project closes: renaming or deleting a fetched file's folder can fail until AE restarts (the test uses a fresh folder per run).
+- **Opening the large dev project hung AE once** right after the Collect check (0 % CPU for 15 min; the user OK'd a forced restart). Not reproduced; showcase 19 was built in its own small project.
+- **`recover_ae` can't recognise AE's Crash Repair dialog by itself:** AE draws it with no UI Automation text, so the automatic "Continue" never matched (it was mock-tested only). It was answered by hand from its capture.
+- Grid thumbnails can't show PSD/HDR/EXR or video frames for local files (a labelled card instead).
+- Openverse audio from Freesound is the 128 kbps preview (originals need a Freesound login).
+- Fonts install on Windows only.
+
+### Found and fixed in Phase 6 (beyond the plan)
+
+- `<Svg>` filled outline icons into blobs and didn't know `currentColor` (D92).
+- `license_type=commercial` at Openverse still returns NoDerivatives (D91).
+- Fontsource's static TTFs of variable families carry the default instance's name (`SpaceGroteskLight-Bold`), so installs use the google/fonts files (D93).
+- A font installed by file + registry alone is invisible to every running app until the next logon (D102).
+- The independent review's 15 findings (D104), among them file: URLs from APIs, a font family losing its italic file, and unstreamed downloads.
+- A unit test (`edit-ops`) silently depended on AE answering for a comp's fps; it now passes fps.
+- The user's untracked `GOAL-PHASE6.md` disappeared from the working tree while the pr-cut session parked its work; it was restored byte for byte from this session's first read.
+
+### Next improvements, ranked by impact
+
+1. **`recover_ae` recognises Crash Repair** from its capture (image match), so a forced restart finishes unattended.
+2. **Pexels live check** once keys open again (one `pnpm test:live` run).
+3. **A local-asset thumbnail pass** (ffmpeg frame for video, tonemapped HDR/EXR) so local hits show in the grid.
+4. **An R2 adapter for our own material** (paper scans, device mockups), behind the same interface (ASSETS §1).
+5. **Freesound originals with OAuth**, for full-quality sound effects.
 
 ## Phase 5: the creative toolkit
 

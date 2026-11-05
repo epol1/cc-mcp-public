@@ -4,19 +4,24 @@
 > Roadmap and dashboard: `status/systems.json` → `status/index.html` (`node status/build.mjs`). Release: `node scripts/release.mjs "msg"`.
 
 ## Current phase
-**Phase 6, asset sources: in progress** (spec `docs/ASSETS.md`, goal `GOAL-PHASE6.md`, roadmap: the "Assets ·" group in `status/systems.json`, decisions D91–D101).
+**Phase 6, asset sources: complete** (spec `docs/ASSETS.md`, goal `GOAL-PHASE6.md`, roadmap: the "Assets ·" group in `status/systems.json` at 100 %, decisions D91–D104, REPORT "Phase 6"). Releases v0.01.002 (core, adapters, tools), v0.01.003 (showcase 19, AE check, review fixes) and the phase release.
 
 ### Phase 6 so far
-- **Verified first** (D91–D93): every keyless API's response shape (recorded in `tests/fixtures/assets/`); AE 26.5 imports JPG, PNG, H.264 MP4, HDR, EXR, a Poly Haven glTF and MP3 (an SVG only as a 1×1 still, so icons go through `<Svg>`); a running AE does not see a per-user font install (restart needed); Fontsource statics of variable families are misnamed, so fonts come from google/fonts.
+- **Verified first** (D91–D93, D102): every keyless API's response shape (recorded in `tests/fixtures/assets/`); AE 26.5 imports JPG, PNG, H.264 MP4, HDR, EXR, a Poly Haven glTF and MP3 (an SVG only as a 1×1 still, so icons go through `<Svg>`); a per-user font is seen by the running AE once loaded into the session (`AddFontResource`, D102; the first probe missed that); Fontsource statics of variable families are misnamed, so fonts come from google/fonts.
 - **Core** (`src/assets/`): `AssetHit` + adapter interface, polite HTTP (UA, 24 h response cache, per-source budgets, one 429 back-off, keys redacted), keys from env or `~/.ae-compose/keys.json`, license allowlist with ShareAlike/trademark flags, `CREDITS.md`, 5 GB LRU download cache, content sniffing, conversions, ZIP reader, glTF → GLB packer, `asset:` resolver.
 - **Adapters** (three subagents): Iconify, Poly Haven, ambientCG, Fontsource, local folders (sampled index, D96), Pixabay (live key), Unsplash (live key, added at the user's request, D95), Pexels (no key available: Pexels isn't issuing keys; built on documented responses), Openverse (anonymous).
 - **Tools**: `find_assets` (text + numbered 4×4 thumbnail grid, D97), `fetch_asset` (download → footage folder next to the project → one-undo import → credit; fonts with `install: true`), `doctor` lines per source and for the cache, `aec assets find|fetch|index`, `deliver` copies `CREDITS.md` next to the renders, `pnpm test:live`.
 - **`asset:` sources** in `<Footage>`, `<Audio>`, `<Model>`, `<Light hdri>`, `<Svg>` (D101); `<Svg>` handles `currentColor` and outline icons (D92).
-- **Tests**: 81 unit tests on fixtures (core, keyless, keyed, local, zip/glb). AE check `tests/integration/p6/assets.ts`: every kind fetched, imported and credited; a fetch import is one undo step; the `asset:` scene builds clean and one undo restores it exactly. The Collect Files step crashed AE on its first run (our test's fault, D99, user restarted AE); fixed, to re-run.
-- **Coordination**: the user's pr-cut (Premiere) session was restructuring this checkout at the same time; the user chose to pause it: its work is on branch `pr-cut` in `E:\Projects\ae-mcp-prcut` and it rebases after the Phase 6 release (message it the version).
-- **Font**: Space Grotesk (variable) installed per-user with the user's OK (D100).
+- **Tests**: 95 unit tests on fixtures (core, keyless, keyed, local, zip/glb, fetch pipeline, review fixes); `pnpm test:live` 7/7 live (Pexels skipped: no key). AE check `tests/integration/p6/assets.ts` **37/37**: every kind fetched, imported and credited; a fetch import is one undo step; the `asset:` scene builds clean and one undo restores it exactly; AE's own Collect Files keeps every fetched file and the collected project relinks inside the collection. Getting there: the first Collect run crashed AE (D99, user restarted it), the second exposed slow UI Automation on file dialogs (D103), a later run hung AE while reopening the dev project (user OK'd a forced restart).
+- **Showcase 19** (`examples/19-launch-teaser`, "Morrow 35"): built in its own project `scratch/p6-showcase/MorrowTeaser.aep`; lint and style lint clean; `CREDITS.md` complete (10 assets incl. the font via `asset()`).
+- **Independent review**: 15 findings, all fixed with tests (D104).
+- **Coordination**: the user's pr-cut (Premiere) session was restructuring this checkout at the same time; the user chose to pause it: its work is on branch `pr-cut` in `E:\Projects\ae-mcp-prcut` and it rebases after the Phase 6 release (message it the version). `GOAL-PHASE6.md` went missing from the tree meanwhile and was restored byte for byte.
+- **Font**: Space Grotesk (variable) installed per-user with the user's OK (D100, D102).
 
-**Next:** re-run the p6 AE check (Collect Files + moved folder), check that AE now lists SpaceGrotesk-*, showcase 19, fresh-session test, independent review, REPORT Phase 6, release and tell pr-cut.
+- **Fresh-session test passed** (12.7 min, unaided): EmberTeaser_v001 from a Pixabay clip, Tabler icons and an ambientCG texture, all credited (REPORT).
+- **Regression**: round-trip (652 properties), edit ops 26/26, p5 foundations 24/24, showcase 02 unchanged.
+
+**Phase 6 is complete.** **Next:** the ranked list in REPORT.md (Phase 6 "Next improvements": `recover_ae` recognising Crash Repair, a Pexels live check when keys open, local thumbnails, an R2 adapter, Freesound OAuth). The pr-cut session rebases its core extraction onto this release and moves `src/assets` into `packages/core`.
 
 ## Phase 5 (complete)
 **Phase 5, the creative toolkit: complete** (spec `docs/TOOLKIT.md`, goal `GOAL-PHASE5.md`, roadmap: the "P5 ·" groups in `status/systems.json`).

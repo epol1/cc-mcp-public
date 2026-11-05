@@ -1449,7 +1449,7 @@
         {
           "id": "assets-docs",
           "name": "Skill + DSL docs, unit tests on recorded responses, AE fetch-import-collect test",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
@@ -1461,7 +1461,7 @@
         {
           "id": "assets-fresh",
           "name": "Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6",
-          "status": "wip",
+          "status": "done",
           "weight": 1
         }
       ],
