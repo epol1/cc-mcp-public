@@ -15,10 +15,10 @@ import { Effect, Fill, Null, Rect, RigEffect, Shape, Text } from '../primitives.
 import { Align, SafeArea } from '../layout.ts';
 import { expr, perWord } from '../anim.ts';
 import type { ControlRef } from '../control.ts';
-import type { ColorSpec, Time } from '@ae-mcp/core/units.ts';
+import type { ColorSpec, Time } from '@cc-mcp/core/units.ts';
 import { dslWarn } from '../warn.ts';
-import { captionsFromWords, distributeWordTimes, loadCaptions, parseCaptions, readingIssues, reflow } from '@ae-mcp/core/text/captions.ts';
-import type { Caption, CaptionFormat, CaptionWord, ReadingIssue, ReadingOptions } from '@ae-mcp/core/text/captions.ts';
+import { captionsFromWords, distributeWordTimes, loadCaptions, parseCaptions, readingIssues, reflow } from '@cc-mcp/core/text/captions.ts';
+import type { Caption, CaptionFormat, CaptionWord, ReadingIssue, ReadingOptions } from '@cc-mcp/core/text/captions.ts';
 import type { PseudoEffectDef, PseudoParam } from '../../compile/ffx/pseudo.ts';
 import { SOURCE_TEXT, amountPath, animatorPath, colorParam, compFrame, fxOf, hexOf, secs, slider, textMeasure } from './common.ts';
 import type { Frame } from './common.ts';

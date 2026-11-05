@@ -15,8 +15,8 @@
     "jsxImportSource": "ae-compose",
     "paths": {
       "ae-compose": ["./src/dsl/index.ts"],
-      "@ae-mcp/core/*": ["./packages/core/src/*"],
-      "@ae-mcp/pr-cut/*": ["./packages/pr-cut/src/*"],
+      "@cc-mcp/core/*": ["./packages/core/src/*"],
+      "@cc-mcp/pr-cut/*": ["./packages/pr-cut/src/*"],
       "ae-compose/jsx-runtime": ["./src/dsl/jsx-runtime.ts"],
       "ae-compose/jsx-dev-runtime": ["./src/dsl/jsx-runtime.ts"]
     }

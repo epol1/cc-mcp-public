@@ -2,10 +2,10 @@
 // grade, a Premiere title): apply_cut_edits lands a new version in one undo step with the edits applied and the
 // grade and title carried; the original is unchanged; undo removes the version.
 import path from 'node:path';
-import { lit, nativePath, runEs } from '@ae-mcp/pr-cut/bridge.ts';
-import { applyCutEdits } from '@ae-mcp/pr-cut/edit.ts';
-import { inspectSequenceRaw } from '@ae-mcp/pr-cut/inspect.ts';
-import { journaled, undoLast } from '@ae-mcp/pr-cut/undo.ts';
+import { lit, nativePath, runEs } from '@cc-mcp/pr-cut/bridge.ts';
+import { applyCutEdits } from '@cc-mcp/pr-cut/edit.ts';
+import { inspectSequenceRaw } from '@cc-mcp/pr-cut/inspect.ts';
+import { journaled, undoLast } from '@cc-mcp/pr-cut/undo.ts';
 import { check, done, SAMPLE, useTestProject } from './harness.ts';
 
 await useTestProject();

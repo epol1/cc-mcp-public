@@ -4,11 +4,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { callRuntime } from '../bridge/index.ts';
-import { analyzeMotion, formatStyleIssues, gif, motionStrip, motionSummary, speedGraph, styleLint } from '@ae-mcp/core/motion/index.ts';
-import type { MotionData, StyleIssue, StyleOptions } from '@ae-mcp/core/motion/index.ts';
+import { analyzeMotion, formatStyleIssues, gif, motionStrip, motionSummary, speedGraph, styleLint } from '@cc-mcp/core/motion/index.ts';
+import type { MotionData, StyleIssue, StyleOptions } from '@cc-mcp/core/motion/index.ts';
 import type { LintAnim, LintData } from '../lint/index.ts';
 import { cssBezier } from '../shared/bezier.ts';
-import { offBeatCuts } from '@ae-mcp/core/audio/beats.ts';
+import { offBeatCuts } from '@cc-mcp/core/audio/beats.ts';
 import { springUnit } from '../shared/spring.ts';
 import os from 'node:os';
 

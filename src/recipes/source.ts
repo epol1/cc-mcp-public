@@ -198,7 +198,7 @@ export function configEdits(src: string, set: { name?: string; params?: Record<s
   return edits;
 }
 
-import { ASSET_EXT, relRef } from '@ae-mcp/core/templates/files.ts';
+import { ASSET_EXT, relRef } from '@cc-mcp/core/templates/files.ts';
 export { ASSET_EXT, relRef };
 const MODULE_EXT = ['', '.ts', '.tsx', '.mts', '.js', '.mjs', '.jsx', '/index.ts', '/index.tsx', '/index.js'];
 

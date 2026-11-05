@@ -4,8 +4,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildScene } from './build.ts';
-import { CREDITS_FILE } from '@ae-mcp/core/assets/credits.ts';
-import { unsavedCreditsDir } from '@ae-mcp/core/assets/fetch.ts';
+import { CREDITS_FILE } from '@cc-mcp/core/assets/credits.ts';
+import { unsavedCreditsDir } from '@cc-mcp/core/assets/fetch.ts';
 import { callRuntime } from '../bridge/index.ts';
 import type { BuildReport } from './build.ts';
 import { renderComp } from './render.ts';

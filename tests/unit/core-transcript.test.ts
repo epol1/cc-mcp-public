@@ -1,10 +1,10 @@
 // Spec for the transcript layer (packages/core/src/transcribe): filler and repeat flags, sentences, pauses, quote
 // matching and word-boundary refinement against an energy envelope.
 import { describe, expect, it } from 'vitest';
-import { flagFillers, pauses, sentences } from '@ae-mcp/core/transcribe/analyze.ts';
-import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
-import { refineWords, type Envelope } from '@ae-mcp/core/transcribe/refine.ts';
-import { buildTranscript } from '@ae-mcp/core/transcribe/index.ts';
+import { flagFillers, pauses, sentences } from '@cc-mcp/core/transcribe/analyze.ts';
+import { findQuote } from '@cc-mcp/core/transcribe/match.ts';
+import { refineWords, type Envelope } from '@cc-mcp/core/transcribe/refine.ts';
+import { buildTranscript } from '@cc-mcp/core/transcribe/index.ts';
 import { words } from './helpers/words.ts';
 
 describe('fillers and repeats', () => {

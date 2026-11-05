@@ -8,7 +8,7 @@ import { resetAutoIds } from '../dsl/particles.ts';
 import { isAnim } from '../dsl/anim.ts';
 import type { TextUnitsAnim } from '../dsl/anim.ts';
 import { isControl } from '../dsl/control.ts';
-import { parseColor, parseTime, rgb } from '@ae-mcp/core/units.ts';
+import { parseColor, parseTime, rgb } from '@cc-mcp/core/units.ts';
 import { parseSvgPath } from '../shared/svgpath.ts';
 import { ControlRegistry } from './controls.ts';
 import type { PropSpec, ValueCtx } from './values.ts';
@@ -25,7 +25,7 @@ import type { LibMode } from '../aeclib/index.ts';
 import { LIB_ITEM, libVersion, withLib, writeLibFile } from '../aeclib/index.ts';
 import { rigEffectSpec } from './rigfx.ts';
 import { drainDslWarnings } from '../dsl/warn.ts';
-import { resolveSrc } from '@ae-mcp/core/assets/resolve.ts';
+import { resolveSrc } from '@cc-mcp/core/assets/resolve.ts';
 
 // Internal names verified from AE's localized UI strings (D36): Calder = Advanced 3D; 'ADBE Advanced 3d' is the legacy ID of Classic 3D.
 const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' } as const;

@@ -5,13 +5,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { adapterContext } from '@ae-mcp/core/assets/context.ts';
-import { setTransport } from '@ae-mcp/core/assets/http.ts';
-import { pixabay } from '@ae-mcp/core/assets/adapters/pixabay.ts';
-import { pexels } from '@ae-mcp/core/assets/adapters/pexels.ts';
-import { unsplash } from '@ae-mcp/core/assets/adapters/unsplash.ts';
-import { openverse } from '@ae-mcp/core/assets/adapters/openverse.ts';
-import type { AdapterContext, AssetHit } from '@ae-mcp/core/assets/types.ts';
+import { adapterContext } from '@cc-mcp/core/assets/context.ts';
+import { setTransport } from '@cc-mcp/core/assets/http.ts';
+import { pixabay } from '@cc-mcp/core/assets/adapters/pixabay.ts';
+import { pexels } from '@cc-mcp/core/assets/adapters/pexels.ts';
+import { unsplash } from '@cc-mcp/core/assets/adapters/unsplash.ts';
+import { openverse } from '@cc-mcp/core/assets/adapters/openverse.ts';
+import type { AdapterContext, AssetHit } from '@cc-mcp/core/assets/types.ts';
 import { fixture, tempAssetHome, useFixtures } from './assets-fixtures.ts';
 
 const FAKE = 'test-key-123456';

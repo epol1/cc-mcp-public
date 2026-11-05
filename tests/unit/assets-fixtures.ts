@@ -3,8 +3,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { setTransport } from '@ae-mcp/core/assets/http.ts';
-import type { HttpResponse } from '@ae-mcp/core/assets/http.ts';
+import { setTransport } from '@cc-mcp/core/assets/http.ts';
+import type { HttpResponse } from '@cc-mcp/core/assets/http.ts';
 
 export const FIXTURES = path.resolve(__dirname, '../fixtures/assets');
 export const fixture = (name: string) => fs.readFileSync(path.join(FIXTURES, name));

@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { callRuntime } from '../bridge/index.ts';
-import { aeWindows, pressDialog } from '@ae-mcp/core/bridge/dialogs.ts';
+import { aeWindows, pressDialog } from '@cc-mcp/core/bridge/dialogs.ts';
 import { OUT_ROOT } from './build.ts';
 
 export interface MogrtResult {

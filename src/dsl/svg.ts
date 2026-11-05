@@ -12,7 +12,7 @@ import type { ShapeProps } from './primitives.ts';
 import type { Anim } from './anim.ts';
 import { parseSvgPath, shapeBounds } from '../shared/svgpath.ts';
 import type { AeShape } from '../shared/svgpath.ts';
-import { resolveSrc } from '@ae-mcp/core/assets/resolve.ts';
+import { resolveSrc } from '@cc-mcp/core/assets/resolve.ts';
 
 export interface SvgProps extends Omit<ShapeProps, 'children'> {
   /** Path to the .svg (absolute, or relative to the scene folder), or a fetched icon: "asset:iconify:lucide:rocket". */

@@ -1,4 +1,12 @@
-# ae-compose
+# cc-mcp
+
+Two Claude Code toolkits in one repo, on a shared core (`packages/core`: bridges, captions, beats, transcription, the media library, asset sources):
+- **ae-compose**: motion design in After Effects (below);
+- **pr-cut**: editing in Premiere Pro ([pr-cut](#pr-cut-editing-in-premiere-pro)).
+
+One clone, `pnpm install`, `pnpm run setup` installs both ([Install](#install)).
+
+## ae-compose
 
 **Code-first motion design for After Effects.** Claude writes Remotion-style TSX, and ae-compose compiles it into **native, fully editable After Effects comps**: real layers, eased keyframes, text animators, shape layers, effects, expression-control rigs, variants, the 3D system and particles. It also inspects and edits existing AE projects, including ripple edits, keying and placing project media. It runs on stock After Effects 2026 with no third-party plugins. A live CEP bridge, an MCP server, a CLI (`aec`) and a Claude skill drive it.
 
@@ -44,11 +52,11 @@ The same idea for editing. Claude reads footage as text (local Whisper, word-lev
 - **Never touches your work:** builds are new sequences; edits on any sequence (yours or pr-cut's) land as the next version (`Name v002`), with your grades, levels, effects and graphics carried. A build or edit is one Ctrl+Z; `undo` reverts a batch in one call and refuses if you've worked in between.
 - **Finishing:** `audio_finish` (−14/−16/−23 LUFS, measured), `match_shots`, `deliver` (16:9 master + Auto Reframe 9:16 / 1:1 / 4:5).
 - **Media library** shared with ae-compose: what's said (transcripts) and what's seen (shot descriptions) in your footage, searchable with SQLite FTS5.
-- Install: `node scripts/install-cep.mjs --pr`, restart Premiere, then `prc doctor`. MCP server: `bin/prc-mcp.mjs` (registered in `.mcp.json`). Skill: `skills/pr-cut/SKILL.md`. Design: `docs/PRCUT.md`.
+- Installed with ae-compose by `pnpm run setup` ([Install](#install)); then restart Premiere and run `node bin/prc.mjs doctor`. MCP server: `bin/prc-mcp.mjs`. Skill: `skills/pr-cut/SKILL.md`. Design: `docs/PRCUT.md`.
 
 ## Status
 
-[![ae-compose status dashboard](status/status.png)](status/index.html)
+[![cc-mcp status dashboard](status/status.png)](status/index.html)
 
 The image is regenerated on every release by `scripts/release.mjs` from [`status/systems.json`](status/systems.json). Interactive version: [`status/index.html`](status/index.html). Task list: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
@@ -56,13 +64,13 @@ The image is regenerated on every release by `scripts/release.mjs` from [`status
 
 Requirements:
 - Windows 10/11;
-- After Effects 2026 (26.x);
+- After Effects 2026 (26.x) for ae-compose, Premiere Pro 2026 (26.x) for pr-cut (either or both);
 - Node 22+;
 - pnpm (or npm);
 - optional: ffmpeg on PATH (MP4/GIF previews, keying from video files).
 
 ```bash
-git clone https://github.com/epol1/ae-compose && cd ae-compose
+git clone https://github.com/epol1/cc-mcp && cd cc-mcp
 ```
 
 ```bash
@@ -72,20 +80,26 @@ pnpm install
 `pnpm install` also builds the ES3 runtime that runs inside AE (`dist/runtime/aec-runtime.jsx`).
 
 ```bash
-node scripts/install-cep.mjs
+pnpm run setup
 ```
 
-That links the bridge extension into `%APPDATA%\Adobe\CEP\extensions`. Then enable unsigned CEP extensions once for your user:
+That links both bridge extensions into `%APPDATA%\Adobe\CEP\extensions` (`com.aecompose` for After Effects, `com.prcut` for Premiere) and writes both MCP servers into `.mcp.json` with this folder's path. Run it again if you move the folder. Then enable unsigned CEP extensions once for your user:
 
 ```bash
 reg add "HKCU\Software\Adobe\CSXS.12" /v PlayerDebugMode /t REG_SZ /d 1 /f
 ```
 
-Restart After Effects, open a project, and check everything:
+Restart After Effects and Premiere, open a project, and check everything:
 
 ```bash
 node bin/aec.mjs doctor
 ```
+
+```bash
+node bin/prc.mjs doctor
+```
+
+pr-cut also transcribes locally with faster-whisper; `prc doctor` says how to set it up if it's missing.
 
 To type `aec` instead of `node bin/aec.mjs`, link it once:
 

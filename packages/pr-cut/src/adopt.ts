@@ -4,8 +4,8 @@
 // nothing Premiere's own round trip keeps.
 import fs from 'node:fs';
 import path from 'node:path';
-import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
-import { rate as toRate, ticksPerFrame, type Rate } from '@ae-mcp/core/time/timecode.ts';
+import type { MediaInfo } from '@cc-mcp/core/media/probe.ts';
+import { rate as toRate, ticksPerFrame, type Rate } from '@cc-mcp/core/time/timecode.ts';
 import { lit, nativePath, runEs } from './bridge.ts';
 import { PRC_HOME } from './importxml.ts';
 import type { TLClip, TLMarker, Timeline } from './timeline.ts';

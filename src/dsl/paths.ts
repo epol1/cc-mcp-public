@@ -15,8 +15,8 @@ import type { PseudoEffectDef } from '../compile/ffx/pseudo.ts';
 import { parseSvgPath } from '../shared/svgpath.ts';
 import { matchSequence, reverseShape, toPathPoints } from '../shared/morph.ts';
 import type { EasingSpec } from '../shared/easing.ts';
-import { parseTime } from '@ae-mcp/core/units.ts';
-import type { ColorSpec, Time } from '@ae-mcp/core/units.ts';
+import { parseTime } from '@cc-mcp/core/units.ts';
+import type { ColorSpec, Time } from '@cc-mcp/core/units.ts';
 import { expand, isLayerEl, kindOf, withProps } from './transitions/core.ts';
 
 const TG = 'ADBE Transform Group';

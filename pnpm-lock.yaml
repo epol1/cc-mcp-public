@@ -8,10 +8,10 @@ importers:
 
   .:
     dependencies:
-      '@ae-mcp/core':
+      '@cc-mcp/core':
         specifier: workspace:*
         version: link:packages/core
-      '@ae-mcp/pr-cut':
+      '@cc-mcp/pr-cut':
         specifier: workspace:*
         version: link:packages/pr-cut
       '@modelcontextprotocol/sdk':
@@ -92,7 +92,7 @@ importers:
 
   packages/pr-cut:
     dependencies:
-      '@ae-mcp/core':
+      '@cc-mcp/core':
         specifier: workspace:*
         version: link:../core
 

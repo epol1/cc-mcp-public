@@ -15,10 +15,10 @@ import { dslWarn } from '../warn.ts';
 import type { PseudoEffectDef, PseudoParam } from '../../compile/ffx/pseudo.ts';
 import { resolveEasing } from '../../shared/easing.ts';
 import type { EasingSpec } from '../../shared/easing.ts';
-import { parseTime } from '@ae-mcp/core/units.ts';
+import { parseTime } from '@cc-mcp/core/units.ts';
 import { coverScale } from './geometry.ts';
 import type { Silhouette } from './geometry.ts';
-import type { Time } from '@ae-mcp/core/units.ts';
+import type { Time } from '@cc-mcp/core/units.ts';
 
 export type El = AecElement;
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resolveEasing } from '../../src/shared/easing.ts';
-import { analyzeMotion, formatStyleIssues, STYLE_RULES, styleLint } from '@ae-mcp/core/motion/index.ts';
-import type { MotionData, MotionLayer, StyleOptions } from '@ae-mcp/core/motion/index.ts';
+import { analyzeMotion, formatStyleIssues, STYLE_RULES, styleLint } from '@cc-mcp/core/motion/index.ts';
+import type { MotionData, MotionLayer, StyleOptions } from '@cc-mcp/core/motion/index.ts';
 
 // Synthetic samples at 30 fps: a layer is a function of time → [x, y, scaleX, scaleY, rotation, opacity] or null.
 type Pose = [number, number, number, number, number, number];

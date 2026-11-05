@@ -1,9 +1,9 @@
 // build_cut end to end in Premiere: a plan with quotes, sentences, tightening, B-roll and captions lands as a new
 // sequence; the inspector reads back the planned pieces exactly; nothing is cut mid-word; undo removes the batch.
 import path from 'node:path';
-import { buildCut } from '@ae-mcp/pr-cut/build.ts';
-import { inspectSequenceRaw } from '@ae-mcp/pr-cut/inspect.ts';
-import { journaled, undoLast } from '@ae-mcp/pr-cut/undo.ts';
+import { buildCut } from '@cc-mcp/pr-cut/build.ts';
+import { inspectSequenceRaw } from '@cc-mcp/pr-cut/inspect.ts';
+import { journaled, undoLast } from '@cc-mcp/pr-cut/undo.ts';
 import { check, done, SAMPLE, testInterview, testProjectSequences, useTestProject } from './harness.ts';
 
 await useTestProject();

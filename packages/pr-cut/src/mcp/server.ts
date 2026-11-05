@@ -7,10 +7,10 @@ import sharp from 'sharp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { appWindows, pressDialog } from '@ae-mcp/core/bridge/dialogs.ts';
-import { correctTranscript, transcribe, transcriptView, cachedTranscript, TRANSCRIPTS } from '@ae-mcp/core/transcribe/index.ts';
-import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
-import { fromTicksPerFrame, parseTime, secondsToFrames } from '@ae-mcp/core/time/timecode.ts';
+import { appWindows, pressDialog } from '@cc-mcp/core/bridge/dialogs.ts';
+import { correctTranscript, transcribe, transcriptView, cachedTranscript, TRANSCRIPTS } from '@cc-mcp/core/transcribe/index.ts';
+import { findQuote } from '@cc-mcp/core/transcribe/match.ts';
+import { fromTicksPerFrame, parseTime, secondsToFrames } from '@cc-mcp/core/time/timecode.ts';
 import { es, uxp } from '../bridge.ts';
 import { buildCut, type BuildReport } from '../build.ts';
 import { reportText } from '../report.ts';
@@ -24,7 +24,7 @@ import { applyCutEdits, EDIT_OPS_HELP } from '../edit.ts';
 import { tightenSequence } from '../tighten.ts';
 import { libraryTools } from '../library-tools.ts';
 import { audioFinish, deliver, matchShots } from '../finish.ts';
-import { libraryPath } from '@ae-mcp/core/library/db.ts';
+import { libraryPath } from '@cc-mcp/core/library/db.ts';
 
 const server = new McpServer({ name: 'pr-cut', version: '0.1.0' }, {
   instructions: 'pr-cut edits in Premiere Pro: transcript-driven rough cuts, word-level tightening, B-roll, titles (ae-compose .mogrts), music, grade, captions, delivery. Read skills/pr-cut/SKILL.md first. Typical loop: library_search / transcribe → read_transcript → paper edit → build_cut → look at the contact sheet and cut strips → apply_cut_edits (each a new version, one undo) → export. Never edit the user\'s sequences in place: pr-cut builds new sequences and versions.',

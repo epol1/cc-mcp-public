@@ -12,7 +12,7 @@ import { BarChart, StackedBarChart, LineChart, AreaChart, DonutChart, PieChart, 
 import { normalizeData } from '../../src/dsl/dataviz/common.ts';
 import { validateIr } from '../../src/ir/schema.ts';
 import { loadScene } from '../../src/scene/load.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import { libObject } from '../../src/aeclib/index.ts';
 
 // ---------- harness ----------

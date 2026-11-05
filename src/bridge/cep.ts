@@ -2,7 +2,7 @@
 // The client itself is the shared core's HttpBridge.
 import os from 'node:os';
 import path from 'node:path';
-import { HttpBridge } from '@ae-mcp/core/bridge/http.ts';
+import { HttpBridge } from '@cc-mcp/core/bridge/http.ts';
 
 export const BRIDGE_INFO = path.join(os.homedir(), '.ae-compose', 'bridge.json');
 

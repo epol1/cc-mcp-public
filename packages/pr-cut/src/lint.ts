@@ -1,6 +1,6 @@
 // Edit lint: what an editor would flag in a cut, judged on the compiled timeline before and after it lands in
 // Premiere. Same report format as ae-compose (core lint/report.ts): errors, warnings, notes, each with a time range.
-import type { ReportIssue } from '@ae-mcp/core/lint/report.ts';
+import type { ReportIssue } from '@cc-mcp/core/lint/report.ts';
 import type { Compiled } from './plan/compile.ts';
 import { motionScale } from './timeline.ts';
 

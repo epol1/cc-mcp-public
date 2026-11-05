@@ -11,10 +11,10 @@
 //   prc undo [--force]
 import fs from 'node:fs';
 import path from 'node:path';
-import { transcribe, transcriptView } from '@ae-mcp/core/transcribe/index.ts';
-import { addFolder, startWorker, status } from '@ae-mcp/core/library/index.ts';
-import { formatHits, search } from '@ae-mcp/core/library/search.ts';
-import { libraryPath } from '@ae-mcp/core/library/db.ts';
+import { transcribe, transcriptView } from '@cc-mcp/core/transcribe/index.ts';
+import { addFolder, startWorker, status } from '@cc-mcp/core/library/index.ts';
+import { formatHits, search } from '@cc-mcp/core/library/search.ts';
+import { libraryPath } from '@cc-mcp/core/library/db.ts';
 import { buildCut } from './build.ts';
 import { doctor, formatChecks } from './doctor.ts';
 import { applyCutEdits } from './edit.ts';

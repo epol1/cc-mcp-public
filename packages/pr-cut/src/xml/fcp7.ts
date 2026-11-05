@@ -5,8 +5,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { framesToTimecode, ticksPerFrame, timecodeToFrames, xmlRate, type Rate } from '@ae-mcp/core/time/timecode.ts';
-import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
+import { framesToTimecode, ticksPerFrame, timecodeToFrames, xmlRate, type Rate } from '@cc-mcp/core/time/timecode.ts';
+import type { MediaInfo } from '@cc-mcp/core/media/probe.ts';
 import { timelineEnd, type Grade, type TLClip, type Timeline } from '../timeline.ts';
 import { el, parseXml, serialize, setText, txt, type XEl } from './dom.ts';
 

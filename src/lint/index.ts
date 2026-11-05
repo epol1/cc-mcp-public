@@ -4,10 +4,10 @@
 // from rendered frames (./frames.ts). Every issue names the layer and the time range so the agent can fix it.
 
 import { cssBezier } from '../shared/bezier.ts';
-import { STYLE_RULES } from '@ae-mcp/core/motion/types.ts';
-import type { StyleRule } from '@ae-mcp/core/motion/types.ts';
+import { STYLE_RULES } from '@cc-mcp/core/motion/types.ts';
+import type { StyleRule } from '@cc-mcp/core/motion/types.ts';
 import { springUnit } from '../shared/spring.ts';
-import { formatIssues as formatReport } from '@ae-mcp/core/lint/report.ts';
+import { formatIssues as formatReport } from '@cc-mcp/core/lint/report.ts';
 
 export type TextLintRule = 'off-frame' | 'safe-area' | 'overflow' | 'overlap' | 'occlusion' | 'reading-time' | 'missing-font' | 'linear-motion' | 'blank-frame';
 /** Text lint rules plus the style-lint craft rules (src/motion/style.ts), so `ignore` takes either. */

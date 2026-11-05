@@ -9,7 +9,7 @@ export type { Anim, TextUnitsAnim, TextUnitFrom, Vec } from './anim.ts';
 export { control, plus } from './control.ts';
 export { field } from './field.ts';
 export { beatsOf, Audio, BeatMarkers } from './beats.ts';
-export { asset } from '@ae-mcp/core/assets/resolve.ts';
+export { asset } from '@cc-mcp/core/assets/resolve.ts';
 export type { BeatSync } from './beats.ts';
 export { Cloner, line, grid, circle, onPath, scatter, sphere, helix, noise, falloff, stagger, follow, step, colorize, csv } from './cloner.ts';
 export type { ClonerProps, ClonerMotion, Distribution, Effector } from './cloner.ts';

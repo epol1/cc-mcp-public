@@ -9,12 +9,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyEdits, configEdits, relRef, scanRefs } from './source.ts';
 import type { Edit } from './source.ts';
-import { coerceParams, inferParams } from '@ae-mcp/core/templates/params.ts';
-import type { ParamSpec } from '@ae-mcp/core/templates/params.ts';
+import { coerceParams, inferParams } from '@cc-mcp/core/templates/params.ts';
+import type { ParamSpec } from '@cc-mcp/core/templates/params.ts';
 import { brandTokensUsed, readBrand } from '../plan/brand.ts';
 
-export type { ParamSpec, ParamType } from '@ae-mcp/core/templates/params.ts';
-export { PARAM_TYPES, inferParam, inferParams, coerceParams } from '@ae-mcp/core/templates/params.ts';
+export type { ParamSpec, ParamType } from '@cc-mcp/core/templates/params.ts';
+export { PARAM_TYPES, inferParam, inferParams, coerceParams } from '@cc-mcp/core/templates/params.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 /** Recipes shipped with ae-compose. */

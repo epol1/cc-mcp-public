@@ -1,8 +1,8 @@
 // UI kit theme tokens (K1): colors, fonts, radius and a metric scale shared by every UI component. Two built-in
 // themes (dark default, light); override any token, or derive one from brand() tokens. Colors may be control()
 // refs (brand `live` colors): they stay live wherever the kit uses them as a property value.
-import type { ColorSpec } from '@ae-mcp/core/units.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import type { ColorSpec } from '@cc-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import type { ControlRef } from '../control.ts';
 import { isControl } from '../control.ts';
 import type { Brand } from '../brand.ts';

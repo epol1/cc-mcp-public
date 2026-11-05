@@ -1,14 +1,14 @@
 // Edit plan → Timeline. Segments resolve to word ranges, tightening splits them into pieces at real gaps between
 // words (never inside a word), pieces are laid end to end on V1/A1, and B-roll, music, grades, punch-ins, J/L cuts
 // and markers are added around them. Everything is in exact frames on the sequence grid.
-import { parseTime, rate as toRate, secondsToFrames, ticksPerFrame, TICKS_PER_SECOND, type Rate } from '@ae-mcp/core/time/timecode.ts';
-import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
-import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
-import { cachedTranscript } from '@ae-mcp/core/transcribe/index.ts';
-import type { Transcript } from '@ae-mcp/core/transcribe/types.ts';
-import { REFRAMES } from '@ae-mcp/core/deliver/targets.ts';
-import { beatsCached } from '@ae-mcp/core/audio/cached.ts';
-import { beatGrid } from '@ae-mcp/core/audio/beats.ts';
+import { parseTime, rate as toRate, secondsToFrames, ticksPerFrame, TICKS_PER_SECOND, type Rate } from '@cc-mcp/core/time/timecode.ts';
+import type { MediaInfo } from '@cc-mcp/core/media/probe.ts';
+import { findQuote } from '@cc-mcp/core/transcribe/match.ts';
+import { cachedTranscript } from '@cc-mcp/core/transcribe/index.ts';
+import type { Transcript } from '@cc-mcp/core/transcribe/types.ts';
+import { REFRAMES } from '@cc-mcp/core/deliver/targets.ts';
+import { beatsCached } from '@cc-mcp/core/audio/cached.ts';
+import { beatGrid } from '@cc-mcp/core/audio/beats.ts';
 import type { Grade, TLClip, TLMarker, Timeline } from '../timeline.ts';
 import type { MediaResolver } from './media.ts';
 import { parsePlan, type Montage, type Plan, type Segment, type Tighten } from './schema.ts';

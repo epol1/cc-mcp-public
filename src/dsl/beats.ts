@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { Fragment, jsx } from './jsx-runtime.ts';
 import { Footage, CompMarkers } from './primitives.ts';
 import type { FootageProps } from './primitives.ts';
-import { beatGrid, offBeatCuts, snapToBeats } from '@ae-mcp/core/audio/beats.ts';
-import type { BeatAnalysis, BeatOptions } from '@ae-mcp/core/audio/beats.ts';
+import { beatGrid, offBeatCuts, snapToBeats } from '@cc-mcp/core/audio/beats.ts';
+import type { BeatAnalysis, BeatOptions } from '@cc-mcp/core/audio/beats.ts';
 
 export interface BeatSync {
   file: string; bpm: number; confidence: number; beatsPerBar: number;

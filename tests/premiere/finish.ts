@@ -3,9 +3,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { buildCut } from '@ae-mcp/pr-cut/build.ts';
-import { audioFinish, deliver } from '@ae-mcp/pr-cut/finish.ts';
-import { journaled } from '@ae-mcp/pr-cut/undo.ts';
+import { buildCut } from '@cc-mcp/pr-cut/build.ts';
+import { audioFinish, deliver } from '@cc-mcp/pr-cut/finish.ts';
+import { journaled } from '@cc-mcp/pr-cut/undo.ts';
 import { check, done, ROOT, SAMPLE, TEST_DIR, testInterview, useTestProject } from './harness.ts';
 
 await useTestProject();

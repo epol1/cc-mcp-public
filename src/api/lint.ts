@@ -4,7 +4,7 @@ import { callRuntime } from '../bridge/index.ts';
 import { formatIssues, lintRules, LINT_RULES } from '../lint/index.ts';
 import type { LintData, LintIssue, LintOptions, LintRule } from '../lint/index.ts';
 import { blankFrames } from '../lint/frames.ts';
-import { STYLE_RULES } from '@ae-mcp/core/motion/types.ts';
+import { STYLE_RULES } from '@cc-mcp/core/motion/types.ts';
 import { saveLintForPanel } from './panelstate.ts';
 
 export type { LintOptions, LintIssue, LintRule };

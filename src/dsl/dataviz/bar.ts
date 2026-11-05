@@ -6,7 +6,7 @@ import { Fragment, jsx } from '../jsx-runtime.ts';
 import type { AecElement } from '../jsx-runtime.ts';
 import { Fill, Rect, Shape, Text } from '../primitives.ts';
 import { expr } from '../anim.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import { dslWarn } from '../warn.ts';
 import type { EaseName, NumberFormat } from './common.ts';
 import { PALETTE, box, dataDecimals, fitScale, formatNumber, jsFormat, normalizeData, r3, textWidth } from './common.ts';

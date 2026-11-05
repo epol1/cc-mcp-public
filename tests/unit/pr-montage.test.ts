@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
-import { rate } from '@ae-mcp/core/time/timecode.ts';
-import { compilePlan } from '@ae-mcp/pr-cut/plan/compile.ts';
-import type { MediaResolver } from '@ae-mcp/pr-cut/plan/media.ts';
+import type { MediaInfo } from '@cc-mcp/core/media/probe.ts';
+import { rate } from '@cc-mcp/core/time/timecode.ts';
+import { compilePlan } from '@cc-mcp/pr-cut/plan/compile.ts';
+import type { MediaResolver } from '@cc-mcp/pr-cut/plan/media.ts';
 
 /** 16-bit mono WAV: a click on every beat at `bpm`, louder and lower on every 4th (the downbeat). */
 function clickTrack(file: string, bpm: number, seconds: number, sr = 22050) {

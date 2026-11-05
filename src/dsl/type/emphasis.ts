@@ -13,7 +13,7 @@ import type { TextProps } from '../primitives.ts';
 import { expr, perWord } from '../anim.ts';
 import type { TextUnitsAnim } from '../anim.ts';
 import type { ControlRef } from '../control.ts';
-import type { ColorSpec, Time } from '@ae-mcp/core/units.ts';
+import type { ColorSpec, Time } from '@cc-mcp/core/units.ts';
 import type { PseudoEffectDef, PseudoParam } from '../../compile/ffx/pseudo.ts';
 import { dslWarn } from '../warn.ts';
 import { EASE, amountPath, animatorPath, colorParam, fxOf, hexOf, resolveWord, secs, slider } from './common.ts';

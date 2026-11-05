@@ -12,7 +12,7 @@
 import { Fragment, childrenOf, isElement, jsx } from '../jsx-runtime.ts';
 import { Sequence } from '../primitives.ts';
 import { dslWarn } from '../warn.ts';
-import type { Time } from '@ae-mcp/core/units.ts';
+import type { Time } from '@cc-mcp/core/units.ts';
 import { compInfo, expand, sec, withProps } from './core.ts';
 import type { El, TransitionDef, TransitionIO } from './core.ts';
 

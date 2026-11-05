@@ -5,10 +5,10 @@ import path from 'node:path';
 import sharp, { type OverlayOptions } from 'sharp';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { annotateShot, library, LIBRARY_DIR, mediaById, mediaByPath, shotsOf } from '@ae-mcp/core/library/db.ts';
-import { addFolder, startWorker, status } from '@ae-mcp/core/library/index.ts';
-import { formatHits, hitGrid, search } from '@ae-mcp/core/library/search.ts';
-import { cachedTranscript, transcriptView } from '@ae-mcp/core/transcribe/index.ts';
+import { annotateShot, library, LIBRARY_DIR, mediaById, mediaByPath, shotsOf } from '@cc-mcp/core/library/db.ts';
+import { addFolder, startWorker, status } from '@cc-mcp/core/library/index.ts';
+import { formatHits, hitGrid, search } from '@cc-mcp/core/library/search.ts';
+import { cachedTranscript, transcriptView } from '@cc-mcp/core/transcribe/index.ts';
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 interface Helpers { text: (t: string) => Content; image: (f: string, w?: number) => Promise<Content>; wrap: (fn: () => Promise<Content[]>) => Promise<any> }

@@ -6,14 +6,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
-import { loudness } from '@ae-mcp/core/library/index.ts';
+import { loudness } from '@cc-mcp/core/library/index.ts';
 import { lit, runEs } from './bridge.ts';
 import { recordChange } from './undo.ts';
 import { applyCutEdits } from './edit.ts';
 import { exportFrames } from './frames.ts';
 import { inspectSequenceRaw } from './inspect.ts';
 import { exportSequence, projectInfo } from './project.ts';
-import { fromTicksPerFrame } from '@ae-mcp/core/time/timecode.ts';
+import { fromTicksPerFrame } from '@cc-mcp/core/time/timecode.ts';
 import { PRC_HOME } from './importxml.ts';
 import type { BuildReport } from './build.ts';
 

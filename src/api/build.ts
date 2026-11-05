@@ -12,14 +12,14 @@ import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
 import type { LintOptions, LintReport } from './lint.ts';
 import type { SourceLoc } from '../dsl/jsx-runtime.ts';
 import { callRuntime } from '../bridge/index.ts';
-import { writeContactSheet } from '@ae-mcp/core/visual/images.ts';
+import { writeContactSheet } from '@cc-mcp/core/visual/images.ts';
 import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
 import type { MotionOptions, MotionReport } from './motion.ts';
-import { STYLE_RULES } from '@ae-mcp/core/motion/types.ts';
+import { STYLE_RULES } from '@cc-mcp/core/motion/types.ts';
 import { saveLintForPanel } from './panelstate.ts';
-import { resetResolvedRefs, resolvedRefs } from '@ae-mcp/core/assets/resolve.ts';
-import { placeSceneAssets } from '@ae-mcp/core/assets/scene.ts';
-import type { PlacedAsset } from '@ae-mcp/core/assets/scene.ts';
+import { resetResolvedRefs, resolvedRefs } from '@cc-mcp/core/assets/resolve.ts';
+import { placeSceneAssets } from '@cc-mcp/core/assets/scene.ts';
+import type { PlacedAsset } from '@cc-mcp/core/assets/scene.ts';
 
 export const OUT_ROOT = path.join(os.homedir(), '.ae-compose', 'out');
 

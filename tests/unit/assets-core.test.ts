@@ -4,16 +4,16 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { normalizeLicense, licenseRefusal, licenseLabel, licenseFlags } from '@ae-mcp/core/assets/license.ts';
-import { appendCredit, creditLine, creditedIds, creditEntry } from '@ae-mcp/core/assets/credits.ts';
-import { cacheStats, evict, lookup, lookupAny, record, entryDir } from '@ae-mcp/core/assets/cache.ts';
-import { sniff, sameFamily, sanitizeSvg } from '@ae-mcp/core/assets/sniff.ts';
-import { parseAssetRef, isAssetRef } from '@ae-mcp/core/assets/resolve.ts';
-import { redact, apiKey } from '@ae-mcp/core/assets/config.ts';
-import { getJson, request, setTransport } from '@ae-mcp/core/assets/http.ts';
-import { fontNames } from '@ae-mcp/core/assets/fonts.ts';
+import { normalizeLicense, licenseRefusal, licenseLabel, licenseFlags } from '@cc-mcp/core/assets/license.ts';
+import { appendCredit, creditLine, creditedIds, creditEntry } from '@cc-mcp/core/assets/credits.ts';
+import { cacheStats, evict, lookup, lookupAny, record, entryDir } from '@cc-mcp/core/assets/cache.ts';
+import { sniff, sameFamily, sanitizeSvg } from '@cc-mcp/core/assets/sniff.ts';
+import { parseAssetRef, isAssetRef } from '@cc-mcp/core/assets/resolve.ts';
+import { redact, apiKey } from '@cc-mcp/core/assets/config.ts';
+import { getJson, request, setTransport } from '@cc-mcp/core/assets/http.ts';
+import { fontNames } from '@cc-mcp/core/assets/fonts.ts';
 import { tempAssetHome, useFixtures } from './assets-fixtures.ts';
-import type { AssetHit } from '@ae-mcp/core/assets/types.ts';
+import type { AssetHit } from '@cc-mcp/core/assets/types.ts';
 
 const hit = (o: Partial<AssetHit> = {}): AssetHit => ({
   id: 'polyhaven:rubber_duck_toy', source: 'polyhaven', kind: 'model', title: 'Rubber Duck Toy', tags: [], preview: '', page: 'https://polyhaven.com/a/rubber_duck_toy',

@@ -3,8 +3,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { appWindows } from '@ae-mcp/core/bridge/dialogs.ts';
-import { AEC_HOME, TRANSCRIPTS, whisperEngine } from '@ae-mcp/core/transcribe/index.ts';
+import { appWindows } from '@cc-mcp/core/bridge/dialogs.ts';
+import { AEC_HOME, TRANSCRIPTS, whisperEngine } from '@cc-mcp/core/transcribe/index.ts';
 import { es, PR_BRIDGE_INFO } from './bridge.ts';
 
 export interface Check { name: string; ok: boolean; detail: string; fix?: string }

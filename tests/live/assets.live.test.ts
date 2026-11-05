@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { setTransport } from '@ae-mcp/core/assets/http.ts';
-import { adapterContext } from '@ae-mcp/core/assets/context.ts';
-import { ADAPTERS } from '@ae-mcp/core/assets/registry.ts';
-import { licenseRefusal } from '@ae-mcp/core/assets/license.ts';
-import type { AssetKind } from '@ae-mcp/core/assets/types.ts';
+import { setTransport } from '@cc-mcp/core/assets/http.ts';
+import { adapterContext } from '@cc-mcp/core/assets/context.ts';
+import { ADAPTERS } from '@cc-mcp/core/assets/registry.ts';
+import { licenseRefusal } from '@cc-mcp/core/assets/license.ts';
+import type { AssetKind } from '@cc-mcp/core/assets/types.ts';
 
 beforeAll(() => {
   process.env.AEC_LIVE = '1';

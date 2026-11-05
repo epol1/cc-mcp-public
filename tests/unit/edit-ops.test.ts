@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { compileEditOps, PROP_ALIASES } from '../../src/edit/ops.ts';
 import { resolveEasing } from '../../src/shared/easing.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import { parseSvgPath } from '../../src/shared/svgpath.ts';
 
 // fps given, so "45f"-style times never ask After Effects (the test must not depend on AE running).

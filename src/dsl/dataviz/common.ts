@@ -1,7 +1,7 @@
 // Data viz kit (K2) shared pieces: data normalization (numbers, {label, value} rows, multi-series), nice-number
 // scales, number formatting (mirrors the expression library's L.num), the palette, the theme, the easing table the
 // rig's "Easing" popup offers, and the chart box (title-safe by default).
-import type { Time } from '@ae-mcp/core/units.ts';
+import type { Time } from '@cc-mcp/core/units.ts';
 
 /** One value: a number, or a row with a label (and an optional fixed color). */
 export type Datum = number | { label?: string; value: number; color?: string };

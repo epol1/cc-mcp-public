@@ -12,7 +12,7 @@ import { check, done, findComp, es } from '../p5/harness.ts';
 import sharp from 'sharp';
 import { buildScene, exportMogrt, snapshot, undo } from '../../../src/api/index.ts';
 import { callRuntime } from '../../../src/bridge/index.ts';
-import { quickDialogs } from '@ae-mcp/core/bridge/dialogs.ts';
+import { quickDialogs } from '@cc-mcp/core/bridge/dialogs.ts';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const SCENE = path.join(HERE, 'lowerthird-scene.tsx');

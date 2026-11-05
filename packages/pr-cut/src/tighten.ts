@@ -1,7 +1,7 @@
 // tighten: fillers, repeats and long pauses out of a sequence's dialogue. The dry run lists every proposed cut
 // (words and seconds) so the agent can show it before applying; applying is an apply_cut_edits batch.
-import { TICKS_PER_SECOND } from '@ae-mcp/core/time/timecode.ts';
-import { cachedTranscript } from '@ae-mcp/core/transcribe/index.ts';
+import { TICKS_PER_SECOND } from '@cc-mcp/core/time/timecode.ts';
+import { cachedTranscript } from '@cc-mcp/core/transcribe/index.ts';
 import { adoptSequence } from './adopt.ts';
 import type { BuildReport } from './build.ts';
 import { applyCutEdits } from './edit.ts';

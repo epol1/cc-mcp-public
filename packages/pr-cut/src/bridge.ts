@@ -3,9 +3,9 @@
 // back to the agent as a captured image instead of a silent hang.
 import os from 'node:os';
 import path from 'node:path';
-import { HttpBridge } from '@ae-mcp/core/bridge/http.ts';
-import { appWindows, autoAnswerKnown } from '@ae-mcp/core/bridge/dialogs.ts';
-import type { EvalResult } from '@ae-mcp/core/bridge/types.ts';
+import { HttpBridge } from '@cc-mcp/core/bridge/http.ts';
+import { appWindows, autoAnswerKnown } from '@cc-mcp/core/bridge/dialogs.ts';
+import type { EvalResult } from '@cc-mcp/core/bridge/types.ts';
 
 export const PR_BRIDGE_INFO = path.join(os.homedir(), '.ae-compose', 'bridge-pr.json');
 /** pr-cut's working files: generated XML, adopt exports, frames, cut sidecars, the undo journal. */

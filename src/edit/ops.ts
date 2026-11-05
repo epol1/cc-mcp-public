@@ -3,7 +3,7 @@
 // ("ADBE Transform Group/ADBE Position", "Effects/Glow/Glow Radius", "Contents/Card/Contents/Fill 1/Color").
 import { z } from 'zod';
 import { resolveEasing } from '../shared/easing.ts';
-import { parseColor, parseTime } from '@ae-mcp/core/units.ts';
+import { parseColor, parseTime } from '@cc-mcp/core/units.ts';
 import { parseSvgPath } from '../shared/svgpath.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
 import { curveKnots, knotsToKeys } from '../compile/keys.ts';
@@ -12,8 +12,8 @@ import { ControlRegistry } from '../compile/controls.ts';
 import { gradientFfx } from '../compile/gradients.ts';
 import { withLib } from '../aeclib/index.ts';
 import { callRuntime } from '../bridge/index.ts';
-import { sampleScreenColor } from '@ae-mcp/core/visual/keycolor.ts';
-import type { ScreenSample } from '@ae-mcp/core/visual/keycolor.ts';
+import { sampleScreenColor } from '@cc-mcp/core/visual/keycolor.ts';
+import type { ScreenSample } from '@cc-mcp/core/visual/keycolor.ts';
 import os from 'node:os';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';

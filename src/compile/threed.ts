@@ -1,7 +1,7 @@
 // 3D lowering: cameras, lights, materials, geometry; and feature detection for the renderer table.
 import { isAnim } from '../dsl/anim.ts';
 import { isControl } from '../dsl/control.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import type { Feature } from './renderers.ts';
 import type { PropSpec, ValueCtx } from './values.ts';
 import { lowerValue, TOL } from './values.ts';

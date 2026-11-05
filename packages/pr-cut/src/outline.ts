@@ -3,9 +3,9 @@
 // Clips get path ids ("V1/3") and, for sequences pr-cut built, their segment ids ("seg2.1").
 import fs from 'node:fs';
 import path from 'node:path';
-import { clock, framesToTimecode, fromTicksPerFrame, ticksToSeconds } from '@ae-mcp/core/time/timecode.ts';
-import { cachedTranscript } from '@ae-mcp/core/transcribe/index.ts';
-import type { Transcript } from '@ae-mcp/core/transcribe/types.ts';
+import { clock, framesToTimecode, fromTicksPerFrame, ticksToSeconds } from '@cc-mcp/core/time/timecode.ts';
+import { cachedTranscript } from '@cc-mcp/core/transcribe/index.ts';
+import type { Transcript } from '@cc-mcp/core/transcribe/types.ts';
 import { CUTS_DIR } from './build.ts';
 import { inspectSequenceRaw, type PrClip, type PrSequence } from './inspect.ts';
 

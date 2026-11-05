@@ -3,9 +3,9 @@
 // track) live, save the plan next to the sequence, then return a contact sheet, lint and the ids.
 import fs from 'node:fs';
 import path from 'node:path';
-import { framesToTimecode, ticksPerFrame } from '@ae-mcp/core/time/timecode.ts';
-import { captionsFromWords, toSrt } from '@ae-mcp/core/text/captions.ts';
-import { formatIssues, summarizeIssues } from '@ae-mcp/core/lint/report.ts';
+import { framesToTimecode, ticksPerFrame } from '@cc-mcp/core/time/timecode.ts';
+import { captionsFromWords, toSrt } from '@cc-mcp/core/text/captions.ts';
+import { formatIssues, summarizeIssues } from '@cc-mcp/core/lint/report.ts';
 import { lit, nativePath, runEs } from './bridge.ts';
 import { importTimeline, PRC_HOME } from './importxml.ts';
 import { cutStrips, sequenceContactSheet } from './frames.ts';

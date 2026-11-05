@@ -3,7 +3,7 @@
 import path from 'node:path';
 import { z } from 'zod';
 import { findRecipe, formatRecipe, instantiateRecipe, listRecipes, recipeDirs, saveRecipe } from './index.ts';
-import { PARAM_TYPES } from '@ae-mcp/core/templates/params.ts';
+import { PARAM_TYPES } from '@cc-mcp/core/templates/params.ts';
 
 export const SAVE_RECIPE_DESCRIPTION = 'Save a finished scene .tsx as a reusable recipe: the scene plus the modules and assets it reaches by relative path (brand.ts, logos, CSVs; big footage is linked, not copied), a params schema inferred from config.params, its live controls and named scenes, and optional thumbnails (contact sheet paths). Give an intent sentence and tags so it can be found later. Saves to ~/.ae-compose/recipes unless `dir` is given.';
 export const LIST_RECIPES_DESCRIPTION = 'Search the recipe library (shipped recipes plus saved ones) by intent, tags and name, e.g. "kinetic title", "lower third interview", "bar chart". Returns each recipe with its params (types and descriptions), controls, size, duration and thumbnails. Use instantiate_recipe to make a new scene from one.';

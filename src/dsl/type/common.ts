@@ -1,9 +1,9 @@
 // Shared helpers for the typography kit (K3): the frame a component lays out in, approximate text widths for
 // build-time line breaking, rig-effect definitions, and expression snippets (ES3-safe, so they also run under
 // AE's legacy ExtendScript engine) that read a text layer's live Source Text.
-import { approxWidth } from '@ae-mcp/core/text/measure.ts';
-import { parseColor, parseTime } from '@ae-mcp/core/units.ts';
-import type { ColorSpec, Time } from '@ae-mcp/core/units.ts';
+import { approxWidth } from '@cc-mcp/core/text/measure.ts';
+import { parseColor, parseTime } from '@cc-mcp/core/units.ts';
+import type { ColorSpec, Time } from '@cc-mcp/core/units.ts';
 import type { ControlRef } from '../control.ts';
 import { isControl } from '../control.ts';
 import type { PseudoParam } from '../../compile/ffx/pseudo.ts';

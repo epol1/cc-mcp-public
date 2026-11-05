@@ -32,7 +32,7 @@ export async function loadScene(input: { file?: string; source?: string; cwd?: s
     jsxDev: true,
     jsxImportSource: 'ae-compose',
     // The shared core is a workspace package; bundle it from source (the bundle runs from a temp folder with no node_modules).
-    alias: { 'ae-compose/jsx-dev-runtime': JSX, 'ae-compose/jsx-runtime': JSX, 'ae-compose': DSL, '@ae-mcp/core': CORE },
+    alias: { 'ae-compose/jsx-dev-runtime': JSX, 'ae-compose/jsx-runtime': JSX, 'ae-compose': DSL, '@cc-mcp/core': CORE },
     sourcemap: 'inline',
     packages: 'external',
     logLevel: 'silent',

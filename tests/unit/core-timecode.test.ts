@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   TICKS_PER_SECOND, clock, fps, framesToSeconds, framesToTicks, framesToTimecode, fromTicksPerFrame, parseTime, rate,
   secondsToFrames, ticksPerFrame, ticksToFrames, timecodeToFrames, xmlRate,
-} from '@ae-mcp/core/time/timecode.ts';
+} from '@cc-mcp/core/time/timecode.ts';
 
 const R = {
   r23976: rate('23.976'), r24: rate(24), r25: rate(25), r2997: rate(29.97), r30: rate(30), r50: rate(50), r5994: rate('59.94'), r60: rate(60),

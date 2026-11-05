@@ -1,13 +1,13 @@
 // Spec for pr-cut's compiler, interchange writer, adopt and lint, with synthetic media (no Premiere).
 import { describe, expect, it } from 'vitest';
-import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
-import { buildTranscript } from '@ae-mcp/core/transcribe/index.ts';
-import { rate, ticksPerFrame, TICKS_PER_SECOND } from '@ae-mcp/core/time/timecode.ts';
-import { compilePlan } from '@ae-mcp/pr-cut/plan/compile.ts';
-import type { MediaResolver } from '@ae-mcp/pr-cut/plan/media.ts';
-import { writeFcp7, dbToGain, pathUrl } from '@ae-mcp/pr-cut/xml/fcp7.ts';
-import { adoptXml } from '@ae-mcp/pr-cut/adopt.ts';
-import { lintCut } from '@ae-mcp/pr-cut/lint.ts';
+import type { MediaInfo } from '@cc-mcp/core/media/probe.ts';
+import { buildTranscript } from '@cc-mcp/core/transcribe/index.ts';
+import { rate, ticksPerFrame, TICKS_PER_SECOND } from '@cc-mcp/core/time/timecode.ts';
+import { compilePlan } from '@cc-mcp/pr-cut/plan/compile.ts';
+import type { MediaResolver } from '@cc-mcp/pr-cut/plan/media.ts';
+import { writeFcp7, dbToGain, pathUrl } from '@cc-mcp/pr-cut/xml/fcp7.ts';
+import { adoptXml } from '@cc-mcp/pr-cut/adopt.ts';
+import { lintCut } from '@cc-mcp/pr-cut/lint.ts';
 import { words } from './helpers/words.ts';
 
 const R = rate('23.976');

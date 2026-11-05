@@ -6,8 +6,8 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tempAssetHome } from './assets-fixtures.ts';
-import { buildLocalIndex, loadLocalIndex, local, localIndexFile, localKindOf, localRoots, searchLocalIndex, tokens } from '@ae-mcp/core/assets/adapters/local.ts';
-import type { AdapterContext } from '@ae-mcp/core/assets/types.ts';
+import { buildLocalIndex, loadLocalIndex, local, localIndexFile, localKindOf, localRoots, searchLocalIndex, tokens } from '@cc-mcp/core/assets/adapters/local.ts';
+import type { AdapterContext } from '@cc-mcp/core/assets/types.ts';
 
 const ctx: AdapterContext = { getJson: async () => { throw new Error('no network'); }, getText: async () => { throw new Error('no network'); }, key: () => undefined };
 

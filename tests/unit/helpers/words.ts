@@ -1,5 +1,5 @@
 // Synthetic transcript words for pr-cut and transcript specs.
-import type { Word } from '@ae-mcp/core/transcribe/types.ts';
+import type { Word } from '@cc-mcp/core/transcribe/types.ts';
 
 /** Words from "text" with a 0.3 s word and a 0.1 s gap; "|" inserts a 1.5 s pause. */
 export function words(text: string): Word[] {

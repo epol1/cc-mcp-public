@@ -168,7 +168,7 @@ async function main() {
         const r = await A.fetchAssetTool({ id: pos[1], variant: flags.variant as string, import: !flags['no-import'], install: !!flags.install });
         out(A.fetchSummary(r), r);
       } else if (pos[0] === 'index') {
-        const { buildLocalIndex } = await import('@ae-mcp/core/assets/adapters/local.ts');
+        const { buildLocalIndex } = await import('@cc-mcp/core/assets/adapters/local.ts');
         const r = await buildLocalIndex({ force: true });
         out(r.roots.map((x: any) => `${x.ok ? '✔' : '✘'} ${x.root}: ${x.files} files in ${x.ms} ms${x.truncated ? ' (sampled)' : ''}${x.error ? ' — ' + x.error : ''}`).join('\n'), r);
       } else throw new Error('usage: aec assets find <query> | fetch <id> | index');

@@ -6,8 +6,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aec-lib-'));
 process.env.AEC_LIBRARY_DIR = dir;
-const db = await import('@ae-mcp/core/library/db.ts');
-const { search, formatHits } = await import('@ae-mcp/core/library/search.ts');
+const db = await import('@cc-mcp/core/library/db.ts');
+const { search, formatHits } = await import('@cc-mcp/core/library/search.ts');
 
 beforeAll(() => {
   const iv = db.upsertMedia({ hash: 'aaa111', path: 'D:/shoot/ana.mp4', name: 'ana.mp4', folder: 'D:/shoot', kind: 'video', duration: 1800, status: 'done', role: 'interview', width: 1920, height: 1080, orientation: 'horizontal' });

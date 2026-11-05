@@ -5,8 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CepBackend } from './cep.ts';
 import { AfterFxBackend } from './afterfx.ts';
-import { aeWindows, autoAnswerKnown, pressDialog } from '@ae-mcp/core/bridge/dialogs.ts';
-import type { Backend, EvalResult } from '@ae-mcp/core/bridge/types.ts';
+import { aeWindows, autoAnswerKnown, pressDialog } from '@cc-mcp/core/bridge/dialogs.ts';
+import type { Backend, EvalResult } from '@cc-mcp/core/bridge/types.ts';
 import { es3String, toEs3Literal } from '../codegen/literal.ts';
 import { parse as parseJs } from 'acorn';
 
@@ -16,7 +16,7 @@ export function assertEs3(code: string): void {
   catch (e: any) { const at = e.pos ?? 0; throw new Error(`generated request is not valid ES3 (${e.message}) near: ${code.slice(Math.max(0, at - 60), at + 60)}`); }
 }
 
-export type { Backend, EvalResult, DialogInfo } from '@ae-mcp/core/bridge/types.ts';
+export type { Backend, EvalResult, DialogInfo } from '@cc-mcp/core/bridge/types.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const RUNTIME_FILE = path.join(ROOT, 'dist/runtime/aec-runtime.jsx');

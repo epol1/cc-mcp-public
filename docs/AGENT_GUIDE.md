@@ -24,7 +24,7 @@ This is for AI agents (and humans) working **on** this repository. To *use* ae-c
 
 ## Code layout and conventions
 See `docs/ARCHITECTURE.md` §1 and `docs/PRCUT.md` §1. In short:
-- Workspace packages: `packages/core` (`@ae-mcp/core`: code both tools share: bridge contract, watchdog, visual, captions, beats, motion, lint report, assets, transcription, media library, timecode) and `packages/pr-cut` (`@ae-mcp/pr-cut`: the Premiere tool). ae-compose itself is the root package in `src/`. Import shared code as `@ae-mcp/core/<path>.ts`; scenes bundle it through an esbuild alias (`src/scene/load.ts`).
+- Workspace packages: `packages/core` (`@cc-mcp/core`: code both tools share: bridge contract, watchdog, visual, captions, beats, motion, lint report, assets, transcription, media library, timecode) and `packages/pr-cut` (`@cc-mcp/pr-cut`: the Premiere tool). ae-compose itself is the root package in `src/`. Import shared code as `@cc-mcp/core/<path>.ts`; scenes bundle it through an esbuild alias (`src/scene/load.ts`).
 - `src/shared` holds pure TS that runs in **both** Node and the ES3 runtime. It must follow the ES3 rules in `docs/research/toolchain.md` §6.8: no getters/setters, no async, no generators, no `JSON`/`Map`/`Set`/`Object.keys`/`[].map` (use the helpers).
 - `src/runtime` is ES3-only code compiled by Babel + Rollup. `src/**` outside those two is Node 22 TS.
 - Keep modules small and single-purpose, with explicit types at boundaries and a short header comment saying what the module is for.

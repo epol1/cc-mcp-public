@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { afterAll, describe, expect, it } from 'vitest';
-import { extractZip, listZip, unsafeZipName } from '@ae-mcp/core/assets/zip.ts';
-import { externalUris, imageMime, isSelfContained, packGltf, readGlb, readGlbJson } from '@ae-mcp/core/assets/glb.ts';
+import { extractZip, listZip, unsafeZipName } from '@cc-mcp/core/assets/zip.ts';
+import { externalUris, imageMime, isSelfContained, packGltf, readGlb, readGlbJson } from '@cc-mcp/core/assets/glb.ts';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'aec-zipglb-'));
 let n = 0;

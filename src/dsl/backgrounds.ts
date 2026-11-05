@@ -13,8 +13,8 @@ import type { LayerProps } from './primitives.ts';
 import { expr } from './anim.ts';
 import type { ControlRef } from './control.ts';
 import { isControl } from './control.ts';
-import type { ColorSpec } from '@ae-mcp/core/units.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import type { ColorSpec } from '@cc-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import type { PseudoEffectDef, PseudoParam } from '../compile/ffx/pseudo.ts';
 import { ParticleWorld, seedFrom } from './particles.ts';
 

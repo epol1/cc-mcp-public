@@ -10,7 +10,7 @@ import type { TextProps } from '../primitives.ts';
 import { keys, tween } from '../anim.ts';
 import type { Anim, TextUnitsAnim } from '../anim.ts';
 import type { EasingSpec } from '../../shared/easing.ts';
-import type { Time } from '@ae-mcp/core/units.ts';
+import type { Time } from '@cc-mcp/core/units.ts';
 import type { PseudoEffectDef } from '../../compile/ffx/pseudo.ts';
 import { dslWarn } from '../warn.ts';
 import { EASE, SOURCE_TEXT, amountPath, animatorPath, checkbox, secs, slider, textOf } from './common.ts';

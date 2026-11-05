@@ -1,7 +1,7 @@
 // Live controls: control("Title Delay", 0.2) marks a value as tweakable in AE without rebuilding.
 // Compiles to an expression control on the scene's "Controls" null (plus an Essential Graphics entry),
 // and the animation/property reads it through an expression.
-import type { ColorSpec } from '@ae-mcp/core/units.ts';
+import type { ColorSpec } from '@cc-mcp/core/units.ts';
 
 export type ControlKind = 'slider' | 'angle' | 'checkbox' | 'color' | 'point' | 'point3d' | 'dropdown' | 'layer';
 

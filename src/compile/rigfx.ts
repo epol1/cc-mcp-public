@@ -6,7 +6,7 @@ import type { PseudoEffectDef, PseudoParam } from './ffx/pseudo.ts';
 import { pseudoEffect } from './ffx/pseudo.ts';
 import type { PropSpec, ValueCtx } from './values.ts';
 import { lowerValue, TOL } from './values.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import { isAnim } from '../dsl/anim.ts';
 import { isControl } from '../dsl/control.ts';
 

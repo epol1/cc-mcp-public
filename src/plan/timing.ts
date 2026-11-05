@@ -2,8 +2,8 @@
 // same timing the scaffold writes (title reveal per word, sublines after the title lands, exits anchored to the
 // beat's end, visuals on a spring), so the plan checks and the built scene agree. Type sizes and line breaks
 // follow SKILL.md §6.7 for the canvas (16:9, 9:16, square), measured with the approximate text metrics.
-import { approxWidth } from '@ae-mcp/core/text/measure.ts';
-import { breakLines } from '@ae-mcp/core/text/linebreak.ts';
+import { approxWidth } from '@cc-mcp/core/text/measure.ts';
+import { breakLines } from '@cc-mcp/core/text/linebreak.ts';
 import type { Beat, BeatSheet, ElementRole, PlanBeat, PlanElement, PlanIssue, PlanTimeline } from './types.ts';
 import { HARD_CUTS } from './types.ts';
 

@@ -2,8 +2,8 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { probe, type MediaInfo } from '@ae-mcp/core/media/probe.ts';
-import { cachedTranscript, transcribe, type Transcript } from '@ae-mcp/core/transcribe/index.ts';
+import { probe, type MediaInfo } from '@cc-mcp/core/media/probe.ts';
+import { cachedTranscript, transcribe, type Transcript } from '@cc-mcp/core/transcribe/index.ts';
 
 const probes = new Map<string, Promise<MediaInfo>>();
 

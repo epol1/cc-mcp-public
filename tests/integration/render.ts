@@ -9,7 +9,7 @@ import path from 'node:path';
 import { buildScene } from '../../src/api/build.ts';
 import { inspect, renderComp, undo } from '../../src/api/index.ts';
 import { evalAE } from '../../src/bridge/index.ts';
-import { aeWindows } from '@ae-mcp/core/bridge/dialogs.ts';
+import { aeWindows } from '@cc-mcp/core/bridge/dialogs.ts';
 
 let fails = 0;
 const check = (ok: boolean, msg: string) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}`); if (!ok) fails++; };

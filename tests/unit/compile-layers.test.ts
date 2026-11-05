@@ -20,7 +20,7 @@ import {
   Effect, Mask, MotionBlur, tween,
 } from '../../src/dsl/index.ts';
 import { compileScene } from '../../src/compile/compile.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import { parseSvgPath } from '../../src/shared/svgpath.ts';
 
 afterAll(() => {

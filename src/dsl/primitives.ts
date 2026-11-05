@@ -4,7 +4,7 @@
 import type { Anim, TextUnitsAnim, Vec } from './anim.ts';
 import type { ControlRef } from './control.ts';
 import type { EasingSpec } from '../shared/easing.ts';
-import type { ColorSpec, Time } from '@ae-mcp/core/units.ts';
+import type { ColorSpec, Time } from '@cc-mcp/core/units.ts';
 import type { FieldRef } from './field.ts';
 import { jsx } from './jsx-runtime.ts';
 

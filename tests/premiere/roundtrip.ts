@@ -2,11 +2,11 @@
 // back with every clip edge within one frame (exact in ticks), plus transitions, grade, motion, levels, markers,
 // and exactly one undo step. Run: npx tsx tests/premiere/roundtrip.ts [fps]  (default: every supported rate)
 import path from 'node:path';
-import { probe } from '@ae-mcp/core/media/probe.ts';
-import { framesToTicks, rate, secondsToFrames, ticksPerFrame } from '@ae-mcp/core/time/timecode.ts';
-import { importTimeline } from '@ae-mcp/pr-cut/importxml.ts';
-import { inspectSequenceRaw } from '@ae-mcp/pr-cut/inspect.ts';
-import type { Timeline } from '@ae-mcp/pr-cut/timeline.ts';
+import { probe } from '@cc-mcp/core/media/probe.ts';
+import { framesToTicks, rate, secondsToFrames, ticksPerFrame } from '@cc-mcp/core/time/timecode.ts';
+import { importTimeline } from '@cc-mcp/pr-cut/importxml.ts';
+import { inspectSequenceRaw } from '@cc-mcp/pr-cut/inspect.ts';
+import type { Timeline } from '@cc-mcp/pr-cut/timeline.ts';
 import { check as harnessCheck, done, useTestProject } from './harness.ts';
 
 const SAMPLE = 'C:/Users/Public/Documents/Adobe/Premiere Pro/26.0/Sample Media';

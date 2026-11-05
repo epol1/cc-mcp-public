@@ -3,12 +3,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { buildCut } from '@ae-mcp/pr-cut/build.ts';
-import { matchShots } from '@ae-mcp/pr-cut/finish.ts';
-import { exportFrames } from '@ae-mcp/pr-cut/frames.ts';
-import { inspectSequenceRaw } from '@ae-mcp/pr-cut/inspect.ts';
-import { fromTicksPerFrame } from '@ae-mcp/core/time/timecode.ts';
-import { journaled } from '@ae-mcp/pr-cut/undo.ts';
+import { buildCut } from '@cc-mcp/pr-cut/build.ts';
+import { matchShots } from '@cc-mcp/pr-cut/finish.ts';
+import { exportFrames } from '@cc-mcp/pr-cut/frames.ts';
+import { inspectSequenceRaw } from '@cc-mcp/pr-cut/inspect.ts';
+import { fromTicksPerFrame } from '@cc-mcp/core/time/timecode.ts';
+import { journaled } from '@cc-mcp/pr-cut/undo.ts';
 import { check, done, SAMPLE, TEST_DIR, useTestProject } from './harness.ts';
 
 await useTestProject();

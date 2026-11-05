@@ -34,11 +34,17 @@ if (process.argv.includes('--remove')) {
 }
 if (!fs.existsSync(path.join(src, 'CSXS', 'manifest.xml'))) { console.error('extension not found at', src); process.exit(1); }
 fs.mkdirSync(dir, { recursive: true });
-if (fs.existsSync(dst)) {
-  const real = fs.realpathSync(dst);
-  if (path.resolve(real) === path.resolve(src)) { console.log('already installed:', dst, '→', src); process.exit(0); }
-  console.error(`${dst} exists and points elsewhere (${real}); remove it first (node scripts/install-cep.mjs --remove)`);
-  process.exit(1);
+// An existing junction: keep it when it points here; re-point it when it points elsewhere or nowhere (the repo moved).
+// Only a junction is ever replaced (rmdir removes the link, never its target); a real folder there is left alone.
+let link = null;
+try { link = fs.lstatSync(dst); } catch { /* not there */ }
+if (link) {
+  let real = null;
+  try { real = fs.realpathSync(dst); } catch { /* dangling */ }
+  if (real && path.resolve(real) === path.resolve(src)) { console.log('already installed:', dst, '→', src); process.exit(0); }
+  if (!link.isSymbolicLink()) { console.error(`${dst} is a real folder, not a link; move it away first`); process.exit(1); }
+  execFileSync('cmd', ['/c', 'rmdir', dst]);
+  console.log(`re-pointing ${dst} (was ${real ?? 'a missing folder'})`);
 }
 execFileSync('cmd', ['/c', 'mklink', '/J', dst, src], { stdio: 'inherit' });
 console.log('installed:', dst, '→', src);

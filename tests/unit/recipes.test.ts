@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { applyEdits, configEdits, findSceneConfig, objectProps, scanRefs, toLiteral } from '../../src/recipes/source.ts';
-import { coerceParams, inferParam } from '@ae-mcp/core/templates/params.ts';
+import { coerceParams, inferParam } from '@cc-mcp/core/templates/params.ts';
 import { allRecipes, findRecipe, instantiateRecipe, listRecipes, saveRecipe, SHIPPED_RECIPES, slugify } from '../../src/recipes/index.ts';
 import { instantiateRecipeTool, listRecipesTool, saveRecipeTool } from '../../src/recipes/tool.ts';
 import { loadScene } from '../../src/scene/load.ts';

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { lit, nativePath, runEs } from '@ae-mcp/pr-cut/bridge.ts';
+import { lit, nativePath, runEs } from '@cc-mcp/pr-cut/bridge.ts';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const SAMPLE = 'C:/Users/Public/Documents/Adobe/Premiere Pro/26.0/Sample Media';

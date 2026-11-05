@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { findAfterEffects } from '../bridge/locate.ts';
 import { CepBackend, BRIDGE_INFO } from '../bridge/cep.ts';
 import { callRuntime, RUNTIME_FILE } from '../bridge/index.ts';
-import { aeWindows } from '@ae-mcp/core/bridge/dialogs.ts';
+import { aeWindows } from '@cc-mcp/core/bridge/dialogs.ts';
 
 export interface Check { name: string; ok: boolean; detail: string; fix?: string; warn?: boolean }
 

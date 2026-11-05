@@ -1,7 +1,7 @@
 // The resolved timeline pr-cut writes into Premiere: every clip with exact source ticks and sequence frames.
 // Edit plans (plan/schema.ts) compile to this; the FCP7 writer (xml/fcp7.ts) and the inspector speak it.
-import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
-import type { Rate } from '@ae-mcp/core/time/timecode.ts';
+import type { MediaInfo } from '@cc-mcp/core/media/probe.ts';
+import type { Rate } from '@cc-mcp/core/time/timecode.ts';
 
 export interface Grade {
   exposure?: number; contrast?: number; highlights?: number; shadows?: number; whites?: number; blacks?: number;

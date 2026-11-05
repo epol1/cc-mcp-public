@@ -1,13 +1,13 @@
 // Keyless asset adapters (Phase 6): Iconify, Poly Haven, ambientCG and Fontsource parse the recorded API responses in
 // tests/fixtures/assets/ (2026-11-05) into hits with ids, previews, licenses, credits and variants. No network.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { adapterContext } from '@ae-mcp/core/assets/context.ts';
-import { setTransport } from '@ae-mcp/core/assets/http.ts';
-import { licenseRefusal } from '@ae-mcp/core/assets/license.ts';
-import { iconify } from '@ae-mcp/core/assets/adapters/iconify.ts';
-import { polyhaven } from '@ae-mcp/core/assets/adapters/polyhaven.ts';
-import { ambientcg } from '@ae-mcp/core/assets/adapters/ambientcg.ts';
-import { fontsource } from '@ae-mcp/core/assets/adapters/fontsource.ts';
+import { adapterContext } from '@cc-mcp/core/assets/context.ts';
+import { setTransport } from '@cc-mcp/core/assets/http.ts';
+import { licenseRefusal } from '@cc-mcp/core/assets/license.ts';
+import { iconify } from '@cc-mcp/core/assets/adapters/iconify.ts';
+import { polyhaven } from '@cc-mcp/core/assets/adapters/polyhaven.ts';
+import { ambientcg } from '@cc-mcp/core/assets/adapters/ambientcg.ts';
+import { fontsource } from '@cc-mcp/core/assets/adapters/fontsource.ts';
 import { fixture, tempAssetHome, useFixtures } from './assets-fixtures.ts';
 import type { Route } from './assets-fixtures.ts';
 

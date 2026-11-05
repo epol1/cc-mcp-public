@@ -1,5 +1,5 @@
 {
-  "name": "ae-compose",
+  "name": "cc-mcp",
   "version": "0.0.2",
   "private": true,
   "description": "TSX motion-design compiler + live bridge, MCP server and CLI that builds native, editable After Effects comps",
@@ -26,6 +26,7 @@
     "test:pr": "vitest run tests/premiere --no-file-parallelism",
     "postinstall": "node build/runtime.mjs",
     "install:cep": "node scripts/install-cep.mjs",
+    "setup": "node scripts/setup.mjs",
     "test:live": "vitest run tests/live --no-file-parallelism"
   },
   "engines": {
@@ -51,8 +52,8 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
-    "@ae-mcp/core": "workspace:*",
-    "@ae-mcp/pr-cut": "workspace:*",
+    "@cc-mcp/core": "workspace:*",
+    "@cc-mcp/pr-cut": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "acorn": "8.19.0",
     "chokidar": "^6.0.0",

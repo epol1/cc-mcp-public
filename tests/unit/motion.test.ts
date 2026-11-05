@@ -6,8 +6,8 @@ import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import { resolveEasing } from '../../src/shared/easing.ts';
 import { springProgress } from '../../src/shared/spring.ts';
-import { analyzeMotion, classifyProgress, gif, motionStrip, motionSummary, realtimeFps, speedGraph, speedGraphSvg } from '@ae-mcp/core/motion/index.ts';
-import type { MotionData, MotionLayer } from '@ae-mcp/core/motion/index.ts';
+import { analyzeMotion, classifyProgress, gif, motionStrip, motionSummary, realtimeFps, speedGraph, speedGraphSvg } from '@cc-mcp/core/motion/index.ts';
+import type { MotionData, MotionLayer } from '@cc-mcp/core/motion/index.ts';
 
 // Synthetic samples: a layer is a function of time → [x, y, scaleX, scaleY, rotation, opacity] or null (inactive).
 type Pose = [number, number, number, number, number, number];

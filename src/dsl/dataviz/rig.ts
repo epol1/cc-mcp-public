@@ -4,7 +4,7 @@
 // the chart (including its animated build) follows. This module builds that definition and the expression snippets
 // the components share.
 import type { PseudoEffectDef, PseudoParam } from '../../compile/ffx/pseudo.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
 import type { ChartAnimation, ChartData, EaseName, NiceScale } from './common.ts';
 import { EASES, PALETTE, easeIndex, paramName } from './common.ts';
 

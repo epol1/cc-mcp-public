@@ -2,15 +2,15 @@
 // fetch = download → project footage folder → import (one undo step) → CREDITS.md, plus the font install path.
 import path from 'node:path';
 import { callRuntime, evalAE } from '../bridge/index.ts';
-import { findAssets, hitLines } from '@ae-mcp/core/assets/find.ts';
-import { thumbnailGrid } from '@ae-mcp/core/assets/grid.ts';
-import { fetchAsset } from '@ae-mcp/core/assets/fetch.ts';
-import type { FetchResult } from '@ae-mcp/core/assets/fetch.ts';
-import { aeFontCheckScript, installFonts } from '@ae-mcp/core/assets/fonts.ts';
-import { cacheStats } from '@ae-mcp/core/assets/cache.ts';
-import { sourceStatus } from '@ae-mcp/core/assets/registry.ts';
+import { findAssets, hitLines } from '@cc-mcp/core/assets/find.ts';
+import { thumbnailGrid } from '@cc-mcp/core/assets/grid.ts';
+import { fetchAsset } from '@cc-mcp/core/assets/fetch.ts';
+import type { FetchResult } from '@cc-mcp/core/assets/fetch.ts';
+import { aeFontCheckScript, installFonts } from '@cc-mcp/core/assets/fonts.ts';
+import { cacheStats } from '@cc-mcp/core/assets/cache.ts';
+import { sourceStatus } from '@cc-mcp/core/assets/registry.ts';
 import { OUT_ROOT } from './build.ts';
-import type { SearchQuery } from '@ae-mcp/core/assets/types.ts';
+import type { SearchQuery } from '@cc-mcp/core/assets/types.ts';
 
 export async function findAssetsTool(q: SearchQuery & { sources?: string[] }): Promise<{ text: string; grid?: string }> {
   const r = await findAssets(q);

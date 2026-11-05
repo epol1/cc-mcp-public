@@ -12,9 +12,9 @@ import path from 'node:path';
 import { check, done, es, buildUndoCheck } from '../p5/harness.ts';
 import { buildScene } from '../../../src/api/index.ts';
 import { fetchAssetTool } from '../../../src/api/assets.ts';
-import { creditedIds } from '@ae-mcp/core/assets/credits.ts';
+import { creditedIds } from '@cc-mcp/core/assets/credits.ts';
 import { callRuntime } from '../../../src/bridge/index.ts';
-import { clickDialogButton, pressDialog, quickDialogs, setDialogText } from '@ae-mcp/core/bridge/dialogs.ts';
+import { clickDialogButton, pressDialog, quickDialogs, setDialogText } from '@cc-mcp/core/bridge/dialogs.ts';
 
 // A fresh folder per run: AE keeps handles on footage of a closed project (an older run's MP4 can't be deleted).
 const RUN = path.join(os.tmpdir(), 'aec-p6', String(Date.now()));

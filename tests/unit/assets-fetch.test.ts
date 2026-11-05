@@ -6,10 +6,10 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { fetchAsset, fromCache, toCache, MAX_BYTES, cachedHit, projectAssetDir } from '@ae-mcp/core/assets/fetch.ts';
-import { resolveAssetRef, resolvedRefs, resetResolvedRefs, resolveSrc } from '@ae-mcp/core/assets/resolve.ts';
-import { placeSceneAssets } from '@ae-mcp/core/assets/scene.ts';
-import { creditedIds } from '@ae-mcp/core/assets/credits.ts';
+import { fetchAsset, fromCache, toCache, MAX_BYTES, cachedHit, projectAssetDir } from '@cc-mcp/core/assets/fetch.ts';
+import { resolveAssetRef, resolvedRefs, resetResolvedRefs, resolveSrc } from '@cc-mcp/core/assets/resolve.ts';
+import { placeSceneAssets } from '@cc-mcp/core/assets/scene.ts';
+import { creditedIds } from '@cc-mcp/core/assets/credits.ts';
 import { tempAssetHome, useFixtures } from './assets-fixtures.ts';
 
 /** A minimal stored (method 0) ZIP. */
@@ -175,7 +175,7 @@ describe('review fixes (Phase 6 reviewer)', () => {
   });
 
   it('only the local source may hand in file: URLs', async () => {
-    const { iconify } = await import('@ae-mcp/core/assets/adapters/iconify.ts');
+    const { iconify } = await import('@cc-mcp/core/assets/adapters/iconify.ts');
     const real = iconify.get;
     iconify.get = async (id, ctx) => ({ ...(await real.call(iconify, id, ctx)), variants: [{ label: 'svg', format: 'svg', url: 'file://evil.host/share/x.svg' }] });
     try {
@@ -185,8 +185,8 @@ describe('review fixes (Phase 6 reviewer)', () => {
   });
 
   it('fetch results carry the license and its flags; cc0 mode refuses local files; credit lines stay on one line', async () => {
-    const { licenseRefusal, normalizeLicense } = await import('@ae-mcp/core/assets/license.ts');
-    const { creditLine } = await import('@ae-mcp/core/assets/credits.ts');
+    const { licenseRefusal, normalizeLicense } = await import('@cc-mcp/core/assets/license.ts');
+    const { creditLine } = await import('@cc-mcp/core/assets/credits.ts');
     useFixtures([[...ICONIFY], [/\.svg$/, EVIL_SVG]]);
     const r = await fetchAsset('iconify:lucide:rocket', { projectDir: project });
     expect(r.license).toBe('ISC');

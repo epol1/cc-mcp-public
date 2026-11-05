@@ -1,4 +1,4 @@
-# ae-compose
+# cc-mcp (ae-compose + pr-cut)
 
 - **Developing this repo:** follow `docs/AGENT_GUIDE.md` (session start, roadmap/release rules, AE safety rules).
 - **Making motion graphics with it:** follow `skills/ae-compose/SKILL.md`.

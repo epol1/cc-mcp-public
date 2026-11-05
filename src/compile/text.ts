@@ -4,7 +4,7 @@ import type { TextUnitsAnim } from '../dsl/anim.ts';
 import { isControl } from '../dsl/control.ts';
 import type { TextProps } from '../dsl/primitives.ts';
 import { resolveEasing } from '../shared/easing.ts';
-import { parseColor, parseTime, rgb } from '@ae-mcp/core/units.ts';
+import { parseColor, parseTime, rgb } from '@cc-mcp/core/units.ts';
 import type { ValueCtx } from './values.ts';
 import type { PseudoEffectDef, PseudoParam } from './ffx/pseudo.ts';
 import { rigEffectSpec, rigRef } from './rigfx.ts';

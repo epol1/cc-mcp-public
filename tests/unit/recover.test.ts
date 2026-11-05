@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const state = { windows: [] as any[], health: [] as boolean[], spawned: 0, killed: 0, answered: [] as string[] };
-vi.mock('@ae-mcp/core/bridge/dialogs.ts', () => ({
+vi.mock('@cc-mcp/core/bridge/dialogs.ts', () => ({
   aeWindows: vi.fn(async () => state.windows.length > 1 ? state.windows.shift() : state.windows[0]),
   autoAnswerKnown: vi.fn(async (w: any) => { const a = (w?.dialogs ?? []).filter((d: any) => /Crash Repair/.test(d.title)).map((d: any) => `"${d.title}" → Continue`); state.answered.push(...a); return a; }),
 }));

@@ -4,8 +4,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp, { type OverlayOptions } from 'sharp';
-import { framesToTimecode, type Rate } from '@ae-mcp/core/time/timecode.ts';
-import { writeContactSheet, type SheetFrame } from '@ae-mcp/core/visual/images.ts';
+import { framesToTimecode, type Rate } from '@cc-mcp/core/time/timecode.ts';
+import { writeContactSheet, type SheetFrame } from '@cc-mcp/core/visual/images.ts';
 import { lit, nativePath, runEs } from './bridge.ts';
 import { PRC_HOME } from './importxml.ts';
 

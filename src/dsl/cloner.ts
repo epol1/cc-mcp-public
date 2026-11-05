@@ -15,8 +15,8 @@ import { expr } from './anim.ts';
 import type { Anim } from './anim.ts';
 import { dslWarn } from './warn.ts';
 import type { PseudoEffectDef, PseudoParam } from '../compile/ffx/pseudo.ts';
-import { parseColor } from '@ae-mcp/core/units.ts';
-import type { Time } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@cc-mcp/core/units.ts';
+import type { Time } from '@cc-mcp/core/units.ts';
 
 // ---------- distributions ----------
 export type Distribution =
