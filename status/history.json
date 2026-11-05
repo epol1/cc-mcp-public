@@ -194,5 +194,26 @@
   "pct": 95.39,
   "tasksDone": 206,
   "tasksAll": 213
+ },
+ {
+  "version": "v0.01.002",
+  "date": "2026-11-05T19:42:41.690Z",
+  "pct": 98.26,
+  "tasksDone": 211,
+  "tasksAll": 216
+ },
+ {
+  "version": "v0.01.003",
+  "date": "2026-11-05T21:04:32.308Z",
+  "pct": 99.6,
+  "tasksDone": 214,
+  "tasksAll": 216
+ },
+ {
+  "version": "v0.02.000",
+  "date": "2026-11-05T21:24:33.434Z",
+  "pct": 100,
+  "tasksDone": 216,
+  "tasksAll": 216
  }
 ]

@@ -1405,46 +1405,64 @@
       "name": "Assets · Free asset sources",
       "tasks": [
         {
+          "id": "assets-verify",
+          "name": "Verify first: API response shapes, AE import of each kind, font install probe",
+          "status": "done",
+          "weight": 1
+        },
+        {
           "id": "assets-core",
           "name": "Core: hit record, source adapters, cache, API keys, license allowlist, CREDITS.md",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "assets-keyless",
           "name": "Keyless adapters: Iconify, Poly Haven, ambientCG, local folders",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "assets-tools",
           "name": "find_assets (thumbnail grid) + fetch_asset (download, copy into project, import) + doctor",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "assets-keyed",
-          "name": "Key-based adapters: Pexels, Pixabay, Openverse",
-          "status": "todo",
+          "name": "Key-based adapters: Pixabay, Unsplash, Openverse (Pexels built, waiting on a key: Pexels isn't issuing keys)",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "assets-fonts",
           "name": "Fonts via Fontsource, after probing font installs in AE",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "assets-dsl",
           "name": "asset: src scheme in the DSL (fetched at compile time, cached)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "assets-docs",
           "name": "Skill + DSL docs, unit tests on recorded responses, AE fetch-import-collect test",
-          "status": "todo",
+          "status": "done",
           "weight": 2
+        },
+        {
+          "id": "assets-s19",
+          "name": "Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete",
+          "status": "done",
+          "weight": 2
+        },
+        {
+          "id": "assets-fresh",
+          "name": "Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6",
+          "status": "done",
+          "weight": 1
         }
       ],
       "phase": 6
@@ -1557,7 +1575,7 @@
     },
     {
       "id": 6,
-      "name": "Asset sources (docs/ASSETS.md)",
+      "name": "Phase 6: asset sources (docs/ASSETS.md)",
       "badge": "assets"
     }
   ]

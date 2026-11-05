@@ -1,0 +1,338 @@
+{
+ "rubber_duck_toy": {
+  "donated": true,
+  "date_published": 1680048000,
+  "name": "Rubber Duck Toy",
+  "type": 2,
+  "authors": {
+   "Plat251": "All"
+  },
+  "info": null,
+  "sponsors": [
+   "78546118"
+  ],
+  "categories": [
+   "props",
+   "decorative",
+   "collection: the_shed"
+  ],
+  "tags": [
+   "shed",
+   "toy",
+   "bathroom",
+   "child",
+   "home",
+   "fun",
+   "kids",
+   "play",
+   "float",
+   "plastic",
+   "cute",
+   "animal"
+  ],
+  "max_resolution": [
+   4096,
+   4096
+  ],
+  "polycount": 4288,
+  "texel_density": 7289.496739617577,
+  "dimensions": [
+   213.5048285126686,
+   300.00218749046326,
+   285.52286326885223
+  ],
+  "files_hash": "00cce7478ed6c66264d09711f2ce55c1fc7b096c",
+  "description": "Free 4K model: cute yellow rubber duck with glossy plastic, bright red beak, simple cartoon eyes and light scuffs/grime for a slightly worn, playful look.",
+  "category_id": "4b07c553-3d92-564a-9755-95f6b6a4e9ea",
+  "category": "Leisure/Games & Toys/Toys",
+  "collections": [
+   "the_shed"
+  ],
+  "attributes": {
+   "condition": [
+    "worn"
+   ],
+   "material": [
+    "rubber",
+    "plastic"
+   ]
+  },
+  "img_version": "ba366507",
+  "download_count": 50842,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/rubber_duck_toy.png?width=256&height=256&format=webp&v=ba366507"
+ },
+ "potted_plant_01": {
+  "date_published": 1626872095,
+  "name": "Potted Plant 01",
+  "categories": [
+   "decorative",
+   "plants",
+   "potted plants",
+   "nature"
+  ],
+  "type": 2,
+  "authors": {
+   "Rico Cilliers": "All"
+  },
+  "tags": [
+   "potplant",
+   "plant",
+   "terracotta",
+   "pot",
+   "vase",
+   "medium",
+   "leaf",
+   "green"
+  ],
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "polycount": 96030,
+  "texel_density": 15606.764063682307,
+  "dimensions": [
+   588.9185070991516,
+   636.6117596626282,
+   1350.7787585258484
+  ],
+  "files_hash": "9fa70d49cb125b1b74e3aeddef22253ba2db060b",
+  "description": "Free 8K model of a medium potted plant with lush scalloped green leaves in a weathered terracotta pedestal pot, detailed trunk and gravel-filled soil.",
+  "category_id": "3dde8a0d-8ee9-5e81-85c4-3251ec4a5d88",
+  "category": "Nature/Plants/Potted Plants",
+  "attributes": {
+   "condition": [
+    "weathered"
+   ],
+   "material": [
+    "ceramic"
+   ]
+  },
+  "img_version": "217a8182",
+  "download_count": 63844,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/potted_plant_01.png?width=256&height=256&format=webp&v=217a8182"
+ },
+ "wooden_crate_01": {
+  "date_published": 1645747200,
+  "name": "Wooden Crate 01",
+  "type": 2,
+  "authors": {
+   "James Ray Cock": "All"
+  },
+  "categories": [
+   "containers",
+   "collection: smugglers_cove"
+  ],
+  "tags": [
+   "vintage",
+   "wood",
+   "old",
+   "wooden",
+   "fancy",
+   "colonial",
+   "chest",
+   "box",
+   "prop",
+   "antique",
+   "farmhouse",
+   "crate",
+   "maritime",
+   "commercial",
+   "container"
+  ],
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "polycount": 6576,
+  "texel_density": 4578.689151712849,
+  "dimensions": [
+   825.2729177474976,
+   408.9537411928177,
+   349.6182831004262
+  ],
+  "files_hash": "1ac5d053ce4c72e3fbb4c3065e7979522bf1908e",
+  "description": "Free 8K model of a vintage wooden crate - weathered colonial chest with rope handles, metal rivets and latch; ideal as maritime, farmhouse or prop container.",
+  "category_id": "7db08e6b-4676-50ac-8387-ecec2d7ffeb2",
+  "category": "Containers & Storage/Boxes & Crates/Wooden Crates",
+  "sponsors": [
+   "7934315"
+  ],
+  "collections": [
+   "smugglers_cove"
+  ],
+  "attributes": {
+   "condition": [
+    "worn"
+   ],
+   "material": [
+    "wood",
+    "metal"
+   ]
+  },
+  "img_version": "3b8df674",
+  "download_count": 26597,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/wooden_crate_01.png?width=256&height=256&format=webp&v=3b8df674"
+ },
+ "Camera_01": {
+  "date_published": 1585605600,
+  "tmwarn": true,
+  "sponsors": [
+   "33031620",
+   "42579608"
+  ],
+  "name": "Camera 01",
+  "categories": [
+   "props",
+   "electronics"
+  ],
+  "type": 2,
+  "tags": [
+   "vintage",
+   "camera",
+   "antique",
+   "ornate",
+   "photography",
+   "photography",
+   "retro",
+   "lens",
+   "classic",
+   "classic",
+   "analog"
+  ],
+  "authors": {
+   "Rajil Jose Macatangay": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "polycount": 26987,
+  "texel_density": 36131.85050741761,
+  "dimensions": [
+   213.90153467655182,
+   262.82382383942604,
+   77.84665003418922
+  ],
+  "files_hash": "6db4d73f8b708eb87597df841c1f6e9beea70778",
+  "description": "Free vintage rangefinder camera model with ornate wear, leather strap and detailed lens - high-res prop for retro scenes, stills, animations, and product shots.",
+  "category_id": "93cfab29-74f0-5c21-b81e-ba8b02bfbbc9",
+  "category": "Electronics & Appliances/Audio & Video/Cameras",
+  "attributes": {
+   "condition": [
+    "worn"
+   ],
+   "material": [
+    "metal",
+    "leather",
+    "glass"
+   ]
+  },
+  "img_version": "534c7d69",
+  "download_count": 114474,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/Camera_01.png?width=256&height=256&format=webp&v=534c7d69"
+ },
+ "ceramic_vase_01": {
+  "type": 2,
+  "tags": [
+   "pot",
+   "clean",
+   "tall",
+   "modern",
+   "fancy",
+   "decor"
+  ],
+  "name": "Ceramic Vase 01",
+  "categories": [
+   "vases",
+   "containers",
+   "decorative"
+  ],
+  "authors": {
+   "James Ray Cock": "All"
+  },
+  "date_published": 1623767601,
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "polycount": 2548,
+  "texel_density": 12083.371395475848,
+  "dimensions": [
+   204.87193763256073,
+   206.37669414281845,
+   401.379804010503
+  ],
+  "files_hash": "989b1a754be36032e5d643c9c333a08e218c65cf",
+  "description": "Free 8K Ceramic Vase 01 - a tall, modern glossy white pot with an elegant fluted rim and clean lines; a fancy decorative vase/container for stylish interiors.",
+  "category_id": "bda68bac-fe45-5d4f-aab6-ea0162d45774",
+  "category": "Decor & Art/Vases & Vessels/Ceramic Vases",
+  "attributes": {
+   "condition": [
+    "clean"
+   ],
+   "material": [
+    "ceramic"
+   ]
+  },
+  "img_version": "ff07fd46",
+  "download_count": 20298,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/ceramic_vase_01.png?width=256&height=256&format=webp&v=ff07fd46"
+ },
+ "boombox": {
+  "donated": true,
+  "name": "Boombox",
+  "type": 2,
+  "authors": {
+   "Thomas Paul Mouilleron": "All"
+  },
+  "info": null,
+  "date_published": 1695340800,
+  "sponsors": [
+   "26820710"
+  ],
+  "categories": [
+   "appliances",
+   "electronics",
+   "collection: hidden_alley"
+  ],
+  "tags": [
+   "loudspeaker",
+   "radio",
+   "cd player",
+   "stereo",
+   "80's",
+   "sound system",
+   "portable"
+  ],
+  "max_resolution": [
+   4096,
+   4096
+  ],
+  "polycount": 10168,
+  "texel_density": 4960.093973730346,
+  "dimensions": [
+   723.7796187400818,
+   186.46465986967087,
+   470.10064125061035
+  ],
+  "files_hash": "480c7f057f485ec818a8f1c7c790248ef993b734",
+  "description": "Free 4K model of a vintage 80s portable boombox with dual speakers, cassette deck, tuner knobs, telescoping antenna and worn stickers, gritty urban wear.",
+  "category_id": "b35ed6a9-9da0-5515-9373-e5bc17cca6b5",
+  "category": "Electronics & Appliances/Audio & Video/Radios & Portable Audio",
+  "collections": [
+   "hidden_alley"
+  ],
+  "attributes": {
+   "condition": [
+    "worn"
+   ],
+   "material": [
+    "plastic",
+    "metal"
+   ]
+  },
+  "img_version": "130c7cbf",
+  "download_count": 30916,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/boombox.png?width=256&height=256&format=webp&v=130c7cbf"
+ }
+}

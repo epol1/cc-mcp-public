@@ -1,6 +1,6 @@
 ---
 name: ae-compose
-description: Make and edit motion graphics in Adobe After Effects with ae-compose. Claude writes Remotion-style TSX that compiles into native, editable AE 2026 comps (real layers, eased keyframes, text animators, shape layers, effects, live expression controls with Essential Graphics, 3D cameras/lights/extrusion/models, particles, MASH-style cloners, beat-synced cuts, responsive 9:16/1:1 reframes), then reviews the returned contact sheets, speed graphs and lint, and refines. Use when the user wants an animation, motion graphic, title or kinetic typography, lower third, logo reveal, social/ad spot, end card, product hero, 3D or particle shot made in After Effects; when they want to inspect, retime, ripple-edit, re-ease, restyle, chroma-key or add effects to an existing AE comp (generated or hand-built); or when they mention ae-compose, .aep comps, keyframes, easing curves, expression controls or the ae-compose MCP tools (build_scene, apply_edits, inspect_comp, contact_sheet).
+description: Make and edit motion graphics in Adobe After Effects with ae-compose. Claude writes Remotion-style TSX that compiles into native, editable AE 2026 comps (real layers, eased keyframes, text animators, shape layers, effects, live expression controls with Essential Graphics, 3D cameras/lights/extrusion/models, particles, MASH-style cloners, beat-synced cuts, responsive 9:16/1:1 reframes, and icons, stock footage, textures, HDRIs, 3D models, fonts and sounds fetched from free asset APIs with credits), then reviews the returned contact sheets, speed graphs and lint, and refines. Use when the user wants an animation, motion graphic, title or kinetic typography, lower third, logo reveal, social/ad spot, end card, product hero, 3D or particle shot made in After Effects; when they want to inspect, retime, ripple-edit, re-ease, restyle, chroma-key or add effects to an existing AE comp (generated or hand-built); or when they mention ae-compose, .aep comps, keyframes, easing curves, expression controls or the ae-compose MCP tools (build_scene, apply_edits, inspect_comp, contact_sheet).
 ---
 
 # ae-compose: motion design in After Effects, from TSX
@@ -45,6 +45,7 @@ You write a scene in a small TSX DSL, `build_scene` compiles it into **native, e
 | Charts and counters | the data viz kit (§11.7) |
 | App / product UI demo (clicks, typing, toasts, device frames) | the UI kit + `uiSteps` (§11.7) |
 | Transitions between beats | `<Beats>` with a transition from the library (§11.7) |
+| Icons, photos, stock video, textures, HDRIs, 3D models, fonts or sounds the scene needs | `find_assets` → look at the grid → `fetch_asset` or `src="asset:<id>"` (§12) |
 | Notes the designer left in AE | `designer_inbox` |
 | AE stuck, crashed or closed | `recover_ae` (answers known dialogs, launches AE, waits for the bridge; `force` only after the user agrees: it discards unsaved work); `list_dialogs` → `answer_dialog`; `doctor` |
 
@@ -485,3 +486,21 @@ Recipes are approved scenes kept for reuse. When the brief is "like the last one
 - **UI (§21.14):** `BrowserFrame`/`PhoneFrame` with `Button`, `Input`, `Toggle`, `Toast`… and a `Cursor` driven by `uiSteps([...])`. Show one task the way a user does it (click, type, result), at a pace a viewer can follow: a step every 0.4–0.8 s, a beat to read the result. The interface is the story's evidence, not decoration.
 - **Transitions (§21.15):** `<Beats>` with `HandOff`, `ShapeWipe`, `ZoomThrough`, `PushThrough`, `ParallaxSplit`, `LiquidWipe`, `SliceWipe`, `GridWipe`, `LightLeakCut` between `<Beat>`s. Build each transition from something already on screen (the circle that becomes the wipe, the logo that travels), and never use the same kind twice in a row.
 - **Paths (§21.16):** `FollowPath`, `Trail`, `DrawOn`, `Morph` for connection, travel and transformation metaphors.
+
+## 12. Finding, fetching and crediting assets
+
+When a beat needs material ae-compose can't draw (an icon, a stock clip, a texture, an HDRI, a 3D model, a font, a sound), source it yourself instead of asking the user for files. Full reference: DSL.md §22.
+
+1. **Decide what the beat needs first** (§2). A fetched clip or icon earns its place like any other element: it carries the message, directs the eye or connects two beats. Don't fill a frame with stock because it's free.
+2. **Search, then look.** `find_assets { query, kind }` returns numbered results and a thumbnail grid: pick by looking at the grid, as with contact sheets, and say why that one. Use plain words that describe the picture ("city night aerial", "torn paper", "rocket"). Local results (the user's own folders) come first: prefer the user's material when it fits.
+3. **Fetch.** `fetch_asset { id }` downloads, checks and converts the file, copies it next to the saved project, imports it and credits it. Or put the id straight in the scene: `src="asset:<id>"`. Scenes then name their assets reproducibly, and the build copies and credits them. Pick a sensible size: `1k`/`2k` HDRIs and textures and `1080p` video for 1080p work, `4k` only when the shot needs it.
+4. **Kinds and where they go:**
+   - **Icons** become native shape layers with `<Svg src="asset:iconify:…" color=… draw=…>`. Outline sets (Lucide, Tabler, Phosphor) draw on stroke by stroke; one icon set per piece keeps one visual language.
+   - **HDRIs** go in `<Light kind="environment" hdri="asset:polyhaven:…">` for reflections on 3D models, with a spot key for shadows (§7).
+   - **Models** are packed into one `.glb`: `<Model src="asset:polyhaven:…">` (Advanced 3D).
+   - **Textures** go in `<Footage>` as backgrounds or mattes: a paper texture under a torn-edge transition.
+   - **Video** is backdrop material: add a scrim for text contrast (§6.7) and mute it unless its sound matters.
+   - **Audio** goes in `<Audio>`; `beatsOf` works on fetched music too.
+5. **Licenses and credits are part of the job.** Only allowlisted licenses come back. Every fetch adds a line to `CREDITS.md` next to the project (`asset:` sources also next to the scene file), and `deliver` puts it next to the renders. Results, fetches and builds print a `FLAG` / warning for ShareAlike and trademarked items: **tell the user** when an asset is ShareAlike (adaptations must share alike) or a trademarked logo (use it only to refer to that brand), and mention that `CREDITS.md` lists what needs attribution.
+6. **Fonts change the user's system.** `fetch_asset { id: "fontsource:…" }` only downloads. Install (`install: true`) only after the user says yes, then use the PostScript names the result says After Effects sees (`font="SpaceGrotesk-Bold"`). Without a yes, use an installed font (Inter is always there).
+7. **Keys.** Pixabay, Pexels and Unsplash need the user's free API keys in `~/.ae-compose/keys.json`. When `find_assets` lists a source as "not searched: no API key", carry on with the others and tell the user how to enable it if it matters. Never print or write a key anywhere.

@@ -1,0 +1,746 @@
+{
+ "art_studio": {
+  "nsfw": true,
+  "evs_cap": 8,
+  "files_hash": "cc3a9d5b385feae59d65fcf6071f85b20440bb9f",
+  "type": 0,
+  "tags": [
+   "painting",
+   "art",
+   "workshop",
+   "window",
+   "atelier"
+  ],
+  "date_published": 1559253600,
+  "sponsors": [
+   {
+    "name": "Rick Kay",
+    "url": "http://alienghostship.com/"
+   }
+  ],
+  "name": "Art Studio",
+  "categories": [
+   "indoor",
+   "urban",
+   "medium contrast",
+   "natural light",
+   "artificial light"
+  ],
+  "date_taken": 1551098100,
+  "authors": {
+   "Oliksiy Yakovlyev": "All"
+  },
+  "max_resolution": [
+   17000,
+   8500
+  ],
+  "description": "Free, unclipped 17K HDRI: indoor art studio with mixed window daylight and warm ceiling lights, medium contrast, soft shadows and gentle reflections.",
+  "category_id": "a6453c33-c7a0-501b-ac94-39b56e2cf219",
+  "category": "Interiors/Workshops & Garages/Domestic Garages & Studios",
+  "attributes": {
+   "light_type": "mixed",
+   "contrast": "medium",
+   "environment": "indoor",
+   "weather": "overcast"
+  },
+  "img_version": "8c8d8ea4",
+  "download_count": 28280,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/art_studio.png?width=256&height=256&format=webp&v=8c8d8ea4"
+ },
+ "autumn_forest_01": {
+  "evs_cap": 9,
+  "type": 0,
+  "tags": [
+   "tree",
+   "forest",
+   "leaves",
+   "autumn",
+   "rock"
+  ],
+  "date_published": 1573772400,
+  "name": "Autumn Forest 01",
+  "categories": [
+   "outdoor",
+   "nature",
+   "morning-afternoon",
+   "low contrast",
+   "natural light"
+  ],
+  "coords": [
+   48.404459,
+   9.801223
+  ],
+  "date_taken": 1572445620,
+  "authors": {
+   "Andreas Mischok": "All"
+  },
+  "sponsors": [
+   "42579608"
+  ],
+  "files_hash": "6decfa9fba7c7e8cded29f784d8c72e1951ac1c5",
+  "max_resolution": [
+   16384,
+   8192
+  ],
+  "description": "Unclipped, free 16K HDRI of an autumn forest: soft natural morning/afternoon light, low-contrast overcast sky, warm fallen leaves, trees and a mossy rock.",
+  "category_id": "69311129-a02a-5409-875f-803d4c3e7e16",
+  "category": "Forest & Woodland/Forest/Deciduous Forest",
+  "attributes": {
+   "time_of_day": "afternoon",
+   "weather": "overcast",
+   "light_type": "natural",
+   "contrast": "low",
+   "season": "autumn",
+   "environment": "outdoor",
+   "sky_view": "obstructed"
+  },
+  "img_version": "a0fcefa4",
+  "download_count": 50737,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/autumn_forest_01.png?width=256&height=256&format=webp&v=a0fcefa4"
+ },
+ "autumn_forest_02": {
+  "evs_cap": 12,
+  "type": 0,
+  "tags": [
+   "tree",
+   "autumn",
+   "leaves",
+   "forest",
+   "mud"
+  ],
+  "date_published": 1583449200,
+  "name": "Autumn Forest 02",
+  "categories": [
+   "outdoor",
+   "nature",
+   "midday",
+   "overcast",
+   "low contrast",
+   "natural light"
+  ],
+  "date_taken": 1582983540,
+  "coords": [
+   48.7903,
+   9.147581
+  ],
+  "authors": {
+   "Andreas Mischok": "All"
+  },
+  "sponsors": [
+   "3237733"
+  ],
+  "files_hash": "ccc955abbe63adb6e50cfc85695fd9341644d963",
+  "max_resolution": [
+   20000,
+   10000
+  ],
+  "description": "Free 20K unclipped HDRI: soft overcast midday light in an autumn forest, muted low-contrast tones from a gray sky over leaf-strewn, muddy paths.",
+  "category_id": "69311129-a02a-5409-875f-803d4c3e7e16",
+  "category": "Forest & Woodland/Forest/Deciduous Forest",
+  "attributes": {
+   "time_of_day": "midday",
+   "weather": "overcast",
+   "light_type": "natural",
+   "contrast": "low",
+   "season": "autumn",
+   "environment": "outdoor",
+   "sky_view": "obstructed"
+  },
+  "img_version": "d69dbe7a",
+  "download_count": 17240,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/autumn_forest_02.png?width=256&height=256&format=webp&v=d69dbe7a"
+ },
+ "autumn_forest_03": {
+  "evs_cap": 12,
+  "type": 0,
+  "tags": [
+   "autumn",
+   "forest",
+   "leaves",
+   "mud",
+   "tree",
+   "river",
+   "tower",
+   "lookout",
+   "stream"
+  ],
+  "date_published": 1590444000,
+  "name": "Autumn Forest 03",
+  "categories": [
+   "outdoor",
+   "nature",
+   "morning-afternoon",
+   "overcast",
+   "low contrast",
+   "natural light"
+  ],
+  "date_taken": 1582982700,
+  "coords": [
+   48.790894,
+   9.144528
+  ],
+  "authors": {
+   "Andreas Mischok": "All"
+  },
+  "sponsors": [
+   "11167855"
+  ],
+  "files_hash": "36e8f362cf6bc8aaefce802922879f96371be6ac",
+  "max_resolution": [
+   20000,
+   10000
+  ],
+  "description": "Free 20K unclipped HDRI showing an overcast autumn forest with soft, low-contrast natural light, leaf-littered mud, a calm stream and a distant wooden lookout.",
+  "category_id": "5ff99899-e661-5453-9a46-5850fc5be36c",
+  "category": "Forest & Woodland/Clearings/Streamside Clearings",
+  "attributes": {
+   "time_of_day": "afternoon",
+   "weather": "overcast",
+   "light_type": "natural",
+   "contrast": "low",
+   "season": "autumn",
+   "environment": "outdoor",
+   "sky_view": "obstructed"
+  },
+  "img_version": "cd3f7f65",
+  "download_count": 16664,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/autumn_forest_03.png?width=256&height=256&format=webp&v=cd3f7f65"
+ },
+ "autumn_forest_04": {
+  "donated": true,
+  "evs_cap": 27,
+  "type": 0,
+  "whitebalance": 6500,
+  "tags": [
+   "tree",
+   "sun",
+   "autumn",
+   "forest"
+  ],
+  "name": "Autumn Forest 04",
+  "categories": [
+   "natural light",
+   "outdoor",
+   "nature",
+   "high contrast",
+   "clear",
+   "sunrise-sunset"
+  ],
+  "coords": [
+   48.756729,
+   9.093388
+  ],
+  "date_taken": 1640105220,
+  "authors": {
+   "Alexander Scholten": "All"
+  },
+  "date_published": 1645401600,
+  "sponsors": [
+   "37678923",
+   "11167855"
+  ],
+  "files_hash": "727d98750b3722481d6ba8f71f40be0b75701a6a",
+  "max_resolution": [
+   21718,
+   10859
+  ],
+  "description": "Free 21K unclipped HDRI of an autumn forest at low sun - warm golden light, long shadows.",
+  "category_id": "69311129-a02a-5409-875f-803d4c3e7e16",
+  "category": "Forest & Woodland/Forest/Deciduous Forest",
+  "attributes": {
+   "time_of_day": "sunset",
+   "weather": "clear",
+   "light_type": "natural",
+   "contrast": "high",
+   "season": "autumn",
+   "environment": "outdoor",
+   "sky_view": "obstructed"
+  },
+  "img_version": "889d3d58",
+  "download_count": 100490,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/autumn_forest_04.png?width=256&height=256&format=webp&v=889d3d58"
+ },
+ "bambanani_sunset": {
+  "type": 0,
+  "name": "Bambanani Sunset",
+  "categories": [
+   "outdoor",
+   "natural light",
+   "nature",
+   "skies",
+   "partly cloudy",
+   "medium contrast",
+   "sunrise-sunset"
+  ],
+  "tags": [
+   "sun",
+   "field",
+   "power line",
+   "grass",
+   "tower"
+  ],
+  "authors": {
+   "Dimitrios Savva": "Photography",
+   "Jarod Guest": "Processing"
+  },
+  "date_taken": 1735930260,
+  "coords": [
+   -28.0430714,
+   26.8181845
+  ],
+  "evs_cap": 23,
+  "whitebalance": 5539,
+  "max_resolution": [
+   20480,
+   10240
+  ],
+  "files_hash": "0de44417865c0ebe1946e73fa1c0fd3eacb093a4",
+  "date_published": 1740528000,
+  "description": "Free 20K, unclipped HDRI. Warm, low sunset light over a dry grassy field with partly cloudy sky, medium contrast, sun near horizon and silhouetted power towers.",
+  "category_id": "3aedc6f4-5b0f-5c3b-87e9-5fecd8c5baac",
+  "category": "Fields & Countryside/Grassland & Meadows/Open Fields & Meadows",
+  "attributes": {
+   "time_of_day": "sunset",
+   "weather": "partly_cloudy",
+   "light_type": "natural",
+   "contrast": "medium",
+   "environment": "outdoor",
+   "sky_view": "open"
+  },
+  "img_version": "c0501916",
+  "download_count": 120435,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/bambanani_sunset.png?width=256&height=256&format=webp&v=c0501916"
+ },
+ "belfast_sunset": {
+  "evs_cap": 12,
+  "name": "Belfast Sunset",
+  "categories": [
+   "natural light",
+   "outdoor",
+   "nature",
+   "low contrast",
+   "partly cloudy",
+   "sunrise-sunset",
+   "skies"
+  ],
+  "type": 0,
+  "coords": [
+   -25.687944,
+   30.113194
+  ],
+  "date_taken": 1622654820,
+  "authors": {
+   "Greg Zaal": "Processing",
+   "Dimitrios Savva": "Photography"
+  },
+  "tags": [
+   "grass",
+   "hill",
+   "hilltop",
+   "field",
+   "view",
+   "dry",
+   "dry grass"
+  ],
+  "date_published": 1653350400,
+  "sponsors": [
+   "37678923"
+  ],
+  "prepaid": true,
+  "files_hash": "c5784df748737815dc973559d814f33087d9bf26",
+  "max_resolution": [
+   24576,
+   12288
+  ],
+  "description": "Free 24K unclipped HDRI capturing a low-contrast, pastel sunset over dry hilltop grass - soft warm rim light, thin clouds, muted amber hues and a calm, evening mood.",
+  "category_id": "36cc9767-3e14-5715-99f9-3937957ec767",
+  "category": "Mountains & Hills/Hilltops & Viewpoints/Grassland Hilltops",
+  "attributes": {
+   "time_of_day": "sunset",
+   "weather": "partly_cloudy",
+   "light_type": "natural",
+   "contrast": "low",
+   "environment": "outdoor",
+   "sky_view": "open"
+  },
+  "img_version": "b1753ac0",
+  "download_count": 200400,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/belfast_sunset.png?width=256&height=256&format=webp&v=b1753ac0"
+ },
+ "belfast_sunset_puresky": {
+  "evs_cap": 12,
+  "type": 0,
+  "tags": [
+   "pure skies"
+  ],
+  "name": "Belfast Sunset (Pure Sky)",
+  "categories": [
+   "natural light",
+   "outdoor",
+   "nature",
+   "low contrast",
+   "partly cloudy",
+   "sunrise-sunset",
+   "skies",
+   "pure skies"
+  ],
+  "coords": [
+   -25.687944,
+   30.113194
+  ],
+  "date_taken": 1622654820,
+  "authors": {
+   "Greg Zaal": "Processing",
+   "Dimitrios Savva": "Photography",
+   "Jarod Guest": "Sky edits"
+  },
+  "info": "Edited sky-only version of [Belfast Sunset](https://polyhaven.com/a/belfast_sunset).",
+  "date_published": 1666137600,
+  "files_hash": "52069dda20d0309f5009c492aa97b968effd3f32",
+  "max_resolution": [
+   24576,
+   12288
+  ],
+  "sponsors": [
+   "3267566",
+   "3237733"
+  ],
+  "description": "Free 24K unclipped HDRI showing a low-contrast, partly cloudy sunset over calm water, with a warm golden horizon and soft violet-blue light.",
+  "category_id": "61ac0f4c-0977-548f-b345-f34c2d9eff35",
+  "attributes": {
+   "time_of_day": "sunset",
+   "weather": "partly_cloudy",
+   "light_type": "natural",
+   "contrast": "low",
+   "environment": "outdoor",
+   "sky_view": "open"
+  },
+  "category": "Pure Skies",
+  "img_version": "b632c40f",
+  "download_count": 414341,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/belfast_sunset_puresky.png?width=256&height=256&format=webp&v=b632c40f"
+ },
+ "blaubeuren_night": {
+  "evs_cap": 18,
+  "type": 0,
+  "tags": [
+   "tree",
+   "grass",
+   "path",
+   "park",
+   "bench"
+  ],
+  "date_published": 1597096800,
+  "name": "Blaubeuren Night",
+  "categories": [
+   "outdoor",
+   "urban",
+   "night",
+   "partly cloudy",
+   "high contrast",
+   "artificial light"
+  ],
+  "coords": [
+   48.41401,
+   9.788845
+  ],
+  "date_taken": 1594414140,
+  "authors": {
+   "Andreas Mischok": "All"
+  },
+  "files_hash": "6f28f0fe1b9e48166c86ef3d11d4d2c8124b7f94",
+  "max_resolution": [
+   18500,
+   9250
+  ],
+  "description": "Free 18K unclipped HDRI: warm streetlamp and cool blue artificial lights bathe a park path at night, creating high-contrast shadows beneath tree canopies, grass, and benches.",
+  "sponsors": [
+   {
+    "url": "https://www.youtube.com/cggeek",
+    "name": "CG Geek"
+   },
+   "128081732"
+  ],
+  "category_id": "6578c246-5f7e-582b-a52f-b2e42fbec4e7",
+  "category": "Parks & Gardens/Parks/Tree-lined Paths",
+  "attributes": {
+   "time_of_day": "night",
+   "weather": "partly_cloudy",
+   "light_type": "artificial",
+   "contrast": "high",
+   "environment": "outdoor",
+   "sky_view": "obstructed"
+  },
+  "img_version": "98ceeeea",
+  "download_count": 88677,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/blaubeuren_night.png?width=256&height=256&format=webp&v=98ceeeea"
+ },
+ "blocky_photo_studio": {
+  "evs_cap": 22,
+  "type": 0,
+  "whitebalance": 4950,
+  "tags": [
+   "studio",
+   "stair",
+   "ramp",
+   "stand",
+   "modern",
+   "concrete"
+  ],
+  "name": "Blocky Photo Studio",
+  "categories": [
+   "urban",
+   "indoor",
+   "studio",
+   "artificial light",
+   "natural light",
+   "low contrast"
+  ],
+  "date_taken": 1671463020,
+  "authors": {
+   "Sergej Majboroda": "All"
+  },
+  "info": null,
+  "date_published": 1673740800,
+  "max_resolution": [
+   16384,
+   8192
+  ],
+  "files_hash": "692b04d1184b22c8ca4d7e409232be24f8febc87",
+  "description": "Free 16K unclipped HDRI of a modern concrete studio with soft window light and cool studio lamps, low-contrast with diffuse shadows and subtle highlights.",
+  "category_id": "3aec9d2e-21ed-5f1f-88c0-c45a9c6ee7b9",
+  "category": "Studio/Photo Studios/Natural-Light Studios",
+  "attributes": {
+   "light_type": "mixed",
+   "contrast": "low",
+   "environment": "indoor",
+   "weather": "overcast"
+  },
+  "img_version": "87b5ed0d",
+  "download_count": 117341,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/blocky_photo_studio.png?width=256&height=256&format=webp&v=87b5ed0d"
+ },
+ "blue_lagoon_night": {
+  "evs_cap": 18,
+  "type": 0,
+  "whitebalance": 3800,
+  "date_published": 1526480313,
+  "name": "Blue Lagoon Night",
+  "categories": [
+   "outdoor",
+   "urban",
+   "night",
+   "partly cloudy",
+   "high contrast",
+   "artificial light"
+  ],
+  "coords": [
+   -29.8126,
+   31.0402
+  ],
+  "date_taken": 1521582480,
+  "authors": {
+   "Greg Zaal": "All"
+  },
+  "sponsors": [
+   "7947474"
+  ],
+  "backplates": true,
+  "tags": [
+   "lamp",
+   "stars",
+   "ocean",
+   "city",
+   "promenade",
+   "backplates"
+  ],
+  "files_hash": "19de58f653507590fc7bdc68f6cea8387500fa43",
+  "max_resolution": [
+   16384,
+   8192
+  ],
+  "description": "Free 16K unclipped HDRI of a night ocean promenade with bright, high-contrast lamps, cool blue tones, partly cloudy sky, faint stars and city glow.",
+  "category_id": "e0324752-e9a3-513a-a958-71262797f6a1",
+  "category": "Coast & Water/Harbours & Piers/Promenades & Seafronts",
+  "attributes": {
+   "time_of_day": "night",
+   "weather": "partly_cloudy",
+   "light_type": "mixed",
+   "contrast": "high",
+   "backplates": true,
+   "environment": "outdoor",
+   "sky_view": "open"
+  },
+  "img_version": "572c0122",
+  "download_count": 95032,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/blue_lagoon_night.png?width=256&height=256&format=webp&v=572c0122"
+ },
+ "blue_photo_studio": {
+  "evs_cap": 16,
+  "type": 0,
+  "whitebalance": 4200,
+  "tags": [
+   "couch",
+   "wooden floor",
+   "lamp",
+   "window",
+   "seat",
+   "dark",
+   "backplates"
+  ],
+  "name": "Blue Photo Studio",
+  "categories": [
+   "studio",
+   "indoor",
+   "artificial light",
+   "natural light",
+   "urban",
+   "medium contrast",
+   "midday"
+  ],
+  "backplates": true,
+  "date_taken": 1676983020,
+  "authors": {
+   "Sergej Majboroda": "All"
+  },
+  "info": null,
+  "files_hash": "5025f894d2b1140cd239203f3edb8e9b3f2204cb",
+  "date_published": 1681084800,
+  "max_resolution": [
+   16384,
+   8192
+  ],
+  "sponsors": [
+   "82322099"
+  ],
+  "description": "Unclipped, free 16K HDRI with cool midday studio lighting, mixing natural window light and artificial lamps to produce a medium-contrast, moody blue indoor ambiance.",
+  "category_id": "3aec9d2e-21ed-5f1f-88c0-c45a9c6ee7b9",
+  "category": "Studio/Photo Studios/Natural-Light Studios",
+  "attributes": {
+   "light_type": "mixed",
+   "contrast": "medium",
+   "backplates": true,
+   "environment": "indoor",
+   "weather": "overcast"
+  },
+  "img_version": "d6972885",
+  "download_count": 162972,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/blue_photo_studio.png?width=256&height=256&format=webp&v=d6972885"
+ },
+ "brown_photostudio_01": {
+  "evs_cap": 19,
+  "type": 0,
+  "whitebalance": 5000,
+  "tags": [
+   "studio",
+   "lamp",
+   "photo",
+   "chair",
+   "window",
+   "wood",
+   "fluorescent",
+   "couch",
+   "victorian",
+   "backplates"
+  ],
+  "name": "Brown Photostudio 01",
+  "categories": [
+   "indoor",
+   "urban",
+   "natural light",
+   "artificial light",
+   "medium contrast",
+   "studio",
+   "low contrast"
+  ],
+  "backplates": true,
+  "coords": [
+   49.219840481786065,
+   28.429115247630943
+  ],
+  "date_taken": 1649156160,
+  "authors": {
+   "Sergej Majboroda": "All"
+  },
+  "date_published": 1652194804,
+  "max_resolution": [
+   16384,
+   8192
+  ],
+  "files_hash": "0754a9afc133bdc706601d12073eba22c4e50514",
+  "sponsors": [
+   "82322099"
+  ],
+  "description": "Free, unclipped 16K HDRI. Warm, soft mixed natural window light with subtle fluorescent fill over brown wooden studio floors, low contrast and cozy mood.",
+  "category_id": "3aec9d2e-21ed-5f1f-88c0-c45a9c6ee7b9",
+  "category": "Studio/Photo Studios/Natural-Light Studios",
+  "attributes": {
+   "light_type": "mixed",
+   "contrast": "low",
+   "backplates": true,
+   "environment": "indoor",
+   "weather": "overcast"
+  },
+  "img_version": "72f7ca1d",
+  "download_count": 222550,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/brown_photostudio_01.png?width=256&height=256&format=webp&v=72f7ca1d"
+ },
+ "brown_photostudio_02": {
+  "evs_cap": 15,
+  "type": 0,
+  "whitebalance": 5800,
+  "tags": [
+   "bed",
+   "studio",
+   "fluorescent",
+   "window",
+   "couch",
+   "chair",
+   "photo",
+   "table",
+   "kitchen",
+   "fridge",
+   "backplates"
+  ],
+  "name": "Brown Photostudio 02",
+  "categories": [
+   "urban",
+   "studio",
+   "indoor",
+   "artificial light",
+   "natural light",
+   "medium contrast"
+  ],
+  "backplates": true,
+  "date_taken": 1649160600,
+  "coords": [
+   49.21998148128005,
+   28.42895420247657
+  ],
+  "authors": {
+   "Sergej Majboroda": "All"
+  },
+  "date_published": 1652918400,
+  "max_resolution": [
+   16384,
+   8192
+  ],
+  "files_hash": "35b637b40bd4c33b1fdb3162a19b55b2a275d749",
+  "sponsors": [
+   "82322099"
+  ],
+  "description": "Free unclipped 16K HDRI - warm brown indoor studio lit by large window daylight and cool fluorescent fixtures; medium contrast, soft shadows.",
+  "category_id": "3aec9d2e-21ed-5f1f-88c0-c45a9c6ee7b9",
+  "category": "Studio/Photo Studios/Natural-Light Studios",
+  "attributes": {
+   "light_type": "mixed",
+   "contrast": "medium",
+   "backplates": true,
+   "environment": "indoor",
+   "weather": "overcast"
+  },
+  "img_version": "4542fee3",
+  "download_count": 783120,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/brown_photostudio_02.png?width=256&height=256&format=webp&v=4542fee3"
+ }
+}

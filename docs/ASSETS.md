@@ -1,6 +1,6 @@
 # Asset sources: design
 
-> Status: design, not built. Roadmap: the "Assets ·" group in `status/systems.json`. Decision: D90.
+> Status: **built in Phase 6** (D90–D103). The reference is [DSL.md §22](DSL.md#22-asset-sources-phase-6); this page keeps the design and the reasoning. Roadmap: the "Assets ·" group in `status/systems.json`.
 
 Scenes often need material ae-compose can't draw: icons, photos, stock video, textures, HDRIs, 3D models, fonts, sound effects. Today the agent samples the user's local folders or the user sources files by hand. This adds two tools, `find_assets` and `fetch_asset`, that search free asset APIs, download the chosen file into the project and record its credit.
 
@@ -21,13 +21,14 @@ Checked 2026-11-05 against each API's docs, and by calling the keyless ones.
 | Icons, logos, emoji | [Iconify API](https://iconify.design/docs/api/) | none | per set; `/collections` returns SPDX (Material Symbols Apache-2.0, Lucide ISC, Phosphor MIT, Simple Icons CC0) | Public API limits abuse (no numbers given); self-hosting is the answer for heavy use. Brand logos carry trademarks whatever the license. |
 | Textures, HDRIs, 3D models | [Poly Haven API](https://polyhaven.com/our-api) | none | CC0 | Free for any use, commercial included. Requests need a unique User-Agent. A product using the live API must show the assets come from Poly Haven. |
 | Textures, materials, decals | [ambientCG API](https://docs.ambientcg.com/api/) v2 | none | CC0 | One-person site; the docs warn it isn't enterprise-stable, so cache. |
-| Photos, video | [Pexels API](https://www.pexels.com/api/documentation/) | free | Pexels license | 200 requests/hour, 20,000/month. Link to Pexels and credit the photographer where possible. |
+| Photos, video | [Pexels API](https://www.pexels.com/api/documentation/) | free, but **not issuing keys** (2026-11-05) | Pexels license | 200 requests/hour, 20,000/month. Link to Pexels and credit the photographer where possible. Deferred until keys open; Pixabay covers photos and video. |
 | Photos, video | [Pixabay API](https://pixabay.com/api/docs/) | free | Pixabay content license | 100 requests/60 s. Cache responses 24 h. Download files rather than hotlink; no systematic mass downloads. |
-| Photos, audio (Creative Commons) | [Openverse API](https://api.openverse.org/v1/) | optional | mixed CC, per item | Anonymous: 20/min, 200/day (from response headers); registered clients get more. Filter with `license_type=commercial`. |
+| Photos | [Unsplash API](https://unsplash.com/documentation) | free Access Key (added at the user's request, D95) | Unsplash license | Demo apps: 50 requests/hour. Ping the photo's `download_location` on every download; credit "Photo by X on Unsplash" with UTM links; the key stays in the user's keys.json. |
+| Photos, audio (Creative Commons) | [Openverse API](https://api.openverse.org/v1/) | optional | mixed CC, per item | Anonymous: 20/min, 200/day (from response headers); registered clients get more. `license_type=commercial` still lets NoDerivatives through, so ask for `license=cc0,pdm,by,by-sa` (D91). |
 | Fonts | [Fontsource API](https://fontsource.org/docs/api/introduction) | none | per family (`license: "OFL-1.1"`) | Fair-use limit. TTFs are per subset (`latin-400-normal.ttf`) on jsDelivr. |
 
 Left out for now:
-- **Unsplash**: its guidelines want hotlinked images, "non-automated" use and keys that never ship in a distributed app (a signing proxy). Pexels and Pixabay cover photos.
+- **Pexels**: not issuing API keys right now. Its adapter is built and tested against documented responses (D95) and turns on when a key is added.
 - **Freesound**: downloading originals needs OAuth2 per user; a plain key gets previews only.
 - **Lottie sources**: vanilla AE can't import Lottie.
 
@@ -44,7 +45,7 @@ Left out for now:
 - Icons come back as an `.svg` path for `<Svg src>`, which turns them into native shape layers. Fonts go through the install step (§6).
 - Appends the credit line to `CREDITS.md` next to the project. `deliver` copies it next to the renders.
 
-**In scenes**, `src="asset:pexels:12345"` (or `asset:iconify:lucide:rocket`) resolves at compile time, synchronously like `beatsOf`, from the cache or by downloading. Scenes then name their assets reproducibly instead of holding local paths.
+**In scenes**, `src="asset:pixabay:12345"` (or `asset:iconify:lucide:rocket`) resolves at compile time, synchronously like `beatsOf`, from the cache or by downloading. Scenes then name their assets reproducibly instead of holding local paths.
 
 ## 4. Adapters and records
 
@@ -52,7 +53,7 @@ Each source is one adapter: `search(query) → AssetHit[]` and `download(hit, va
 
 ```ts
 interface AssetHit {
-  id: string;                 // "pexels:12345", "iconify:lucide:rocket", "local:<hash>"
+  id: string;                 // "pixabay:12345", "iconify:lucide:rocket", "local:<hash>"
   source: string;
   kind: 'icon' | 'photo' | 'video' | 'texture' | 'hdri' | 'model' | 'font' | 'audio';
   title: string;
@@ -68,23 +69,23 @@ interface AssetHit {
 
 ## 5. Rules
 
-- **Keys** come from environment variables or `~/.ae-compose/keys.json`, never the repo or scene files. A source without a key is skipped, and `find_assets` says how to get one; `doctor` lists which sources are on.
+- **Keys** come from `~/.ae-compose/keys.json` (`{ "pixabay": "…", "unsplash": "<Access Key>", "pexels": "…", "openverse": "<token>" }`, every entry optional, an empty string counts as missing) or environment variables (`AEC_PIXABAY_KEY`, `AEC_UNSPLASH_KEY`, `AEC_PEXELS_KEY`, `AEC_OPENVERSE_TOKEN`), which win. An Openverse token is a plain string from its client-credentials exchange (it may expire); anonymous access needs none. Never the repo or scene files. A source without a key is skipped, and `find_assets` says how to get one; `doctor` lists which sources are on.
 - **License allowlist** by default: CC0, public domain, MIT, ISC, Apache-2.0, OFL, CC BY, and the Pexels and Pixabay licenses. NonCommercial and NoDerivatives are excluded; ShareAlike and trademarked logos are flagged in the hit.
 - **Caching**: API responses for 24 h (Pixabay requires it), downloads indefinitely by content hash.
 - **Politeness**: a `ae-compose/<version>` User-Agent on every request (Poly Haven requires a unique one), back off on 429, no bulk prefetching.
 - **AE formats**: prefer what vanilla AE imports natively. JPG/PNG/TIFF/EXR/HDR stills, H.264/HEVC MP4 and ProRes MOV video, glb/gltf models, WAV/MP3/AAC audio. SVG goes through `<Svg>`.
 
-## 6. Open questions
+## 6. Open questions (answered in Phase 6)
 
-- **Fonts.** AE only sees installed fonts. A per-user install on Windows (`%LOCALAPPDATA%\Microsoft\Windows\Fonts` plus an HKCU registry value) needs no admin rights. Probe whether AE 26.5 picks a new font up without a restart, and ask the user before the first install. Fontsource's TTFs are subset files; full-coverage files come from the google/fonts repository.
-- **Thumbnail grid size** for `find_assets` (how many hits are worth one image).
-- **Openverse**: register a client for the higher limits, or stay anonymous with 200 requests/day.
+- **Fonts.** A per-user install (file + HKCU value) plus `AddFontResource` and `WM_FONTCHANGE` is seen by the running AE 26.5 at once; without loading it into the session it isn't seen even after an AE restart (D93, D102). Fonts install only with the user's OK, from the google/fonts files (Fontsource's statics of variable families carry the wrong names).
+- **Thumbnail grid size**: 16 cells, 4 × 4 (D97).
+- **Openverse**: anonymous (200 requests/day is enough for search-and-pick; a token is used when present; D101).
 
 ## 7. Build order
 
 1. Core: `AssetHit`, adapter interface, cache, keys, license allowlist, `CREDITS.md`. Keyless adapters first: Iconify, Poly Haven, ambientCG, local folders.
 2. `find_assets` (with the thumbnail grid) and `fetch_asset` (download, copy into the project, import), plus `doctor` lines.
-3. Pexels, Pixabay and Openverse adapters.
+3. Pixabay and Openverse adapters (Openverse works without a key). Pexels once it issues keys again.
 4. Fonts through Fontsource, after the AE font probe.
 5. The `asset:` src scheme in the DSL, the skill section, unit tests with recorded API responses, one AE integration test (fetch, import, collect).
 

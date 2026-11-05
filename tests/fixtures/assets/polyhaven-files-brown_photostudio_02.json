@@ -1,0 +1,33 @@
+{
+ "hdri": {
+  "1k": {
+   "hdr": {
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/brown_photostudio_02_1k.hdr",
+    "size": 1648130,
+    "md5": "1362911793f932724326e6e56421f102"
+   },
+   "exr": {
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/1k/brown_photostudio_02_1k.exr",
+    "size": 1352580,
+    "md5": "fb8ceb57f57abfb12175e6a1c326ac53"
+   }
+  },
+  "2k": {
+   "hdr": {
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/brown_photostudio_02_2k.hdr",
+    "size": 6492863,
+    "md5": "15f9d0a5bde4a67e0b7d266f07bc166c"
+   },
+   "exr": {
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/2k/brown_photostudio_02_2k.exr",
+    "size": 5161529,
+    "md5": "9c5514879eb48ead00b1bcf0cf0549f6"
+   }
+  }
+ },
+ "tonemapped": {
+  "size": 39431590,
+  "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/brown_photostudio_02.jpg",
+  "md5": "758095f7e1b2ab8e6f27e613a70707f1"
+ }
+}

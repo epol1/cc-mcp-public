@@ -1,0 +1,342 @@
+{
+    "searchQuery": {
+        "forceSpecificAssetId": false,
+        "category": [],
+        "assetId": [],
+        "dataType": [
+            "HDRI"
+        ],
+        "creationMethod": null,
+        "queryString": "sky",
+        "sort": "Popular",
+        "createdUsingAssetId": null,
+        "basedOnAssetId": null,
+        "variationsOfAssetId": null,
+        "limit": 2,
+        "offset": 0
+    },
+    "numberOfResults": 282,
+    "nextPageHttp": "https://ambientcg.com/api/v2/full_json?type=hdri&q=sky&sort=popular&limit=2&offset=2&include=statisticsData%2ClabelData%2CpreviewData%2CtechnicalData%2CfileData",
+    "currentPageHttp": "https://ambientcg.com/api/v2/full_json?type=hdri&q=sky&sort=popular&limit=2&include=statisticsData%2ClabelData%2CpreviewData%2CtechnicalData%2CfileData",
+    "foundAssets": [
+        {
+            "assetId": "DaySkyHDRI069A",
+            "releaseDate": "2026-09-08 14:00:00",
+            "earlyReleaseDate": "2026-08-03 14:27:00",
+            "dataType": "HDRI",
+            "creationMethod": "UnknownOrOther",
+            "category": null,
+            "downloadCount": 5114,
+            "downloadCountMonth": 2577,
+            "downloadCountWeek": 578,
+            "popularityScore": 42.648695275646745,
+            "tags": [
+                "069",
+                "69",
+                "clear",
+                "clouds",
+                "day",
+                "dayskyhdri069a",
+                "hdri",
+                "sky",
+                "sunny"
+            ],
+            "dataTypeName": "HDRI",
+            "dataTypeDescription": "A photo texture with PBR maps.",
+            "creationMethodName": "Height field photogrammetry",
+            "creationMethodDescription": "Displacement generated using photogrammetry.",
+            "displayName": "Day Sky HDRI 069 A",
+            "customDisplayName": "",
+            "description": "",
+            "displayCategory": "Day Sky HDRI",
+            "shortLink": "https://ambientcg.com/a/DaySkyHDRI069A",
+            "dimensionX": 0,
+            "dimensionY": 0,
+            "dimensionZ": 0,
+            "createdUsing": [],
+            "basedOnThis": [],
+            "variations": [],
+            "nextVariationAssetId": null,
+            "previousVariationAssetId": null,
+            "nextAssetId": null,
+            "previousAssetId": null,
+            "downloadFolders": {
+                "default": {
+                    "title": "default",
+                    "downloadFiletypeCategories": {
+                        "zip": {
+                            "title": "zip",
+                            "downloads": [
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=DaySkyHDRI069A_1K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=DaySkyHDRI069A_1K.zip",
+                                    "fileName": "DaySkyHDRI069A_1K.zip",
+                                    "size": 3987903,
+                                    "filetype": "zip",
+                                    "attribute": "1K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=DaySkyHDRI069A_2K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=DaySkyHDRI069A_2K.zip",
+                                    "fileName": "DaySkyHDRI069A_2K.zip",
+                                    "size": 10753869,
+                                    "filetype": "zip",
+                                    "attribute": "2K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=DaySkyHDRI069A_4K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=DaySkyHDRI069A_4K.zip",
+                                    "fileName": "DaySkyHDRI069A_4K.zip",
+                                    "size": 37668642,
+                                    "filetype": "zip",
+                                    "attribute": "4K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=DaySkyHDRI069A_8K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=DaySkyHDRI069A_8K.zip",
+                                    "fileName": "DaySkyHDRI069A_8K.zip",
+                                    "size": 142789321,
+                                    "filetype": "zip",
+                                    "attribute": "8K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=DaySkyHDRI069A_12K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=DaySkyHDRI069A_12K.zip",
+                                    "fileName": "DaySkyHDRI069A_12K.zip",
+                                    "size": 306433293,
+                                    "filetype": "zip",
+                                    "attribute": "12K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=DaySkyHDRI069A_16K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=DaySkyHDRI069A_16K.zip",
+                                    "fileName": "DaySkyHDRI069A_16K.zip",
+                                    "size": 544736653,
+                                    "filetype": "zip",
+                                    "attribute": "16K",
+                                    "zipContent": []
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "previewLinks": [
+                {
+                    "url": "https://releases.pbr.one/main/hdri-shading.html#environment_url=https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/DaySkyHDRI069A/DaySkyHDRI069A_LQ.exr?33766,https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/DaySkyHDRI069A/DaySkyHDRI069A_HQ.exr?57549&environment_name=LQ,HQ",
+                    "name": {
+                        "id": 1,
+                        "slug": "pbr-one-panorama-shading",
+                        "title": "3D Preview",
+                        "description": "description"
+                    },
+                    "displayName": "",
+                    "iconName": ""
+                },
+                {
+                    "url": "https://releases.pbr.one/main/hdri-exposure.html#environment_url=https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/DaySkyHDRI069A/DaySkyHDRI069A_LQ.exr?64300,https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/DaySkyHDRI069A/DaySkyHDRI069A_HQ.exr?9496&environment_name=LQ,HQ",
+                    "name": {
+                        "id": 2,
+                        "slug": "pbr-one-panorama-exposure",
+                        "title": "Exposure Preview",
+                        "description": "description"
+                    },
+                    "displayName": "",
+                    "iconName": ""
+                }
+            ],
+            "previewType": "Default",
+            "maps": [],
+            "hasUsd": false,
+            "previewImage": {
+                "64-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-PNG/DaySkyHDRI069A.png",
+                "128-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-PNG/DaySkyHDRI069A.png",
+                "256-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-PNG/DaySkyHDRI069A.png",
+                "512-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-PNG/DaySkyHDRI069A.png",
+                "1024-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-PNG/DaySkyHDRI069A.png",
+                "2048-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-PNG/DaySkyHDRI069A.png",
+                "64-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-JPG-FFFFFF/DaySkyHDRI069A.jpg",
+                "128-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-JPG-FFFFFF/DaySkyHDRI069A.jpg",
+                "256-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-JPG-FFFFFF/DaySkyHDRI069A.jpg",
+                "512-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-JPG-FFFFFF/DaySkyHDRI069A.jpg",
+                "1024-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-JPG-FFFFFF/DaySkyHDRI069A.jpg",
+                "2048-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-FFFFFF/DaySkyHDRI069A.jpg",
+                "64-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-JPG-242424/DaySkyHDRI069A.jpg",
+                "128-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-JPG-242424/DaySkyHDRI069A.jpg",
+                "256-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-JPG-242424/DaySkyHDRI069A.jpg",
+                "512-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-JPG-242424/DaySkyHDRI069A.jpg",
+                "1024-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-JPG-242424/DaySkyHDRI069A.jpg",
+                "2048-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/DaySkyHDRI069A.jpg",
+                "64-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-WEBP/DaySkyHDRI069A.webp",
+                "128-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-WEBP/DaySkyHDRI069A.webp",
+                "256-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-WEBP/DaySkyHDRI069A.webp",
+                "512-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-WEBP/DaySkyHDRI069A.webp",
+                "1024-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-WEBP/DaySkyHDRI069A.webp",
+                "2048-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-WEBP/DaySkyHDRI069A.webp"
+            }
+        },
+        {
+            "assetId": "EveningSkyHDRI048B",
+            "releaseDate": "2026-10-06 20:00:00",
+            "earlyReleaseDate": "2026-09-05 22:00:00",
+            "dataType": "HDRI",
+            "creationMethod": "UnknownOrOther",
+            "category": null,
+            "downloadCount": 1997,
+            "downloadCountMonth": 1997,
+            "downloadCountWeek": 362,
+            "popularityScore": 39.53415318575573,
+            "tags": [
+                "048",
+                "48",
+                "evening",
+                "eveningskyhdri048b",
+                "hdri",
+                "sky"
+            ],
+            "dataTypeName": "HDRI",
+            "dataTypeDescription": "A photo texture with PBR maps.",
+            "creationMethodName": "Height field photogrammetry",
+            "creationMethodDescription": "Displacement generated using photogrammetry.",
+            "displayName": "Evening Sky HDRI 048 B",
+            "customDisplayName": "",
+            "description": "",
+            "displayCategory": "Evening Sky HDRI",
+            "shortLink": "https://ambientcg.com/a/EveningSkyHDRI048B",
+            "dimensionX": 0,
+            "dimensionY": 0,
+            "dimensionZ": 0,
+            "createdUsing": [],
+            "basedOnThis": [],
+            "variations": [],
+            "nextVariationAssetId": null,
+            "previousVariationAssetId": null,
+            "nextAssetId": null,
+            "previousAssetId": null,
+            "downloadFolders": {
+                "default": {
+                    "title": "default",
+                    "downloadFiletypeCategories": {
+                        "zip": {
+                            "title": "zip",
+                            "downloads": [
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=EveningSkyHDRI048B_1K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=EveningSkyHDRI048B_1K.zip",
+                                    "fileName": "EveningSkyHDRI048B_1K.zip",
+                                    "size": 2777176,
+                                    "filetype": "zip",
+                                    "attribute": "1K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=EveningSkyHDRI048B_2K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=EveningSkyHDRI048B_2K.zip",
+                                    "fileName": "EveningSkyHDRI048B_2K.zip",
+                                    "size": 5952284,
+                                    "filetype": "zip",
+                                    "attribute": "2K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=EveningSkyHDRI048B_4K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=EveningSkyHDRI048B_4K.zip",
+                                    "fileName": "EveningSkyHDRI048B_4K.zip",
+                                    "size": 17745312,
+                                    "filetype": "zip",
+                                    "attribute": "4K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=EveningSkyHDRI048B_8K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=EveningSkyHDRI048B_8K.zip",
+                                    "fileName": "EveningSkyHDRI048B_8K.zip",
+                                    "size": 63203159,
+                                    "filetype": "zip",
+                                    "attribute": "8K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=EveningSkyHDRI048B_12K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=EveningSkyHDRI048B_12K.zip",
+                                    "fileName": "EveningSkyHDRI048B_12K.zip",
+                                    "size": 135517160,
+                                    "filetype": "zip",
+                                    "attribute": "12K",
+                                    "zipContent": []
+                                },
+                                {
+                                    "fullDownloadPath": "https://ambientcg.com/get?file=EveningSkyHDRI048B_16K.zip",
+                                    "downloadLink": "https://ambientcg.com/get?file=EveningSkyHDRI048B_16K.zip",
+                                    "fileName": "EveningSkyHDRI048B_16K.zip",
+                                    "size": 235959765,
+                                    "filetype": "zip",
+                                    "attribute": "16K",
+                                    "zipContent": []
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "previewLinks": [
+                {
+                    "url": "https://releases.pbr.one/main/hdri-shading.html#environment_url=https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/EveningSkyHDRI048B/EveningSkyHDRI048B_LQ.exr?35936,https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/EveningSkyHDRI048B/EveningSkyHDRI048B_HQ.exr?78011&environment_name=LQ,HQ",
+                    "name": {
+                        "id": 1,
+                        "slug": "pbr-one-panorama-shading",
+                        "title": "3D Preview",
+                        "description": "description"
+                    },
+                    "displayName": "",
+                    "iconName": ""
+                },
+                {
+                    "url": "https://releases.pbr.one/main/hdri-exposure.html#environment_url=https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/EveningSkyHDRI048B/EveningSkyHDRI048B_LQ.exr?94464,https://f003.backblazeb2.com/file/ambientCG-Web/media/hdri-preview/EveningSkyHDRI048B/EveningSkyHDRI048B_HQ.exr?21301&environment_name=LQ,HQ",
+                    "name": {
+                        "id": 2,
+                        "slug": "pbr-one-panorama-exposure",
+                        "title": "Exposure Preview",
+                        "description": "description"
+                    },
+                    "displayName": "",
+                    "iconName": ""
+                }
+            ],
+            "previewType": "Default",
+            "maps": [],
+            "hasUsd": false,
+            "previewImage": {
+                "64-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-PNG/EveningSkyHDRI048B.png",
+                "128-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-PNG/EveningSkyHDRI048B.png",
+                "256-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-PNG/EveningSkyHDRI048B.png",
+                "512-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-PNG/EveningSkyHDRI048B.png",
+                "1024-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-PNG/EveningSkyHDRI048B.png",
+                "2048-PNG": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-PNG/EveningSkyHDRI048B.png",
+                "64-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-JPG-FFFFFF/EveningSkyHDRI048B.jpg",
+                "128-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-JPG-FFFFFF/EveningSkyHDRI048B.jpg",
+                "256-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-JPG-FFFFFF/EveningSkyHDRI048B.jpg",
+                "512-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-JPG-FFFFFF/EveningSkyHDRI048B.jpg",
+                "1024-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-JPG-FFFFFF/EveningSkyHDRI048B.jpg",
+                "2048-JPG-FFFFFF": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-FFFFFF/EveningSkyHDRI048B.jpg",
+                "64-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-JPG-242424/EveningSkyHDRI048B.jpg",
+                "128-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-JPG-242424/EveningSkyHDRI048B.jpg",
+                "256-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-JPG-242424/EveningSkyHDRI048B.jpg",
+                "512-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-JPG-242424/EveningSkyHDRI048B.jpg",
+                "1024-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-JPG-242424/EveningSkyHDRI048B.jpg",
+                "2048-JPG-242424": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/EveningSkyHDRI048B.jpg",
+                "64-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/64-WEBP/EveningSkyHDRI048B.webp",
+                "128-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/128-WEBP/EveningSkyHDRI048B.webp",
+                "256-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/256-WEBP/EveningSkyHDRI048B.webp",
+                "512-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/512-WEBP/EveningSkyHDRI048B.webp",
+                "1024-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/1024-WEBP/EveningSkyHDRI048B.webp",
+                "2048-WEBP": "https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-WEBP/EveningSkyHDRI048B.webp"
+            }
+        }
+    ]
+}

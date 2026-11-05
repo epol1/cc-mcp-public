@@ -25,6 +25,7 @@ Source of truth is the code: `src/dsl/*.ts` (public API), `src/compile/*.ts` (ho
 18. [AE gotchas handled for you](#18-ae-gotchas-handled-for-you)
 19. [Known limitations](#19-known-limitations)
 21. [Creative toolkit (Phase 5)](#21-creative-toolkit-phase-5): expression library, rig effects, fields, cloner, beat sync, reframe and delivery, motion previews and style lint, designer panel, typography, backgrounds, data viz, storyboard, recipes, UI kit, transitions, path tools
+22. [Asset sources (Phase 6)](#22-asset-sources-phase-6): find_assets, fetch_asset, `asset:` sources, credits, fonts
 
 > **Components that make several layers** (`OrbitCamera`, `ParticleWorld`, `ZStack`, `Grid3D`, `Circle3D`, `Parallax`) return a fragment, so both the JSX form `<ParticleWorld preset="sparks" />` and the function form `{ParticleWorld({ preset: 'sparks' })}` type-check and compile to the same thing.
 
@@ -1455,6 +1456,8 @@ scene({ name: 'Promo', duration: '6s', lint: { safe: 'title', readingRate: 4, ig
 | `designer_inbox` | Unread notes a designer sent from the panel's Ask Claude box, with comp, time and selection (§21.8). |
 | `plan_scene` | Check a beat sheet against the direction rules and scaffold a buildable scene (§21.12). |
 | `list_recipes` / `instantiate_recipe` / `save_recipe` | Search the recipe library, make a new scene from a recipe with new params and brand, save a finished scene as a recipe (§21.13). |
+| `find_assets` | Search local folders and free asset APIs (icons, photos, video, textures, HDRIs, models, fonts, audio); numbered results plus a thumbnail grid; license allowlist applied (§22). |
+| `fetch_asset` | Download one asset, check and convert it, copy it next to the saved project, import it in one undo step and credit it in CREDITS.md; fonts install only with `install: true` (§22). |
 | `run_extendscript` | Raw ES3 escape hatch (logged). Never touch shape-gradient properties with it. Wrap mutations in an undo group. |
 
 ### CLI (`aec`)
@@ -1473,6 +1476,7 @@ aec preview [comp] [--range 0-3] [--scale 0.5] [--fps 15] [--gif]
 aec render [comp] [--format mp4|mov|mov-alpha|prores|prores4444|png|tiff|avi] [--quality high] [--out path] [--range 0-5] [--work-area] [--draft]
 aec effects [query] [--describe <name>] [--refresh]
 aec import <file> [--folder name]
+aec assets find <query> [--kind …] | fetch <id> [--variant …] [--install] | index   (§22)
 aec dialogs [--answer <hwnd> <button>]
 aec recover [--force]
 aec eval "<extendscript>"
@@ -1765,3 +1769,69 @@ Each transition has one controller null with an "aec <Kind>" effect: keyed Progr
 - `<Trail id count lag opacity>` / `<Echo>` around an animated element: copies follow it with a live lag and fading opacity.
 - `<DrawOn d color width duration>`: a stroke draws on along the path (Trim Paths), or from a `progress` control.
 - `<Morph from to | shapes={[a, b, c]} duration>`: one shape morphs into another; vertices are matched (subdivided, same winding, start point with the least travel) so the morph doesn't twist.
+
+## 22. Asset sources (Phase 6)
+
+Material ae-compose can't draw (icons, photos, stock video, textures, HDRIs, 3D models, fonts, sound) comes from the user's local folders and free asset APIs through two tools and one scene scheme. Design: `docs/ASSETS.md`; decisions D90–D101.
+
+### 22.1 Sources
+
+| Source | Kinds | Key | License |
+|---|---|---|---|
+| `local` | everything AE imports | none | the user's own files (credited as "license unknown") |
+| `iconify` | icon | none | per set: MIT, ISC, Apache-2.0, OFL, CC0, CC BY, CC BY-SA (flagged); GPL/NC/MPL/BSD sets are left out; brand sets flagged as trademarks |
+| `polyhaven` | hdri, texture, model | none | CC0 |
+| `ambientcg` | texture, hdri | none | CC0 |
+| `pixabay` | photo, video | `pixabay` | Pixabay Content License |
+| `unsplash` | photo | `unsplash` (Access Key) | Unsplash License |
+| `pexels` | photo, video | `pexels` | Pexels License |
+| `openverse` | photo, audio | optional `openverse` token | CC0, PDM, CC BY, CC BY-SA (never NC or ND) |
+| `fontsource` | font | none | OFL, Apache-2.0, UFL |
+
+Keys live in `~/.ae-compose/keys.json` (`{ "pixabay": "…", "unsplash": "…" }`) or environment variables (`AEC_PIXABAY_KEY`, `AEC_UNSPLASH_KEY`, `AEC_PEXELS_KEY`, `AEC_OPENVERSE_TOKEN`), never in scenes or the repo. A source without a key is skipped, and `find_assets` and `doctor` say how to get one. The local index samples `E:\Projects` and `\\goblin\depot\{3D,Evan,Work}` (`AEC_ASSET_ROOTS`, `;`-separated) for 8 s per root (`AEC_LOCAL_INDEX_SEC`) and is rebuilt weekly or with `aec assets index`; queries never scan.
+
+**Licenses.** Only the allowlist comes back: CC0, public domain, MIT, ISC, Apache-2.0, OFL, CC BY (any version), and the Pexels, Pixabay and Unsplash licenses. NonCommercial and NoDerivatives never do. ShareAlike items and brand logos are flagged in every result and in their credit line. `license: 'cc0'` keeps only public domain (no credit required).
+
+### 22.2 `find_assets`
+
+`{ query, kind?, orientation?, minWidth?, minDuration?, license?, sources?, limit? }` → numbered lines (`id [kind] "title" size · license · flags · by author · variants`) and one numbered thumbnail grid image (up to 16 cells; icons drawn light on dark, fonts as text cards). Local results come first, then each API in turn. Sources that were skipped or failed are listed with the reason.
+
+### 22.3 `fetch_asset`
+
+`{ id, variant?, import?, folder?, install? }`:
+1. Gets the record (`variant` = a label from the results, e.g. `1k-hdr`, `2k-jpg`, `1080p`, `web`, `full`; a prefix like `2k` works; default: the source's recommended one) and refuses anything off the allowlist.
+2. Downloads into the cache `~/.ae-compose/assets/<source>/<id>/<variant>/` (5 GB, least recently used evicted first; `AEC_ASSET_CACHE_GB`), with a size cap per kind.
+3. Checks every file **by its content** (executables, scripts and HTML pages are refused; the extension follows the content; a glTF's `.bin` buffers are copied into the `.glb` as data, never opened otherwise), strips scripts and external references from SVGs, converts what AE can't import (WebP/AVIF → PNG, OGG/FLAC → WAV, WebM → H.264 MP4), unpacks ambientCG ZIPs (the color map is the main file; the other maps come along), and packs Poly Haven glTF models with their `.bin` and textures into **one `.glb`**.
+4. Copies the files into `footage/<source>/<id>/` **next to the saved project**, so Collect Files and a moved project folder keep them. With an unsaved project the files stay in the cache and the result says so.
+5. Imports them in one undo step (not icons, which are for `<Svg>`, and not fonts), tagged `aec:asset=<id>` in the item comment.
+6. Adds the credit line to `CREDITS.md` next to the project: `- "Title" by Author (url), Source (page), License (url). Files: … [id]`.
+
+**Fonts** download the full-coverage files from google/fonts (variable fonts list every named instance as a PostScript name, e.g. `SpaceGrotesk-Bold`). `install: true` installs them for the current user (Windows, no admin), only with the user's OK. The files are loaded into the Windows session, so the running AE sees them at once (D102), and the result lists the PostScript names AE now resolves. Use those in `font=`; lint's missing-font check flags any substitute.
+
+### 22.4 `asset:` sources in scenes
+
+Any `src` (and `hdri`) takes `asset:<id>[@variant]`:
+
+```tsx
+<Svg src="asset:iconify:lucide:rocket" width={240} color="#f2f4f8" draw={tween({ from: 0, to: 100, duration: '1.2s' })} />
+<Footage src="asset:pixabay:video:4006@1080p" fit="cover" muted />
+<Model src="asset:polyhaven:rubber_duck_toy@1k-gltf" position={[960, 600, 0]} scale={300} />
+<Light kind="environment" hdri="asset:polyhaven:brown_photostudio_02@1k-hdr" />
+<Audio src="asset:openverse:audio:eab8a6e2-0ac8-4615-9e0d-ebde30523783" />
+```
+
+An asset the scene uses some other way than a `src` (a font it names by PostScript name, a file an expression reads) is recorded with `asset('fontsource:space-grotesk@full')` inside the scene function, which returns its cached path; the build then copies and credits it like the rest.
+
+They resolve at compile time, synchronously like `beatsOf`: from the cache, or by fetching in a child process. The build copies each into the project's footage folder, points the comp at the copy, and credits it in `CREDITS.md` next to the project **and** next to the scene file, so a scene folder carries its credits. The build report lists `assets` and `credits`. Use the refs in JSX props (resolved during the compile), not in module-level code that runs once per process. `deliver` copies `CREDITS.md` next to the renders.
+
+`<Svg>` handles icon sets: `currentColor` takes `color`, `color` recolors strokes and fills, and outline icons (`fill="none"`) stay outlines, so `draw` draws them on stroke by stroke.
+
+### 22.5 CLI
+
+```
+aec assets find <query> [--kind icon|photo|video|texture|hdri|model|font|audio] [--sources a,b] [--limit 12] [--license cc0]
+aec assets fetch <id> [--variant 2k-hdr] [--no-import] [--install]
+aec assets index                   rebuild the local-folder index
+```
+
+`pnpm test:live` calls each API once (search only) to catch response changes; unit tests run on recorded responses in `tests/fixtures/assets/`.

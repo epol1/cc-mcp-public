@@ -1,6 +1,11 @@
 # Premiere counterpart: plan (draft)
 
-Status: proposal, not started. Nothing here is on the roadmap yet (`status/systems.json`); it goes there once the plan is accepted.
+Status: proposal, not started. The run prompt is **`GOAL-PREMIERE.md`** (Phase 7), which supersedes this draft where they differ. It adds:
+- reuse of the Phase 5 toolkit: captions, beat sync, reframe/deliver, pacing previews, style lint, `plan_scene` → `plan_cut`, recipes → cut templates, and the designer panel
+- the asset sources from `docs/ASSETS.md`, moved into a shared core
+- a **media library**: a SQLite index of the user's footage by transcript, shot descriptions, audio facts and sync groups, which both tools search
+
+That run turns this file into the design doc and adds the "Pr ·" roadmap groups.
 
 ## 1. Goal
 

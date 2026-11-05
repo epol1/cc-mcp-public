@@ -49,6 +49,24 @@ export async function pressDialog(hwnd: number, button: string, app: HostApp = '
   return JSON.parse(raw || '{"pressed":false}');
 }
 
+/** AE's open dialogs by Win32 only (fast; no captures, no UI Automation). */
+export async function quickDialogs(): Promise<{ hwnd: number; title: string }[]> {
+  if (process.platform !== 'win32') return [];
+  return JSON.parse((await ps(['-Action', 'dialogs'])) || '[]');
+}
+
+/** Types text into a common file dialog's "File name:" box (Win32; never another field), e.g. for Collect Files. */
+export async function setDialogText(hwnd: number, text: string): Promise<{ set: boolean; via?: string; value?: string; error?: string }> {
+  const raw = await ps(['-Action', 'settext', '-Hwnd', String(hwnd), '-Button', text]);
+  return JSON.parse(raw || '{"set":false}');
+}
+
+/** Clicks a dialog's child button by control id (1 = OK/Save, 2 = Cancel). */
+export async function clickDialogButton(hwnd: number, id: number): Promise<{ pressed: boolean; via?: string; error?: string }> {
+  const raw = await ps(['-Action', 'click', '-Hwnd', String(hwnd), '-Button', String(id)]);
+  return JSON.parse(raw || '{"pressed":false}');
+}
+
 /** Dialogs we answer automatically because there is only one sensible answer. Matched on UIA text when available. */
 const AUTO_ANSWERS: { match: RegExp; button: string }[] = [
   { match: /Crash Repair Options/i, button: 'Continue' },
