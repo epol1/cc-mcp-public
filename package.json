@@ -21,7 +21,8 @@
     "aec": "node bin/aec.mjs",
     "mcp": "node bin/aec-mcp.mjs",
     "postinstall": "node build/runtime.mjs",
-    "install:cep": "node scripts/install-cep.mjs"
+    "install:cep": "node scripts/install-cep.mjs",
+    "test:live": "vitest run tests/live --no-file-parallelism"
   },
   "engines": {
     "node": ">=22"

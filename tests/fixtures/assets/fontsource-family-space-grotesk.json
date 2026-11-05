@@ -1,0 +1,27 @@
+[
+ {
+  "id": "space-grotesk",
+  "family": "Space Grotesk",
+  "subsets": [
+   "latin",
+   "latin-ext",
+   "vietnamese"
+  ],
+  "weights": [
+   300,
+   400,
+   500,
+   600,
+   700
+  ],
+  "styles": [
+   "normal"
+  ],
+  "defSubset": "latin",
+  "variable": true,
+  "lastModified": "2025-09-05",
+  "category": "sans-serif",
+  "license": "OFL-1.1",
+  "type": "google"
+ }
+]

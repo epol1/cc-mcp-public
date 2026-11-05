@@ -66,6 +66,9 @@ export async function doctor(): Promise<{ ok: boolean; checks: Check[] }> {
   try { execFileSync('ffmpeg', ['-version'], { stdio: 'ignore', windowsHide: true }); add({ name: 'ffmpeg (for MP4/GIF previews)', ok: true, detail: 'found' }); }
   catch { add({ name: 'ffmpeg (for MP4/GIF previews)', ok: false, warn: true, detail: 'not on PATH', fix: 'winget install Gyan.FFmpeg' }); }
   try { await import('sharp'); add({ name: 'sharp (contact sheets)', ok: true, detail: 'loaded' }); } catch (e: any) { add({ name: 'sharp (contact sheets)', ok: false, detail: e.message, fix: 'pnpm install' }); }
+  // Asset sources (Phase 6): which are on and why not, and the download cache against its cap.
+  try { for (const c of await (await import('./assets.ts')).assetDoctorLines()) add(c); }
+  catch (e: any) { add({ name: 'asset sources', ok: false, warn: true, detail: e.message }); }
   void os;
   return { ok: checks.every((c) => c.ok || c.warn), checks };
 }

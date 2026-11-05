@@ -1,0 +1,618 @@
+{
+ "anti_slip_concrete": {
+  "name": "Anti Slip Concrete",
+  "type": 1,
+  "tags": [
+   "rough",
+   "concrete",
+   "antislip",
+   "outdoor",
+   "weathered",
+   "exterior",
+   "scuffed",
+   "chipped",
+   "scratched",
+   "nonslip",
+   "pavement",
+   "rough  ",
+   "coarse"
+  ],
+  "authors": {
+   "Charlotte Baglioni": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "dimensions": [
+   2500,
+   2500
+  ],
+  "date_published": 1731542400,
+  "files_hash": "6cb6548b7d539a2af92acae83c8943a7140ed444",
+  "description": "Free 8K texture: weathered anti-slip concrete with raised tactile dots, coarse gritty surface, scuffed, chipped and scratched exterior pavement material.",
+  "categories": [
+   "floor",
+   "man made",
+   "concrete",
+   "plaster-concrete"
+  ],
+  "category_id": "8e19ddef-056e-5554-834d-2fd52f1c17f7",
+  "category": "Concrete/Cast Walls & Floors/Trowel & Brushed Finish",
+  "attributes": {
+   "surface_use": "floor",
+   "condition": [
+    "weathered",
+    "damaged",
+    "worn"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "231e4142",
+  "download_count": 4651,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/anti_slip_concrete.png?width=256&height=256&format=webp&v=231e4142"
+ },
+ "blue_plaster_wall": {
+  "type": 1,
+  "name": "Blue Plaster Wall",
+  "categories": [
+   "outdoor",
+   "wall",
+   "plaster-concrete"
+  ],
+  "tags": [
+   "rough",
+   "painted",
+   "cracking paint",
+   "cracks",
+   "bumpy",
+   "cracking",
+   "plaster",
+   "blue",
+   "plastering",
+   "painted concrete",
+   "chalky"
+  ],
+  "description": "Free 8K blue plaster wall texture with a matte, rough finish, fine bumps, and subtle crackled paint lines for a weathered, slightly chalky look.",
+  "authors": {
+   "Dimitrios Savva": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "dimensions": [
+   2000,
+   2000
+  ],
+  "files_hash": "5755d43ca9f68ae11d8b2865774901c557796020",
+  "date_published": 1781481600,
+  "category_id": "9d3c7da3-4959-5d42-8abc-5c31017a2fd4",
+  "category": "Concrete/Plaster & Stucco/Painted Plaster",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "painted",
+    "weathered"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "7853d265",
+  "download_count": 6943,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/blue_plaster_wall.png?width=256&height=256&format=webp&v=7853d265"
+ },
+ "blue_plaster_weathered": {
+  "type": 1,
+  "name": "Blue Plaster Weathered",
+  "categories": [
+   "wall",
+   "man made",
+   "plaster",
+   "outdoor"
+  ],
+  "tags": [
+   "old",
+   "weathered",
+   "worn",
+   "discolored",
+   "chipped",
+   "damaged",
+   "wall",
+   "plaster",
+   "plastered",
+   "deteriorated",
+   "exterior",
+   "blue",
+   "peeling",
+   "timeworn"
+  ],
+  "authors": {
+   "Amal Kumar": "All"
+  },
+  "max_resolution": [
+   16384,
+   16384
+  ],
+  "dimensions": [
+   2000,
+   2000
+  ],
+  "date_published": 1748476800,
+  "files_hash": "056e36148fa19d3ab040aa65914c11ecff3bebcf",
+  "description": "Free 16K texture of weathered blue exterior plaster, with peeling paint, chipped layers, rough flaking surface and muted underlying stains.",
+  "category_id": "ebaa964c-b45c-52e2-bd50-892d64616d87",
+  "category": "Concrete/Plaster & Stucco/Bare Plaster",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "painted",
+    "weathered",
+    "damaged"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "04ded35a",
+  "download_count": 8351,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/blue_plaster_weathered.png?width=256&height=256&format=webp&v=04ded35a"
+ },
+ "brushed_concrete": {
+  "date_published": 1658793600,
+  "name": "Brushed Concrete ",
+  "categories": [
+   "man made",
+   "dirty",
+   "floor",
+   "plaster-concrete",
+   "concrete"
+  ],
+  "type": 1,
+  "tags": [
+   "rough",
+   "weathered",
+   "dirty",
+   "floor",
+   "ground",
+   "discolored",
+   "stained"
+  ],
+  "authors": {
+   "Dario Barresi": "Processing",
+   "Dimitrios Savva": "Photography"
+  },
+  "dimensions": [
+   2500,
+   2500
+  ],
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "files_hash": "2274ffd02c42d765d335c85e9067398253d6b45e",
+  "description": "Free 8K texture of rough brushed concrete with circular trowel marks, weathered discoloration, stains and subtle surface pitting.",
+  "category_id": "8e19ddef-056e-5554-834d-2fd52f1c17f7",
+  "category": "Concrete/Cast Walls & Floors/Trowel & Brushed Finish",
+  "attributes": {
+   "surface_use": "floor",
+   "condition": [
+    "weathered",
+    "damaged"
+   ],
+   "origin": "man_made"
+  },
+  "img_version": "33e6ea95",
+  "download_count": 75846,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/brushed_concrete.png?width=256&height=256&format=webp&v=33e6ea95"
+ },
+ "brushed_concrete_03": {
+  "name": "Brushed Concrete 03",
+  "categories": [
+   "outdoor",
+   "man made",
+   "floor",
+   "plaster-concrete",
+   "concrete"
+  ],
+  "type": 1,
+  "info": null,
+  "authors": {
+   "Amal Kumar": "All"
+  },
+  "tags": [
+   "rough",
+   "weathered",
+   "dirty",
+   "dry",
+   "worn",
+   "scratched",
+   "brown",
+   "concrete",
+   "chipped"
+  ],
+  "dimensions": [
+   2000,
+   2000
+  ],
+  "date_published": 1674518400,
+  "prepaid": true,
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "files_hash": "1c89b458ae4b06e5a879b1e3f29d8ae0c7266203",
+  "description": "Free 8K texture of brown brushed concrete with a rough, weathered, dry surface - horizontal brush lines, scratches, chips and gritty, worn detail.",
+  "category_id": "8e19ddef-056e-5554-834d-2fd52f1c17f7",
+  "category": "Concrete/Cast Walls & Floors/Trowel & Brushed Finish",
+  "attributes": {
+   "surface_use": "floor",
+   "condition": [
+    "weathered",
+    "damaged",
+    "worn"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "b3167121",
+  "download_count": 36265,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/brushed_concrete_03.png?width=256&height=256&format=webp&v=b3167121"
+ },
+ "brushed_concrete_04": {
+  "type": 1,
+  "name": "Brushed Concrete 04",
+  "categories": [
+   "outdoor",
+   "man made",
+   "plaster-concrete",
+   "concrete"
+  ],
+  "tags": [
+   "rough",
+   "weathered",
+   "concrete",
+   "plaster",
+   "brushed",
+   "linear grooves",
+   "scratched",
+   "grooved",
+   "concrete blocks",
+   "chipped",
+   "cement",
+   "worn",
+   "exterior"
+  ],
+  "description": "Free 8K brushed concrete texture with tight horizontal brush marks, panel joints, tiny chips, and a rough, matte brown-gray tone.",
+  "authors": {
+   "Amal Kumar": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "dimensions": [
+   2000.9167194366455,
+   2000.917911529541
+  ],
+  "files_hash": "c38a11c7f36bac3678d8b0e0bbd41395e8521841",
+  "date_published": 1784678400,
+  "category_id": "8e19ddef-056e-5554-834d-2fd52f1c17f7",
+  "category": "Concrete/Cast Walls & Floors/Trowel & Brushed Finish",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "weathered",
+    "damaged",
+    "worn"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "4ca95bfc",
+  "download_count": 7644,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/brushed_concrete_04.png?width=256&height=256&format=webp&v=4ca95bfc"
+ },
+ "brushed_concrete_2": {
+  "date_published": 1658966400,
+  "name": "Brushed Concrete 2",
+  "categories": [
+   "man made",
+   "dirty",
+   "concrete",
+   "floor",
+   "plaster-concrete"
+  ],
+  "type": 1,
+  "tags": [
+   "rough",
+   "weathered",
+   "dirty",
+   "discolored",
+   "ground",
+   "stained",
+   "floor"
+  ],
+  "dimensions": [
+   2500,
+   2500
+  ],
+  "authors": {
+   "Dario Barresi": "Processing",
+   "Dimitrios Savva": "Photography"
+  },
+  "sponsors": [
+   "4047949",
+   "59361351",
+   "4714267"
+  ],
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "files_hash": "1d00f56534971001f7f99d12209cd2685d7024c0",
+  "description": "Free 8K texture of rough, brushed concrete with weathered discoloration, dirt, stains and subtle tool marks - a matte, gritty plaster/concrete surface.",
+  "category_id": "8e19ddef-056e-5554-834d-2fd52f1c17f7",
+  "category": "Concrete/Cast Walls & Floors/Trowel & Brushed Finish",
+  "attributes": {
+   "surface_use": "floor",
+   "condition": [
+    "weathered",
+    "damaged"
+   ],
+   "origin": "man_made"
+  },
+  "img_version": "96eea2fc",
+  "download_count": 29888,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/brushed_concrete_2.png?width=256&height=256&format=webp&v=96eea2fc"
+ },
+ "chipped_concrete": {
+  "type": 1,
+  "name": "Chipped Concrete",
+  "categories": [
+   "floor",
+   "man made",
+   "plaster-concrete"
+  ],
+  "tags": [
+   "rough",
+   "pitted",
+   "weathered",
+   "concrete",
+   "chipped",
+   "cement",
+   "stippled",
+   "rough  ",
+   "scuffed",
+   "plaster",
+   "plasterconcrete",
+   "dimpled"
+  ],
+  "description": "Free 8K texture: rough, chipped concrete with dense pitting, warm gray color, matte finish, and clear height detail.",
+  "authors": {
+   "Amal Kumar": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "dimensions": [
+   2002.079963684082,
+   2002.0811557769775
+  ],
+  "files_hash": "8e9823439fe8c05156c97078f95b26142978ec36",
+  "date_published": 1782691200,
+  "category_id": "0a7b70c3-bc79-531b-8cf3-cadeb4cbf686",
+  "category": "Concrete/Cast Walls & Floors/Bare Cast",
+  "attributes": {
+   "surface_use": "floor",
+   "condition": [
+    "weathered",
+    "damaged"
+   ],
+   "origin": "man_made"
+  },
+  "img_version": "703d2357",
+  "download_count": 1773,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/chipped_concrete.png?width=256&height=256&format=webp&v=703d2357"
+ },
+ "clay_plaster": {
+  "name": "Clay Plaster",
+  "categories": [
+   "wall",
+   "man made",
+   "plaster-concrete",
+   "outdoor"
+  ],
+  "type": 1,
+  "tags": [
+   "rough",
+   "wall",
+   "plaster",
+   "plastered",
+   "cracked",
+   "exterior",
+   "cracks",
+   "scratched",
+   "uneven",
+   "clay",
+   "coarse"
+  ],
+  "authors": {
+   "Amal Kumar": "All"
+  },
+  "info": null,
+  "dimensions": [
+   1999.9996423721313,
+   1999.9996423721313
+  ],
+  "date_published": 1703116800,
+  "max_resolution": [
+   16384,
+   16384
+  ],
+  "files_hash": "bef2f39d8ae0254580906888023f2e3b58e50059",
+  "description": "Free 16K texture. Warm brown clay plaster material with a coarse, uneven surface, visible cracks and scratches, and a weathered, rough finish.",
+  "category_id": "615c9883-4041-5b7a-8947-869444e169cd",
+  "category": "Concrete/Plaster & Stucco/Clay & Earth Plaster",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "weathered",
+    "cracked"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "e58a3be1",
+  "download_count": 20638,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/clay_plaster.png?width=256&height=256&format=webp&v=e58a3be1"
+ },
+ "concrete": {
+  "type": 1,
+  "tags": [
+   "bare",
+   "old",
+   "weathered",
+   "panels"
+  ],
+  "date_published": 1529741694,
+  "name": "Concrete",
+  "categories": [
+   "plaster-concrete",
+   "man made",
+   "dirty",
+   "outdoor",
+   "wall",
+   "concrete"
+  ],
+  "authors": {
+   "Rob Tuytel": "All"
+  },
+  "sponsors": [
+   "3237733"
+  ],
+  "dimensions": [
+   4000,
+   4000
+  ],
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "files_hash": "3bb59b6818bb5d9bd9134368b6647a6f60173723",
+  "description": "Free 8K texture of weathered concrete panels with vertical grooves, surface pitting, dirt streaks and a rough, matte gray-brown finish.",
+  "category_id": "b4f089ac-1410-5388-bd51-34e956f0a0a5",
+  "category": "Concrete/Cast Walls & Floors/Board-Form & Panels",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "weathered",
+    "worn"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "1f522f1d",
+  "download_count": 91642,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/concrete.png?width=256&height=256&format=webp&v=1f522f1d"
+ },
+ "concrete_block_wall": {
+  "type": 1,
+  "name": "Concrete Block Wall",
+  "tags": [
+   "masonry",
+   "concrete",
+   "rough",
+   "coarse",
+   "exterior",
+   "blocks",
+   "outdoor",
+   "stonework",
+   "ancient walls",
+   "rough concrete"
+  ],
+  "authors": {
+   "Charlotte Baglioni": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "dimensions": [
+   2000,
+   2000
+  ],
+  "date_published": 1740441600,
+  "files_hash": "644bfae9b200347661789b84af437c8ce6f2e957",
+  "description": "Free 8K texture of rough, coarse concrete block wall with carved stonework blocks, deep mortar joints and a weathered, gritty surface.",
+  "categories": [
+   "wall",
+   "man made",
+   "concrete",
+   "plaster-concrete"
+  ],
+  "category_id": "fe4b5f94-cdb5-5a48-bacc-4ce2f962d3e3",
+  "category": "Brick & Block/Concrete Block & Paver/Concrete Block (CMU)",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "weathered"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "bdde7ee6",
+  "download_count": 6780,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/concrete_block_wall.png?width=256&height=256&format=webp&v=bdde7ee6"
+ },
+ "concrete_block_wall_02": {
+  "type": 1,
+  "name": "Concrete Block Wall 02",
+  "tags": [
+   "masonry",
+   "concrete",
+   "rough",
+   "coarse",
+   "exterior",
+   "blocks",
+   "outdoor",
+   "stonework",
+   "ancient walls"
+  ],
+  "authors": {
+   "Charlotte Baglioni": "All"
+  },
+  "max_resolution": [
+   8192,
+   8192
+  ],
+  "dimensions": [
+   2005.000114440918,
+   2005.000114440918
+  ],
+  "date_published": 1752105600,
+  "files_hash": "3b0b4119072147f488130d38a362de8c492dc072",
+  "description": "Free 8K concrete block wall texture with rough, coarse, weathered surface and deep block joints - authentic exterior masonry for ancient stonework.",
+  "categories": [
+   "wall",
+   "man made",
+   "concrete",
+   "plaster-concrete",
+   "dirty"
+  ],
+  "category_id": "fe4b5f94-cdb5-5a48-bacc-4ce2f962d3e3",
+  "category": "Brick & Block/Concrete Block & Paver/Concrete Block (CMU)",
+  "attributes": {
+   "surface_use": "wall",
+   "condition": [
+    "weathered"
+   ],
+   "origin": "man_made",
+   "setting": "outdoor"
+  },
+  "img_version": "8c2fec2a",
+  "download_count": 2995,
+  "thumbnail_url": "https://cdn.polyhaven.com/asset_img/thumbs/concrete_block_wall_02.png?width=256&height=256&format=webp&v=8c2fec2a"
+ }
+}

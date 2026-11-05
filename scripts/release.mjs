@@ -34,7 +34,7 @@ fs.mkdirSync(path.join(root, 'skills/ae-compose/reference'), { recursive: true }
 fs.copyFileSync(path.join(root, 'docs/DSL.md'), path.join(root, 'skills/ae-compose/reference/DSL.md'));
 run(process.execPath, [path.join(root, 'status/build.mjs'), '--record', next]);
 run('git', ['add', '-A']);
-run('git', ['commit', '-q', '-m', `${next} ${message}`, '-m', 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>']);
+run('git', ['commit', '-q', '-m', `${next} ${message}`]);
 if (!args.includes('--no-push')) {
   const remotes = execFileSync('git', ['remote'], { cwd: root, encoding: 'utf8' }).trim();
   if (remotes.split('\n').includes('origin')) run('git', ['push', '-q', 'origin', 'HEAD']);

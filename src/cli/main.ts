@@ -149,6 +149,21 @@ async function main() {
     case 'import':
       { const r = await importFootage(pos[0], flags.folder as string); out(r.ok ? `imported "${r.name}" #${r.id}${r.reused ? ' (already in the project)' : ''}` : `error: ${r.error}`, r); process.exitCode = r.ok ? 0 : 1; }
       break;
+    case 'assets': {
+      const A = await import('../api/assets.ts');
+      if (pos[0] === 'find') {
+        const r = await A.findAssetsTool({ query: pos.slice(1).join(' '), kind: flags.kind as any, sources: flags.sources ? String(flags.sources).split(',') : undefined, limit: flags.limit ? +flags.limit : undefined, license: flags.license as any });
+        out(r.text + (r.grid ? `\ngrid: ${r.grid}` : ''), r);
+      } else if (pos[0] === 'fetch' && pos[1]) {
+        const r = await A.fetchAssetTool({ id: pos[1], variant: flags.variant as string, import: !flags['no-import'], install: !!flags.install });
+        out(A.fetchSummary(r), r);
+      } else if (pos[0] === 'index') {
+        const { buildLocalIndex } = await import('../assets/adapters/local.ts');
+        const r = await buildLocalIndex({ force: true });
+        out(r.roots.map((x: any) => `${x.ok ? '✔' : '✘'} ${x.root}: ${x.files} files in ${x.ms} ms${x.truncated ? ' (sampled)' : ''}${x.error ? ' — ' + x.error : ''}`).join('\n'), r);
+      } else throw new Error('usage: aec assets find <query> | fetch <id> | index');
+      break;
+    }
     case 'dialogs': {
       if (flags.answer) { const r = await answerDialog(+flags.answer, pos[0] ?? 'OK'); out(JSON.stringify(r), r); break; }
       const r = await listDialogs();

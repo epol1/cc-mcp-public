@@ -57,6 +57,28 @@ if ($Action -eq "press") {
   exit 0
 }
 
+if ($Action -eq "settext") {
+  # Types -Button's text into the first edit box of a native dialog (the file name box of a Save dialog).
+  $target = [IntPtr][int64]$Hwnd
+  if ([AeWin]::Cls($target) -ne "#32770") { '{"set":false,"error":"not a dialog window"}'; exit 0 }
+  try {
+    Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+    $el = [System.Windows.Automation.AutomationElement]::FromHandle($target)
+    $typeCond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Edit)
+    # The "File name:" box (AutomationId 1001 in common dialogs), not the read-only address or search fields.
+    $edit = $null
+    foreach ($e in $el.FindAll([System.Windows.Automation.TreeScope]::Descendants, $typeCond)) {
+      $vp = $null; try { $vp = $e.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern) } catch {}
+      if (-not $vp -or $vp.Current.IsReadOnly) { continue }
+      if ($e.Current.AutomationId -eq "1001" -or $e.Current.Name -like "File name*") { $edit = $e; break }
+      if (-not $edit) { $edit = $e }
+    }
+    if ($edit) { $edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($Button); ('{"set":true,"via":"uia","id":' + (ConvertTo-Json ([string]$edit.Current.AutomationId)) + '}'); exit 0 }
+  } catch { ('{"set":false,"error":' + (ConvertTo-Json ([string]$_)) + '}'); exit 0 }
+  '{"set":false,"error":"no edit box"}'
+  exit 0
+}
+
 $out = [ordered]@{ running = ($pids.Count -gt 0); hung = $false; main = $null; dialogs = @() }
 if ($pids.Count -eq 0) { $out | ConvertTo-Json -Depth 5 -Compress; exit 0 }
 foreach ($h in [AeWin]::ForPids($pids)) {

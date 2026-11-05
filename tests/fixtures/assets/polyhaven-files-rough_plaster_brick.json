@@ -1,0 +1,76 @@
+{
+ "Diffuse": {
+  "1k": {
+   "jpg": {
+    "size": 790072,
+    "md5": "a003346d3e8204c0a188d1c2c8188cf5",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_plaster_brick/rough_plaster_brick_diff_1k.jpg"
+   },
+   "png": {
+    "size": 2438544,
+    "md5": "d3bde91add9ae4e612e7ca5f85585555",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rough_plaster_brick/rough_plaster_brick_diff_1k.png"
+   },
+   "exr": {
+    "size": 2104114,
+    "md5": "e6ceae991241835e4196b066ef875c73",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/rough_plaster_brick/rough_plaster_brick_diff_1k.exr"
+   }
+  },
+  "2k": {
+   "jpg": {
+    "size": 3456196,
+    "md5": "a183471d676f23aee84f7a9105be9dab",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_plaster_brick/rough_plaster_brick_diff_2k.jpg"
+   },
+   "png": {
+    "size": 10084406,
+    "md5": "7823be22abe8f490c798b1ab3b13666f",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rough_plaster_brick/rough_plaster_brick_diff_2k.png"
+   },
+   "exr": {
+    "size": 8826226,
+    "md5": "43406aad72faeb1cec3ba9738a430561",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/2k/rough_plaster_brick/rough_plaster_brick_diff_2k.exr"
+   }
+  }
+ },
+ "Rough": {
+  "1k": {
+   "jpg": {
+    "size": 633239,
+    "md5": "f37ac1e7629b080483c30721b0e608f0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_plaster_brick/rough_plaster_brick_rough_1k.jpg"
+   },
+   "png": {
+    "size": 985637,
+    "md5": "7f54062d89825b6743ede97480e83c1a",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rough_plaster_brick/rough_plaster_brick_rough_1k.png"
+   },
+   "exr": {
+    "size": 1266797,
+    "md5": "162a0c64389fc2f84031331c7701d636",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/rough_plaster_brick/rough_plaster_brick_rough_1k.exr"
+   }
+  }
+ },
+ "nor_gl": {
+  "1k": {
+   "jpg": {
+    "size": 604789,
+    "md5": "a78c60e8b3536becc9bc38980c57faa9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_plaster_brick/rough_plaster_brick_nor_gl_1k.jpg"
+   },
+   "png": {
+    "size": 1609371,
+    "md5": "029ed35b4227a6e9e08ae039e3199c14",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/rough_plaster_brick/rough_plaster_brick_nor_gl_1k.png"
+   },
+   "exr": {
+    "size": 1717158,
+    "md5": "bc0b1fbc4ac3f20b95c909955b5688c9",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/1k/rough_plaster_brick/rough_plaster_brick_nor_gl_1k.exr"
+   }
+  }
+ }
+}

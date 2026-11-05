@@ -40,6 +40,12 @@ export async function pressDialog(hwnd: number, button: string): Promise<{ press
   return JSON.parse(raw || '{"pressed":false}');
 }
 
+/** Types text into a native dialog's edit box (the file name of a Save dialog), e.g. to drive Collect Files in tests. */
+export async function setDialogText(hwnd: number, text: string): Promise<{ set: boolean; via?: string; error?: string }> {
+  const raw = await ps(['-Action', 'settext', '-Hwnd', String(hwnd), '-Button', text]);
+  return JSON.parse(raw || '{"set":false}');
+}
+
 /** Dialogs we answer automatically because there is only one sensible answer. Matched on UIA text when available. */
 const AUTO_ANSWERS: { match: RegExp; button: string }[] = [
   { match: /Crash Repair Options/i, button: 'Continue' },

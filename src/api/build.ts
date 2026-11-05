@@ -17,6 +17,9 @@ import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
 import type { MotionOptions, MotionReport } from './motion.ts';
 import { STYLE_RULES } from '../motion/types.ts';
 import { saveLintForPanel } from './panelstate.ts';
+import { resetResolvedRefs, resolvedRefs } from '../assets/resolve.ts';
+import { placeSceneAssets } from '../assets/scene.ts';
+import type { PlacedAsset } from '../assets/scene.ts';
 
 export const OUT_ROOT = path.join(os.homedir(), '.ae-compose', 'out');
 
@@ -67,6 +70,9 @@ export interface BuildReport {
   phases?: Record<string, number>;
   /** Motion report per built main comp: speed graph PNG, summary lines, style issues (also merged into `lint`). */
   motion?: (MotionReport & { label?: string })[];
+  /** `asset:` sources the scene used: where each file is, and the CREDITS.md files written. */
+  assets?: PlacedAsset[];
+  credits?: string[];
 }
 
 const loc = (s?: SourceLoc) => (s ? `${path.basename(s.file)}:${s.line}:${s.col}` : undefined);
@@ -89,10 +95,13 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   let irs: { ir: any; sources: Record<string, SourceLoc | undefined>; label?: string; params?: Record<string, any>; reframe?: Reframe }[] = [];
   let compareWanted = false;
   let sceneLint: LintOptions | false | undefined;
+  resetResolvedRefs();
+  let sceneFile: string | undefined;
   if (input.ir) irs = [{ ir: input.ir, sources: {} }];
   else {
     const loaded = input.def ? { def: input.def, file: input.file ?? path.join(process.cwd(), 'scene.tsx') } : await loadScene(input);
     const def = loaded.def;
+    sceneFile = loaded.file;
     compareWanted = !!def.config.compare;
     sceneLint = def.config.lint;
     const vkeys = def.config.variants && opts.variants !== false ? Object.keys(def.config.variants).filter((k) => opts.variants === true || opts.variants === undefined || (opts.variants as string[]).includes(k)) : [];
@@ -110,6 +119,14 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     }
   }
   report.scene = irs[0].ir.scene;
+  // asset: sources → the project's footage folder (when saved) + CREDITS.md next to the project and the scene.
+  if (resolvedRefs().length) {
+    const p = await callRuntime('ping', [], { timeoutMs: 20_000 }).catch(() => null);
+    const placed = placeSceneAssets(irs, resolvedRefs(), { projectDir: p?.project ? path.dirname(p.project) : null, sceneDir: sceneFile && fs.existsSync(path.dirname(sceneFile)) && !input.source ? path.dirname(sceneFile) : undefined });
+    report.assets = placed.assets;
+    report.credits = placed.credits;
+    report.warnings.push(...placed.warnings);
+  }
   const outDir = opts.outDir ?? path.join(OUT_ROOT, report.scene.replace(/[^A-Za-z0-9_-]+/g, '_'));
   fs.mkdirSync(outDir, { recursive: true });
   const nFrames = opts.frames ?? 8;

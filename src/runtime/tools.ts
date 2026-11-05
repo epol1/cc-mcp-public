@@ -67,6 +67,35 @@ export function importFile(path: string, folderName?: string): any {
   return o;
 }
 
+/**
+ * fetch_asset: imports downloaded files in one undo step, each item tagged with its asset id in the comment.
+ * Files already in the project are reused; when all are, no undo group is opened (an empty one would make the
+ * next Edit > Undo revert the previous real step).
+ */
+export function importAssets(list: { path: string; folder: string; id: string }[]): any {
+  const out: any[] = [];
+  let fresh = false;
+  for (let i = 0; i < list.length; i++) {
+    const f = new File(list[i].path);
+    if (!f.exists) return { ok: false, error: 'file not found: ' + list[i].path };
+    let found = false;
+    for (let j = 1; j <= app.project.numItems && !found; j++) {
+      const it: any = app.project.item(j);
+      try { if (it instanceof FootageItem && it.file && it.file.fsName === f.fsName) found = true; } catch (e) {}
+    }
+    if (!found) fresh = true;
+  }
+  if (fresh) app.beginUndoGroup('ae-compose: fetch asset');
+  try {
+    for (let i = 0; i < list.length; i++) {
+      const r = importFile(list[i].path, list[i].folder);
+      if (r.ok && !r.reused) { try { (app.project.itemByID(r.id) as any).comment = 'aec:asset=' + list[i].id; } catch (e) {} }
+      out.push(r);
+    }
+  } finally { if (fresh) app.endUndoGroup(); }
+  return { ok: true, items: out, undoable: fresh };
+}
+
 /** Evenly spaced frames across a comp (first..last frame) for contact sheets. */
 export function contactFrames(ref: any, n: number, dir: string, times?: number[]): any {
   const c = findComp(ref);

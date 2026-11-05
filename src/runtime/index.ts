@@ -8,7 +8,7 @@ import { inspectComp, inspectProject } from './inspect';
 import type { InspectOpts } from './inspect';
 import { edit } from './edit';
 import type { EditOp } from './edit';
-import { contactFrames, describeEffect, importFile, layerSourceFrame, previewItem } from './tools';
+import { contactFrames, describeEffect, importAssets, importFile, layerSourceFrame, previewItem } from './tools';
 import { lintSample } from './lint';
 import { motionSample } from './motion';
 import type { MotionSampleOpts } from './motion';
@@ -61,6 +61,7 @@ const AEC: any = {
   /** Edit > Undo (command 16): used by tests to prove each build/edit undoes in one step. */
   describeEffect: function (mn: string) { return guard(() => noopGroup('describe effect', () => describeEffect(mn))); },
   importFile: function (path: string, folder?: string) { return guard(() => importFile(path, folder)); },
+  importAssets: function (list: any[]) { return guard(() => { const r = importAssets(list); if (r.undoable) return realChange(() => r); return r; }); },
   contactFrames: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => contactFrames(ref, n, dir, times)); },
   previewItem: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => noopGroup('preview', () => previewItem(ref, n, dir, times))); },
   layerSourceFrame: function (comp: any, layer: any, t: number, dir: string) { return guard(() => noopGroup('sample frame', () => layerSourceFrame(comp, layer, t, dir))); },

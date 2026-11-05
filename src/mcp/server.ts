@@ -16,10 +16,12 @@ import { doctor } from '../api/doctor.ts';
 import { planSceneInput, planSceneTool, PLAN_SCENE_DESCRIPTION } from '../plan/tool.ts';
 import { saveRecipeInput, saveRecipeTool, SAVE_RECIPE_DESCRIPTION, listRecipesInput, listRecipesTool, LIST_RECIPES_DESCRIPTION, instantiateRecipeInput, instantiateRecipeTool, INSTANTIATE_RECIPE_DESCRIPTION } from '../recipes/tool.ts';
 import { renderPreview } from '../visual/preview.ts';
+import { fetchAssetTool, fetchSummary, findAssetsTool } from '../api/assets.ts';
+import { ASSET_KINDS } from '../assets/types.ts';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
 const server = new McpServer({ name: 'ae-compose', version: pkg.version }, {
-  instructions: 'ae-compose builds native, editable After Effects comps from TSX (Remotion-style) and edits existing comps. Read skills/ae-compose/SKILL.md for the DSL. Typical loop: build_scene → look at the returned contact sheet → apply_edits or rebuild → offer variants. Every build/edit returns a contact sheet image; look at it before calling the work done.',
+  instructions: 'ae-compose builds native, editable After Effects comps from TSX (Remotion-style) and edits existing comps. Read skills/ae-compose/SKILL.md for the DSL. Typical loop: build_scene → look at the returned contact sheet → apply_edits or rebuild → offer variants. Every build/edit returns a contact sheet image; look at it before calling the work done. For material the DSL can\'t draw (icons, stock photos/video, textures, HDRIs, 3D models, fonts, sounds): find_assets → look at the grid → fetch_asset or src="asset:<id>"; credits go to CREDITS.md.',
 });
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
@@ -74,6 +76,7 @@ server.registerTool('build_scene', {
   if ((r.undoSteps ?? 1) > 1) lines.push(`undo steps: ${r.undoSteps} (undo with steps: ${r.undoSteps} removes this whole build)`);
   for (const l of r.lint ?? []) lines.push(...lintSummary(l, l.label));
   for (const m of r.motion ?? []) lines.push(...motionLines(m, m.label));
+  if (r.assets?.length) lines.push(`assets: ${r.assets.map((x) => `${x.id} → ${x.file}${x.inProject ? '' : ' (cache)'}`).join('; ')}`, `credits: ${(r.credits ?? []).join(', ')}`);
   lines.push(`contact sheets: ${r.contactSheets.join(', ') || 'none'}`, `IR: ${r.irFile}`);
   const out: Content[] = [text(lines.join('\n'))];
   for (const s of r.contactSheets.slice(0, 4)) out.push(await image(s));
@@ -258,7 +261,7 @@ server.registerTool('deliver', {
   },
 }, async (a) => wrap(async () => {
   const r = await deliverScene({ file: a.file, source: a.source, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, a as any);
-  const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.renders.length} file(s) in ${(r.ms / 1000).toFixed(1)} s`, ...r.renders.map((x) => `- ${x.target}${x.master ? ' master' : ''}: ${x.ok ? `${x.file} (${(x.bytes / 1e6).toFixed(1)} MB, ${x.codec ?? x.format}, ${x.w}×${x.h}, ${x.duration?.toFixed(2)} s)` : `failed: ${x.error}`}`), ...r.errors.map((e) => `error: ${e}`)];
+  const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.renders.length} file(s) in ${(r.ms / 1000).toFixed(1)} s`, ...r.renders.map((x) => `- ${x.target}${x.master ? ' master' : ''}: ${x.ok ? `${x.file} (${(x.bytes / 1e6).toFixed(1)} MB, ${x.codec ?? x.format}, ${x.w}×${x.h}, ${x.duration?.toFixed(2)} s)` : `failed: ${x.error}`}`), ...(r.credits ? [`credits: ${r.credits}`] : []), ...r.errors.map((e) => `error: ${e}`)];
   const out: Content[] = [text(lines.join('\n'))];
   for (const x of r.renders.filter((y) => y.poster).slice(0, 3)) out.push(await image(x.poster!, 640));
   return out;
@@ -311,6 +314,38 @@ server.registerTool('motion_preview', {
   if (r.report.graph) out.push(await image(r.report.graph));
   return out;
 }));
+
+server.registerTool('find_assets', {
+  title: 'Find assets: icons, photos, video, textures, HDRIs, 3D models, fonts, audio',
+  description: 'Search the user\'s local folders (a small cached index) and free asset APIs (Iconify icons; Poly Haven HDRIs, textures and models; ambientCG textures; Pixabay, Pexels and Unsplash photos/video; Openverse Creative Commons photos and audio; Fontsource fonts) for material ae-compose can\'t draw. Returns numbered results (id, kind, size, license, author, variants) plus one numbered thumbnail grid image: pick by looking. Only licenses on the allowlist come back (CC0, public domain, MIT, ISC, Apache-2.0, OFL, CC BY, Pexels, Pixabay, Unsplash; never NonCommercial or NoDerivatives); ShareAlike and trademarked logos are flagged. Sources without an API key are listed with how to get one. Then fetch_asset { id }, or use src="asset:<id>" in a scene. An asset earns its place like any element (SKILL.md §2).',
+  inputSchema: {
+    query: z.string().min(1).describe('what to look for, in plain words: "rocket", "paper texture", "city night aerial"'),
+    kind: z.enum(ASSET_KINDS as [string, ...string[]]).optional().describe('icon | photo | video | texture | hdri | model | font | audio'),
+    orientation: z.enum(['landscape', 'portrait', 'square']).optional(),
+    minWidth: z.number().int().positive().optional().describe('px (photos, video, textures)'),
+    minDuration: z.number().positive().optional().describe('seconds (video, audio)'),
+    license: z.enum(['cc0', 'commercial']).optional().describe("'cc0' = public domain only (no credit required); default: the whole allowlist"),
+    sources: z.array(z.string()).optional().describe('limit to sources: local, iconify, polyhaven, ambientcg, pixabay, pexels, unsplash, openverse, fontsource'),
+    limit: z.number().int().min(1).max(16).optional().describe('results (default 12; the grid shows up to 16)'),
+  },
+}, async (a) => wrap(async () => {
+  const r = await findAssetsTool(a as any);
+  const out: Content[] = [text(r.text)];
+  if (r.grid) out.push(await image(r.grid, 1100));
+  return out;
+}));
+
+server.registerTool('fetch_asset', {
+  title: 'Fetch an asset into the project',
+  description: 'Download an asset found with find_assets (by id, e.g. "polyhaven:brown_photostudio_02", "iconify:lucide:rocket", "pixabay:video:12345"), check it by content, convert what AE can\'t import (WebP/AVIF → PNG, OGG/FLAC → WAV, WebM → MP4), pack glTF models into one .glb, copy it into the footage folder next to the saved project (so Collect Files keeps it; an unsaved project imports from the cache and says so), import it in one undo step (not icons or fonts) and add its credit line to CREDITS.md next to the project. Icons come back as an .svg for <Svg src> (native, editable shape layers). Fonts download only; { install: true } installs them for the user (ask the user first: it changes their system; AE needs a restart to see a new font). Returns the file, the project item, notes and where the credit went.',
+  inputSchema: {
+    id: z.string().min(3).describe('asset id from find_assets'),
+    variant: z.string().optional().describe('size/format variant label from find_assets (e.g. "1k-hdr", "2k-jpg", "720p", "full"); default: the source\'s recommended one'),
+    import: z.boolean().optional().describe('import into the open project (default true; icons and fonts are never imported)'),
+    folder: z.string().optional().describe('project panel folder (default "ae-compose/Assets/<source>")'),
+    install: z.boolean().optional().describe('fonts only: install for the current user (only with the user\'s OK)'),
+  },
+}, async (a) => wrap(async () => [text(fetchSummary(await fetchAssetTool(a)))]));
 
 server.registerTool('list_effects', {
   title: 'Search effects',

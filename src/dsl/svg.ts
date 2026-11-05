@@ -12,13 +12,14 @@ import type { ShapeProps } from './primitives.ts';
 import type { Anim } from './anim.ts';
 import { parseSvgPath, shapeBounds } from '../shared/svgpath.ts';
 import type { AeShape } from '../shared/svgpath.ts';
+import { resolveSrc } from '../assets/resolve.ts';
 
 export interface SvgProps extends Omit<ShapeProps, 'children'> {
-  /** Path to the .svg (absolute, or relative to the current working directory / scene folder). */
+  /** Path to the .svg (absolute, or relative to the scene folder), or a fetched icon: "asset:iconify:lucide:rocket". */
   src: string;
   /** Target width in px (keeps aspect). Default: the SVG's own size. */
   width?: number;
-  /** Override every fill color (e.g. brand color or a control). */
+  /** Override every fill and stroke color, and `currentColor` (icon sets), e.g. a brand color or a control. Elements with fill="none" stay unfilled. */
   color?: any;
   /** Add a stroke of this color/width to every element (for draw-on reveals); otherwise the SVG's own strokes are used. */
   stroke?: { color: any; width?: number };
@@ -207,7 +208,7 @@ const urlId = (v?: string) => /^url\(\s*#([^)\s]+)\s*\)/.exec(v ?? '')?.[1];
 
 export function Svg(p: SvgProps) {
   const dir = (globalThis as any).__AEC_SCENE_DIR__ ?? process.cwd();
-  const file = path.isAbsolute(p.src) ? p.src : path.resolve(dir, p.src);
+  const file = resolveSrc(p.src, dir);
   const { els, viewBox, gradients: grads } = readSvg(file);
   const all = els.filter((e) => !p.select || p.select.test(e.id ?? ''));
   const placed = all.map((e) => ({ e, shapes: parseSvgPath(e.d).map((s) => transformShape(s, e.m)) }));
@@ -222,21 +223,25 @@ export function Svg(p: SvgProps) {
     const op = parseFloat(e.paint.opacity ?? '1');
     const rule = e.paint['fill-rule'] === 'evenodd' ? 'evenOdd' : 'nonZero';
     if (p.draw) kids.push(jsx(Trim, { end: p.draw }));
-    // Stroke: the prop overrides; otherwise the SVG's own (width scaled with the drawing).
+    // `currentColor` (icon sets: Lucide, Tabler, Phosphor) takes the color prop, else black like a browser.
+    const paint = (v: string | undefined) => (v === 'currentColor' ? p.color ?? '#000000' : v);
+    // Stroke: the prop overrides; otherwise the SVG's own (width scaled with the drawing), recolored by `color`.
     if (p.stroke) kids.push(jsx(Stroke, { color: p.stroke.color, width: p.stroke.width ?? 3 }));
     else if (!isNone(e.paint.stroke) && !urlId(e.paint.stroke)) {
       const lin = Math.sqrt(Math.abs(e.m[0] * e.m[3] - e.m[1] * e.m[2])) || 1;
       kids.push(jsx(Stroke, {
-        color: e.paint.stroke, width: parseFloat(e.paint['stroke-width'] ?? '1') * lin * scale,
+        color: p.color ?? paint(e.paint.stroke), width: parseFloat(e.paint['stroke-width'] ?? '1') * lin * scale,
         opacity: Math.round(100 * op * parseFloat(e.paint['stroke-opacity'] ?? '1')),
         cap: ({ round: 'round', square: 'square' } as any)[e.paint['stroke-linecap'] ?? ''] ?? 'butt',
         join: ({ round: 'round', bevel: 'bevel' } as any)[e.paint['stroke-linejoin'] ?? ''] ?? 'miter',
       }));
     }
-    // Fill: the color prop overrides; a gradient becomes a native Gradient Fill; SVG's default fill is black.
+    // Fill: the color prop overrides (outline elements with fill="none" stay unfilled); a gradient becomes a native
+    // Gradient Fill; SVG's default fill is black.
     const fillOpacity = p.fillOpacity ?? Math.round(100 * op * parseFloat(e.paint['fill-opacity'] ?? '1'));
     const gid = urlId(e.paint.fill);
-    if (p.color !== undefined) kids.push(jsx(Fill, { color: p.color, opacity: p.fillOpacity, rule }));
+    const unfilled = e.paint.fill !== undefined && isNone(e.paint.fill);
+    if (p.color !== undefined) { if (!unfilled) kids.push(jsx(Fill, { color: p.color, opacity: p.fillOpacity, rule })); }
     else if (gid && grads[gid]?.stops.length) {
       const g = grads[gid];
       const eb = shapeBounds(shapes);
@@ -247,7 +252,7 @@ export function Svg(p: SvgProps) {
       };
       kids.push(jsx(GradientFill, { type: g.type, stops: g.stops.map((s) => ({ offset: s.offset, color: s.color, opacity: s.opacity })), start: pt(g.x1, g.y1), end: pt(g.x2, g.y2), opacity: typeof fillOpacity === 'number' ? fillOpacity : undefined }));
     } else if (!isNone(e.paint.fill) || e.paint.fill === undefined) {
-      kids.push(jsx(Fill, { color: e.paint.fill && !gid ? e.paint.fill : '#000000', opacity: fillOpacity, rule }));
+      kids.push(jsx(Fill, { color: e.paint.fill && !gid ? paint(e.paint.fill) : '#000000', opacity: fillOpacity, rule }));
     }
     return jsx(Group, { name: e.id ? `${e.id} ${i + 1}` : `Path ${i + 1}`, children: kids });
   });

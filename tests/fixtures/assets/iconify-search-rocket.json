@@ -1,0 +1,269 @@
+{
+ "icons": [
+  "material-symbols:rocket",
+  "material-symbols:rocket-outline",
+  "material-symbols:rocket-outline-rounded",
+  "material-symbols:rocket-rounded",
+  "material-symbols-light:rocket",
+  "material-symbols-light:rocket-outline",
+  "material-symbols-light:rocket-outline-rounded",
+  "material-symbols-light:rocket-rounded",
+  "ic:baseline-rocket",
+  "ic:outline-rocket",
+  "ic:round-rocket",
+  "ic:sharp-rocket",
+  "ic:twotone-rocket",
+  "mdi:rocket",
+  "mdi:rocket-outline",
+  "solar:rocket-bold",
+  "solar:rocket-bold-duotone",
+  "solar:rocket-broken",
+  "solar:rocket-line-duotone",
+  "solar:rocket-linear",
+  "solar:rocket-outline",
+  "tabler:rocket",
+  "iconoven:rocket",
+  "iconoven:rocket-sharp",
+  "coolicons:rocket",
+  "coolicons:rocket-bulk",
+  "coolicons:rocket-bulk-round",
+  "coolicons:rocket-bulk-sharp",
+  "coolicons:rocket-duocolor",
+  "coolicons:rocket-duocolor-round",
+  "coolicons:rocket-duocolor-sharp",
+  "coolicons:rocket-duotone"
+ ],
+ "total": 32,
+ "limit": 32,
+ "start": 0,
+ "collections": {
+  "material-symbols": {
+   "name": "Material Symbols",
+   "total": 15761,
+   "author": {
+    "name": "Google",
+    "url": "https://github.com/google/material-design-icons"
+   },
+   "license": {
+    "title": "Apache 2.0",
+    "spdx": "Apache-2.0",
+    "url": "https://github.com/google/material-design-icons/blob/master/LICENSE"
+   },
+   "samples": [
+    "downloading",
+    "privacy-tip",
+    "filter-drama-outline",
+    "assignment-ind",
+    "monitoring",
+    "desktop-access-disabled-outline-sharp"
+   ],
+   "height": 24,
+   "category": "Material",
+   "tags": [
+    "Has Padding"
+   ],
+   "palette": false
+  },
+  "material-symbols-light": {
+   "name": "Material Symbols Light",
+   "total": 15826,
+   "author": {
+    "name": "Google",
+    "url": "https://github.com/google/material-design-icons"
+   },
+   "license": {
+    "title": "Apache 2.0",
+    "spdx": "Apache-2.0",
+    "url": "https://github.com/google/material-design-icons/blob/master/LICENSE"
+   },
+   "samples": [
+    "downloading",
+    "privacy-tip",
+    "filter-drama-outline",
+    "assignment-ind",
+    "monitoring",
+    "desktop-access-disabled-outline-sharp"
+   ],
+   "height": 24,
+   "category": "Material",
+   "tags": [
+    "Precise Shapes",
+    "Has Padding"
+   ],
+   "palette": false
+  },
+  "ic": {
+   "name": "Google Material Icons",
+   "total": 10955,
+   "version": "1.0.32",
+   "author": {
+    "name": "Material Design Authors",
+    "url": "https://github.com/material-icons/material-icons"
+   },
+   "license": {
+    "title": "Apache 2.0",
+    "spdx": "Apache-2.0",
+    "url": "https://github.com/material-icons/material-icons/blob/master/LICENSE"
+   },
+   "samples": [
+    "baseline-notifications-active",
+    "outline-person-outline",
+    "twotone-videocam-off",
+    "sharp-flash-on",
+    "baseline-volume-mute",
+    "twotone-battery-20"
+   ],
+   "height": 24,
+   "category": "Material",
+   "palette": false
+  },
+  "mdi": {
+   "name": "Material Design Icons",
+   "total": 7447,
+   "author": {
+    "name": "Pictogrammers",
+    "url": "https://github.com/Templarian/MaterialDesign"
+   },
+   "license": {
+    "title": "Apache 2.0",
+    "spdx": "Apache-2.0",
+    "url": "https://github.com/Templarian/MaterialDesign/blob/master/LICENSE"
+   },
+   "samples": [
+    "account-check",
+    "bell-alert-outline",
+    "calendar-edit",
+    "skip-previous",
+    "home-variant",
+    "lock-open-outline"
+   ],
+   "height": 24,
+   "category": "Material",
+   "tags": [
+    "Precise Shapes",
+    "Has Padding"
+   ],
+   "palette": false
+  },
+  "solar": {
+   "name": "Solar",
+   "total": 8706,
+   "author": {
+    "name": "480 Design",
+    "url": "https://www.figma.com/community/file/1166831539721848736"
+   },
+   "license": {
+    "title": "CC BY 4.0",
+    "spdx": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "samples": [
+    "magnifier-zoom-out-broken",
+    "armchair-2-bold-duotone",
+    "traffic-economy-line-duotone",
+    "user-rounded-bold-duotone",
+    "soundwave-linear",
+    "hamburger-menu-broken"
+   ],
+   "height": 24,
+   "category": "UI 24px",
+   "tags": [
+    "Precise Shapes",
+    "Has Padding",
+    "Uses Stroke"
+   ],
+   "palette": false
+  },
+  "tabler": {
+   "name": "Tabler Icons",
+   "total": 6257,
+   "version": "3.50.0",
+   "author": {
+    "name": "Paweł Kuna",
+    "url": "https://github.com/tabler/tabler-icons"
+   },
+   "license": {
+    "title": "MIT",
+    "spdx": "MIT",
+    "url": "https://github.com/tabler/tabler-icons/blob/master/LICENSE"
+   },
+   "samples": [
+    "alien",
+    "device-desktop",
+    "photo",
+    "chevron-right",
+    "check",
+    "square-root"
+   ],
+   "height": 24,
+   "category": "UI 24px",
+   "tags": [
+    "Precise Shapes",
+    "Has Padding",
+    "Uses Stroke"
+   ],
+   "palette": false
+  },
+  "iconoven": {
+   "name": "IconOven",
+   "total": 18236,
+   "author": {
+    "name": "Appic Marketing",
+    "url": "https://iconoven.com/icons"
+   },
+   "license": {
+    "title": "MIT",
+    "spdx": "MIT"
+   },
+   "samples": [
+    "bell",
+    "home",
+    "credit-card",
+    "bell-sharp",
+    "home-sharp",
+    "credit-card-sharp"
+   ],
+   "height": 24,
+   "category": "UI 24px",
+   "tags": [
+    "Precise Shapes",
+    "Has Padding",
+    "Uses Stroke"
+   ],
+   "palette": false
+  },
+  "coolicons": {
+   "name": "coolicons",
+   "total": 18870,
+   "author": {
+    "name": "Kryston Schwarze",
+    "url": "https://github.com/krystonschwarze/coolicons"
+   },
+   "license": {
+    "title": "MIT",
+    "spdx": "MIT",
+    "url": "https://github.com/krystonschwarze/coolicons/blob/main/LICENSE"
+   },
+   "samples": [
+    "battery-empty-duotone-round",
+    "venus-fill-round",
+    "apple-logo-duocolor-round",
+    "mouse-fill-round",
+    "font-bulk-round",
+    "rows-fill-round"
+   ],
+   "height": 24,
+   "category": "UI 24px",
+   "tags": [
+    "Precise Shapes",
+    "Has Padding",
+    "Uses Stroke"
+   ],
+   "palette": false
+  }
+ },
+ "request": {
+  "query": "rocket",
+  "limit": "32"
+ }
+}

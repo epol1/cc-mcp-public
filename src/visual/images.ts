@@ -23,11 +23,11 @@ export interface SheetFrame { file: string; t: number; label?: string }
  * Grid of frames with a label strip under each (timecode + optional text). Returns PNG bytes.
  * Frames are normalized for 32 bpc first. Cell width defaults to 480 px.
  */
-export async function contactSheet(frames: SheetFrame[], opts: { bpc: number; fps: number; cols?: number; cellWidth?: number; title?: string }): Promise<Buffer> {
+export async function contactSheet(frames: SheetFrame[], opts: { bpc: number; fps: number; cols?: number; cellWidth?: number; cellHeight?: number; title?: string; noTimecode?: boolean }): Promise<Buffer> {
   const cols = opts.cols ?? Math.min(frames.length, frames.length <= 4 ? frames.length : frames.length <= 9 ? 3 : 4);
   const cw = opts.cellWidth ?? 480;
-  const first = await sharp(frames[0].file).metadata();
-  const ch = Math.round((cw * (first.height ?? 1080)) / (first.width ?? 1920));
+  const first = opts.cellHeight ? null : await sharp(frames[0].file).metadata();
+  const ch = opts.cellHeight ?? Math.round((cw * (first?.height ?? 1080)) / (first?.width ?? 1920));
   const strip = 26, gap = 6, head = opts.title ? 34 : 0;
   const rows = Math.ceil(frames.length / cols);
   const W = cols * cw + (cols + 1) * gap;
@@ -38,7 +38,7 @@ export async function contactSheet(frames: SheetFrame[], opts: { bpc: number; fp
     const y = head + gap + Math.floor(i / cols) * (ch + strip + gap);
     const buf = await sharp(await normalizeCapture(frames[i].file, opts.bpc)).resize(cw, ch, { fit: 'contain', background: '#000' }).png().toBuffer();
     layers.push({ input: buf, left: x, top: y });
-    const label = `${timecode(frames[i].t, opts.fps)}${frames[i].label ? '  ' + frames[i].label : ''}`;
+    const label = opts.noTimecode ? frames[i].label ?? '' : `${timecode(frames[i].t, opts.fps)}${frames[i].label ? '  ' + frames[i].label : ''}`;
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${strip}"><rect width="100%" height="100%" fill="#161b22"/><text x="8" y="18" font-family="Consolas, monospace" font-size="14" fill="#c9d1d9">${label.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</text></svg>`;
     layers.push({ input: Buffer.from(svg), left: x, top: y + ch });
   }

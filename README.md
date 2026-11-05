@@ -136,7 +136,7 @@ For **Claude Desktop**, open Settings → Developer → Edit Config (the file is
 
 Use the absolute path of your clone. After Effects must be running with a project open; `doctor` (a tool in both apps) checks the setup.
 
-The server has 21 tools. Images come back as JPEG of at most 1600 px.
+The server has 31 tools. Images come back as JPEG of at most 1600 px.
 
 | Area | Tools |
 |---|---|
@@ -146,7 +146,7 @@ The server has 21 tools. Images come back as JPEG of at most 1600 px.
 | Inspect | `inspect_project`, `list_project_items`, `preview_item`, `inspect_comp`, `lint_comp` |
 | Edit | `apply_edits` (ops include `ripple`, `place` and `key`), `undo` |
 | Effects | `list_effects`, `describe_effect` |
-| Media | `import_footage` |
+| Media | `import_footage`, `find_assets`, `fetch_asset` (free asset APIs + your folders, credited) |
 | AE health | `doctor`, `recover_ae`, `list_dialogs`, `answer_dialog` |
 | Escape hatch | `run_extendscript` |
 
@@ -177,6 +177,25 @@ The folder is self-contained: `reference/DSL.md` is a copy of `docs/DSL.md`, kep
 
    Then apply ops, for example `[{"op":"ease","layer":"Underline","prop":"scale","easing":"easeOutBack"}]` or `[{"op":"ripple","scene":"Beat 2","by":1}]`, with `aec edit` or the `apply_edits` MCP tool. Each batch is one undo step, and it's rolled back entirely if any op fails.
 6. Ask Claude (with the MCP server and skill), for example: *"make the scene at 0:03 a bit slower so we can read the text"*, or *"I greenscreened this element, add it to this comp with the controller still behind it and animate it in"*.
+
+## Asset sources
+
+`find_assets` and `fetch_asset` (CLI: `aec assets find|fetch|index`) source what a scene can't draw:
+- icons (Iconify);
+- HDRIs, textures and 3D models (Poly Haven, ambientCG);
+- photos and video (Pixabay, Unsplash, Pexels);
+- Creative Commons photos and sound (Openverse);
+- fonts (Fontsource / Google Fonts);
+- your own folders (a small sampled index).
+
+Results come with a numbered thumbnail grid. Only commercially usable licenses come back (never NonCommercial or NoDerivatives), and ShareAlike items and brand logos are flagged. Scenes can name assets directly: `<Footage src="asset:pixabay:video:4006" />`.
+
+- **API keys** (free accounts) go in `~/.ae-compose/keys.json`, never in the repo: `{ "pixabay": "…", "unsplash": "<Access Key>", "pexels": "…" }`. Sources without a key are skipped; `aec doctor` lists which are on.
+- **Fetched files** are copied into `footage/<source>/<id>/` next to the saved project (so Collect Files keeps them), imported, and credited in `CREDITS.md` next to the project (and next to the scene file for `asset:` sources). `deliver` copies `CREDITS.md` next to the renders.
+- **Download cache**: `~/.ae-compose/assets/`, capped at 5 GB (`AEC_ASSET_CACHE_GB`), least recently used first.
+- **Fonts** are installed for your user only when you agree (`install: true`); After Effects needs a restart to see a new font.
+
+Details: [`docs/DSL.md` §22](docs/DSL.md#22-asset-sources-phase-6); design: [`docs/ASSETS.md`](docs/ASSETS.md).
 
 ## Where files go
 

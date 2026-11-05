@@ -25,6 +25,7 @@ import type { LibMode } from '../aeclib/index.ts';
 import { LIB_ITEM, libVersion, withLib, writeLibFile } from '../aeclib/index.ts';
 import { rigEffectSpec } from './rigfx.ts';
 import { drainDslWarnings } from '../dsl/warn.ts';
+import { resolveSrc } from '../assets/resolve.ts';
 
 // Internal names verified from AE's localized UI strings (D36): Calder = Advanced 3D; 'ADBE Advanced 3d' is the legacy ID of Classic 3D.
 const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' } as const;
@@ -450,7 +451,7 @@ export class Compiler {
       case 'footage': {
         let asset: { id: string; path?: string; item?: string };
         if (p.src) {
-          const abs = path.isAbsolute(p.src) ? p.src : path.resolve(ctx.sceneDir, p.src);
+          const abs = resolveSrc(p.src, ctx.sceneDir);
           const aid = 'asset.' + slug(path.basename(abs));
           asset = this.assets.get(abs) ?? { id: aid, path: abs };
           this.assets.set(abs, asset);
@@ -491,7 +492,7 @@ export class Compiler {
         L.threeD = true;
         if (p.hdri) {
           if ((p.kind ?? 'point') !== 'environment') throw new Error(`[${id}] hdri= is only valid on <Light kind="environment">`);
-          const abs = path.isAbsolute(p.hdri) ? p.hdri : path.resolve(ctx.sceneDir, p.hdri);
+          const abs = resolveSrc(p.hdri, ctx.sceneDir);
           const asset = this.assets.get(abs) ?? { id: 'asset.' + slug(path.basename(abs)), path: abs };
           this.assets.set(abs, asset);
           const srcId = `${id}.hdri`;
@@ -503,7 +504,7 @@ export class Compiler {
       }
       case 'model': {
         if (!p.src) throw new Error(`[${id}] <Model> needs src (.glb/.gltf/.obj)`);
-        const abs = path.isAbsolute(p.src) ? p.src : path.resolve(ctx.sceneDir, p.src);
+        const abs = resolveSrc(p.src, ctx.sceneDir);
         const asset = this.assets.get(abs) ?? { id: 'asset.' + slug(path.basename(abs)), path: abs };
         this.assets.set(abs, asset);
         L.footage = { asset: asset.id };
