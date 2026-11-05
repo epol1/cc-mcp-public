@@ -1744,7 +1744,7 @@
         {
           "id": "pr-interview",
           "name": "30-min interview → 2-min cut the user keeps (needs footage)",
-          "status": "doing",
+          "status": "wip",
           "weight": 5
         },
         {

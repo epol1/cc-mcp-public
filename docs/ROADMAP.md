@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.02.003**: NaN% weighted, 251/258 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.02.004**: 97.19% weighted, 251/258 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -280,7 +280,7 @@
 - [x] Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete _(w2)_
 - [x] Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6
 
-# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (NaN%)
+# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (87.5%)
 
 ## Pr · Shared core (100%)
 - [x] Shared modules moved to packages/core (bridge, watchdog, visual, captions, beats, motion, lint report, reframe targets, templates, units, assets) _(w4)_
@@ -326,13 +326,13 @@
 - [ ] Sync groups (multicam by audio) _(w2)_
 - [ ] find_assets local source uses the library (AE crossover) _(w2)_
 
-## Pr · Tests, docs, showcases (NaN%)
+## Pr · Tests, docs, showcases (85%)
 - [x] Unit specs (timecode, transcripts, compiler, writer/adopt, lint, library, montage, review regressions) _(w3)_
 - [x] Premiere suites: round trip x6, build, edits on a hand cut, finishing _(w3)_
 - [x] Fresh-session test (skill + MCP only) _(w3)_
 - [x] Independent review: findings fixed with regression specs _(w3)_
 - [x] skills/pr-cut/SKILL.md _(w2)_
-- undefined 30-min interview → 2-min cut the user keeps (needs footage) _(w5)_
+- [~] 30-min interview → 2-min cut the user keeps (needs footage) _(w5)_
 - [x] Edit demo on the user's own hand cut _(w3)_
 - [ ] REPORT.md Phase 7
 
