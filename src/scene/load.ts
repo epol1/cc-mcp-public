@@ -11,6 +11,7 @@ import { isScene } from '../dsl/scene.ts';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DSL = path.join(ROOT, 'src/dsl/index.ts');
 const JSX = path.join(ROOT, 'src/dsl/jsx-runtime.ts');
+const CORE = path.join(ROOT, 'packages/core/src');
 const CACHE = path.join(os.tmpdir(), 'ae-compose-scenes');
 
 export interface LoadedScene { def: SceneDef<any>; file: string }
@@ -30,7 +31,8 @@ export async function loadScene(input: { file?: string; source?: string; cwd?: s
     jsx: 'automatic',
     jsxDev: true,
     jsxImportSource: 'ae-compose',
-    alias: { 'ae-compose/jsx-dev-runtime': JSX, 'ae-compose/jsx-runtime': JSX, 'ae-compose': DSL },
+    // The shared core is a workspace package; bundle it from source (the bundle runs from a temp folder with no node_modules).
+    alias: { 'ae-compose/jsx-dev-runtime': JSX, 'ae-compose/jsx-runtime': JSX, 'ae-compose': DSL, '@ae-mcp/core': CORE },
     sourcemap: 'inline',
     packages: 'external',
     logLevel: 'silent',

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { callRuntime } from '../bridge/index.ts';
-import { aeWindows, autoAnswerKnown } from '../bridge/dialogs.ts';
+import { aeWindows, autoAnswerKnown } from '@ae-mcp/core/bridge/dialogs.ts';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const PARAMS = path.join(DIR, 'params.json');

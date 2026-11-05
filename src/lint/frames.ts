@@ -3,7 +3,7 @@
 // between the frame and a blurred copy at 256×144 (0–255 scale). Calibrated on real frames: empty backgrounds,
 // gradients and vignettes measure 0.00–0.07; a frame showing only one small dim word measures 0.78.
 import sharp from 'sharp';
-import { normalizeCapture } from '../visual/images.ts';
+import { normalizeCapture } from '@ae-mcp/core/visual/images.ts';
 import type { LintIssue } from './index.ts';
 
 const BLANK_DETAIL = 0.35;

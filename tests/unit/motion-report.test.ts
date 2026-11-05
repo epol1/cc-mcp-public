@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldTextReveals, motionReport, tagFromIr } from '../../src/api/motion.ts';
-import type { MotionData } from '../../src/motion/types.ts';
+import type { MotionData } from '@ae-mcp/core/motion/types.ts';
 import type { LintData } from '../../src/lint/index.ts';
 
 const times = Array.from({ length: 60 }, (_, i) => i / 15);

@@ -6,7 +6,7 @@ import type { AecElement } from '../jsx-runtime.ts';
 import { Align, Box, Overlay, Stack } from '../layout.ts';
 import { seq, tween } from '../anim.ts';
 import type { Anim } from '../anim.ts';
-import { approxWidth } from '../../text/measure.ts';
+import { approxWidth } from '@ae-mcp/core/text/measure.ts';
 import type { ThemeInput, UiTheme } from './theme.ts';
 import { uiTheme } from './theme.ts';
 import type { UiEvents, UiFlow } from './steps.ts';

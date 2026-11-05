@@ -18,7 +18,7 @@ import { jsx } from '../jsx-runtime.ts';
 import type { AecElement } from '../jsx-runtime.ts';
 import { Text } from '../primitives.ts';
 import type { TextProps } from '../primitives.ts';
-import type { Time } from '../../shared/units.ts';
+import type { Time } from '@ae-mcp/core/units.ts';
 import { SOURCE_TEXT, textOf } from './common.ts';
 
 export type MeasurePart = 'line' | 'pre' | 'word';

@@ -1,4 +1,5 @@
-// Execution backend contract. CEP (HTTP) and AfterFX.com (file) implement it; UXP can later.
+// Execution backend contract shared by ae-compose and pr-cut. AE: CEP (HTTP) and AfterFX.com (file).
+// Premiere: the pr-cut CEP bridge (ExtendScript) and the pr-cut UXP plugin behind the same hub.
 
 export interface EvalOk { ok: true; result: string; ms: number }
 export interface EvalErr {
@@ -8,7 +9,7 @@ export interface EvalErr {
   errorName?: string;
   line?: number;
   timedOut?: boolean;
-  /** Present when the watchdog found a modal dialog blocking AE. */
+  /** Present when the watchdog found a modal dialog blocking the app. */
   dialogs?: DialogInfo[];
   ms?: number;
 }
@@ -27,8 +28,8 @@ export interface DialogInfo {
 }
 
 export interface Backend {
-  readonly name: 'cep' | 'afterfx';
-  /** Evaluate ES3 source in AE and return the string value of its last expression. */
+  readonly name: 'cep' | 'afterfx' | 'pr-cep' | 'pr-uxp';
+  /** Evaluate a script in the app (ES3 for ExtendScript, modern JS for UXP) and return the string value of its result. */
   eval(script: string, opts?: { timeoutMs?: number }): Promise<EvalResult>;
   health(): Promise<{ ok: boolean; detail?: string }>;
 }

@@ -1,6 +1,6 @@
 // Spec for src/shared/units.ts: time strings and color parsing.
 import { describe, expect, it } from 'vitest';
-import { parseColor, parseTime, rgb, snapFrame } from '../../src/shared/units.ts';
+import { parseColor, parseTime, rgb, snapFrame } from '@ae-mcp/core/units.ts';
 
 const close = (a: number[], b: number[], digits = 9) => {
   expect(a.length).toBe(b.length);

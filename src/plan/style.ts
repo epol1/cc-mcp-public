@@ -2,9 +2,9 @@
 // (MotionData: every element rises in on its arrival, holds still, eases out on its exit), so the build-time craft
 // rules (src/motion/style.ts) can judge the plan before any TSX exists: dead air between beats, crowded
 // entrances, visuals that leave right after landing, everything moving at once.
-import { analyzeMotion } from '../motion/analyze.ts';
-import { styleLint } from '../motion/style.ts';
-import type { MotionData, MotionLayer, StyleRule } from '../motion/types.ts';
+import { analyzeMotion } from '@ae-mcp/core/motion/analyze.ts';
+import { styleLint } from '@ae-mcp/core/motion/style.ts';
+import type { MotionData, MotionLayer, StyleRule } from '@ae-mcp/core/motion/types.ts';
 import { formatOf } from './timing.ts';
 import type { PlanBeat, PlanElement, PlanIssue, PlanRule, PlanTimeline } from './types.ts';
 

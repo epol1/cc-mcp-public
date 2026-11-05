@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { compileEditOps, PROP_ALIASES } from '../../src/edit/ops.ts';
 import { resolveEasing } from '../../src/shared/easing.ts';
-import { parseColor } from '../../src/shared/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
 import { parseSvgPath } from '../../src/shared/svgpath.ts';
 
 const run = (...ops: any[]) => compileEditOps({ comp: 'Promo_v001', ops });

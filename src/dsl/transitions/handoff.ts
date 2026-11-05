@@ -6,7 +6,7 @@ import { jsx } from '../jsx-runtime.ts';
 import { Path, Shape } from '../primitives.ts';
 import { expr } from '../anim.ts';
 import type { PseudoParam } from '../../compile/ffx/pseudo.ts';
-import type { Time } from '../../shared/units.ts';
+import type { Time } from '@ae-mcp/core/units.ts';
 import { controller, ctlName, defineTransition, head, isLayerEl, r3, slider, withProps } from './core.ts';
 import type { El, TransitionBase, TransitionDef, TransitionIO } from './core.ts';
 

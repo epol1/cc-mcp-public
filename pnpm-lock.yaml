@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ae-mcp/core':
+        specifier: workspace:*
+        version: link:packages/core
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.2
         version: 1.32.2(zod@4.6.7)
@@ -81,6 +84,14 @@ importers:
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.15))
+
+  packages/core: {}
+
+  packages/pr-cut:
+    dependencies:
+      '@ae-mcp/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 
@@ -5330,7 +5341,7 @@ snapshots:
 
   scheduler@0.28.0: {}
 
-  schema-utils@4.8.2(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.32)):
+  schema-utils@4.8.2(webpack@5.105.0(esbuild@0.28.2)(postcss@8.5.32)):
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
@@ -5470,11 +5481,11 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  terser-webpack-plugin@5.6.1(esbuild@0.28.1)(postcss@8.5.32)(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.32)):
+  terser-webpack-plugin@5.6.1(esbuild@0.28.1)(postcss@8.5.32)(webpack@5.105.0(esbuild@0.28.2)(postcss@8.5.32)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
-      schema-utils: 4.8.2(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.32))
+      schema-utils: 4.8.2(webpack@5.105.0(esbuild@0.28.2)(postcss@8.5.32))
       terser: 5.51.2
       webpack: 5.105.0(esbuild@0.28.2)(postcss@8.5.32)
     optionalDependencies:
@@ -5611,9 +5622,9 @@ snapshots:
       loader-runner: 4.3.2
       mime-types: 2.1.35
       neo-async: 2.6.2
-      schema-utils: 4.8.2(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.32))
+      schema-utils: 4.8.2(webpack@5.105.0(esbuild@0.28.2)(postcss@8.5.32))
       tapable: 2.3.3
-      terser-webpack-plugin: 5.6.1(esbuild@0.28.1)(postcss@8.5.32)(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.32))
+      terser-webpack-plugin: 5.6.1(esbuild@0.28.1)(postcss@8.5.32)(webpack@5.105.0(esbuild@0.28.2)(postcss@8.5.32))
       watchpack: 2.6.3
       webpack-sources: 3.7.0
     transitivePeerDependencies:

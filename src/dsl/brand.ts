@@ -2,8 +2,8 @@
 // become live controls ("Accent Color") wherever they're used, so a designer can re-color the whole piece in AE.
 import { control } from './control.ts';
 import type { ControlRef } from './control.ts';
-import type { ColorSpec } from '../shared/units.ts';
-import { parseColor } from '../shared/units.ts';
+import type { ColorSpec } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
 
 export interface BrandSpec<C extends string = string, F extends string = string, S extends string = string> {
   colors: Record<C, ColorSpec>;

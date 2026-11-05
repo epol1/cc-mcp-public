@@ -7,7 +7,7 @@ import {
 } from '../../src/dsl/index.ts';
 import { compileScene } from '../../src/compile/compile.ts';
 import type { CompileOpts } from '../../src/compile/compile.ts';
-import { parseColor } from '../../src/shared/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
 
 /** jsx() with children as rest args (what the TSX compiler emits). */
 const h = (type: any, props: Record<string, any> | null = {}, ...children: any[]) =>

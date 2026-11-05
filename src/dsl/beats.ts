@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { Fragment, jsx } from './jsx-runtime.ts';
 import { Footage, CompMarkers } from './primitives.ts';
 import type { FootageProps } from './primitives.ts';
-import { beatGrid, offBeatCuts, snapToBeats } from '../audio/beats.ts';
-import type { BeatAnalysis, BeatOptions } from '../audio/beats.ts';
+import { beatGrid, offBeatCuts, snapToBeats } from '@ae-mcp/core/audio/beats.ts';
+import type { BeatAnalysis, BeatOptions } from '@ae-mcp/core/audio/beats.ts';
 
 export interface BeatSync {
   file: string; bpm: number; confidence: number; beatsPerBar: number;
@@ -31,7 +31,7 @@ export interface BeatSync {
 }
 
 // Scenes run bundled from a temp folder: the loader sets __AEC_ROOT__ to the repo.
-const cli = () => path.join((globalThis as any).__AEC_ROOT__ ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'), 'src', 'audio', 'cli.ts');
+const cli = () => path.join((globalThis as any).__AEC_ROOT__ ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'), 'packages', 'core', 'src', 'audio', 'cli.ts');
 
 function analyzeSync(file: string, opts: BeatOptions): BeatAnalysis {
   const stat = fs.statSync(file);

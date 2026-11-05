@@ -1,7 +1,7 @@
 // Animation descriptors: plain data the compiler lowers to exact AE keyframes, text animators or expressions.
 // Times: seconds or "400ms" / "0.5s" / "12f". Delays are relative to the layer's start (its Sequence).
 import type { EasingSpec } from '../shared/easing.ts';
-import type { Time } from '../shared/units.ts';
+import type { Time } from '@ae-mcp/core/units.ts';
 import type { ControlRef } from './control.ts';
 
 export type Vec = number | readonly number[];

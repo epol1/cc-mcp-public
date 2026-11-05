@@ -8,7 +8,7 @@ import { resetAutoIds } from '../dsl/particles.ts';
 import { isAnim } from '../dsl/anim.ts';
 import type { TextUnitsAnim } from '../dsl/anim.ts';
 import { isControl } from '../dsl/control.ts';
-import { parseColor, parseTime, rgb } from '../shared/units.ts';
+import { parseColor, parseTime, rgb } from '@ae-mcp/core/units.ts';
 import { parseSvgPath } from '../shared/svgpath.ts';
 import { ControlRegistry } from './controls.ts';
 import type { PropSpec, ValueCtx } from './values.ts';

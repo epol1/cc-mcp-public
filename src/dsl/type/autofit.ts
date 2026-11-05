@@ -8,7 +8,7 @@ import { childrenOf } from '../jsx-runtime.ts';
 import { RigEffect, Text } from '../primitives.ts';
 import type { TextProps } from '../primitives.ts';
 import type { PseudoEffectDef } from '../../compile/ffx/pseudo.ts';
-import { breakLines } from '../../text/linebreak.ts';
+import { breakLines } from '@ae-mcp/core/text/linebreak.ts';
 import { dslWarn } from '../warn.ts';
 import { slider, textMeasure } from './common.ts';
 

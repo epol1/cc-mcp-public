@@ -7,8 +7,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { analyzeBeats, analyzePcm, beatGrid, decodePcm, offBeatCuts, snapToBeats, type BeatAnalysis } from '../../src/audio/beats.ts';
-import { realPowerSpectrum } from '../../src/audio/fft.ts';
+import { analyzeBeats, analyzePcm, beatGrid, decodePcm, offBeatCuts, snapToBeats, type BeatAnalysis } from '@ae-mcp/core/audio/beats.ts';
+import { realPowerSpectrum } from '@ae-mcp/core/audio/fft.ts';
 
 // ---------------------------------------------------------------- synthesis
 

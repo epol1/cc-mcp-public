@@ -2,7 +2,7 @@
 // paint the paths above them). Property paths are relative to each added item.
 import type { AecElement } from '../dsl/jsx-runtime.ts';
 import { childrenOf } from '../dsl/jsx-runtime.ts';
-import { parseColor, parseTime } from '../shared/units.ts';
+import { parseColor, parseTime } from '@ae-mcp/core/units.ts';
 import { resolveEasing } from '../shared/easing.ts';
 import { parseSvgPath } from '../shared/svgpath.ts';
 import type { PathPoint } from '../dsl/primitives.ts';

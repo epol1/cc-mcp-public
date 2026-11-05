@@ -7,7 +7,7 @@ import { Fill, Group, Path, Rect, Shape } from '../primitives.ts';
 import { expr } from '../anim.ts';
 import type { ControlRef } from '../control.ts';
 import { dslWarn } from '../warn.ts';
-import type { ColorSpec } from '../../shared/units.ts';
+import type { ColorSpec } from '@ae-mcp/core/units.ts';
 import { bezierOf, controller, coverInFrame, ctlName, defineTransition, expand, head, kindOf, lit, matteAll, r3, slider, tagsOf } from './core.ts';
 import type { El, TransitionBase, TransitionDef, TransitionIO } from './core.ts';
 import { paintColor, silhouetteContents, silhouetteOf } from './geometry.ts';

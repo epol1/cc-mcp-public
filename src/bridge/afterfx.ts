@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
-import type { Backend, EvalResult } from './types.ts';
+import type { Backend, EvalResult } from '@ae-mcp/core/bridge/types.ts';
 import { findAfterEffects } from './locate.ts';
 
 function jsString(s: string): string {

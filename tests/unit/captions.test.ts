@@ -23,7 +23,7 @@ import {
   toVtt,
   type Caption,
   type CaptionWord,
-} from '../../src/text/captions.ts';
+} from '@ae-mcp/core/text/captions.ts';
 
 const BOM = String.fromCharCode(0xfeff);
 const NBSP = String.fromCharCode(0xa0);

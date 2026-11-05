@@ -3,9 +3,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { callRuntime, evalAE } from '../bridge/index.ts';
-import { aeWindows, pressDialog } from '../bridge/dialogs.ts';
+import { aeWindows, pressDialog } from '@ae-mcp/core/bridge/dialogs.ts';
 import { outlineComp, outlineProject } from '../inspect/outline.ts';
-import { writeContactSheet, normalizeCapture } from '../visual/images.ts';
+import { writeContactSheet, normalizeCapture } from '@ae-mcp/core/visual/images.ts';
 import { resolveEffect, searchEffects } from '../catalog/resolve.ts';
 import { compileEditOps } from '../edit/ops.ts';
 import type { EditInput } from '../edit/ops.ts';
@@ -16,7 +16,7 @@ import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
 import type { LintOptions } from './lint.ts';
 import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
 import type { MotionOptions } from './motion.ts';
-import { STYLE_RULES } from '../motion/types.ts';
+import { STYLE_RULES } from '@ae-mcp/core/motion/types.ts';
 import { saveLintForPanel } from './panelstate.ts';
 export { readInbox } from './panelstate.ts';
 

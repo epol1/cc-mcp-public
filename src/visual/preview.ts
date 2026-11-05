@@ -7,7 +7,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { callRuntime } from '../bridge/index.ts';
 import { findAfterEffects } from '../bridge/locate.ts';
-import { normalizeCapture } from './images.ts';
+import { normalizeCapture } from '@ae-mcp/core/visual/images.ts';
 import { OUT_ROOT } from '../api/build.ts';
 
 export interface PreviewOpts { start?: number; end?: number; scale?: number; fps?: number; gif?: boolean; aerender?: boolean }

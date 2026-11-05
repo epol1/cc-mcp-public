@@ -1,6 +1,6 @@
 // scene(): the default export of a scene file. Params feed variants; seed is always a param.
 import type { LintOptions } from '../lint/index.ts';
-import type { ColorSpec, Time } from '../shared/units.ts';
+import type { ColorSpec, Time } from '@ae-mcp/core/units.ts';
 import type { AecElement } from './jsx-runtime.ts';
 
 export interface SceneConfig<P = Record<string, any>> {

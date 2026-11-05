@@ -1,9 +1,10 @@
-param([string]$Action = "list", [string]$OutDir = "", [string]$Hwnd = "", [string]$Button = "")
-# AE window/dialog helper for the ae-compose watchdog (Windows).
+param([string]$Action = "list", [string]$OutDir = "", [string]$Hwnd = "", [string]$Button = "", [string]$App = "ae")
+# App window/dialog helper for the ae-compose and pr-cut watchdogs (Windows). -App ae (After Effects) or pr (Premiere Pro).
 # Uses only non-blocking Win32 calls on AE's main window (UIA/PrintWindow on a busy UI thread hang).
 # Dialogs (#32770) run their own modal loop, so capture/UIA on them is safe.
 #   list   -> JSON { running, hung, main: {...}, dialogs: [...] }   (+ captures when -OutDir is given)
 #   press  -> presses -Button on dialog -Hwnd (UIA invoke, else WM_CLOSE for cancel-like, else Enter)
+#   windows -> JSON list of every visible top-level window of the app (class, title, owner) for discovery
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Drawing
 Add-Type @"
@@ -36,11 +37,23 @@ public class AeWin {
 "@
 [void][AeWin]::SetProcessDPIAware()
 $pids = New-Object 'System.Collections.Generic.HashSet[uint32]'
-Get-Process -Name AfterFX -ErrorAction SilentlyContinue | ForEach-Object { [void]$pids.Add([uint32]$_.Id) }
+$procName = if ($App -eq "pr") { "Adobe Premiere Pro" } else { "AfterFX" }
+Get-Process -Name $procName -ErrorAction SilentlyContinue | ForEach-Object { [void]$pids.Add([uint32]$_.Id) }
+
+if ($Action -eq "windows") {
+  $list = @()
+  foreach ($h in [AeWin]::ForPids($pids)) {
+    $r = New-Object AeWin+RECT; [void][AeWin]::GetWindowRect($h, [ref]$r)
+    $list += [pscustomobject][ordered]@{ hwnd = [int64]$h; cls = [AeWin]::Cls($h); title = [AeWin]::Title($h); owner = [int64][AeWin]::GetWindow($h, 4); enabled = [AeWin]::IsWindowEnabled($h); rect = @($r.L, $r.T, ($r.R - $r.L), ($r.B - $r.T)) }
+  }
+  ConvertTo-Json -InputObject $list -Depth 4 -Compress
+  exit 0
+}
 
 if ($Action -eq "press") {
   $target = [IntPtr][int64]$Hwnd
-  if ([AeWin]::Cls($target) -ne "#32770") { '{"pressed":false,"error":"not a dialog window"}'; exit 0 }
+  $tcls = [AeWin]::Cls($target)
+  if ($tcls -ne "#32770" -and -not ($App -eq "pr" -and $tcls -eq "DroverLord - Window Class")) { '{"pressed":false,"error":"not a dialog window"}'; exit 0 }
   try {
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
     $el = [System.Windows.Automation.AutomationElement]::FromHandle($target)
@@ -59,14 +72,21 @@ if ($Action -eq "press") {
 
 $out = [ordered]@{ running = ($pids.Count -gt 0); hung = $false; main = $null; dialogs = @() }
 if ($pids.Count -eq 0) { $out | ConvertTo-Json -Depth 5 -Compress; exit 0 }
-foreach ($h in [AeWin]::ForPids($pids)) {
+$wins = [AeWin]::ForPids($pids)
+# Premiere draws its dialogs and floating panels as owned "DroverLord - Window Class" windows; one counts as a
+# dialog only while the main window is disabled (a modal is up). AE dialogs are standard #32770 windows.
+$mainCls = if ($App -eq "pr") { "Premiere Pro" } else { "AE_CApplication*" }
+$modal = $false
+foreach ($h in $wins) { if ([AeWin]::Cls($h) -like $mainCls) { $modal = -not [AeWin]::IsWindowEnabled($h) } }
+foreach ($h in $wins) {
   $cls = [AeWin]::Cls($h)
-  if ($cls -like "AE_CApplication*") {
+  if ($cls -like $mainCls) {
     $out.hung = [AeWin]::IsHungAppWindow($h)
     $out.main = [ordered]@{ hwnd = [int64]$h; title = [AeWin]::Title($h); enabled = [AeWin]::IsWindowEnabled($h) }
     continue
   }
-  if ($cls -ne "#32770") { continue }
+  $isDialog = ($cls -eq "#32770") -or ($App -eq "pr" -and $modal -and $cls -eq "DroverLord - Window Class" -and [AeWin]::GetWindow($h, 4) -ne [IntPtr]::Zero)
+  if (-not $isDialog) { continue }
   $r = New-Object AeWin+RECT; [void][AeWin]::GetWindowRect($h, [ref]$r)
   $owner = [AeWin]::GetWindow($h, 4)
   $d = [ordered]@{ hwnd = [int64]$h; title = [AeWin]::Title($h); cls = $cls; owned = ($owner -ne [IntPtr]::Zero); rect = @($r.L, $r.T, ($r.R - $r.L), ($r.B - $r.T)) }

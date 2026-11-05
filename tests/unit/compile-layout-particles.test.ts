@@ -7,7 +7,7 @@ import {
   ParticleWorld, Rainfall, ParticleSystemsII, PixelPolly, particlePresets, seedFrom, keys, spring, tween,
 } from '../../src/dsl/index.ts';
 import { compileScene } from '../../src/compile/compile.ts';
-import { parseColor } from '../../src/shared/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
 
 const h = (type: any, props: Record<string, any> | null = {}, ...children: any[]) =>
   jsx(type, children.length ? { ...(props ?? {}), children: children.length === 1 ? children[0] : children } : { ...(props ?? {}) });

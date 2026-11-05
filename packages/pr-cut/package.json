@@ -1,0 +1,13 @@
+{
+  "name": "@ae-mcp/pr-cut",
+  "version": "0.1.0",
+  "private": true,
+  "description": "pr-cut: agent-first editing for Premiere Pro (transcript rough cuts, word-level edits, B-roll, mogrt titles, music to the beat, grading, loudness, delivery)",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@ae-mcp/core": "workspace:*"
+  }
+}

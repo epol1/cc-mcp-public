@@ -6,7 +6,7 @@
 //  - AE responsive but the bridge silent → reported with the fix.
 import { spawn, execFileSync } from 'node:child_process';
 import { CepBackend } from '../bridge/cep.ts';
-import { aeWindows, autoAnswerKnown } from '../bridge/dialogs.ts';
+import { aeWindows, autoAnswerKnown } from '@ae-mcp/core/bridge/dialogs.ts';
 import { findAfterEffects } from '../bridge/locate.ts';
 import { resetBackend } from '../bridge/index.ts';
 

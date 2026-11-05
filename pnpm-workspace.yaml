@@ -1,3 +1,6 @@
+packages:
+  - packages/core
+  - packages/pr-cut
 allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:

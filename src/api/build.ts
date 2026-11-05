@@ -12,10 +12,10 @@ import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
 import type { LintOptions, LintReport } from './lint.ts';
 import type { SourceLoc } from '../dsl/jsx-runtime.ts';
 import { callRuntime } from '../bridge/index.ts';
-import { writeContactSheet } from '../visual/images.ts';
+import { writeContactSheet } from '@ae-mcp/core/visual/images.ts';
 import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
 import type { MotionOptions, MotionReport } from './motion.ts';
-import { STYLE_RULES } from '../motion/types.ts';
+import { STYLE_RULES } from '@ae-mcp/core/motion/types.ts';
 import { saveLintForPanel } from './panelstate.ts';
 
 export const OUT_ROOT = path.join(os.homedir(), '.ae-compose', 'out');

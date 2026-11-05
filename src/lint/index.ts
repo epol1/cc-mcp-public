@@ -4,9 +4,10 @@
 // from rendered frames (./frames.ts). Every issue names the layer and the time range so the agent can fix it.
 
 import { cssBezier } from '../shared/bezier.ts';
-import { STYLE_RULES } from '../motion/types.ts';
-import type { StyleRule } from '../motion/types.ts';
+import { STYLE_RULES } from '@ae-mcp/core/motion/types.ts';
+import type { StyleRule } from '@ae-mcp/core/motion/types.ts';
 import { springUnit } from '../shared/spring.ts';
+import { formatIssues as formatReport } from '@ae-mcp/core/lint/report.ts';
 
 export type TextLintRule = 'off-frame' | 'safe-area' | 'overflow' | 'overlap' | 'occlusion' | 'reading-time' | 'missing-font' | 'linear-motion' | 'blank-frame';
 /** Text lint rules plus the style-lint craft rules (src/motion/style.ts), so `ignore` takes either. */
@@ -263,8 +264,7 @@ export function lintRules(d: LintData, opts: LintOptions = {}): LintIssue[] {
   return issues;
 }
 
-/** One line per issue, warnings first, for build/edit reports. */
+/** One line per issue, warnings first, for build/edit reports (the shared core format). */
 export function formatIssues(issues: LintIssue[]): string[] {
-  const order = (i: LintIssue) => (i.severity === 'warn' ? 0 : 1);
-  return [...issues].sort((x, y) => order(x) - order(y)).map((i) => `${i.severity === 'warn' ? 'warn' : 'note'} [${i.rule}] ${i.message}`);
+  return formatReport(issues);
 }

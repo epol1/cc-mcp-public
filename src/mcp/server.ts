@@ -283,7 +283,7 @@ server.registerTool('analyze_beats', {
   description: 'Beat grid of a music file (mp3, m4a, wav…): tempo, confidence, beat and downbeat (bar) times, for planning cuts and accents before writing a beat-synced scene. In a scene, use `const B = beatsOf(file)` (B.bar(n), B.beat(n), B.bars(n) as a duration, B.snap(t)), `<Audio src>` and `<BeatMarkers beats={B} />`; lint then flags cuts just off a beat, and ripple edits take snap: "beats".',
   inputSchema: { file: z.string().describe('audio file path'), minBpm: z.number().optional(), maxBpm: z.number().optional(), beatsPerBar: z.number().int().optional() },
 }, async (a) => wrap(async () => {
-  const { analyzeBeats } = await import('../audio/beats.ts');
+  const { analyzeBeats } = await import('@ae-mcp/core/audio/beats.ts');
   const r = await analyzeBeats(path.resolve(a.file), { minBpm: a.minBpm, maxBpm: a.maxBpm, beatsPerBar: a.beatsPerBar });
   const f = (t: number) => t.toFixed(3);
   return [text([

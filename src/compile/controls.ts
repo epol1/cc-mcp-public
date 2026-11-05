@@ -2,7 +2,7 @@
 // Essential Graphics entries, and the expression snippets that read each control. Controls with a `group` become
 // one rig (pseudo) effect named after the group, holding exactly those controls (D74).
 import type { ControlRef } from '../dsl/control.ts';
-import { parseColor } from '../shared/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
 import type { PseudoParam } from './ffx/pseudo.ts';
 import { pseudoEffect } from './ffx/pseudo.ts';
 

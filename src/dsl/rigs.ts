@@ -3,11 +3,11 @@ import { Fragment, jsx } from './jsx-runtime.ts';
 import { Camera, Light, Null, RigEffect } from './primitives.ts';
 import type { PseudoEffectDef } from '../compile/ffx/pseudo.ts';
 import { resolveEasing } from '../shared/easing.ts';
-import { parseTime } from '../shared/units.ts';
+import { parseTime } from '@ae-mcp/core/units.ts';
 import type { CameraProps } from './primitives.ts';
 import { expr, tween } from './anim.ts';
 import type { EasingSpec } from '../shared/easing.ts';
-import type { Time } from '../shared/units.ts';
+import type { Time } from '@ae-mcp/core/units.ts';
 import type { ControlRef } from './control.ts';
 import { isControl } from './control.ts';
 

@@ -6,8 +6,8 @@ import { Effect, Mask, Solid } from '../primitives.ts';
 import { expr } from '../anim.ts';
 import { isControl } from '../control.ts';
 import type { ControlRef } from '../control.ts';
-import { parseColor } from '../../shared/units.ts';
-import type { ColorSpec } from '../../shared/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
+import type { ColorSpec } from '@ae-mcp/core/units.ts';
 import { controller, ctlName, defineTransition, head, r3, slider, tagsOf } from './core.ts';
 import type { TransitionBase, TransitionDef } from './core.ts';
 

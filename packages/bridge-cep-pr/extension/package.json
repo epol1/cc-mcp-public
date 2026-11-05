@@ -1,0 +1,4 @@
+{
+  "//": "The CEP bridge is CommonJS; the repo root is type: module. AE resolves this folder through its junction to the repo, so pin the module type here.",
+  "type": "commonjs"
+}

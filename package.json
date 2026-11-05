@@ -46,6 +46,7 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "@ae-mcp/core": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "acorn": "8.19.0",
     "chokidar": "^6.0.0",

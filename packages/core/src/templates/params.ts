@@ -3,8 +3,8 @@
 // into a new scene (coerced, validated, file paths made relative to the new scene).
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseColor } from '../shared/units.ts';
-import { ASSET_EXT, relRef } from './source.ts';
+import { parseColor } from '../units.ts';
+import { ASSET_EXT, relRef } from './files.ts';
 
 export type ParamType = 'string' | 'text' | 'number' | 'boolean' | 'color' | 'file' | 'data' | 'list' | 'vec' | 'object';
 export const PARAM_TYPES: ParamType[] = ['string', 'text', 'number', 'boolean', 'color', 'file', 'data', 'list', 'vec', 'object'];

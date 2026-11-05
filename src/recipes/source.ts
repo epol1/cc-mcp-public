@@ -198,7 +198,8 @@ export function configEdits(src: string, set: { name?: string; params?: Record<s
   return edits;
 }
 
-export const ASSET_EXT = /\.(svg|png|jpe?g|gif|webp|tiff?|psd|ai|eps|pdf|mp4|mov|m4v|avi|webm|mkv|mp3|wav|aiff?|m4a|aac|flac|ogg|glb|gltf|obj|fbx|hdr|exr|csv|tsv|json|txt|srt|vtt|ttf|otf)$/i;
+import { ASSET_EXT, relRef } from '@ae-mcp/core/templates/files.ts';
+export { ASSET_EXT, relRef };
 const MODULE_EXT = ['', '.ts', '.tsx', '.mts', '.js', '.mjs', '.jsx', '/index.ts', '/index.tsx', '/index.js'];
 
 export interface Ref { start: number; end: number; value: string; kind: 'import' | 'asset'; abs: string }
@@ -232,12 +233,4 @@ export function scanRefs(src: string, file: string): Ref[] {
     refs.push({ start, end, value: v, kind: 'asset', abs: path.resolve(abs) });
   }
   return refs.sort((a, b) => a.start - b.start);
-}
-
-/** How `fromFile` should reference `target`: ./rel or ../rel with forward slashes, or an absolute path (other drive). */
-export function relRef(fromFile: string, target: string): string {
-  const rel = path.relative(path.dirname(path.resolve(fromFile)), path.resolve(target));
-  if (!rel || path.isAbsolute(rel)) return path.resolve(target).replace(/\\/g, '/');
-  const r = rel.replace(/\\/g, '/');
-  return r.startsWith('.') ? r : `./${r}`;
 }

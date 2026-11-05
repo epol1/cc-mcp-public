@@ -8,8 +8,8 @@ import type { LayerProps } from './primitives.ts';
 import { control } from './control.ts';
 import type { ControlRef } from './control.ts';
 import { expr, keys } from './anim.ts';
-import type { Time } from '../shared/units.ts';
-import { parseColor } from '../shared/units.ts';
+import type { Time } from '@ae-mcp/core/units.ts';
+import { parseColor } from '@ae-mcp/core/units.ts';
 
 // Default ids: the first ParticleWorld is "particles", the next "particles-2", ... (reset per compile), so two
 // systems without explicit ids don't collide. Give ids anyway when you want stable seeds across edits.

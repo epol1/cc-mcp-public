@@ -8,7 +8,7 @@ import type { EasingCurve } from '../shared/easing.ts';
 import { resolveEasing } from '../shared/easing.ts';
 import { springProgress } from '../shared/spring.ts';
 import { bake } from '../shared/bake.ts';
-import { parseTime } from '../shared/units.ts';
+import { parseTime } from '@ae-mcp/core/units.ts';
 import type { IrKey } from './keys.ts';
 import { curveKnots, knotsToKeys } from './keys.ts';
 import type { ControlRegistry } from './controls.ts';

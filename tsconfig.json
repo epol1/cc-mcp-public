@@ -15,10 +15,12 @@
     "jsxImportSource": "ae-compose",
     "paths": {
       "ae-compose": ["./src/dsl/index.ts"],
+      "@ae-mcp/core/*": ["./packages/core/src/*"],
+      "@ae-mcp/pr-cut/*": ["./packages/pr-cut/src/*"],
       "ae-compose/jsx-runtime": ["./src/dsl/jsx-runtime.ts"],
       "ae-compose/jsx-dev-runtime": ["./src/dsl/jsx-runtime.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "examples/**/*.tsx", "bin/**/*.ts"],
+  "include": ["src/**/*.ts", "packages/core/src/**/*.ts", "packages/pr-cut/src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "examples/**/*.tsx", "bin/**/*.ts"],
   "exclude": ["src/runtime/**"]
 }
