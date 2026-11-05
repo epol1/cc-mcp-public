@@ -32,6 +32,14 @@ describe('layout', () => {
     expect(c.layers.map((L: any) => L.id)).toEqual(['t2', 't1', 'bg']);
     expect(byId(r, 'bg').layoutLeaf).toBeUndefined();
   });
+  it('a precomp inside a layout is the leaf; the layers inside it are placed in its own space, not as layout leaves', () => {
+    const r = build({}, h(Align, { at: 'topLeft' }, h(Box, { width: 0, height: 0, offset: [640, 392] },
+      h(Precomp, { id: 'card', width: 440, height: 520 }, h(Shape, { id: 'card.bg' }, h(Rect, { size: [440, 520] }), h(Fill, {}))))));
+    expect(byId(r, 'card').layoutLeaf).toBe(true);
+    const bg = byId(r, 'card.bg');
+    expect(bg.layoutLeaf).toBeUndefined();
+    expect(prop(bg, `${TG}/ADBE Position`)).toEqual({ p: `${TG}/ADBE Position`, v: [220, 260] }); // the precomp's centre
+  });
   it('laid-out layers: layoutLeaf, centred anchor box, and position as an offset from the slot (rel)', () => {
     const r = build({}, h(Stack, { direction: 'row', gap: 10 },
       h(Text, { id: 'a' }, 'A'),
@@ -175,7 +183,7 @@ describe('particles', () => {
     const r = build({}, h(ParticleWorld, { id: 'logo', preset: 'magicSparkle', texture: h(Text, {}, '★'), textureSize: [128, 128] }));
     const tex = byId(r, 'logo.texture');
     expect(tex).toMatchObject({ type: 'precomp', enabled: false, name: 'Magic Sparkle Texture' });
-    expect(r.ir.comps.find((c: any) => c.id === 'logo.texture')).toMatchObject({ w: 128, h: 128, part: true });
+    expect(r.ir.comps.find((c: any) => c.id.endsWith('~logo.texture'))).toMatchObject({ w: 128, h: 128, part: true });
     const [pw] = fx(byId(r, 'logo'));
     expect(param(pw, 'Texture Layer')).toEqual({ p: 'Texture Layer', v: { layer: 'logo.texture' } });
     expect(param(pw, 'Particle Type').v).toBe(14);

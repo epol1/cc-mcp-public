@@ -46,6 +46,7 @@ export async function lintFromSamples(data: any, opts: LintOptions, frames?: { t
   if (frames?.length && !(opts.ignore ?? []).includes('blank-frame')) issues.push(...(await blankFrames(frames, bpc)));
   const lines = formatIssues(issues);
   if (d.truncated) lines.push(`note: only the first ${d.texts.length} text layers were checked`);
+  if ((d as any).coarse > 1) lines.push(`note: sampled every ${+(d.step * d.fps).toFixed(1)} frames to stay within the time budget (expression-heavy comp): very short reading-time or overlap moments may be missed`);
   return { comp: d.comp, ok: true, issues, lines, texts: d.texts.length, samples: d.times.length, frames: frames?.length ?? 0, truncated: d.truncated, ms: (d.ms ?? 0) + Date.now() - t0 };
 }
 

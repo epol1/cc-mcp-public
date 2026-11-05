@@ -20,6 +20,14 @@ export default scene({ name: 'Hello', duration: '4s', bg: '#0b0d12' }, () => (
 
 `aec build hello.tsx` produces a comp `Hello_v001` in your open project. Every layer and keyframe is ordinary AE that you can grab and edit. "Bounce" is a live slider on a Controls layer and in Essential Graphics. A contact sheet and a **lint report** come back automatically. Lint flags text that's on screen too briefly to read, text cut off or outside the safe area, texts on top of each other, missing fonts and near-empty frames, each with the layer and the time.
 
+### The creative toolkit
+
+One statement makes many native, live elements, and every build reports how the motion *feels*, not just how it looks:
+- **Cloner** (`<Cloner>`): one master, hundreds of live instances with distributions (line, grid, circle, path, scatter, sphere, helix), effectors (noise, falloff, stagger, follow, step, colorize) and data/CSV; controlled from one effect in AE.
+- **Kits:** UI (device frames, buttons, inputs, toasts, feeds, a cursor scripted with `uiSteps`), data viz (bars, lines, areas, donuts, counters, values live in AE), typography (captions with karaoke, emphasis measured in AE, decode, typewriter, split-flap), transitions built from the scene's own elements (`<Beats>`), path tools and shape morphs, procedural backgrounds.
+- **Agent tools:** a speed graph, motion summary and 10 style-lint rules on every build (repeated transitions, short holds, linear moves, no focal point…); `motion_preview` frame strips; `plan_scene` (check a beat sheet before writing TSX); reframe to 9:16 / 1:1 / 4:5 and `deliver` every format; beat sync to music; a recipe library.
+- **Everything stays vanilla AE:** rigs are generated pseudo effects, the expression library is inlined into the expressions, and a designer panel in AE shows the controls, lint and an Ask Claude box.
+
 ## Status
 
 [![ae-compose status dashboard](status/status.png)](status/index.html)
@@ -195,6 +203,10 @@ Each scene in [`examples/`](examples) is built from your own assets and exposes 
 | 12 | [Particle logo reveal](examples/12-particle-logo-reveal/scene.tsx) | particle trail following a null, wipe, spark burst synced to a marker |
 | 13 | [Ambient 3D particles](examples/13-ambient-3d-particles/scene.tsx) | bokeh dust following the camera, 3D carousel |
 | 14 | [Particle Playground](examples/14-particle-playground/scene.tsx) | cannon fountain with gravity and live physics controls |
+| 15 | [100 cards](examples/15-cloner-cards/scene.tsx) | one `<Cloner>`: 100 live instances, scatter, noise, falloff, palette; one card grows into the message |
+| 16 | [Product UI demo](examples/16-product-ui/scene.tsx) | UI kit: phones, a data-driven feed that scrolls, taps and typing from one `uiSteps` script, a shape wipe from the underline |
+| 17 | [Data story](examples/17-data-story/scene.tsx) | data viz kit: counter, area, donut, bars, each live on one effect; hand-off, liquid wipe, push-through |
+| 18 | [Beat-synced promo](examples/18-beat-promo/scene.tsx) | `beatsOf` grid: words and colorway swaps on beats, a light-leak cut on the downbeat, a beat-pulsing disc that becomes the end card |
 
 ## Docs
 - [docs/DSL.md](docs/DSL.md): the full DSL and edit-op reference

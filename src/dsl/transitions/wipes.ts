@@ -8,9 +8,9 @@ import { expr } from '../anim.ts';
 import type { ControlRef } from '../control.ts';
 import { dslWarn } from '../warn.ts';
 import type { ColorSpec } from '../../shared/units.ts';
-import { bezierOf, controller, ctlName, defineTransition, expand, head, kindOf, lit, matteAll, r3, slider, tagsOf } from './core.ts';
+import { bezierOf, controller, coverInFrame, ctlName, defineTransition, expand, head, kindOf, lit, matteAll, r3, slider, tagsOf } from './core.ts';
 import type { El, TransitionBase, TransitionDef, TransitionIO } from './core.ts';
-import { coverScale, paintColor, silhouetteContents, silhouetteOf } from './geometry.ts';
+import { paintColor, silhouetteContents, silhouetteOf } from './geometry.ts';
 
 type Dir = 'left' | 'right' | 'up' | 'down';
 const DIR_ANGLE: Record<Dir, number> = { right: 0, down: 90, left: 180, up: 270 };
@@ -41,7 +41,7 @@ const SHAPE_WIPE: TransitionDef<ShapeWipeProps> = {
     const S = silhouetteOf(p.shape, io.w, io.h);
     const firstGeom = expand(p.shape.props.children).find((c) => ['rect', 'ellipse', 'star', 'path', 'group'].includes(kindOf(c) ?? ''));
     const mode = p.grow ?? (kindOf(firstGeom) === 'rect' ? 'fit' : 'uniform');
-    let cover: [number, number] | null = p.scaleTo !== undefined ? (Array.isArray(p.scaleTo) ? [p.scaleTo[0], p.scaleTo[1]] : [p.scaleTo, p.scaleTo]) : coverScale(S, io.w, io.h, mode === 'uniform' ? 'uniform' : 'fit');
+    let cover: [number, number] | null = p.scaleTo !== undefined ? (Array.isArray(p.scaleTo) ? [p.scaleTo[0], p.scaleTo[1]] : [p.scaleTo, p.scaleTo]) : coverInFrame(S, io, mode === 'uniform' ? 'uniform' : 'fit');
     if (!cover) {
       dslWarn(`<ShapeWipe id="${p.id}">: the shape's outline doesn't contain its own centre, so the cover scale is a guess; set scaleTo`);
       const k = (Math.hypot(io.w, io.h) / Math.max(1, Math.min(S.bbox.w, S.bbox.h))) * 100;

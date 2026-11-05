@@ -1,4 +1,4 @@
-// Counter (K2): a Text layer whose Source Text expression counts from `from` to `value` with an easing, formatted with
+// Counter (K2): a Text layer whose Source Text expression counts from `countFrom` to `value` with an easing, formatted with
 // prefix/suffix/decimals/thousands separator through the expression library's L.num. Its numbers and timing live on
 // one "Counter" rig effect on the text layer (Value, From, Delay, Duration, Easing, Decimals), so a designer retypes
 // the number or retimes the count in Effect Controls. Never the Numbers effect: it opens a modal dialog.
@@ -17,8 +17,8 @@ export interface CounterProps extends Omit<TextProps, 'text' | 'children'>, Numb
   id: string;
   /** The number it counts to (a control() makes it a scene control instead). Live: "Value". */
   value: number | ControlRef;
-  /** Where the count starts (default 0). Live: "From". */
-  from?: number;
+  /** Where the count starts (default 0). Live: "From". (`from` stays the layer's start time, like everywhere.) */
+  countFrom?: number;
   /** Seconds after the layer starts (default 0). Live: "Delay". */
   delay?: number;
   /** Seconds the count takes (default 1.2). Live: "Duration". */
@@ -53,12 +53,12 @@ export function counterExpr(f: NumberFormat, title: string): string {
 /** A number that counts up: `<Counter id="users" value={1200000} suffix="+" font="Inter-Black" size={200} />`. */
 export function Counter(p: CounterProps): AecElement {
   if (!p.id) throw new Error('<Counter> needs an id');
-  const { value, from, delay, countDuration, easing, prefix, suffix, decimals, separator, decimalMark, expressions, ...text } = p;
+  const { value, countFrom, delay, countDuration, easing, prefix, suffix, decimals, separator, decimalMark, expressions, ...text } = p;
   const final = isControl(value) ? Number(value.default) : value;
   if (!Number.isFinite(final)) throw new Error(`<Counter id="${p.id}">: value must be a number (got ${JSON.stringify(value)})`);
   const d = decimals ?? (Number.isInteger(final) ? 0 : Math.min(2, String(final).split('.')[1]?.length ?? 0));
   const f: NumberFormat = { prefix, suffix, decimals: d, separator, decimalMark };
-  const values = { Value: value, From: from ?? 0, Delay: delay ?? 0, Duration: countDuration ?? 1.2, Easing: easeIndex(easing, 'easeOutExpo'), Decimals: d };
+  const values = { Value: value, From: countFrom ?? 0, Delay: delay ?? 0, Duration: countDuration ?? 1.2, Easing: easeIndex(easing, 'easeOutExpo'), Decimals: d };
   return jsx(Text, {
     ...text,
     // Measured at its final width, so a centred or right-aligned counter doesn't shift its anchor while counting.

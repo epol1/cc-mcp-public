@@ -85,7 +85,7 @@ function ring(p: DonutChartProps, pie: boolean): AecElement {
       { param: { kind: 'angle', name: 'Start Angle', default: p.startAngle ?? 0 }, value: p.startAngle ?? 0 },
     ],
   });
-  const f: Frame = { id: p.id, title, ctl, rig: R, theme, base: { parent: ctl, from: p.from, duration: p.duration }, plot: { L: 0, T: 0, W: b.w, H: b.h, B: b.h, R: b.w }, horizontal: false, scale: { min: 0, max: 1, step: 1, ticks: [0, 1], decimals: 0 } };
+  const f: Frame = { id: p.id, title, ctl, rig: R, theme, base: { parent: ctl, from: p.from, duration: p.duration, tags: [`group:${p.id}`] }, plot: { L: 0, T: 0, W: b.w, H: b.h, B: b.h, R: b.w }, horizontal: false, scale: { min: 0, max: 1, step: 1, ticks: [0, 1], decimals: 0 } };
 
   // Segment i: s0/s1 (trim fractions), th (mid angle °), cp (count progress), pull (highlight pull-out px).
   const seg = (i: number) => [

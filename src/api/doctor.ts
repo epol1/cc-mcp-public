@@ -42,6 +42,7 @@ export async function doctor(): Promise<{ ok: boolean; checks: Check[] }> {
       const p = await callRuntime('ping', [], { timeoutMs: 20_000 });
       add({ name: 'Runtime loads and answers in AE', ok: !!p.ok, detail: `runtime ${p.version}, AE ${p.ae}, project ${p.project ?? '(unsaved)'}` });
       add({ name: 'Project bit depth 8/16 bpc', ok: p.bpc !== 32, warn: p.bpc === 32, detail: `${p.bpc} bpc`, fix: 'Project Settings > Color > Bit Depth 16 bpc (32 bpc snapshots are compensated but not a target, D29)' });
+      add({ name: 'Expression engine: JavaScript', ok: !p.engine || p.engine === 'javascript-1.0', warn: true, detail: p.engine ?? 'unknown', fix: 'Project Settings > Expressions > Expressions Engine: JavaScript (ae-compose expressions assume it; Legacy ExtendScript evaluates nested ?: differently, D82)' });
       const probe = await callRuntime('inspect', ['project', {}], { timeoutMs: 20_000 });
       add({ name: 'Scripts can write files / access network', ok: !!probe.ok, detail: 'inspect OK (file writes verified by snapshot tests)' });
       const font = await import('../api/index.ts').then((m) => m.runExtendScript('(function(){app.beginUndoGroup("ae-compose: doctor font probe");var f;try{var c=app.project.items.addComp("__aec_font",10,10,1,1,30);var L=c.layers.addText("x");var p=L.property("ADBE Text Properties").property("ADBE Text Document");var d=p.value;d.font="Inter-Bold";p.setValue(d);f=p.value.font;c.remove();}finally{app.endUndoGroup();$.global.__aecNoopUndos=($.global.__aecNoopUndos||0)+1;}return f;})()', 20_000));

@@ -1,7 +1,7 @@
 // The cloner (P1/P2, MASH-style): `of` becomes one master precomp; `count` precomp layers of it are its instances.
 // A controller null carries one "Cloner" rig effect (D74) with every live parameter: distribution, motion, seed,
 // randomness, falloff, stagger, step, palette. Instance 1 is built with index-based expressions
-// (i = index − controller index − 1) that call the expression library (D73), and AE duplicates it, so every
+// (i = n − (index − controller index): copies stack above instance 1) that call the expression library (D73), and AE duplicates it, so every
 // instance shares one expression and a designer edits the master, drags a slider, or moves the controller
 // (instances are parented to it) with no rebuild. Only `count` needs a rebuild. Per-instance data goes to
 // Essential Properties overrides (fields) or to arrays embedded in the expressions (transform channels).
@@ -46,7 +46,7 @@ export const helix = (o: Omit<Extract<Distribution, { kind: 'helix' }>, 'kind'> 
 // ---------- effectors ----------
 export type Effector =
   | { kind: 'noise'; position?: number; rotation?: number; scale?: number; opacity?: number; z?: number; speed?: number }
-  | { kind: 'falloff'; shape?: 'radial' | 'linear'; center?: [number, number] | [number, number, number]; radius?: number; softness?: number; angle?: number; width?: number; scale?: [number, number]; opacity?: [number, number]; blur?: [number, number] }
+  | { kind: 'falloff'; shape?: 'radial' | 'linear'; center?: [number, number] | [number, number, number]; radius?: number; softness?: number; angle?: number; width?: number; scale?: [number, number]; opacity?: [number, number]; blur?: [number, number]; brightness?: [number, number] }
   | { kind: 'stagger'; each?: number; order?: 'start' | 'end' | 'center' | 'edges' | 'random'; by?: 'index' | 'distance' | 'random' }
   | { kind: 'follow'; lag?: number }
   | { kind: 'step'; position?: number; rotation?: number }
@@ -55,7 +55,7 @@ export type Effector =
 /** Seeded variation: position (px), rotation (°), scale and opacity (%), z (px, 3D); `speed` > 0 makes it wobble (Hz). */
 export const noise = (o: Omit<Extract<Effector, { kind: 'noise' }>, 'kind'> = {}): Effector => ({ kind: 'noise', ...o });
 /**
- * Scale/opacity/blur by distance from a field: a draggable "<name> Field" null (radial, or a line at `angle` for
+ * Scale/opacity/blur/brightness by distance from a field: a draggable "<name> Field" null (radial, or a line at `angle` for
  * linear). Values are [outside, inside], e.g. scale: [80, 115] = cards grow as they pass the field.
  */
 export const falloff = (o: Omit<Extract<Effector, { kind: 'falloff' }>, 'kind'> = {}): Effector => ({ kind: 'falloff', ...o });
@@ -165,10 +165,11 @@ function clonerDef(d: Distribution, motion: ClonerMotion | undefined, fx: Effect
   for (const e of fx) {
     if (e.kind === 'noise') params.push({ kind: 'group', name: 'Randomness', params: [sl('Position Random', 0, 0, 500, { display: 'pixel' }), sl('Rotation Random', 0, 0, 180), sl('Scale Random', 0, 0, 100, { display: 'percent' }), sl('Opacity Random', 0, 0, 100, { display: 'percent' }), ...(threeD ? [sl('Z Random', 0, 0, 2000, { display: 'pixel' })] : []), sl('Noise Speed', 0, 0, 5, { precision: 2 })] });
     if (e.kind === 'falloff') params.push({ kind: 'group', name: 'Falloff', params: [
-      ...(e.shape === 'linear' ? [{ kind: 'angle', name: 'Field Angle', default: 0 } as PseudoParam, sl('Field Width', 400, 1, 4000, { display: 'pixel', validMin: 1 })] : [sl('Radius', 400, 0, 3000, { display: 'pixel' }), sl('Softness', 300, 1, 3000, { display: 'pixel', validMin: 1 })]),
+      ...(e.shape === 'linear' ? [{ kind: 'angle', name: 'Field Angle', default: 0 } as PseudoParam, sl('Field Width', 400, 1, 4000, { display: 'pixel', validMin: 1 })] : [sl('Falloff Radius', 400, 0, 3000, { display: 'pixel' }), sl('Falloff Softness', 300, 1, 3000, { display: 'pixel', validMin: 1 })]),
       sl('Inside Scale', 100, 0, 400, { display: 'percent' }), sl('Outside Scale', 100, 0, 400, { display: 'percent' }),
       sl('Inside Opacity', 100, 0, 100, { display: 'percent' }), sl('Outside Opacity', 100, 0, 100, { display: 'percent' }),
       ...(e.blur ? [sl('Inside Blur', 0, 0, 100), sl('Outside Blur', 0, 0, 100)] : []),
+      ...(e.brightness ? [sl('Inside Brightness', 0, -150, 150), sl('Outside Brightness', 0, -150, 150)] : []),
     ] });
     if (e.kind === 'stagger') params.push({ kind: 'group', name: 'Stagger', params: [sl('Each', 0.05, 0, 2, { precision: 3, validMin: 0 }), { kind: 'popup', name: 'Order', items: ['Start', 'End', 'Center', 'Edges', 'Random'], default: 1 }, { kind: 'popup', name: 'Stagger By', items: ['Index', 'Distance', 'Random'], default: 1 }] });
     if (e.kind === 'follow') params.push({ kind: 'group', name: 'Follow', params: [sl('Lag', 0.08, 0, 2, { precision: 3, validMin: 0 })] });
@@ -259,9 +260,10 @@ export function Cloner(p: ClonerProps) {
   if (motion) Object.assign(v, { Offset: motion.offset ?? 0, Speed: motion.speed ?? 0, Direction: motion.direction ?? 0, Wrap: motion.wrap ?? 0, 'Speed Variation': motion.variation ?? 0 });
   if (nz) Object.assign(v, { 'Position Random': nz.position ?? 0, 'Rotation Random': nz.rotation ?? 0, 'Scale Random': nz.scale ?? 0, 'Opacity Random': nz.opacity ?? 0, ...(threeD ? { 'Z Random': nz.z ?? 0 } : {}), 'Noise Speed': nz.speed ?? 0 });
   if (fo) {
-    Object.assign(v, fo.shape === 'linear' ? { 'Field Angle': fo.angle ?? 0, 'Field Width': fo.width ?? 400 } : { Radius: fo.radius ?? 400, Softness: fo.softness ?? 300 });
+    Object.assign(v, fo.shape === 'linear' ? { 'Field Angle': fo.angle ?? 0, 'Field Width': fo.width ?? 400 } : { 'Falloff Radius': fo.radius ?? 400, 'Falloff Softness': fo.softness ?? 300 });
     Object.assign(v, { 'Outside Scale': fo.scale?.[0] ?? 100, 'Inside Scale': fo.scale?.[1] ?? 100, 'Outside Opacity': fo.opacity?.[0] ?? 100, 'Inside Opacity': fo.opacity?.[1] ?? 100 });
     if (fo.blur) Object.assign(v, { 'Outside Blur': fo.blur[0], 'Inside Blur': fo.blur[1] });
+    if (fo.brightness) Object.assign(v, { 'Outside Brightness': fo.brightness[0], 'Inside Brightness': fo.brightness[1] });
   }
   if (st) Object.assign(v, { Each: st.each ?? 0.05, Order: ['start', 'end', 'center', 'edges', 'random'].indexOf(st.order ?? 'start') + 1, 'Stagger By': ['index', 'distance', 'random'].indexOf(st.by ?? 'index') + 1 });
   if (fl) Object.assign(v, { Lag: fl.lag ?? 0.08 });
@@ -294,6 +296,8 @@ export function Cloner(p: ClonerProps) {
     case 'helix': pos.push(`var p = L.helix(i, n, ${P('Radius')}, ${P('Height')}, ${P('Turns')});`); break;
     case 'path': pos.push(`var S = __AEC_LAYER(${pathId})__, q = S.toComp(L.onPath(S.content("Cloner Path").path, ${pathU}, ${d.closed ? 'true' : 'false'}));`, 'var p = sub(C.fromComp(q), C.transform.anchorPoint);'); break;
   }
+  // 2D distributions return [x, y]: in 3D, give them a z so noise and data can add to it.
+  if (threeD) pos.push('if (p.length < 3) p = [p[0], p[1], 0];');
   if (motion && !fl && d.kind !== 'circle' && d.kind !== 'path') {
     pos.push(`var fa = ${P('Direction')} * Math.PI / 180, fw = ${P('Wrap')}, ca = Math.cos(fa), sa = Math.sin(fa);`);
     pos.push(`var u = p[0] * ca + p[1] * sa + ${P('Offset')} + ${fs} * ${flowT}, w = p[1] * ca - p[0] * sa;`);
@@ -308,13 +312,11 @@ export function Cloner(p: ClonerProps) {
   if (sp) pos.push(`var ps = ${P('Position Step')}; if (ps > 0) { p[0] = L.step(p[0], ps); p[1] = L.step(p[1], ps); }`);
   pos.push(threeD ? 'var a0 = C.transform.anchorPoint;\n[a0[0] + p[0], a0[1] + p[1], a0[2] + (p.length > 2 ? p[2] : 0)];' : 'var a0 = C.transform.anchorPoint;\n[a0[0] + p[0], a0[1] + p[1]];');
 
-  // Falloff weight (shared by scale, opacity and blur): distance of this instance from the field.
+  // Falloff weight (shared by scale, opacity, blur and brightness): distance of this instance from the field.
   const weight = fo ? [
     `var F = __AEC_LAYER(${fieldId})__, q = C.${toSpace}(transform.position), c = F.${toSpace}(F.transform.anchorPoint);`,
-    fo.shape === 'linear' ? `var w = L.linear(q, c, ${P('Field Angle')}, ${P('Field Width')});` : `var w = L.radial(q, c, ${P('Radius')}, ${P('Softness')});`,
+    fo.shape === 'linear' ? `var w = L.linear(q, c, ${P('Field Angle')}, ${P('Field Width')});` : `var w = L.radial(q, c, ${P('Falloff Radius')}, ${P('Falloff Softness')});`,
   ] : [];
-  // Name clash: a circle/helix/sphere distribution and a radial falloff both want "Radius".
-  if (fo && fo.shape !== 'linear' && (d.kind === 'circle' || d.kind === 'sphere' || d.kind === 'helix')) throw new Error(`<Cloner id="${id}">: a radial falloff can't be combined with a ${d.kind} distribution yet (both use "Radius"); use falloff({ shape: 'linear' })`);
 
   const scl = [head(`scale${fo ? ' (falloff)' : ''}${nz ? ' (noise)' : ''}`), `var k = ${P('Scale')};`];
   if (nz) scl.push(`k *= 1 + ${P('Scale Random')} / 100 * L.srand(i, s + 41);`);
@@ -349,6 +351,7 @@ export function Cloner(p: ClonerProps) {
     props['ADBE Time Remapping'] = tr.join('\n');
   }
   const blurExpr = fo?.blur ? [head('blur (falloff)'), ...weight, `L.lerp(${P('Outside Blur')}, ${P('Inside Blur')}, w);`].join('\n') : undefined;
+  const brightExpr = fo?.brightness ? [head('brightness (falloff)'), ...weight, `L.lerp(${P('Outside Brightness')}, ${P('Inside Brightness')}, w);`].join('\n') : undefined;
   if (colors[0]) {
     const c = colors[0];
     props[`ADBE Layer Overrides/${c.field}`] = [head('color (palette)'), `var P = [${c.palette.map((_, k) => P(`Color ${k + 1}`)).join(', ')}], m = Math.round(${P('Color Mode')});`, 'm == 1 ? L.palette(P, i) : m == 2 ? L.pick(P, i, s) : L.gradient(P, n > 1 ? i / (n - 1) : 0);'].join('\n');
@@ -381,7 +384,10 @@ export function Cloner(p: ClonerProps) {
     instances: { count: n, prefix: name, overrides, timeRemap: !!props['ADBE Time Remapping'] },
     position: expr(pos.join('\n')), scale: expr(scl.join('\n')), rotation: expr(rot.join('\n')), opacity: expr(opa.join('\n')),
     expressions: props,
-    effects: blurExpr ? [jsx(Effect, { name: 'Gaussian Blur', label: 'Cloner Blur', params: { Blurriness: expr(blurExpr), 'Repeat Edge Pixels': 0 } })] : undefined,
+    effects: blurExpr || brightExpr ? [
+      ...(blurExpr ? [jsx(Effect, { name: 'Gaussian Blur', label: 'Cloner Blur', params: { Blurriness: expr(blurExpr), 'Repeat Edge Pixels': 0 } })] : []),
+      ...(brightExpr ? [jsx(Effect, { name: 'Brightness & Contrast', label: 'Cloner Brightness', params: { Brightness: expr(brightExpr) } })] : []),
+    ] : undefined,
     children: of,
   } as any);
   // JSX order is bottom → top: the path and field go below, so the controller sits directly above the instances

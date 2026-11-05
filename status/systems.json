@@ -1210,13 +1210,13 @@
         {
           "id": "p5-paths",
           "name": "Path tools: follow path, trails/echo, draw helpers",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-morph",
           "name": "Shape morph with vertex matching",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
@@ -1235,31 +1235,31 @@
         {
           "id": "p5-ui",
           "name": "UI kit components on the layout engine (button, toggle, input, toast…)",
-          "status": "wip",
+          "status": "done",
           "weight": 5
         },
         {
           "id": "p5-ui-cursor",
           "name": "Cursor with clicks + component states on markers",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-ui-scroll",
           "name": "ScrollView and feeds (cloner + data)",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-ui-frames",
           "name": "Device/browser frames + screen inserts with cursor-follow zoom",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-dataviz",
           "name": "Data viz kit: bar, line, area, donut, stacked + counters",
-          "status": "wip",
+          "status": "done",
           "weight": 4
         },
         {
@@ -1277,7 +1277,7 @@
         {
           "id": "p5-transitions",
           "name": "Transitions library built from scene elements",
-          "status": "wip",
+          "status": "done",
           "weight": 4
         }
       ],
@@ -1302,7 +1302,7 @@
         {
           "id": "p5-storyboard",
           "name": "Storyboard first: beat sheet → scene scaffold (plan_scene)",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
@@ -1326,7 +1326,7 @@
         {
           "id": "p5-recipes",
           "name": "Recipe library: save and re-instantiate scenes with params",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         }
       ],
@@ -1358,19 +1358,19 @@
         {
           "id": "p5-s16",
           "name": "Showcase 16: product UI demo (UI kit, cursor, scroll)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-s17",
           "name": "Showcase 17: data story (data viz kit)",
-          "status": "wip",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-s18",
           "name": "Showcase 18: music-synced promo (beat sync, transitions)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {

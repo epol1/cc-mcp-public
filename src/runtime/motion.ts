@@ -2,9 +2,9 @@
 // graphs) and style lint (src/motion). Like the lint sampler, one temporary text layer carries an expression that
 // measures every target with toComp (ExtendScript has no toComp); reading its Source Text at a time gives one row.
 // Per layer and sample: anchor point in comp pixels, effective scale (parents included), rotation, opacity, bounds.
-import { tagOf } from './layers';
+import { commentTags, tagOf } from './layers';
 
-export interface MotionSampleOpts { step?: number; maxSamples?: number; maxLayers?: number; clonesPerGroup?: number }
+export interface MotionSampleOpts { step?: number; maxSamples?: number; maxLayers?: number; clonesPerGroup?: number; budgetMs?: number }
 
 interface Target { L: Layer; kind: string; tags: string[] }
 
@@ -41,6 +41,8 @@ function targets(c: CompItem, opts: MotionSampleOpts): Target[] {
       tags[tags.length] = 'cloner:' + g;
     }
     if (L.name === 'Controls' && kind === 'null') tags[tags.length] = 'controls';
+    const own = commentTags(com);
+    for (let j = 0; j < own.length; j++) tags[tags.length] = own[j];
     out[out.length] = { L: L, kind: kind, tags: tags };
   }
   return out;
@@ -83,6 +85,19 @@ export function motionSample(c: CompItem, opts: MotionSampleOpts): any {
     // Beat grid markers (BeatMarkers, A5): lint checks cuts against them.
     else if (m.comment === 'beat' || /^bar \d+$/.test(m.comment)) o.beats[o.beats.length] = mk.keyTime(k);
   }
+  // Transition windows from every layer's tags, nulls included (a transition's controller is often a null, which
+  // the sampler skips): the style rules treat those windows as one deliberate move.
+  o.transitions = [];
+  for (let i = 1; i <= c.numLayers; i++) {
+    const tg = commentTags(String(c.layer(i).comment || ''));
+    for (let j = 0; j < tg.length; j++) {
+      if (tg[j].indexOf('transition:') !== 0) continue;
+      const Lt = c.layer(i), kind = tg[j].substring(11);
+      let dup = false; // a transition's layers share its tag: one entry per transition
+      for (let q = 0; q < o.transitions.length; q++) if (o.transitions[q].kind === kind && Math.abs(o.transitions[q].t - Lt.inPoint) < 0.05) dup = true;
+      if (!dup) o.transitions[o.transitions.length] = { kind: kind, t: Lt.inPoint, dur: Lt.outPoint - Lt.inPoint, layer: Lt.name };
+    }
+  }
   const ts = targets(c, opts);
   for (let k = 0; k < ts.length; k++) {
     const L: any = ts[k].L;
@@ -99,19 +114,44 @@ export function motionSample(c: CompItem, opts: MotionSampleOpts): any {
     probe.enabled = false;
     const sp: any = probe.property('ADBE Text Properties').property('ADBE Text Document');
     sp.expression = probeExpression(ts).replace('STEPF', String(stepF));
+    // Time budget: expression-heavy comps (charts: hundreds of expressions per frame) can take 1–2 s a sample. After
+    // two samples, if the whole pass would exceed the budget, start again on an evenly spaced grid m times coarser
+    // (the analysis assumes even steps; the report says it was coarse).
+    const budget = opts.budgetMs || 40000;
+    const tS = new Date().getTime();
+    let checked = false;
     for (let i = 0; i < o.times.length; i++) {
+      if (i === 2 && !checked) {
+        checked = true;
+        const per = (new Date().getTime() - tS) / 2, m = Math.ceil((per * o.times.length) / budget);
+        if (m > 1) {
+          const keep: number[] = [];
+          for (let j = 0; j < o.times.length; j += m) keep[keep.length] = o.times[j];
+          o.times = keep;
+          o.coarse = m;
+          o.step = stepF * fd * m;
+          for (let k = 0; k < ts.length; k++) { o.layers[k].s = []; if (o.layers[k].b) o.layers[k].b = []; }
+          sp.expression = probeExpression(ts).replace('STEPF', String(stepF * m)); // bounds stay on every 5th sample
+          i = -1;
+          continue;
+        }
+      }
       const row = String(sp.valueAtTime(o.times[i], false).text);
       if (i === 0 && sp.expressionError) return { ok: false, error: 'motion probe expression failed: ' + sp.expressionError };
+      // Rows stay JSON text (see lint.ts: parsing and re-serializing small arrays is very slow in ExtendScript).
       const cells = row.split(';');
       for (let k = 0; k < ts.length; k++) {
         const cell = cells[k];
         const bs = o.layers[k].b;
-        if (cell === undefined || cell === '-' || cell === '!' || cell === '') { o.layers[k].s[i] = null; if (bs) bs[i] = null; continue; }
-        const nums = cell.split(','), v: number[] = [];
-        for (let j = 0; j < 6; j++) v[j] = +nums[j];
-        o.layers[k].s[i] = v;
-        if (bs) bs[i] = nums.length >= 10 ? [+nums[6], +nums[7], +nums[8], +nums[9]] : null;
+        if (cell === undefined || cell === '-' || cell === '!' || cell === '' || /[^0-9eE.,+-]/.test(cell)) { o.layers[k].s[i] = 'null'; if (bs) bs[i] = 'null'; continue; }
+        const nums = cell.split(',');
+        o.layers[k].s[i] = '[' + nums.slice(0, 6).join(',') + ']';
+        if (bs) bs[i] = nums.length >= 10 ? '[' + nums.slice(6, 10).join(',') + ']' : 'null';
       }
+    }
+    for (let k = 0; k < ts.length; k++) {
+      o.layers[k].s = { $rawJson: '[' + o.layers[k].s.join(',') + ']' };
+      if (o.layers[k].b) o.layers[k].b = { $rawJson: '[' + o.layers[k].b.join(',') + ']' };
     }
   } finally {
     probe.remove();

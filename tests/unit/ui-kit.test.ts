@@ -89,6 +89,9 @@ describe('controls', () => {
     const bg = L(r, 'buy'), label = L(r, 'buy.label');
     expect(bg.type).toBe('shape');
     expect(bg.markers).toEqual([{ t: 2, comment: 'press', dur: undefined }, { t: 1.5, comment: 'hover', dur: 1.1 }]);
+    // A component that starts later keeps its states on the flow's times (Sequence-relative), not shifted by `from`.
+    const late = build(Button({ id: 'buy', label: 'Buy now', clickAt: [2], position: [960, 600], from: 1.5 }));
+    expect(L(late, 'buy')).toMatchObject({ in: 1.5, markers: [{ t: 2, comment: 'press' }] });
     const fx = rig(bg, 'Button');
     expect(fx.mn).toMatch(/^Pseudo\/aec Button /);
     const states = rigExprs(bg, 'Button').join('\n');
@@ -143,6 +146,11 @@ describe('controls', () => {
     expect(ex(L(r, 'email.placeholder'), 'ADBE Opacity')).toContain('"type"');
     expect(L(r, 'email.label').text.text).toBe('Email');
     expect(json(f.groups)).toContain('Focus Color');
+    // With an entrance, the placeholder keeps both: the fade keys and the hide-on-typing expression on top of them.
+    const ent = build(Input({ id: 'email', text: 'ada@example.com', placeholder: 'you@company.com', typeAt: [1], enterAt: 0.2 }));
+    const op = L(ent, 'email.placeholder').props.filter((s: any) => s.p.endsWith('ADBE Opacity'));
+    expect(op.find((s: any) => s.keys)?.keys.length).toBeGreaterThan(1);
+    expect(op.find((s: any) => s.expr)?.expr).toContain('value * (t0 < 0');
   });
   it('Tabs: "select N" markers (1-based), indicator spring, dimmed labels', () => {
     const r = build(Tabs({ id: 'tabs', tabs: ['A', 'B', 'C'], selected: 1, selectAt: [{ t: 2, index: 2 }] }));

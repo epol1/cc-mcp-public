@@ -7,7 +7,7 @@ import { renderComp } from './render.ts';
 import type { RenderFormat, RenderResult } from './render.ts';
 
 export interface DeliverOptions {
-  /** Frames to deliver (default 16:9, 9:16, 1:1). The scene's own frame is built without a suffix when listed as its own size. */
+  /** Frames to deliver (default 16:9, 9:16, 1:1). Each is built as a sibling comp with its own suffix (Name_v001_16x9, …_9x16). */
   targets?: string[];
   /** Format for every target (default mp4). */
   format?: RenderFormat;

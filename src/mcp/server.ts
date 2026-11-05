@@ -35,7 +35,7 @@ const lintInput = z.union([z.boolean(), z.object({
   ignore: z.array(z.enum(LINT_RULES as [string, ...string[]])).optional(),
 })]).optional().describe('lint the result (default on): false skips it, or tune it');
 
-const motionInput = z.boolean().optional().describe('motion previews + style lint (default on): a speed graph image, a motion summary, and craft rules (repeated transitions, crowded entrances, short holds, one easing everywhere, linear moves, slide furniture, a short end hold, everything moving at once, dead air) in the lint list');
+const motionInput = z.boolean().optional().describe('motion previews + style lint (default on): a speed graph image, a motion summary, and craft rules (repeated transitions, crowded entrances, short holds, one easing everywhere, linear moves, slide furniture, a short end hold, everything moving at once, dead air, cuts just off the beat) in the lint list');
 
 /** Motion summary lines for a report (the style issues are already in the lint list). */
 function motionLines(m: MotionReport | undefined, label?: string): string[] {
@@ -73,9 +73,12 @@ server.registerTool('build_scene', {
   if (r.restoredControls) lines.push(`kept ${r.restoredControls} live control value(s) from the previous build`);
   if ((r.undoSteps ?? 1) > 1) lines.push(`undo steps: ${r.undoSteps} (undo with steps: ${r.undoSteps} removes this whole build)`);
   for (const l of r.lint ?? []) lines.push(...lintSummary(l, l.label));
+  for (const m of r.motion ?? []) lines.push(...motionLines(m, m.label));
   lines.push(`contact sheets: ${r.contactSheets.join(', ') || 'none'}`, `IR: ${r.irFile}`);
   const out: Content[] = [text(lines.join('\n'))];
   for (const s of r.contactSheets.slice(0, 4)) out.push(await image(s));
+  // The speed graph of the main build (and of a second variant/format): easing, holds, what moves at once.
+  for (const m of (r.motion ?? []).slice(0, 2)) if (m.ok && m.graph) out.push(await image(m.graph));
   return out;
 }));
 
@@ -178,7 +181,7 @@ server.registerTool('lint_comp', {
   inputSchema: {
     comp: z.union([z.string(), z.number()]).optional().describe('comp name, aec id or item id (default: the active comp)'),
     frames: z.number().int().min(0).max(24).optional().describe('frames rendered for the blank-frame check (default 8; 0 = skip)'),
-    safe: z.union([z.enum(['action', 'title']), z.number().min(0).max(0.3)]).optional(),
+    safe: z.union([z.enum(['action', 'title', 'reels']), z.number().min(0).max(0.3)]).optional(),
     readingRate: z.number().min(0.5).max(20).optional(),
     ignore: z.array(z.enum(LINT_RULES as [string, ...string[]])).optional(),
   },

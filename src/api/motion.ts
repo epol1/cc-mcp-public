@@ -129,7 +129,9 @@ export async function motionReport(data: any, opts: MotionOptions = {}, ir?: any
     const file = path.join(OUT_ROOT, safe(d.comp), `motion_${Date.now()}.png`);
     try { graph = (await speedGraph(d, a, file)).file; } catch { graph = undefined; }
   }
-  return { ok: true, comp: d.comp, graph, summary: motionSummary(a), style, lines: formatStyleIssues(style), layers: d.layers.length, samples: d.times.length, ms: (data.ms ?? 0) + Date.now() - t0 };
+  const summary = motionSummary(a);
+  if ((data as any).coarse > 1) summary.push(`sampled every ${+(d.step * d.fps).toFixed(1)} frames (expression-heavy comp, kept to the time budget): moves shorter than that may be missed`);
+  return { ok: true, comp: d.comp, graph, summary, style, lines: formatStyleIssues(style), layers: d.layers.length, samples: d.times.length, ms: (data.ms ?? 0) + Date.now() - t0 };
 }
 
 /** Samples any comp's motion and judges it (for lint_comp and the motion_preview tool). */

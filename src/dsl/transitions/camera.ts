@@ -5,9 +5,9 @@ import { jsx } from '../jsx-runtime.ts';
 import { Camera, Fill, Null, Rect, Shape, Text } from '../primitives.ts';
 import { expr } from '../anim.ts';
 import { dslWarn } from '../warn.ts';
-import { addExpression, controller, ctlName, defineTransition, head, isBackdrop, kindOf, mapLayers, matteAll, parentAll, r3, separated, slider, tagsOf, withProps } from './core.ts';
+import { addExpression, controller, coverInFrame, ctlName, defineTransition, head, isBackdrop, kindOf, mapLayers, matteAll, parentAll, r3, separated, slider, tagsOf, withProps } from './core.ts';
 import type { El, TransitionBase, TransitionDef } from './core.ts';
-import { coverScale, silhouetteContents, silhouetteOf } from './geometry.ts';
+import { silhouetteContents, silhouetteOf } from './geometry.ts';
 import type { Silhouette } from './geometry.ts';
 
 const TG = 'ADBE Transform Group';
@@ -43,7 +43,7 @@ const ZOOM_THROUGH: TransitionDef<ZoomThroughProps> = {
         // Scale about the focus: its point in the shape's layer space.
         const rad = (-S.rotation * Math.PI) / 180, dx = F[0] - S.pos[0], dy = F[1] - S.pos[1];
         const local: [number, number] = [S.center[0] + (dx * Math.cos(rad) - dy * Math.sin(rad)) / (S.scale[0] / 100), S.center[1] + (dx * Math.sin(rad) + dy * Math.cos(rad)) / (S.scale[1] / 100)];
-        const c = coverScale(S, io.w, io.h, 'uniform', { local, comp: F }, 1.15);
+        const c = coverInFrame(S, io, 'uniform', { local, comp: F }, 1.15);
         if (!c) dslWarn(`<ZoomThrough id="${p.id}">: the focus is outside the shape's fill, so the zoom is a guess (40×); set focus inside it, or zoom`);
         zoom = c ? Math.max(c[0], c[1]) / Math.max(S.scale[0], S.scale[1]) : 40;
       }
@@ -66,7 +66,8 @@ const ZOOM_THROUGH: TransitionDef<ZoomThroughProps> = {
       ? jsx(Shape, { id: winId, name: `${ctlName(ZOOM_THROUGH, p)} Window`, tags: tagsOf(ZOOM_THROUGH), parent: p.id, from: 0, duration: io.after, position: [r3(S.pos[0]), r3(S.pos[1])], anchor: [r3(S.center[0]), r3(S.center[1])], rotation: S.rotation, scale: [r3(S.scale[0]), r3(S.scale[1])], opacity: fadeExpr, children: silhouetteContents(el.props.children, '#ffffff') })
       : (() => { const { animate: _a, effects: _e, id: _i, name: _n, from: _f, duration: _d, matte: _m, parent: _p, markers: _k, expressions: _x, tags: _t, eg: _g, layout: _l, ...tp } = el.props; return jsx(Text, { ...tp, id: winId, name: `${ctlName(ZOOM_THROUGH, p)} Window`, tags: tagsOf(ZOOM_THROUGH), parent: p.id, from: 0, duration: io.after, opacity: fadeExpr }); })();
     const who = `<ZoomThrough id="${p.id}">`;
-    const incoming = matteAll(parentAll(io.incoming, inId, who, { carrier: true }), winId, {}, who);
+    // Full-frame backgrounds stay at 100 % (at the settle scale their edges would show through the window).
+    const incoming = matteAll(parentAll(io.incoming, inId, who, { carrier: true, keepBackgrounds: true }), winId, {}, who);
     return { outgoing: parentAll(io.outgoing, p.id, who, { adopt: io.adopt }), incoming, under: [ctl, settleNull, window] };
   },
 };
@@ -102,18 +103,23 @@ const PUSH_THROUGH: TransitionDef<PushThroughProps> = {
     const cam = jsx(Camera, { id: `${p.id}.cam`, name: `${ctlName(PUSH_THROUGH, p)} Camera`, oneNode: true, lens, from: 0, duration: io.after,
       position: expr(`${head(PUSH_THROUGH, p, `camera travels ${D} px through the outgoing plane`)}\n[thisComp.width / 2, thisComp.height / 2, -cameraOption.zoom + P * ${D}];`) });
     const who = `<PushThrough id="${p.id}">`;
-    const to3D = (node: El[], dz: number, fadeOut: boolean) => mapLayers(node, (el) => {
+    const to3D = (node: El[], dz: number, fadeOut: boolean) => {
+      // A layer parented to another layer of the same beat inherits its depth: pushing it too would double it.
+      const ids = new Set<string>();
+      mapLayers(node, (el) => { if (el.props.id) ids.add(el.props.id); return el; });
+      return mapLayers(node, (el) => {
       const k = kindOf(el), q = el.props;
       if (k === 'camera' || k === 'light' || (q.id && flat.has(q.id))) return el;
       let out = withProps(el, { threeD: true });
-      if (dz) {
+      if (dz && !(q.parent && ids.has(q.parent))) {
         if (Array.isArray(q.position)) out = withProps(out, { position: [q.position[0], q.position[1], (q.position[2] ?? 0) + dz] });
         else out = withProps(out, { z: (typeof q.z === 'number' ? q.z : 0) + dz });
         if (q.animate?.position || (q.z !== undefined && typeof q.z !== 'number')) dslWarn(`${who}: ${q.id ?? q.name ?? k} animates its position/z; check it lands at depth ${dz}`);
       }
       if (fadeOut) out = addExpression(out, `${TG}/ADBE Opacity`, `${head(PUSH_THROUGH, p, 'fades as the camera reaches this plane')}\nvalue * (1 - L.smooth(e("Fade Start").value / 100, e("Fade End").value / 100, P));`, who) ?? out;
       return out;
-    });
+      });
+    };
     return { outgoing: to3D(io.outgoing, 0, true), incoming: to3D(io.incoming, D, false), under: [ctl], over: [cam] };
   },
 };

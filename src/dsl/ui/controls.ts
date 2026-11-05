@@ -355,12 +355,13 @@ export function Input(p: InputProps) {
   const parts: any[] = [field];
   if (p.placeholder && (typing || !text)) parts.push(jsx(Text, {
     id: `${p.id}.placeholder`, name: `${name} Placeholder`, ...slot, font: t.fonts.regular, color: t.muted, text: p.placeholder,
-    ...(typing ? { opacity: expr([
+    // On the Opacity expression (`value * …`), so it multiplies an entrance fade's keys instead of replacing them.
+    ...(typing ? { expressions: { 'ADBE Transform Group/ADBE Opacity': [
       '// ae-compose ui: hidden once the first character is typed',
       `var F = ${F}, M = F.marker, t0 = -1;`,
       'for (var k = 1; k <= M.numKeys; k++) { var m = M.key(k); if (m.comment.indexOf("type") == 0 && m.time <= time) t0 = m.time; }',
       'value * (t0 < 0 || (time - t0) * F.effect("Input")("Typing Speed").value < 1 ? 1 : 0);',
-    ].join('\n')) } : {}),
+    ].join('\n') } } : {}),
   }));
   if (text) parts.push(jsx(Text, {
     id: `${p.id}.text`, name: `${name} Text`, ...slot, font: t.fonts.regular, color: t.text, text,

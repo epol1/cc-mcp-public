@@ -43,7 +43,7 @@ export default scene({ name: 'DataVizKit', width: 1920, height: 1080, fps: 30, d
         data={[310, 380, 360, 450, 520, 610, 690, 820].map((v, i) => ({ label: `W${i + 1}`, value: v }))}
         format={{ suffix: 'k' }} colors={['#3bceac']}
         animation={{ delay: 0.35, duration: 1.3 }} />
-      <Counter id="play.count" value={1.2} decimals={1} suffix="M" from={0} delay={0.5} countDuration={1.4}
+      <Counter id="play.count" value={1.2} decimals={1} suffix="M" countFrom={0} delay={0.5} countDuration={1.4}
         font="Inter-Black" size={150} color="#f2f4f8" x={1460} y={330} animate={{ opacity: inOut(0.45) }} />
       <Text id="play.countLabel" font="Inter-Medium" size={34} color="#8b95a5" x={1460} y={430}
         animate={{ text: perWord({ from: { y: 20, opacity: 0 }, easing: 'easeOutExpo', duration: '0.6s', each: '60ms', delay: 0.9 }), opacity: inOut(0) }}>

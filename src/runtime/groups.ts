@@ -134,11 +134,14 @@ function addPseudo(ctx: Ctx, layer: Layer, parent: PropertyGroup, spec: GroupSpe
   const f = new File(spec.pseudo as string);
   if (!f.exists) fail(ctx, 'rig effect preset missing: ' + spec.pseudo);
   const comp = layer.containingComp;
-  try { const sl = comp.selectedLayers; for (let k = sl.length - 1; k >= 0; k--) sl[k].selected = false; } catch (e) {}
+  // applyPreset works on the selection: select only this layer, then give the user their selection back.
+  const prior: Layer[] = [];
+  try { const sl = comp.selectedLayers; for (let k = sl.length - 1; k >= 0; k--) { prior[prior.length] = sl[k]; sl[k].selected = false; } } catch (e) {}
   const before = parent.numProperties;
   layer.selected = true;
   try { (layer as any).applyPreset(f); } catch (e) { fail(ctx, 'rig effect preset could not be applied: ' + errText(e)); }
   layer.selected = false;
+  for (let k = 0; k < prior.length; k++) { try { prior[k].selected = true; } catch (e) { /* removed meanwhile */ } }
   const fxp = layer.property('ADBE Effect Parade') as PropertyGroup;
   if (fxp.numProperties === before + 1 && fxp.property(before + 1).matchName === spec.mn) return fxp.property(before + 1);
   if (fxp.canAddProperty(spec.mn)) return fxp.addProperty(spec.mn);

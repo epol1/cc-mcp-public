@@ -29,9 +29,11 @@ export function isElement(L: MotionLayer, d: Pick<MotionData, 'w' | 'h'>): boole
   return !NON_ELEMENT_KINDS.has(L.kind) && !hasTag(L, 'controls') && !isBackground(L, d);
 }
 
-/** Cloner instances count as one element: they share the cloner tag. */
+/** Cloner instances count as one element (they share the cloner tag), and so do the parts of one component that
+ * share a `group:<id>` tag (a chart's bars, labels and ticks arrive as one gesture). */
 export function groupKey(L: MotionLayer, index: number): string {
-  return tagsOf(L).find((t) => t === 'cloner' || t.startsWith('cloner:')) ?? `#${index}`;
+  const t = tagsOf(L);
+  return t.find((x) => x.startsWith('group:')) ?? t.find((x) => x === 'cloner' || x.startsWith('cloner:')) ?? `#${index}`;
 }
 
 /** Half-diagonal of the layer at 100 % scale, from its bounds; full-frame layers and unknown sizes get a frame-based guess. */

@@ -43,8 +43,12 @@
     "var sib=[],f=c.parentFolder,base=c.name.replace(/_v\\d+.*$/,'');for(var m=1;m<=f.numItems;m++){var it=f.item(m);if(it instanceof CompItem&&it.name.indexOf(base)===0)sib.push(it.name);}" +
     "var sel=[];for(var s=0;s<c.selectedLayers.length;s++)sel.push(c.selectedLayers[s].name);" +
     "return J({comp:c.name,id:c.id,time:c.time,dur:c.duration,fps:c.frameRate,rigs:rigs,siblings:sib,selected:sel});})()";
-  function setScript(li, fi, pi, v) {
-    return "(function(){var c=app.project.activeItem;app.beginUndoGroup('ae-compose panel: set');try{var p=c.layer(" + li + ").property('ADBE Effect Parade').property(" + fi + ").property(" + pi + ");p.setValue(" + JSON.stringify(v) + ");}finally{app.endUndoGroup();}return 'ok';})()";
+  // The comp read at refresh time (by item id) and the layer by name: the active comp or the layer order may have
+  // changed since the panel last read them.
+  function setScript(compId, layerName, li, fi, pi, v) {
+    return "(function(){var c=app.project.itemByID(" + compId + ");if(!(c instanceof CompItem))return 'missing comp';" +
+      "var L=c.layer(" + li + ");if(!L||L.name!==" + JSON.stringify(layerName) + ")L=c.layer(" + JSON.stringify(layerName) + ");if(!L)return 'missing layer';" +
+      "app.beginUndoGroup('ae-compose panel: set');try{var p=L.property('ADBE Effect Parade').property(" + fi + ").property(" + pi + ");p.setValue(" + JSON.stringify(v) + ");}finally{app.endUndoGroup();}return 'ok';})()";
   }
   function gotoScript(comp, t) {
     return "(function(){for(var i=1;i<=app.project.numItems;i++){var it=app.project.item(i);if(it instanceof CompItem&&it.name===" + JSON.stringify(comp) + "){it.openInViewer();" + (t === undefined ? "" : "it.time=" + t + ";") + "return 'ok';}}return 'missing';})()";
@@ -78,7 +82,7 @@
       if (!el2) return;
       el2.onchange = function () {
         var v = P.kind === "color" ? hexRgb(el2.value) : P.kind === "point" ? el2.value.split(",").map(Number) : Number(el2.value);
-        evalAE(setScript(R.li, R.fi, P.i, v), function () { setStatus("set " + R.effect + " › " + P.name); });
+        evalAE(setScript(state.id, R.layer, R.li, R.fi, P.i, v), function (r) { setStatus(r === "ok" ? "set " + R.effect + " › " + P.name : "not set: " + r); });
       };
     })(state.rigs[r2], state.rigs[r2].params[p2], $("p_" + r2 + "_" + p2));
   }
@@ -113,9 +117,10 @@
   }
 
   function renderRecipes() {
-    var el = $("recipes"), dir = path.join(REPO, "recipes"), list = [];
-    try { fs.readdirSync(dir).forEach(function (d) { try { list.push(JSON.parse(fs.readFileSync(path.join(dir, d, "recipe.json"), "utf8"))); } catch (e) {} }); } catch (e) {}
-    if (!list.length) { el.innerHTML = '<p class="dim">No recipes in ' + esc(dir) + "</p>"; return; }
+    // The shipped recipes and the ones save_recipe wrote (~/.ae-compose/recipes), like list_recipes.
+    var el = $("recipes"), dirs = [path.join(REPO, "recipes"), path.join(HOME, ".ae-compose", "recipes")], list = [];
+    dirs.forEach(function (dir) { try { fs.readdirSync(dir).forEach(function (d) { try { list.push(JSON.parse(fs.readFileSync(path.join(dir, d, "recipe.json"), "utf8"))); } catch (e) {} }); } catch (e) {} });
+    if (!list.length) { el.innerHTML = '<p class="dim">No recipes in ' + esc(dirs.join(" or ")) + "</p>"; return; }
     var html = "";
     for (var i = 0; i < list.length; i++) html += '<div class="recipe"><b>' + esc(list[i].name) + "</b> <span class=\"dim\">" + esc((list[i].tags || []).join(", ")) + "</span><br>" + esc(list[i].intent || "") + "</div>";
     el.innerHTML = html + '<p class="dim">Ask Claude: “make another like &lt;recipe&gt; for …” (instantiate_recipe).</p>';

@@ -144,6 +144,19 @@ const MATTE: { [k: string]: string } = { alpha: 'ALPHA', alphaInverted: 'ALPHA_I
 
 export const TAG = 'aec:';
 
+/**
+ * Style-lint tags kept in the layer comment after the id ("aec:<id>;tags=bg,transition:shape-wipe;d=…"), so every
+ * tool that samples a comp (edits, lint_comp, motion_preview) knows what a layer is for, not only the build.
+ */
+export function commentTags(c: string): string[] {
+  const i = c.indexOf(';tags=');
+  if (i < 0) return [];
+  const rest = c.substring(i + 6), e = rest.indexOf(';');
+  const s = e >= 0 ? rest.substring(0, e) : rest;
+  return s ? s.split(',') : [];
+}
+export const tagsSegment = (tags: string[] | undefined): string => (tags && tags.length ? ';tags=' + tags.join(',') : '');
+
 export function tagOf(x: { comment: string }): string | null {
   const c = x.comment || '';
   if (c.substring(0, TAG.length) !== TAG) return null;
@@ -203,7 +216,7 @@ export function createLayer(ctx: Ctx, comp: CompItem, L: IrLayer): Layer {
       fail(ctx, 'unknown layer type ' + (L as any).type);
   }
   layer!.name = L.name;
-  layer!.comment = TAG + L.id;
+  layer!.comment = TAG + L.id + tagsSegment((L as any).tags);
   return layer!;
 }
 

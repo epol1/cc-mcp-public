@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.025**: 93.18% weighted, 189/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.026**: 98.72% weighted, 202/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -216,7 +216,7 @@
 - [x] AGENT_GUIDE.md
 - [x] REPORT.md
 
-# Phase 5: creative toolkit (docs/TOOLKIT.md) (74.2%)
+# Phase 5: creative toolkit (docs/TOOLKIT.md) (95.2%)
 
 ## P5 · Foundations (100%)
 - [x] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
@@ -224,43 +224,43 @@
 - [x] Rig presets: one effect per rig with its controls (.ffx pseudo effects) _(w3)_
 - [x] Existing rigs migrated to the library (text units, camera, springs, bursts) _(w2)_
 
-## P5 · Procedural (88%)
+## P5 · Procedural (100%)
 - [x] Cloner: master precomp + instances + Essential Properties overrides _(w5)_
 - [x] Distributions: line, grid, circle/arc, path, scatter, 3D _(w2)_
 - [x] Effectors: falloff, noise, stagger/cascade, follow, step, color _(w3)_
 - [x] Data-driven instances (arrays, CSV) _(w2)_
 - [x] Large counts: Repeater / particle fallback with measured thresholds _(w2)_
-- [~] Path tools: follow path, trails/echo, draw helpers _(w2)_
-- [~] Shape morph with vertex matching _(w3)_
+- [x] Path tools: follow path, trails/echo, draw helpers _(w2)_
+- [x] Shape morph with vertex matching _(w3)_
 - [x] Procedural backgrounds and textures (vanilla effects, brand palettes) _(w2)_
 
-## P5 · Kits (62%)
-- [~] UI kit components on the layout engine (button, toggle, input, toast…) _(w5)_
-- [~] Cursor with clicks + component states on markers _(w2)_
-- [~] ScrollView and feeds (cloner + data) _(w2)_
-- [~] Device/browser frames + screen inserts with cursor-follow zoom _(w2)_
-- [~] Data viz kit: bar, line, area, donut, stacked + counters _(w4)_
+## P5 · Kits (100%)
+- [x] UI kit components on the layout engine (button, toggle, input, toast…) _(w5)_
+- [x] Cursor with clicks + component states on markers _(w2)_
+- [x] ScrollView and feeds (cloner + data) _(w2)_
+- [x] Device/browser frames + screen inserts with cursor-follow zoom _(w2)_
+- [x] Data viz kit: bar, line, area, donut, stacked + counters _(w4)_
 - [x] Captions from SRT/VTT with word timing (karaoke) _(w3)_
 - [x] Type FX: word emphasis, decode, split-flap, variable fonts, auto-fit _(w3)_
-- [~] Transitions library built from scene elements _(w4)_
+- [x] Transitions library built from scene elements _(w4)_
 
-## P5 · Agent tools (87%)
+## P5 · Agent tools (100%)
 - [x] Motion previews: GIF strips + speed graphs after builds/edits _(w3)_
 - [x] Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture) _(w3)_
-- [~] Storyboard first: beat sheet → scene scaffold (plan_scene) _(w3)_
+- [x] Storyboard first: beat sheet → scene scaffold (plan_scene) _(w3)_
 - [x] Responsive reframe 16:9 → 9:16 / 1:1 (safe areas, type, camera) _(w4)_
 - [x] Delivery packs: every format rendered in one call
 - [x] Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts _(w3)_
-- [~] Recipe library: save and re-instantiate scenes with params _(w2)_
+- [x] Recipe library: save and re-instantiate scenes with params _(w2)_
 
 ## P5 · Designer panel (optional) (100%)
 - [x] CEP panel: controls by rig, variants, lint list, recipes, ask Claude _(w4)_
 
-## P5 · Showcases, tests, docs (37%)
+## P5 · Showcases, tests, docs (70%)
 - [x] Showcase 15: 100 cards with subtle variations (cloner) _(w2)_
-- [ ] Showcase 16: product UI demo (UI kit, cursor, scroll) _(w2)_
-- [~] Showcase 17: data story (data viz kit) _(w2)_
-- [ ] Showcase 18: music-synced promo (beat sync, transitions) _(w2)_
+- [x] Showcase 16: product UI demo (UI kit, cursor, scroll) _(w2)_
+- [x] Showcase 17: data story (data viz kit) _(w2)_
+- [x] Showcase 18: music-synced promo (beat sync, transitions) _(w2)_
 - [~] Unit + AE integration tests (one-step undo) for every tool _(w3)_
 - [~] DSL reference + skill sections for every tool _(w2)_
 - [ ] Fresh-session test with only the skill + MCP

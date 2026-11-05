@@ -62,8 +62,8 @@ export interface Frame {
   ctl: string;
   rig: ChartRig;
   theme: ChartTheme;
-  /** Props every chart layer gets: parent and layer timing. */
-  base: { parent: string; from?: any; duration?: any };
+  /** Props every chart layer gets: parent, timing, and a group tag (the style lint counts the chart as one element). */
+  base: { parent: string; from?: any; duration?: any; tags?: string[] };
   plot: Plot;
   horizontal: boolean;
   scale: NiceScale;

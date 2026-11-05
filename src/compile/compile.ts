@@ -58,6 +58,9 @@ export class Compiler {
   assets = new Map<string, { id: string; path?: string; item?: string }>();
   ids = new Set<string>();
   sceneName = '';
+  /** Main comp id and its variant/format suffix: part comps are namespaced with them (their tags are project-wide). */
+  mainId = '';
+  compSuffix = '';
   /** Name of the main comp (precomps read controls from its Controls null). */
   mainName = '';
   libMode: LibMode = 'inline';
@@ -93,10 +96,14 @@ export class Compiler {
       layers: [], controls: new ControlRegistry(), features: new Set(), rendererReq: cfg.renderer,
     };
     this.mainName = compName;
+    this.mainId = mainId;
+    this.compSuffix = suffix;
     if (cfg.motionBlur !== undefined) applyCompMB(comp, cfg.motionBlur);
     (globalThis as any).__AEC_SCENE_DIR__ = this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd();
     // Components lay out in the authored frame; a reframe maps their positions like any other (w0 × h0).
-    (globalThis as any).__AEC_COMP__ = { w: w0, h: h0, fps };
+    (globalThis as any).__AEC_COMP__ = { w: w0, h: h0, fps,
+      // With a reframe: the target frame and how authored positions map into it (cover math needs the real frame).
+      reframe: this.rf ? { w: this.rf.w, h: this.rf.h, w0, h0, cx: this.rf.cx, cy: this.rf.cy, sx: this.rf.sx, sy: this.rf.sy } : undefined };
     resetAutoIds();
     drainDslWarnings(); // components may run in render() (direct calls) or during the walk (JSX)
     const root = this.def.render({ ...params, seed });
@@ -331,18 +338,22 @@ export class Compiler {
   private precomp(el: AecElement, ctx: Ctx): void {
     const p = el.props;
     const id = this.uid(ctx, 'precomp', p.id);
+    // The comp's tag is project-wide: an explicit id ("cards.inst") is namespaced with the main comp's id, so a
+    // variant, a reframe or another scene using the same id builds its own comp instead of rebuilding this one.
+    const compId = p.id ? `${this.mainId}~${id}` : id;
     const fps = ctx.comp.fps;
     const sub: CompBuild = {
-      id, name: p.name ?? `${this.sceneName}_${id.split('.').pop()}`, w: p.width ?? ctx.comp.w, h: p.height ?? ctx.comp.h, fps,
+      id: compId, name: p.name ?? `${this.sceneName}_${id.split('.').pop()}${this.compSuffix ? '_' + this.compSuffix : ''}`, w: p.width ?? ctx.comp.w, h: p.height ?? ctx.comp.h, fps,
       dur: p.compDuration !== undefined ? parseTime(p.compDuration, fps) : ctx.end - ctx.start, bg: p.bg ? rgb(p.bg) : undefined, part: true, layers: [], controls: ctx.comp.controls.scoped(this.mainName), features: new Set(),
     };
     // Precomps share the parent's control registry: controls live on the main comp's Controls null
     // and expressions inside precomps reach it with comp("<main>").layer("Controls").
-    const subCtx: Ctx = { ...ctx, comp: sub, start: 0, end: sub.dur, path: id, counters: new Map() };
+    // A precomp is its own coordinate space: a layout around the precomp layer doesn't reach inside it.
+    const subCtx: Ctx = { ...ctx, comp: sub, start: 0, end: sub.dur, path: id, counters: new Map(), inLayout: false };
     this.walk(p.children, subCtx);
     this.finishPrecomp(sub);
     this.comps.push(sub);
-    this.layer('precomp', el, ctx, { precompId: id, id });
+    this.layer('precomp', el, ctx, { precompId: compId, id });
   }
 
   private layer(kind: string, el: AecElement, ctx: Ctx, extra: { precompId?: string; id?: string } = {}): string {
@@ -366,7 +377,10 @@ export class Compiler {
     if (p.tags?.length) L.tags = p.tags; // style-lint hints, read back by layer id (src/api/motion.ts)
     if (p.parent) L.parent = p.parent;
     if (p.matte) L.matte = { layer: p.matte.layer, type: p.matte.type ?? 'alpha', ...(p.matte.showSource ? { showSource: true } : {}) };
-    if (p.markers) L.markers = p.markers.map((m: any) => ({ t: inT + parseTime(m.t, fps), comment: m.comment, dur: m.duration !== undefined ? parseTime(m.duration, fps) : undefined }));
+    // Layer marker times count from the layer's start, or with markerBase: 'sequence' from the enclosing Sequence's
+    // (UI kit: interaction-script times are Sequence-relative even when a component starts later).
+    const mBase = p.markerBase === 'sequence' ? ctx.start : inT;
+    if (p.markers) L.markers = p.markers.map((m: any) => ({ t: mBase + parseTime(m.t, fps), comment: m.comment, dur: m.duration !== undefined ? parseTime(m.duration, fps) : undefined }));
     const vctx: ValueCtx = { fps, t0: inT, controls: ctx.comp.controls, seed: ctx.seed, warnings: this.warnings };
     const anim: Record<string, any> = { ...(p.animate ?? {}) };
     const textAnims: TextUnitsAnim[] = [];
@@ -519,6 +533,11 @@ export class Compiler {
       else if (!fills) rest.y = this.rf.cy;
     }
     const tProps = { ...p };
+    // Reframe: a resting comp-space shape (wipe mattes, drawn paths) is stretched from the authored frame onto the
+    // target frame, so full-frame geometry still covers it.
+    if (this.rf && !ctx.inLayout && compSpace && kind === 'shape' && ctx.comp.w === this.rf.w && ctx.comp.h === this.rf.h && p.scale === undefined && !anim.scale && p.anchor === undefined && !anim.position && !anim.x && !anim.y) {
+      (tProps as any).scale = [Math.round(100000 * this.rf.w / this.rf.w0) / 1000, Math.round(100000 * this.rf.h / this.rf.h0) / 1000];
+    }
     if (typeof p.x === 'number' && !anim.x) delete (tProps as any).x;
     if (typeof p.y === 'number' && !anim.y) delete (tProps as any).y;
     if (typeof p.z === 'number' && !anim.z) delete (tProps as any).z;

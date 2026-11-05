@@ -11,6 +11,8 @@ const SCRIPTS: [string, number][] = [
   ['tests/integration/p5/distributions.ts', 600_000],
   ['tests/integration/p5/motion.ts', 600_000],
   ['tests/integration/p5/beats.ts', 600_000],
+  ['tests/integration/p5/kits.ts', 3_600_000], // typography, backgrounds, data viz, UI, transitions, paths
+  ['tests/integration/p5/agenttools.ts', 900_000], // plan_scene scaffold, recipe instance
   // Renders clear AE's undo history (delivery): keep it last.
   ['tests/integration/p5/reframe.ts', 1_500_000],
 ];

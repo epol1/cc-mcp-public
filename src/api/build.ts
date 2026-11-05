@@ -118,6 +118,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   const motionOpts: MotionOptions | false = opts.motion === false ? false : opts.motion === true || opts.motion === undefined ? {} : opts.motion;
   const motionRuns: { label?: string; data: any; ir: any }[] = [];
   for (const { ir } of irs) validateIr(ir); // fail in Node with a path, before anything reaches AE
+  (report.phases ??= {})['node.compile'] = Date.now() - t0; // scene load + compile + IR validation
   for (const { ir, sources, label, reframe } of irs) {
     // Variant keys come from scene code or MCP input: never let one escape outDir (it feeds a recursive delete).
     const safeLabel = label === undefined ? undefined : (String(label).replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+$/, '') || 'variant');
@@ -128,11 +129,13 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     const times = nFrames > 0 ? [...sheetTimes(main.dur, main.fps, nFrames), ...(opts.times ?? [])] : opts.times ?? [];
     const snapDir = path.join(outDir, 'frames', label ?? 'main').replace(/\\/g, '/');
     fs.rmSync(snapDir, { recursive: true, force: true });
+    const tCall = Date.now();
     const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined, lint: lint ? SAMPLE_OPTS : undefined, motion: motionOpts ? MOTION_SAMPLE_OPTS : undefined }], { timeoutMs: buildTimeout(ir) });
     report.undoSteps = (report.undoSteps ?? 0) + 1;
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;
     for (const [k, v] of Object.entries(r.phases ?? {})) (report.phases ??= {})[k] = (report.phases[k] ?? 0) + (v as number);
+    report.phases!['ae.call'] = (report.phases!['ae.call'] ?? 0) + (Date.now() - tCall);
     for (const e of r.exprErrors ?? []) report.exprErrors.push({ ...e, src: loc(sources[e.node]) });
     if (!r.ok) {
       report.ok = false;

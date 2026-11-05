@@ -87,7 +87,7 @@ export function BarChart(p: BarChartProps): AecElement {
     callout: p.annotate ? { after: p.annotate.after ?? 0.45 } : undefined,
     look: [{ param: { kind: 'slider', name: 'Bar Width', default: barWidth, min: 5, max: 100, validMin: 1, validMax: 100, display: 'percent', precision: 0 }, value: barWidth }],
   });
-  const f: Frame = { id: p.id, title, ctl, rig: R, theme, base: { parent: ctl, from: p.from, duration: p.duration }, plot, horizontal, scale };
+  const f: Frame = { id: p.id, title, ctl, rig: R, theme, base: { parent: ctl, from: p.from, duration: p.duration, tags: [`group:${p.id}`] }, plot, horizontal, scale };
 
   const delay = (s: number, i: number) => (stacked ? `${i} * S + ${r3(s * 0.45)} * D` : grouped ? `${i} * S + ${r3(s * 0.5)} * S` : `${i} * S`);
   const valRef = (s: number, i: number) => R.P(rig.val(s, i));

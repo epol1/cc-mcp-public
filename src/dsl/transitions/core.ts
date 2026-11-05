@@ -16,6 +16,8 @@ import type { PseudoEffectDef, PseudoParam } from '../../compile/ffx/pseudo.ts';
 import { resolveEasing } from '../../shared/easing.ts';
 import type { EasingSpec } from '../../shared/easing.ts';
 import { parseTime } from '../../shared/units.ts';
+import { coverScale } from './geometry.ts';
+import type { Silhouette } from './geometry.ts';
 import type { Time } from '../../shared/units.ts';
 
 export type El = AecElement;
@@ -99,6 +101,18 @@ export type TransitionComponent<P extends TransitionBase> = ((p: P) => El) & { t
 export function compInfo(size?: [number, number]): { w: number; h: number; fps: number } {
   const g = (globalThis as any).__AEC_COMP__ as { w?: number; h?: number; fps?: number } | undefined;
   return { w: size?.[0] ?? g?.w ?? 1920, h: size?.[1] ?? g?.h ?? 1080, fps: g?.fps ?? 30 };
+}
+
+/**
+ * The cover scale of a silhouette in the frame it will really play in. With a reframe (build_scene reframe /
+ * deliver), the compiler maps authored positions into the target frame (`__AEC_COMP__.reframe`) but keeps shape
+ * sizes, so the cover is computed from the mapped position against the target frame.
+ */
+export function coverInFrame(s: Silhouette, io: { w: number; h: number }, mode: 'uniform' | 'fit', about?: { local: [number, number]; comp: [number, number] }, margin?: number): [number, number] | null {
+  const g = (globalThis as any).__AEC_COMP__?.reframe as { w: number; h: number; w0: number; h0: number; cx: number; cy: number; sx: number; sy: number } | undefined;
+  if (!g) return coverScale(s, io.w, io.h, mode, about, margin);
+  const m = (q: [number, number]): [number, number] => [g.cx + (q[0] - g.w0 / 2) * g.sx, g.cy + (q[1] - g.h0 / 2) * g.sy];
+  return coverScale({ ...s, pos: m(s.pos as [number, number]) }, g.w, g.h, mode, about ? { local: about.local, comp: m(about.comp) } : undefined, margin);
 }
 
 export const sec = (t: Time | undefined, fps: number, d = 0): number => (t === undefined ? d : parseTime(t, fps));
@@ -188,10 +202,11 @@ export function matteAll(node: any, layer: string, opts: { type?: 'alpha' | 'alp
  * a transition carrier that is at rest (identity) outside its window: later transitions may move such layers, and
  * (in <Beats>) re-parent the carrier itself through io.adopt.
  */
-export function parentAll(node: any, parent: string, who = 'transition', opts: { carrier?: boolean; adopt?: TransitionIO['adopt'] } = {}): El[] {
+export function parentAll(node: any, parent: string, who = 'transition', opts: { carrier?: boolean; adopt?: TransitionIO['adopt']; keepBackgrounds?: boolean } = {}): El[] {
   return mapLayers(node, (el) => {
     const k = kindOf(el);
     if (k === 'camera' || k === 'light') return el;
+    if (opts.keepBackgrounds && isBackdrop(el)) return el; // a full-frame background: scaled, its edges would show
     if (el.props.parent) {
       if (el.props.parent === parent) return el;
       if (el.props.carrierParent && opts.adopt) { opts.adopt(el.props.parent, parent); return el; }

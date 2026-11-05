@@ -72,7 +72,7 @@ export function LineChart(p: LineChartProps): AecElement {
     defaultHighlightColor: data.series[0].color === PALETTE[1] ? PALETTE[0] : PALETTE[1],
     callout: p.annotate ? { after: p.annotate.after ?? 0.45 } : undefined, look,
   });
-  const f: Frame = { id: p.id, title, ctl, rig: R, theme, base: { parent: ctl, from: p.from, duration: p.duration }, plot, horizontal: false, scale };
+  const f: Frame = { id: p.id, title, ctl, rig: R, theme, base: { parent: ctl, from: p.from, duration: p.duration, tags: [`group:${p.id}`] }, plot, horizontal: false, scale };
 
   const rise = style === 'rise';
   const smooth = (p.curve ?? 'smooth') === 'smooth';

@@ -1,10 +1,10 @@
 // K4 transitions library: compile scenes with <Beats> and standalone transitions to IR and check timing from the
 // beat boundary, mattes, parenting, rigs (keyed Progress), tags and the geometry they compute. No AE.
 import { describe, expect, it } from 'vitest';
-import { compileScene } from '../../src/compile/compile.ts';
+import { compileScene, REFRAMES } from '../../src/compile/compile.ts';
 import { scene } from '../../src/dsl/scene.ts';
 import { jsx } from '../../src/dsl/jsx-runtime.ts';
-import { Composition, Sequence, Solid, Shape, Rect, Ellipse, Star, Fill, Stroke, Text, Stack } from '../../src/dsl/index.ts';
+import { Composition, Sequence, Solid, Null, Shape, Rect, Ellipse, Star, Fill, Stroke, Text, Stack } from '../../src/dsl/index.ts';
 import { Beats, Beat, beatTimeline, ShapeWipe, HandOff, ZoomThrough, PushThrough, ParallaxSplit, LiquidWipe, SliceWipe, GridWipe, LightLeakCut, liquidKeys } from '../../src/dsl/transitions/index.ts';
 import { coverScale, silhouetteOf } from '../../src/dsl/transitions/geometry.ts';
 import { validateIr } from '../../src/ir/schema.ts';
@@ -25,6 +25,23 @@ const progressKeys = (L: any) => rig(L).props.find((s: any) => s.p === '#1').key
 const bar = () => h(Shape, { id: 'bar', y: 600 }, h(Rect, { size: [520, 10], roundness: 5 }), h(Fill, { color: '#4683c4' }));
 const beatA = () => h(Beat, { name: 'Hook', duration: 3 }, h(Solid, { id: 'a.bg', color: '#101318' }), h(Text, { id: 'a.title', y: 450 }, 'HOOK'), bar());
 const beatB = (d = 3) => h(Beat, { name: 'Build', duration: d }, h(Solid, { id: 'b.bg', color: '#1b2436' }), h(Text, { id: 'b.title' }, 'BUILD'));
+
+describe('reframed (9:16): the wipes still cover the target frame', () => {
+  const vertical = (body: () => any) => compileScene(scene({ name: 'T', duration: 8 }, () => h(Composition, {}, body())), { reframe: REFRAMES['9:16'] });
+  const coverOf = (r: any, id: string) => { const p = rig(layer(r, id)).props; return [p.find((s: any) => s.p === '#2').v, p.find((s: any) => s.p === '#3').v]; };
+  it('comp-space mattes (slices, grid, liquid) are stretched from 1920×1080 onto 1080×1920', () => {
+    const r = vertical(() => h(Beats, {}, beatA(), h(SliceWipe, { id: 's', duration: 0.6 }), beatB()));
+    const slices = main(r).layers.filter((l: any) => (l.tags ?? []).includes('transition:slice-wipe') && l.id !== 's');
+    expect(slices.length).toBeGreaterThan(0);
+    for (const l of slices) expect(l.props.find((s: any) => s.p.endsWith('ADBE Scale')).v.slice(0, 2)).toEqual([56.25, 177.778]);
+  });
+  it('a shape wipe covers the target frame from where the shape lands in it', () => {
+    const wide = build(() => h(Beats, {}, beatA(), h(ShapeWipe, { id: 'w', shape: bar(), grow: 'xy', duration: 0.7 }), beatB()));
+    const tall = vertical(() => h(Beats, {}, beatA(), h(ShapeWipe, { id: 'w', shape: bar(), grow: 'xy', duration: 0.7 }), beatB()));
+    const [, wy] = coverOf(wide, 'w'), [, ty] = coverOf(tall, 'w');
+    expect(ty).toBeGreaterThan(wy * 1.5); // 1920 px of height to cover instead of 1080
+  });
+});
 
 describe('<Beats>: timing from the beat boundary', () => {
   it('overlap kinds start the next beat when the transition starts; cut kinds at the cut', () => {
@@ -161,7 +178,10 @@ describe('ZoomThrough', () => {
     expect(z.props.find((s: any) => s.p.endsWith('ADBE Anchor Point')).v).toEqual([1200, 500]);
     expect(expr(z, 'ADBE Scale')).toContain('Math.pow(Math.max(e("Zoom").value, 1), P)');
     for (const id of ['a.bg', 'ring']) expect(layer(r, id).parent).toBe('z');
-    for (const id of ['b.bg', 'b.title']) expect(layer(r, id)).toMatchObject({ parent: 'z.in', matte: { layer: 'z.window', type: 'alpha' } });
+    expect(layer(r, 'b.title')).toMatchObject({ parent: 'z.in', matte: { layer: 'z.window', type: 'alpha' } });
+    // The full-frame background shows through the window too, but keeps 100 % (scaled, its edges would show).
+    expect(layer(r, 'b.bg').parent).toBeUndefined();
+    expect(layer(r, 'b.bg').matte).toMatchObject({ layer: 'z.window', type: 'alpha' });
     const win = layer(r, 'z.window');
     expect(win.parent).toBe('z');
     expect(JSON.stringify(win.groups)).not.toContain('Stroke'); // the ring's disc, filled
@@ -195,6 +215,14 @@ describe('PushThrough and ParallaxSplit', () => {
     expect(cam.camera).toEqual({ twoNode: false });
     expect(cam.out).toBeCloseTo(5, 6); // frames the next beat until it ends
     expect(expr(cam, 'ADBE Position')).toContain('-cameraOption.zoom + P * 3000');
+  });
+  it('PushThrough: a layer parented inside the incoming beat inherits the depth instead of getting it twice', () => {
+    const beatC = h(Beat, { name: 'C', duration: 3 }, h(Null, { id: 'c.ctl', x: 300, y: 300 }), h(Shape, { id: 'c.bar', parent: 'c.ctl', position: [10, 20] }, h(Rect, { size: [100, 20] }), h(Fill, {})));
+    const r = build(() => h(Beats, {}, beatA(), h(PushThrough, { id: 'pt', depth: 3000 }), beatC));
+    const pos = (id: string) => layer(r, id).props.find((s: any) => s.p.endsWith('ADBE Position')).v;
+    expect(pos('c.ctl')[2]).toBe(3000);
+    expect(pos('c.bar')).toEqual([10, 20, 0]);
+    expect(layer(r, 'c.bar').threeD).toBe(true);
   });
   it('ParallaxSplit: non-background layers part at different speeds; the next beat opens in the gap', () => {
     const r = build(() => h(Beats, {}, h(Beat, { name: 'A', duration: 3 }, h(Solid, { id: 'a.bg' }), h(Text, { id: 'a.left', x: 500 }, 'L'), h(Text, { id: 'a.right', x: 1400, animate: { x: { $anim: 'tween', from: -40, duration: 0.5 } } }, 'R')),

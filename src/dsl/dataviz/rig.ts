@@ -186,11 +186,11 @@ export class ChartRig {
   scale(): string[] {
     return [`var A0 = ${this.P('Axis Min')}, A1 = ${this.P('Axis Max')}, AR = (A1 - A0) || 1, B0 = L.clamp(0, Math.min(A0, A1), Math.max(A0, A1));`];
   }
-  /** hi: highlighted category (-1 none), hk: its 0→1 ease, hb: a 0→1→0 punch bump. Needs timing(). */
+  /** hi: highlighted category (-1 none), hk: its 0→1 ease, hb: a 0→1→0 punch bump (sin², eased at both ends). Needs timing(). */
   emphasis(): string[] {
     return [
       `var hi = Math.round(${this.P('Highlight')}) - 2, hu = time - inPoint - (${this.land}) - ${this.P('Highlight After')};`,
-      'var hk = hi < 0 ? 0 : L.eased([0.16, 1, 0.3, 1], hu / 0.5), hb = hi < 0 || hu <= 0 ? 0 : Math.sin(Math.PI * L.clamp(hu / 0.45, 0, 1));',
+      'var hk = hi < 0 ? 0 : L.eased([0.16, 1, 0.3, 1], hu / 0.5), hb = hi < 0 || hu <= 0 ? 0 : Math.pow(Math.sin(Math.PI * L.clamp(hu / 0.5, 0, 1)), 2);',
     ];
   }
   /** Opacity factor of category i while another one is highlighted. */

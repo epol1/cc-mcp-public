@@ -57,6 +57,8 @@ export interface LayerProps {
   guide?: boolean;
   label?: number;
   markers?: { t: Time; comment?: string; duration?: Time }[];
+  /** Marker times count from the layer's start (default) or from the enclosing Sequence's start. */
+  markerBase?: 'layer' | 'sequence';
   /** Raw property overrides by AE path (matchName or display name segments), e.g. {"ADBE Transform Group/ADBE Opacity": 50}. */
   props?: Record<string, V<any>>;
   /** Raw expressions by AE path. */

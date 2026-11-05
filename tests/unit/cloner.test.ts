@@ -6,6 +6,7 @@ import { Composition, Shape, Rect, Ellipse, Fill, Text } from '../../src/dsl/pri
 import { Cloner, line, grid, circle, onPath, scatter, sphere, noise, falloff, stagger, follow, step, colorize, csv } from '../../src/dsl/cloner.ts';
 import { field } from '../../src/dsl/field.ts';
 import { libObject } from '../../src/aeclib/index.ts';
+import { REFRAMES } from '../../src/compile/compile.ts';
 
 const card = () => [jsx(Shape, { children: [jsx(Rect, { size: [100, 60] }), jsx(Fill, { color: field('Card Color', '#4683c4') })] }), jsx(Text, { eg: 'Label', children: 'x' })];
 function build(cloner: any) {
@@ -38,6 +39,17 @@ describe('cloner (P1/P2)', () => {
     expect(pos).toContain('thisComp.layer("Cards")'); // __AEC_LAYER resolved
     expect(pos).toMatch(/^function aecLib\(\)/m); // library inlined
   });
+  it('each format, variant and scene gets its own master comp (explicit part ids are namespaced)', () => {
+    const def = scene({ name: 'T', duration: '3s' }, () => jsx(Composition, { children: [jsx(Cloner, { id: 'cards', count: 3, size: [120, 80], of: card() })] }));
+    const parts = (r: any) => r.ir.comps.filter((c: any) => c.part).map((c: any) => c.id);
+    const base = parts(compileScene(def));
+    const tall = parts(compileScene(def, { reframe: REFRAMES['9:16'] }));
+    const other = parts(compileScene(scene({ name: 'Other', duration: '3s' }, () => jsx(Composition, { children: [jsx(Cloner, { id: 'cards', count: 3, size: [120, 80], of: card() })] }))));
+    expect(base.length).toBe(1);
+    for (const id of base) { expect(tall).not.toContain(id); expect(other).not.toContain(id); }
+    const master = (r: any) => main(r).layers.find((l: any) => l.instances)?.precomp.comp;
+    expect(master(compileScene(def, { reframe: REFRAMES['9:16'] }))).toBe(tall[0]);
+  });
   it('maps every distribution to its library call', () => {
     const calls: [any, string][] = [[grid({ columns: 4 }), 'L.grid('], [circle({ radius: 200 }), 'L.circle('], [scatter({}), 'L.scatter('], [sphere({}), 'L.sphere('], [onPath({ d: 'M0 0 L100 0' }), 'L.onPath(']];
     for (const [d, call] of calls) {
@@ -46,6 +58,10 @@ describe('cloner (P1/P2)', () => {
     }
     const sp = build(Cloner({ id: 'c', count: 5, size: [50, 50], distribute: sphere({}), of: card() }));
     expect(layer(sp, 'c.inst').threeD).toBe(true);
+    // A 2D distribution in 3D gets a z before noise or data add to it (p[2] += … on [x, y] was NaN).
+    const flat3d = expr(layer(build(Cloner({ id: 'c', count: 5, size: [50, 50], threeD: true, distribute: line({}), effectors: [noise({ z: 200 })], of: card() })), 'c.inst'), 'ADBE Position');
+    expect(flat3d.indexOf('if (p.length < 3) p = [p[0], p[1], 0];')).toBeGreaterThan(flat3d.indexOf('L.line('));
+    expect(flat3d.indexOf('if (p.length < 3)')).toBeLessThan(flat3d.indexOf('p[2] +='));
     const pa = build(Cloner({ id: 'c', count: 5, size: [50, 50], distribute: onPath({ d: 'M0 0 L100 0' }), of: card() }));
     expect(main(pa).layers.some((l: any) => l.id === 'c.path')).toBe(true);
   });
@@ -79,7 +95,8 @@ describe('cloner (P1/P2)', () => {
   });
   it('rejects bad input with messages that say what to change', () => {
     expect(() => Cloner({ id: 'c', count: 3, of: card() } as any)).toThrow(/size=\{\[w, h\]\}/);
-    expect(() => Cloner({ id: 'c', count: 3, size: [50, 50], distribute: circle({}), effectors: [falloff({})], of: card() })).toThrow(/linear/);
+    // A circle distribution and a radial falloff have separate radius params ("Radius", "Falloff Radius").
+    expect(() => Cloner({ id: 'c', count: 3, size: [50, 50], distribute: circle({}), effectors: [falloff({})], of: card() })).not.toThrow();
     expect(() => Cloner({ id: 'c', count: 3, size: [50, 50], data: [{ 'Card Color': '#fff' }], effectors: [colorize({ field: 'Card Color', palette: ['#000'] })], of: card() })).toThrow(/both data and colorize/);
   });
   it('warns about expensive configurations', () => {

@@ -203,8 +203,8 @@ export interface VariableFontProps extends Omit<Base, 'font'> {
    */
   fonts: string[];
   /** Weight position 0–100 along `fonts` at the start and end (default 0 → 100). Live (keyed): "Weight". */
-  from?: number;
-  to?: number;
+  fromWeight?: number;
+  toWeight?: number;
   duration?: Time;
   delay?: Time;
   easing?: EasingSpec;
@@ -220,16 +220,16 @@ export interface VariableFontProps extends Omit<Base, 'font'> {
 export function VariableFont(p: VariableFontProps) {
   if (!p.fonts?.length) throw new Error(`VariableFont "${p.id}": fonts (PostScript names, light to heavy) are required`);
   const text = textOfProps(p as any, `VariableFont "${p.id}"`);
-  const def: PseudoEffectDef = { name: 'aec Font Weight', params: [slider('Weight', p.from ?? 0, 0, 100, 1)] };
+  const def: PseudoEffectDef = { name: 'aec Font Weight', params: [slider('Weight', p.fromWeight ?? 0, 0, 100, 1)] };
   const code = [
     '// ae-compose font weight: the Weight slider (keys) picks a font of the list',
     `var F = ${JSON.stringify(p.fonts)}, w = L.clamp(effect("Font Weight")("Weight").value / 100, 0, 1);`,
     'style.setFont(F[Math.round(w * (F.length - 1))]);',
   ].join('\n');
-  const weight = p.weight ?? tween({ from: p.from ?? 0, to: p.to ?? 100, duration: p.duration ?? 1, delay: p.delay, easing: p.easing ?? 'easeInOutCubic' });
+  const weight = p.weight ?? tween({ from: p.fromWeight ?? 0, to: p.toWeight ?? 100, duration: p.duration ?? 1, delay: p.delay, easing: p.easing ?? 'easeInOutCubic' });
   return jsx(Text, {
-    ...textProps(p as any, ['fonts', 'from', 'to', 'duration', 'delay', 'easing', 'weight', 'children']),
-    font: p.fonts[Math.round((Math.max(0, Math.min(100, p.from ?? 0)) / 100) * (p.fonts.length - 1))],
+    ...textProps(p as any, ['fonts', 'fromWeight', 'toWeight', 'duration', 'delay', 'easing', 'weight', 'children']),
+    font: p.fonts[Math.round((Math.max(0, Math.min(100, p.fromWeight ?? 0)) / 100) * (p.fonts.length - 1))],
     text,
     expressions: withExpr(p as any, SOURCE_TEXT, code),
     effects: [...(p.effects ?? []), jsx(RigEffect, { def, name: 'Font Weight', values: { Weight: weight } })],

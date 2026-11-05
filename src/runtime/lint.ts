@@ -7,7 +7,7 @@ import { findComp } from './inspect';
 import { tagOf } from './layers';
 import { errText } from './util';
 
-export interface LintSampleOpts { step?: number; maxSamples?: number; maxTexts?: number; maxOccluders?: number }
+export interface LintSampleOpts { step?: number; maxSamples?: number; maxTexts?: number; maxOccluders?: number; budgetMs?: number }
 
 interface Target { L: TextLayer; chain: AVLayer[]; path: string; in0: number; out0: number; shift: number }
 interface Occluder { L: AVLayer; kind: string; chain: AVLayer[]; path: string; in0: number; out0: number; shift: number }
@@ -316,23 +316,43 @@ export function lintSample(ref: any, opts: LintSampleOpts): any {
     probe.enabled = false;
     const sp: any = probe.property('ADBE Text Properties').property('ADBE Text Document');
     sp.expression = probeExpression(all);
-    const rows: string[] = [];
+    // Time budget (like the motion sampler): after two samples, if the pass would exceed it, restart on an evenly
+    // spaced grid m times coarser; the Node side reports it.
+    const budget = opts.budgetMs || 40000, tS = new Date().getTime();
+    let rows: string[] = [], checked = false;
     for (let i = 0; i < o.times.length; i++) {
+      if (i === 2 && !checked) {
+        checked = true;
+        const m = Math.ceil((((new Date().getTime() - tS) / 2) * o.times.length) / budget);
+        if (m > 1) {
+          const keep: number[] = [];
+          for (let j = 0; j < o.times.length; j += m) keep[keep.length] = o.times[j];
+          o.times = keep;
+          o.step = stepF * fd * m;
+          o.coarse = m;
+          rows = [];
+          i = -1;
+          continue;
+        }
+      }
       rows[i] = String(sp.valueAtTime(o.times[i], false).text);
       if (i === 0 && sp.expressionError) return { ok: false, error: 'lint probe expression failed: ' + sp.expressionError };
     }
     // Per text: one entry per sample time, null when inactive/unmeasurable, else [opacity, x1, y1, ..., x4, y4].
-    for (let k = 0; k < targets.length; k++) o.texts[k].s = [];
+    // Kept as JSON text (the probe's cells are already comma-separated numbers): building tens of thousands of small
+    // arrays and serializing them took ~2 min in ExtendScript for a chart scene.
+    const acc: string[][] = [];
+    for (let k = 0; k < all.length; k++) acc[k] = [];
     for (let i = 0; i < rows.length; i++) {
       const cells = rows[i].split(';');
       for (let k = 0; k < all.length; k++) {
-        const dest = k < targets.length ? o.texts[k].s : o.occluders[k - targets.length].s;
         const cell = cells[k];
-        if (cell === undefined || cell === '-' || cell === '!' || cell === '') { dest[i] = null; continue; }
-        const nums = cell.split(','), v: number[] = [];
-        for (let j = 0; j < nums.length; j++) v[j] = +nums[j];
-        dest[i] = v;
+        acc[k][i] = cell === undefined || cell === '-' || cell === '!' || cell === '' || /[^0-9eE.,+-]/.test(cell) ? 'null' : '[' + cell + ']';
       }
+    }
+    for (let k = 0; k < all.length; k++) {
+      const s = { $rawJson: '[' + acc[k].join(',') + ']' };
+      if (k < targets.length) o.texts[k].s = s; else o.occluders[k - targets.length].s = s;
     }
   } finally {
     probe.remove();

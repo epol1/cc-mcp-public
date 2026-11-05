@@ -361,7 +361,7 @@ describe('controls', () => {
   // comp("<main>").layer("Controls")). The expression breaks in AE.
   it('a control used inside a Precomp reaches the main comp\'s Controls null', () => {
     const r = build({ name: 'Pre' }, () => h(Composition, {}, h(Precomp, { id: 'pc' }, h(Solid, { id: 'inner', opacity: control('Fade', 50) }))));
-    const pre = r.ir.comps.find((c: any) => c.id === 'pc');
+    const pre = r.ir.comps.find((c: any) => c.id === 'pre~pc');
     const hasControls = pre.layers.some((L: any) => L.name === 'Controls');
     const expr = prop(layer(r, 'inner'), `${TG}/ADBE Opacity`).expr;
     expect(hasControls || expr.includes('comp("Pre_v001").layer("Controls")')).toBe(true);
@@ -371,10 +371,10 @@ describe('controls', () => {
 describe('precomps', () => {
   it('children become a part comp listed before the main comp; the layer points at it', () => {
     const r = build({ name: 'Main', duration: 5 }, () => h(Composition, {}, h(Sequence, { from: 1 }, h(Precomp, { id: 'card', width: 400, height: 300, bg: '#111111' }, h(Solid, { id: 'cs' })))));
-    expect(r.ir.comps.map((c: any) => c.id)).toEqual(['card', 'main']);
+    expect(r.ir.comps.map((c: any) => c.id)).toEqual(['main~card', 'main']) // explicit part ids are namespaced with the main comp's id;
     expect(r.ir.main).toBe('main');
     expect(r.ir.comps[0]).toMatchObject({ name: 'Main_card', w: 400, h: 300, dur: 4, part: true });
-    expect(layer(r, 'card')).toMatchObject({ type: 'precomp', precomp: { comp: 'card' }, in: 1, out: 5, start: 1 }); // start = in: the nested comp's frame 0 plays at the Sequence start (was 0 → AE clamped the layer)
+    expect(layer(r, 'card')).toMatchObject({ type: 'precomp', precomp: { comp: 'main~card' }, in: 1, out: 5, start: 1 }); // start = in: the nested comp's frame 0 plays at the Sequence start (was 0 → AE clamped the layer)
     expect(layer(r, 'cs')).toMatchObject({ in: 0, out: 4 });
     expect(prop(layer(r, 'cs'), `${TG}/ADBE Position`).v).toEqual([200, 150]);
   });

@@ -6,7 +6,7 @@ import { AecError, newCtx, warn } from './ctx';
 import type { IrAsset } from './project';
 import { ensureFolder, ensureLib, findTaggedComp, importAsset } from './project';
 import type { IrLayer } from './layers';
-import { applyAnchorBox, applyFootage, createLayer, fitScale, lockIfNeeded, setLayerAttrs, tagOf, TAG, vectorToShapes, wireLayer } from './layers';
+import { applyAnchorBox, applyFootage, commentTags, createLayer, fitScale, lockIfNeeded, setLayerAttrs, tagOf, tagsSegment, TAG, vectorToShapes, wireLayer } from './layers';
 import type { Pending } from './groups';
 import { applyProps, buildGroups, flushExpressions } from './groups';
 import { setTextDocument } from './text';
@@ -142,7 +142,7 @@ function stampDefaults(L: Layer): void {
   }
   if (!any) return;
   const tag = tagOf(L);
-  if (tag) L.comment = TAG + tag + ';d=' + d.join('&');
+  if (tag) L.comment = TAG + tag + tagsSegment(commentTags(L.comment || '')) + ';d=' + d.join('&');
 }
 
 /**
@@ -374,6 +374,8 @@ export function build(project: IrProject, opts: BuildOpts): any {
   const mark = (k: string) => { const t = now(); result.phases[k] = (result.phases[k] || 0) + t - tm; tm = t; };
   (ctx as any).mark = mark;
   const saved: { [k: string]: { [key: string]: any } } = {};
+  // The generated expressions assume the JavaScript engine (right-associative ?:, ES5+); never switch it for the user.
+  try { const eng = (app.project as any).expressionEngine; if (eng && eng !== 'javascript-1.0') warn(ctx, 'this project uses the ' + eng + ' expression engine: ae-compose expressions need JavaScript (File > Project Settings > Expressions); some values will be wrong until it is switched'); } catch (e) { /* older AE */ }
   app.beginUndoGroup('ae-compose: build ' + project.scene);
   try {
     const folder = ensureFolder(['ae-compose', project.scene]);

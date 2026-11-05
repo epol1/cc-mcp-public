@@ -31,7 +31,7 @@ const LIGHT_LEAK: TransitionDef<LightLeakCutProps> = {
     const color = p.color ?? '#ff7a2e';
     const def = isControl(color) ? (typeof color.default === 'string' ? parseColor(color.default) : color.default) : parseColor(color as ColorSpec);
     const ctl = controller(LIGHT_LEAK, p, io, [slider('Intensity', p.intensity ?? 85, 0, 100, { display: 'percent' }), slider('Flash', p.flash ?? 50, 0, 100, { display: 'percent' }), { kind: 'color', name: 'Color', default: def }],
-      { Intensity: p.intensity ?? 85, Flash: p.flash ?? 50, Color: color }, { linear: true });
+      { Intensity: p.intensity ?? 85, Flash: p.flash ?? 50, Color: color }, { linear: p.easing === undefined }); // a steady drift unless an easing is given
     const LW = Math.round(io.w * 1.8), LH = Math.round(io.h * 1.4);
     const rx = LW * 0.3, ry = LH * 0.42, cx = LW / 2, cy = LH / 2;
     const ellipse = `M${r3(cx - rx)} ${r3(cy)} A${r3(rx)} ${r3(ry)} 0 1 1 ${r3(cx + rx)} ${r3(cy)} A${r3(rx)} ${r3(ry)} 0 1 1 ${r3(cx - rx)} ${r3(cy)} Z`;

@@ -79,8 +79,8 @@ export function motion(p: { enterAt?: number; exitAt?: number }, s = 1): { anima
   return Object.keys(a).length ? { animate: a } : {};
 }
 
-/** Layer timing props. */
-export const timing = (p: UiBase) => ({ ...(p.from !== undefined ? { from: p.from } : {}), ...(p.duration !== undefined ? { duration: p.duration } : {}) });
+/** Layer timing props. With `from`, state markers stay on the flow's (Sequence-relative) times. */
+export const timing = (p: UiBase) => ({ ...(p.from !== undefined ? { from: p.from, markerBase: 'sequence' as const } : {}), ...(p.duration !== undefined ? { duration: p.duration } : {}) });
 
 export type Marker = { t: number; comment: string; duration?: number };
 /** Point markers. */

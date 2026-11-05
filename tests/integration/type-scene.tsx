@@ -38,7 +38,7 @@ export default scene({ name: 'TypeKit', width: 1920, height: 1080, fps: 30, dura
       <SplitFlap id="flap" font="Inter-Bold" size={120} tracking={80} color="#f5f5f5" y={300} flips={8} each={0.06} duration={1.1} delay={0.2}>
         GATE 12 BOARDING
       </SplitFlap>
-      <VariableFont id="weight" fonts={['Inter-Regular', 'Inter-Medium', 'Inter-SemiBold', 'Inter-Bold', 'Inter-Black']} size={96} color="#ffd23f" y={540} from={0} to={100} duration={1.6} delay={1.2} easing="easeInOutSine">
+      <VariableFont id="weight" fonts={['Inter-Regular', 'Inter-Medium', 'Inter-SemiBold', 'Inter-Bold', 'Inter-Black']} size={96} color="#ffd23f" y={540} fromWeight={0} toWeight={100} duration={1.6} delay={1.2} easing="easeInOutSine">
         WEIGHT SHIFT
       </VariableFont>
       <AutoFit id="fit" font="Inter-SemiBold" size={90} color="#9fb2c8" y={800} fit={{ width: 1100, height: 190 }} align="center"

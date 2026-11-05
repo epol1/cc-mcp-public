@@ -54,7 +54,7 @@ function guard(fn: () => any): string {
 
 const AEC: any = {
   version: '__AEC_RUNTIME_VERSION__',
-  ping: function () { return guard(() => ({ ok: true, version: AEC.version, ae: app.version, project: app.project.file ? app.project.file.fsName : null, items: app.project.numItems, bpc: app.project.bitsPerChannel })); },
+  ping: function () { return guard(() => ({ ok: true, version: AEC.version, ae: app.version, project: app.project.file ? app.project.file.fsName : null, items: app.project.numItems, bpc: app.project.bitsPerChannel, engine: (app.project as any).expressionEngine })); },
   build: function (project: IrProject, opts: BuildOpts) { return guard(() => realChange(() => build(project, opts || {}))); },
   inspect: function (target: any, opts: InspectOpts) { return guard(() => (target === 'project' ? inspectProject() : inspectComp(target && target.comp !== undefined ? target.comp : target, opts || {}))); },
   edit: function (target: any, ops: EditOp[], opts: any) { return guard(() => realChange(() => edit(target || {}, ops || [], opts || {}))); },

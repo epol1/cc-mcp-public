@@ -1603,7 +1603,7 @@ It builds: a **master** precomp `<name> Master` (`of`, at `size`: keep it tight 
 | `of`, `size` (required), `masterDuration` | The master's content, its comp size, its duration (default the cloner's span). |
 | `distribute` | `line({ spacing, angle, centered })`, `grid({ columns, gap })`, `circle({ radius, start, arc, orient })` (0° = top, clockwise), `onPath({ d, start, end, orient, closed, show })` (SVG path in comp px; a guide layer holds it), `scatter({ width, height, jitter })`, `sphere({ radius })`, `helix({ radius, height, turns })` (sphere and helix make the instances 3D). |
 | `motion` | `{ speed, offset, direction, wrap, variation }`: travel along `direction` in px/s (circle: °/s around; path: % per second); `wrap` (px) loops them; `variation` is ±% per instance; `offset` may be animated (a rush in or out). |
-| `effectors` | `noise({ position, rotation, scale, opacity, z, speed })` (seeded; `speed` > 0 wobbles), `falloff({ shape: 'radial' \| 'linear', center, radius, softness, angle, width, scale: [out, in], opacity: [out, in], blur: [out, in] })` (a draggable "<name> Field" null; `blur` adds a Gaussian Blur per instance), `stagger({ each, order, by: 'index' \| 'distance' \| 'random' })` (time-remaps the master per instance), `follow({ lag })` (each instance replays the controller's motion `lag` s after the previous one: animate the controller), `step({ position, rotation })` (quantize), `colorize({ field, palette, mode: 'cycle' \| 'random' \| 'gradient' })` (on a master color field). A radial falloff can't be combined with circle/sphere/helix yet (both use "Radius"). |
+| `effectors` | `noise({ position, rotation, scale, opacity, z, speed })` (seeded; `speed` > 0 wobbles), `falloff({ shape: 'radial' \| 'linear', center, radius, softness, angle, width, scale: [out, in], opacity: [out, in], blur: [out, in], brightness: [out, in] })` (a draggable "<name> Field" null; `blur` adds a Gaussian Blur and `brightness` a Brightness & Contrast per instance), `stagger({ each, order, by: 'index' \| 'distance' \| 'random' })` (time-remaps the master per instance), `follow({ lag })` (each instance replays the controller's motion `lag` s after the previous one: animate the controller), `step({ position, rotation })` (quantize), `colorize({ field, palette, mode: 'cycle' \| 'random' \| 'gradient' })` (on a master color field). The radial falloff's params are "Falloff Radius" and "Falloff Softness" on the Cloner effect. |
 | `data` | One row per instance. Keys naming a master field set that instance's field (`dataMode: 'expression'`, the default: one expression per field holding all values, nothing written per instance; `'overrides'`: static Essential Properties values, slower to build, easy to retype one). Keys `x`, `y`, `z`, `rotation`, `scale`, `opacity`, `delay` offset that instance. `csv('rows.csv')` reads a CSV (header row, numbers parsed). |
 | `seed`, `scale`, `rotation`, `opacity` | Rig base values (may be animated). |
 | `mode` | `'layers'` (default) or `'repeater'`: a shape-only master as one shape layer copied by native Repeaters (line, grid, circle; `motion.speed` moves or spins them). Much cheaper to render, and the count stays live, but no effectors, data or fields. |
@@ -1626,7 +1626,7 @@ Every distinct set of field values renders the master once per frame, so prefer 
 ```tsx
 const B = beatsOf('music/track.mp3');            // analyzed once, cached as track.mp3.beats.json
 <Audio id="music" src="music/track.mp3" />
-<BeatMarkers beats={B} to={15} />                // "bar N" on downbeats, "beat" on the others
+<BeatMarkers beats={B} to={15} />                // "bar N" on downbeats (counted from 1: B.bar(0) is "bar 1"), "beat" on the others
 <Series>
   <Series.Sequence name="Hook" duration={B.bar(0) + B.bars(2)}>…</Series.Sequence>
   <Series.Sequence name="Drop" duration={B.bars(4)}>…</Series.Sequence>
@@ -1637,7 +1637,7 @@ const B = beatsOf('music/track.mp3');            // analyzed once, cached as tra
 
 ### 21.6 Responsive reframe and delivery packs
 
-`build_scene { reframe: ['9:16', '1:1'] }` (or `reframe: { width, height, typeScale }`) builds sibling comps `Name_v001_9x16`, `…_1x1` from the same scene (D80). Layouts re-solve in AE (in 9:16, top-level containers and title-safe areas use the platform's UI-free zone: left 60, top 250, right 120, bottom 400 px at 1080×1920). Given positions map into the new frame (that zone in 9:16). Frame fillers (solids, footage, full-frame rectangles) fill the new frame. Type scales ×0.8 (9:16) or ×0.85 (1:1, 4:5), and a line that is still too wide shrinks to fit in AE. Lint judges 9:16 against the platform zone (`safe: 'reels'`). Cameras re-frame because `lens` converts to zoom from the comp width.
+`build_scene { reframe: ['9:16', '1:1'] }` (the API and CLI also take `{ width, height, typeScale }`) builds sibling comps `Name_v001_9x16`, `…_1x1` from the same scene (D80). Layouts re-solve in AE (in 9:16, top-level containers and title-safe areas use the platform's UI-free zone: left 60, top 250, right 120, bottom 400 px at 1080×1920). Given positions map into the new frame (that zone in 9:16). Frame fillers (solids, footage, full-frame rectangles) fill the new frame. Type scales ×0.8 (9:16) or ×0.85 (1:1, 4:5), and a line that is still too wide shrinks to fit in AE. Lint judges 9:16 against the platform zone (`safe: 'reels'`). Cameras re-frame because `lens` converts to zoom from the comp width.
 
 `deliver { file, targets: ['16:9', '9:16', '1:1'], format: 'mp4', master: 'prores' }` builds every target and renders each, plus a ProRes master of the first, into `renders/`. Renders clear AE's undo history, so deliver approved work.
 
@@ -1660,7 +1660,7 @@ Native text plus one "aec <Name>" rig effect each, so retiming and recoloring ha
 | `<Decode duration delay chars seed>` | Characters resolve from random glyphs, left to right. | "Decode": Progress, Rate, Seed |
 | `<Typewriter cps delay caret humanize>` | Characters appear at a typing pace with a blinking caret. `typingProgress()` gives the same timing in TS. | "Typewriter": Progress, Blink, Show Caret |
 | `<SplitFlap flips each duration delay>` | Airport-board characters flip through glyphs before landing. | "Split Flap": Flips, Each, Duration, Delay |
-| `<VariableFont fonts={['Inter-Regular', …, 'Inter-Black']} from to duration>` | A weight shift by stepping through the family's PostScript names (AE doesn't expose variable axes to scripts). | "Font Weight": Weight 0–100 |
+| `<VariableFont fonts={['Inter-Regular', …, 'Inter-Black']} fromWeight toWeight duration>` | A weight shift by stepping through the family's PostScript names (AE doesn't expose variable axes to scripts). | "Font Weight": Weight 0–100 |
 | `<AutoFit fit={{ width, height }} minSize maxLines>` | Point text whose lines are balanced and size shrunk at build to fit the box (`autoFitLines()` does the same in TS). | "Auto Fit": Width, Height, Max Scale (re-fits live when retyped) |
 
 ### 21.10 Procedural backgrounds
@@ -1681,7 +1681,7 @@ Native text plus one "aec <Name>" rig effect each, so retiming and recoloring ha
   data={[{ label: 'JAN', value: 42 }, { label: 'FEB', value: 58 }, /* … */ { label: 'JUN', value: 128 }]}
   format={{ prefix: '$', suffix: 'k' }} animation={{ delay: 0.45, stagger: 0.07, duration: 0.8 }}
   highlight={{ at: 'JUN', after: 0.2 }} annotate={{ at: 'JUN', text: 'Record month', after: 0.3 }} />
-<Counter id="count" value={1.2} decimals={1} suffix="M" from={0} delay={0.5} countDuration={1.4} font="Inter-Black" size={150} />
+<Counter id="count" value={1.2} decimals={1} suffix="M" countFrom={0} delay={0.5} countDuration={1.4} font="Inter-Black" size={150} />
 ```
 
 - **Data:** `data` (numbers, `{ label, value }` rows, or rows with several numeric columns = one series each, picked with `keys`), or `series` + `labels`; `colors`.
@@ -1700,7 +1700,7 @@ A recipe is a finished scene saved for reuse: its `.tsx`, the modules and assets
 
 - `list_recipes { query: "lower third interview" }` searches by intent, tags and name.
 - `instantiate_recipe { name, params, brand, outFile }` writes a new editable scene with the params baked in as defaults and an optional new `brand.ts` (missing tokens are listed), copies its assets, and compiles it to check; then `build_scene` it.
-- `save_recipe { file, intent, tags, thumbs }` saves your finished scene. `npx tsx src/recipes/reindex.ts` refreshes the shipped manifests.
+- `save_recipe { sceneFile, name, intent, tags, thumbnails }` saves your finished scene (to `~/.ae-compose/recipes` unless `dir` is given). `npx tsx src/recipes/reindex.ts` refreshes the shipped manifests.
 
 ### 21.14 UI kit
 
