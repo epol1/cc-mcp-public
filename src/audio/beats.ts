@@ -15,9 +15,11 @@ export interface BeatAnalysis {
   start: number;
   sampleRate: number;
   bpm: number;
-  /** 0–1: how clearly the beats stand out from the rest of the onset envelope, and how steady they are. */
+  /** 0–1: how periodic the music is at this tempo, how clearly the beats stand out, how steady they are (noise ≈ 0). */
   confidence: number;
+  /** Beat times in seconds. */
   beats: number[];
+  /** The beats that start a bar (every beatsPerBar-th beat, phase from kick/bass energy and bar-to-bar change). */
   downbeats: number[];
   beatsPerBar: number;
   /** 0–1: margin of the chosen bar phase over the runner-up. */
@@ -27,7 +29,7 @@ export interface BeatAnalysis {
   offset: number;
   /** Coefficient of variation of the inter-beat intervals (0.01 = very steady). */
   ibiCv: number;
-  /** Tempi the tracker weighed, best first (score relative to the best). */
+  /** Tempi the tracker weighed: the chosen one first (it may be a doubled one), then by score relative to the top score. */
   candidates: { bpm: number; score: number }[];
   /** Analysis time in milliseconds (decode included for analyzeBeats). */
   ms: number;
@@ -48,7 +50,10 @@ export interface BeatOptions {
 export const DEFAULT_SAMPLE_RATE = 22050;
 /** Added to onset and beat times: the flux peaks ~5 ms before a drum transient (measured on synthetic kits). */
 const ONSET_LAG = 0.005;
-/** Doubling: the midpoints carry this share of the on-beat accent, and the quarter points this share of the midpoints' (and more than the level below them). */
+/**
+ * Tempo doubling: the midpoints between beats carry at least DOUBLE_MID of the on-beat accent, and the
+ * quarter points at least DOUBLE_SUB of the midpoints' (and more, relatively, than the level below them).
+ */
 const DOUBLE_MID = 0.5, DOUBLE_SUB = 0.3;
 
 type Analysis = Omit<BeatAnalysis, 'file'>;
@@ -143,15 +148,15 @@ function analyzeSegment(pcm: Float32Array, sampleRate: number, opts: BeatOptions
 
   const confidence = beatConfidence(env, flux, best, bpm, cv);
   const top = all[0]?.score || 1;
+  const candidates = [best, ...all.filter((c) => c !== best)].slice(0, 6).map((c) => ({ bpm: Math.round(c.bpm * 10) / 10, score: Math.round((c.score / top) * 1000) / 1000 }));
   return {
     duration, start, sampleRate, bpm, confidence, beats, downbeats, beatsPerBar, downbeatConfidence: bar.confidence, onsets,
-    offset: beats[0], ibiCv: cv, candidates: all.slice(0, 8).map((c) => ({ bpm: Math.round(c.bpm * 10) / 10, score: Math.round((c.score / top) * 1000) / 1000 })),
-    ms: performance.now() - t0,
+    offset: beats[0], ibiCv: cv, candidates, ms: performance.now() - t0,
   };
 }
 
 /** Pure analysis of mono PCM (start/duration select a span; times stay relative to the PCM start). */
-export function analyzePcm(pcm: Float32Array, sampleRate: number, opts: BeatOptions = {}): Analysis {
+export function analyzePcm(pcm: Float32Array, sampleRate: number, opts: BeatOptions = {}): Omit<BeatAnalysis, 'file'> {
   const t0 = performance.now();
   const start = Math.max(0, opts.start ?? 0);
   const a = Math.min(pcm.length, Math.round(start * sampleRate));
@@ -238,7 +243,7 @@ export interface BeatGrid {
   indexAt(t: number): number;
 }
 
-/** Beat times between a and b, and helpers to address bars: beatAt(n), barAt(bar, beatInBar). */
+/** Addresses an analysis as a grid: beat(n), bar(bar, beatInBar), between(a, b) and indexAt(t). */
 export function beatGrid(a: Pick<BeatAnalysis, 'beats' | 'downbeats' | 'bpm' | 'beatsPerBar'>): BeatGrid {
   const beats = a.beats, n = beats.length;
   const period = a.bpm > 0 ? 60 / a.bpm : n > 1 ? (beats[n - 1] - beats[0]) / (n - 1) : 0.5;

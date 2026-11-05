@@ -10,7 +10,7 @@ import { applyAnchorBox, applyFootage, createLayer, fitScale, lockIfNeeded, setL
 import type { Pending } from './groups';
 import { applyProps, buildGroups, flushExpressions } from './groups';
 import { setTextDocument } from './text';
-import { mustResolve } from './props';
+import { byIndexPath, mustResolve } from './props';
 import { snapshotComp } from './snapshot';
 import type { IrLayout } from './layout';
 import { measureLeaf, solveComp } from './layout';
@@ -200,8 +200,7 @@ function clearGenerated(comp: CompItem): void {
 function setupComp(ctx: Ctx, c: IrComp, folder: FolderItem, parts: FolderItem, replace: boolean, saved: { [k: string]: { [key: string]: any } }): CompItem {
   let comp = replace ? findTaggedComp(c.id) : null;
   if (comp) {
-    saved[c.id] = captureControls(comp);
-    clearGenerated(comp);
+    if (!saved[c.id]) { saved[c.id] = captureControls(comp); clearGenerated(comp); }
     comp.name = c.name;
     comp.width = c.w;
     comp.height = c.h;
@@ -226,8 +225,59 @@ function setupComp(ctx: Ctx, c: IrComp, folder: FolderItem, parts: FolderItem, r
   return comp;
 }
 
-function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Property; id: string }[], deferred: Pending): void {
+/** Cloner instance jobs, run once every expression of the build is set (copies carry their expressions). */
+interface InstanceJob { comp: CompItem; layer: Layer; id: string; spec: { count: number; prefix: string; overrides?: ({ [name: string]: any } | null)[]; timeRemap?: boolean } }
+
+const pad = (k: number, n: number) => { let s = String(k); const w = String(n).length < 3 ? 3 : String(n).length; while (s.length < w) s = '0' + s; return s; };
+
+/**
+ * Duplicates instance 1 of a cloner into `count` instances in place. Each copy is a duplicate of the previous one, so
+ * it lands directly above it: instance 1 ends at the bottom and instance N on top (the expressions count from the
+ * bottom). AE names a duplicate by incrementing the number ("Cards 001" → "Cards 002"); we rename only when it
+ * didn't, because a rename makes AE rescan every expression in the comp (~35 ms with a cloner in it). Copies share
+ * instance 1's tag ("aec:<id>;clone"); target one instance by its name.
+ */
+/** "#rgb" / "#rrggbb" → [r, g, b, 1]. */
+function hexColor(s: string): number[] {
+  let h = s.replace('#', '');
+  if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+  return [parseInt(h.substring(0, 2), 16) / 255, parseInt(h.substring(2, 4), 16) / 255, parseInt(h.substring(4, 6), 16) / 255, 1];
+}
+
+function cloneInstances(ctx: Ctx, job: InstanceJob): void {
+  ctx.cur = job.id;
+  const n = job.spec.count;
+  const name = (k: number) => job.spec.prefix + ' ' + pad(k, n);
+  job.layer.name = name(1);
+  job.layer.comment = TAG + job.id + ';clone';
+  let last: Layer = job.layer;
+  for (let k = 1; k <= n; k++) {
+    // Copies inherit instance 1's tag (rebuilds and lint find them by it): writing a comment per copy costs ~50 ms.
+    if (k > 1) {
+      last = last.duplicate();
+      if (last.name !== name(k)) { last.name = name(k); (ctx as any).renames = ((ctx as any).renames || 0) + 1; }
+    }
+    const ov = job.spec.overrides ? job.spec.overrides[k - 1] : null;
+    if (!ov) continue;
+    const grp = last.property('ADBE Layer Overrides') as PropertyGroup;
+    if (!grp) { warn(ctx, 'instance ' + last.name + ' has no Essential Properties to override'); continue; }
+    for (const f in ov) {
+      if (!Object.prototype.hasOwnProperty.call(ov, f)) continue;
+      const p = grp.property(f) as Property;
+      if (!p) { warn(ctx, 'no Essential Property "' + f + '" on ' + last.name); continue; }
+      try {
+        const v = ov[f];
+        if (typeof v === 'string' && p.propertyValueType === PropertyValueType.TEXT_DOCUMENT) { const d: any = p.value; d.text = v; p.setValue(d); }
+        else if (typeof v === 'string' && p.propertyValueType === PropertyValueType.COLOR) p.setValue(hexColor(v));
+        else p.setValue(v);
+      } catch (e) { warn(ctx, 'override "' + f + '" on ' + last.name + ': ' + errText(e)); }
+    }
+  }
+}
+
+function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Property; id: string }[], deferred: Pending, jobs: InstanceJob[]): void {
   ctx.layers = {};
+  ctx.eg = [];
   const pending: Pending = { exprs: [] };
   const sizes: { [id: string]: number[] } = {};
   // Pass 1: create bottom-up so final stacking equals IR order (index 0 = top).
@@ -246,6 +296,8 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     if ((L as any).toShapes) ctx.layers[L.id] = vectorToShapes(ctx, comp, layer, L);
   });
   each(c.layers, (L) => { ctx.cur = L.id; wireLayer(ctx, ctx.layers[L.id], L); });
+  const mk = (ctx as any).mark || function () {};
+  mk('layers');
   // Re-assigning the renderer refreshes 3D property visibility: right after threeDLayer = true AE reports
   // Geometry Options as hidden until the comp's renderer is (re)set (verified, D36).
   if (c.renderer) { try { comp.renderer = c.renderer; } catch (e) { warn(ctx, 'renderer ' + c.renderer + ' unavailable'); } }
@@ -255,6 +307,7 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
     if (!L.groups) return;
     for (let g = 0; g < L.groups.length; g++) buildGroups(ctx, ctx.layers[L.id], ctx.layers[L.id], L.groups[g].at, L.groups[g].items, pending);
   });
+  mk('structure');
   // Shape anchors need the contents built first (text anchors were measured before animators).
   each(c.layers, (L) => {
     ctx.cur = L.id;
@@ -267,6 +320,7 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
   // Pass 4: values and keyframes.
   each(c.layers, (L) => { ctx.cur = L.id; (ctx as any).layoutBase = slots[L.id] || null; applyProps(ctx, ctx.layers[L.id], ctx.layers[L.id], L.props, pending); if (!(L as any).toShapes) fitScale(ctx, ctx.layers[L.id], comp, L); });
   (ctx as any).layoutBase = null;
+  mk('values');
   // Pass 5: expressions (all targets exist now).
   // Comp markers before expressions: expressions may read them (thisComp.marker.key("reveal")).
   if (c.markers) {
@@ -280,6 +334,7 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
   // once every comp of the build exists.
   if (c.part) { each(pending.exprs, (x) => { deferred.exprs.push(x); }); pending.exprs = []; }
   else flushExpressions(ctx, pending, exprsOut);
+  mk('expressions');
   if (c.mgt) {
     comp.motionGraphicsTemplateName = c.mgt.name;
     each(c.mgt.props, (m) => {
@@ -289,14 +344,28 @@ function buildComp(ctx: Ctx, c: IrComp, comp: CompItem, exprsOut: { prop: Proper
       if (!prop.addToMotionGraphicsTemplateAs(comp, m.name)) warn(ctx, 'could not add "' + m.name + '" to Essential Graphics');
     });
   }
+  // Fields (PropSpec.eg): any property exposed by name, e.g. a cloner master's card color.
+  if (ctx.eg.length) {
+    if (!comp.motionGraphicsTemplateName) comp.motionGraphicsTemplateName = c.name;
+    each(ctx.eg, (m) => {
+      const prop = byIndexPath(m.layer, m.path) as Property;
+      if (!prop.addToMotionGraphicsTemplateAs(comp, m.name)) warn(ctx, 'could not add field "' + m.name + '" to Essential Graphics');
+    });
+    ctx.eg = [];
+  }
   each(c.layers, (L) => lockIfNeeded(ctx.layers[L.id], L));
+  each(c.layers, (L) => { if (L.instances && L.instances.count > 1) jobs.push({ comp: comp, layer: ctx.layers[L.id], id: L.id, spec: L.instances }); else if (L.instances) ctx.layers[L.id].name = L.instances.prefix + ' ' + pad(1, 1); });
 }
 
 export function build(project: IrProject, opts: BuildOpts): any {
   const ctx = newCtx(project.scene);
   const t0 = now();
   const exprs: { prop: Property; id: string }[] = [];
-  const result: any = { ok: true, scene: project.scene, comps: [], warnings: ctx.warnings, exprErrors: [], restoredControls: 0 };
+  const result: any = { ok: true, scene: project.scene, comps: [], warnings: ctx.warnings, exprErrors: [], restoredControls: 0, phases: {} };
+  // Per-phase timings (ms), reported with the build so slow builds can be explained.
+  let tm = now();
+  const mark = (k: string) => { const t = now(); result.phases[k] = (result.phases[k] || 0) + t - tm; tm = t; };
+  (ctx as any).mark = mark;
   const saved: { [k: string]: { [key: string]: any } } = {};
   app.beginUndoGroup('ae-compose: build ' + project.scene);
   try {
@@ -306,23 +375,51 @@ export function build(project: IrProject, opts: BuildOpts): any {
     each(project.assets || [], (a) => { ctx.cur = a.id; ctx.items[a.id] = importAsset(ctx, a, assetsFolder); });
     if (project.lib) { ctx.cur = 'lib'; ensureLib(ctx, project.lib); }
     const deferred: Pending = { exprs: [] };
+    const jobs: InstanceJob[] = [];
+    // Rebuild: empty the comps users-first (main, then its parts). Removing a precomp's layers while many layers
+    // still use it (cloner instances) makes every removal re-render them: 14 s instead of 0.2 s for 100 instances.
+    if (opts.replace === true) {
+      // A cloner master goes first, as a whole: deleting the comp removes all its instances in one step (3 s for
+      // 300 instead of 34 s one by one). It is rebuilt as a new comp.
+      for (let i = 0; i < project.comps.length; i++) {
+        each(project.comps[i].layers, (L) => {
+          if (!L.instances || !L.precomp) return;
+          const old = findTaggedComp(L.precomp.comp);
+          if (old) old.remove();
+        });
+      }
+      for (let i = project.comps.length - 1; i >= 0; i--) {
+        const old = findTaggedComp(project.comps[i].id);
+        if (old) { saved[project.comps[i].id] = captureControls(old); clearGenerated(old); }
+      }
+      mark('clear');
+    }
     for (let i = 0; i < project.comps.length; i++) {
       const c = project.comps[i];
       ctx.cur = c.id;
+      mark('other');
       const comp = setupComp(ctx, c, folder, parts, opts.replace === true, saved);
+      mark('setup');
       ctx.comps[c.id] = comp;
-      buildComp(ctx, c, comp, exprs, deferred);
+      buildComp(ctx, c, comp, exprs, deferred, jobs);
+      mark('comps');
       for (let li = 1; li <= comp.numLayers; li++) stampDefaults(comp.layer(li));
       if (opts.keepControls !== false && saved[c.id]) result.restoredControls += restoreControls(ctx, comp, saved[c.id]);
       result.comps.push({ id: c.id, name: comp.name, itemId: comp.id, layers: comp.numLayers });
     }
     flushExpressions(ctx, deferred, exprs);
+    mark('comps');
+    each(jobs, (j) => cloneInstances(ctx, j));
+    mark('instances');
+    if ((ctx as any).renames) result.phases.renamedInstances = (ctx as any).renames;
     each(exprs, (x) => {
       const err = x.prop.expressionError;
       if (err) result.exprErrors.push({ node: x.id, prop: x.prop.matchName, error: err });
     });
     if (opts.lint) {
+      mark('other');
       try { result.lint = lintSample(ctx.comps[project.main || project.comps[project.comps.length - 1].id], opts.lint); } catch (e) { result.lint = { ok: false, error: errText(e) }; }
+      mark('lint');
     }
   } catch (e) {
     result.ok = false;
@@ -341,6 +438,7 @@ export function build(project: IrProject, opts: BuildOpts): any {
       each(opts.snapshots, (s) => {
         const comp = ctx.comps[s.comp || mainId];
         result.snapshots.push(snapshotComp(comp, s.times, s.dir, s.prefix || comp.name));
+        mark('snapshots');
       });
     }
   }

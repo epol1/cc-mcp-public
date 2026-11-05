@@ -12,9 +12,10 @@
 - **F2 rig effects** (`src/compile/ffx/pseudo.ts`, `rigfx.ts`, `<RigEffect>`): grouped `control(..., { group })`, live text reveals (`live: true`), live camera moves (default). Sticky values cover every rig param.
 - **Migrated** text-unit reveals, spring rigs, camera moves and marker bursts (bursts now fire on every marker with the comment). Ripple (frames identical) and live controls still pass.
 - **Bug fixed (D75):** checkbox controls always read as on in expressions.
-- Node-side modules from subagents, to be wired in: captions (`src/text/captions.ts`), motion analysis + speed graphs + style lint (`src/motion/`), beat detection (`src/audio/`, in progress).
+- **P1/P2 cloner** (`src/dsl/cloner.ts`, D77): master precomp + fields (`field()`), a controller null with one "Cloner" rig effect, instance 1 with index-based library expressions duplicated in AE. Distributions line/grid/circle/path/scatter/sphere/helix; motion (speed, direction, wrap, variation); effectors noise, falloff (radial/linear, scale/opacity/blur), stagger (index/distance/random via time remap), follow, step, colorize; data rows/CSV to fields and transform channels; `mode: 'repeater'` for big shape counts. Build/render measured at 100/300/1000 (D77). AE checks: `tests/integration/p5/cloner.ts` (16), `distributions.ts` (all distributions vs aec-lib).
+- Node-side modules from subagents, to be wired in: captions (`src/text/captions.ts`, 50 tests), motion analysis + speed graphs + style lint (`src/motion/`, 42 tests), beat detection (`src/audio/`, 25 tests; Diafano 105 BPM).
 
-**Next:** P1 cloner (master precomp + instances + overrides, distributions, data), P2 effectors, scale measurements; then wire A1/A2 into builds.
+**Next:** wire A1 motion previews + A2 style lint into builds/edits (needs the AE motion sampler), then A3 storyboard, A4 reframe + delivery, kits, beat sync, recipes, showcases.
 
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.

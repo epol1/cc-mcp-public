@@ -43,6 +43,12 @@ export interface IrLayer {
   fit?: string;
   muted?: boolean;
   loop?: boolean;
+  /**
+   * Cloner instances (P1): this layer is instance 1 of `count`; after the comp is built it is duplicated in place
+   * (copies keep its expressions, which address themselves by index), renamed "<prefix> 001"…, tagged
+   * "<id>.<k>", and given per-instance Essential Properties values (`overrides[k]`: EG name → value).
+   */
+  instances?: { count: number; prefix: string; overrides?: ({ [name: string]: any } | null)[]; timeRemap?: boolean };
 }
 
 function hasProp(L: IrLayer, suffix: string): boolean {
@@ -223,6 +229,8 @@ export function setLayerAttrs(ctx: Ctx, layer: Layer, L: IrLayer): void {
   if (L.autoOrient) layer.autoOrient = (AutoOrientType as any)[L.autoOrient];
   if (L.environment !== undefined) av.environmentLayer = L.environment;
   if (L.enabled !== undefined) layer.enabled = L.enabled;
+  // Time Remap must exist before its expression is set (cloner stagger).
+  if (L.instances && L.instances.timeRemap) av.timeRemapEnabled = true;
 }
 
 export function wireLayer(ctx: Ctx, layer: Layer, L: IrLayer): void {

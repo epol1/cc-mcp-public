@@ -16,6 +16,8 @@ export interface PropSpec {
   sep?: boolean; // set dimensionsSeparated on this property
   rel?: number[]; // add the layout slot centre (component indices) to values and keys
   enabled?: boolean;
+  /** Expose in the comp's Essential Graphics under this name (a cloner field, P1). */
+  eg?: string;
 }
 
 export interface GroupSpec {
@@ -90,6 +92,7 @@ export function applyProps(ctx: Ctx, layer: Layer, owner: any, specs: PropSpec[]
     }
     else if (s.v !== undefined) setStatic(ctx, prop, s.v);
     if (s.expr) pending.exprs[pending.exprs.length] = { owner: ownerPath, layer: layer, spec: s, id: ctx.cur };
+    if (s.eg) ctx.eg[ctx.eg.length] = { layer: layer, path: indexPath(prop), name: s.eg };
   }
 }
 

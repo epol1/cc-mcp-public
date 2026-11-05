@@ -7,6 +7,9 @@ export { Stack, Row, Column, Grid, Align, Center, Padding, Box, Overlay, SafeAre
 export { tween, spring, keys, seq, wiggle, loop, expr, sample, fade, slideIn, popIn, perChar, perWord, perLine, textPresets } from './anim.ts';
 export type { Anim, TextUnitsAnim, TextUnitFrom, Vec } from './anim.ts';
 export { control, plus } from './control.ts';
+export { field } from './field.ts';
+export { Cloner, line, grid, circle, onPath, scatter, sphere, helix, noise, falloff, stagger, follow, step, colorize, csv } from './cloner.ts';
+export type { ClonerProps, ClonerMotion, Distribution, Effector } from './cloner.ts';
 export { OrbitCamera, CameraMove, PushIn, PullOut, Truck, Pedestal, Crane, ThreePointLights } from './rigs.ts';
 export { Svg, readSvg } from './svg.ts';
 export type { SvgProps } from './svg.ts';

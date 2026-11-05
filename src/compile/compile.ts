@@ -24,6 +24,7 @@ import { chooseRenderer, RENDERER_ID, RENDERER_NAME } from './renderers.ts';
 import type { LibMode } from '../aeclib/index.ts';
 import { LIB_ITEM, libVersion, withLib, writeLibFile } from '../aeclib/index.ts';
 import { rigEffectSpec } from './rigfx.ts';
+import { drainDslWarnings } from '../dsl/warn.ts';
 
 // Internal names verified from AE's localized UI strings (D36): Calder = Advanced 3D; 'ADBE Advanced 3d' is the legacy ID of Classic 3D.
 const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' } as const;
@@ -70,9 +71,11 @@ export class Compiler {
     if (cfg.motionBlur !== undefined) applyCompMB(comp, cfg.motionBlur);
     (globalThis as any).__AEC_SCENE_DIR__ = this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd();
     resetAutoIds();
+    drainDslWarnings(); // components may run in render() (direct calls) or during the walk (JSX)
     const root = this.def.render({ ...params, seed });
     const ctx: Ctx = { comp, start: 0, end: comp.dur, path: mainId, seed, scene: this.def, sceneDir: this.opts.sceneFile ? path.dirname(this.opts.sceneFile) : process.cwd(), counters: new Map(), threeD: false };
     this.walk(root, ctx);
+    this.warnings.push(...drainDslWarnings());
     this.finishComp(comp, cfg.name);
     this.comps.push(comp);
     const ir = {
@@ -122,7 +125,8 @@ export class Compiler {
       if (eg.length && !c.part) (c as any).mgt = { name: mgtName, props: eg };
     }
     const egText = (c as any).egText as any[] | undefined;
-    if (egText?.length && !c.part) (c as any).mgt = { name: mgtName, props: [...egText, ...(((c as any).mgt?.props) ?? [])] };
+    // Precomps too: their text fields become Essential Properties of every layer that uses them (cloner masters).
+    if (egText?.length) (c as any).mgt = { name: mgtName, props: [...egText, ...(((c as any).mgt?.props) ?? [])] };
   }
 
   /** Precomps: renderer selection + layer-ref resolution (controls stay on the main comp). */
@@ -415,6 +419,7 @@ export class Compiler {
       }
       case 'precomp':
         L.precomp = { comp: extra.precompId };
+        if (p.instances) L.instances = p.instances; // cloner instance 1 (duplicated in AE)
         // Like Remotion: the nested comp's frame 0 plays at the Sequence/layer start.
         L.start = inT;
         if (p.collapse) L.collapse = true;

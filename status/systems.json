@@ -1180,31 +1180,31 @@
         {
           "id": "p5-cloner",
           "name": "Cloner: master precomp + instances + Essential Properties overrides",
-          "status": "todo",
+          "status": "done",
           "weight": 5
         },
         {
           "id": "p5-distribute",
           "name": "Distributions: line, grid, circle/arc, path, scatter, 3D",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-effectors",
           "name": "Effectors: falloff, noise, stagger/cascade, follow, step, color",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-data",
           "name": "Data-driven instances (arrays, CSV)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {
           "id": "p5-scale",
           "name": "Large counts: Repeater / particle fallback with measured thresholds",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {

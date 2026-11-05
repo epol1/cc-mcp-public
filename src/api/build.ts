@@ -51,6 +51,8 @@ export interface BuildReport {
   irFile?: string;
   /** Lint report per built main comp (one per variant). */
   lint?: (LintReport & { label?: string })[];
+  /** Time spent per build phase inside AE (ms), summed over variants. */
+  phases?: Record<string, number>;
 }
 
 const loc = (s?: SourceLoc) => (s ? `${path.basename(s.file)}:${s.line}:${s.col}` : undefined);
@@ -102,6 +104,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     report.undoSteps = (report.undoSteps ?? 0) + 1;
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;
+    for (const [k, v] of Object.entries(r.phases ?? {})) (report.phases ??= {})[k] = (report.phases[k] ?? 0) + (v as number);
     for (const e of r.exprErrors ?? []) report.exprErrors.push({ ...e, src: loc(sources[e.node]) });
     if (!r.ok) {
       report.ok = false;

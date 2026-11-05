@@ -3,6 +3,7 @@ import type { Anim, SpringAnim, TweenAnim } from '../dsl/anim.ts';
 import { isAnim } from '../dsl/anim.ts';
 import type { ControlRef } from '../dsl/control.ts';
 import { isControl } from '../dsl/control.ts';
+import { isField } from '../dsl/field.ts';
 import type { EasingCurve } from '../shared/easing.ts';
 import { resolveEasing } from '../shared/easing.ts';
 import { springProgress } from '../shared/spring.ts';
@@ -12,7 +13,7 @@ import type { IrKey } from './keys.ts';
 import { curveKnots, knotsToKeys } from './keys.ts';
 import type { ControlRegistry } from './controls.ts';
 
-export interface PropSpec { p: string; v?: any; keys?: IrKey[]; expr?: string; sep?: boolean }
+export interface PropSpec { p: string; v?: any; keys?: IrKey[]; expr?: string; sep?: boolean; eg?: string }
 
 export interface ValueCtx {
   fps: number;
@@ -253,6 +254,8 @@ function springExpression(a: SpringAnim, target: PropTarget, ctx: ValueCtx, star
  */
 export function lowerValue(value: any, target: PropTarget, ctx: ValueCtx): PropSpec | null {
   if (value === undefined) return null;
+  // A field: lowered like its value, then exposed in the comp's Essential Graphics under its name.
+  if (isField(value)) { const s = lowerValue(value.value, target, ctx) ?? { p: target.path }; s.eg = value.name; return s; }
   const conv = target.conv ?? ((v: any) => toArr(v, target.dims, /Position|Point of Interest|Anchor/.test(target.path) ? 0 : 'last'));
   if (isControl(value)) {
     const ref = ctx.controls.use(value);

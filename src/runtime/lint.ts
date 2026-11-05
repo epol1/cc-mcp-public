@@ -24,6 +24,8 @@ function collect(c: CompItem, chain: AVLayer[], prefix: string, out: Target[], m
       for (let k = chain.length - 1; k >= 0; k--) { a = Math.max(chain[k].inPoint, a + chain[k].startTime); b = Math.min(chain[k].outPoint, b + chain[k].startTime); shift += chain[k].startTime; }
       out[out.length] = { L: L, chain: chain, path: prefix + L.name, in0: a, out0: b, shift: shift };
     } else if (L instanceof AVLayer && L.source instanceof CompItem && chain.length < MAX_DEPTH) {
+      // Cloner instances are a pattern, not N messages to read (and sampling hundreds of them is slow).
+      if (String(L.comment).indexOf(';clone') >= 0) continue;
       const next: AVLayer[] = [];
       for (let k = 0; k < chain.length; k++) next[k] = chain[k];
       next[next.length] = L;

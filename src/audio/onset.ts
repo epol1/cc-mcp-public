@@ -9,7 +9,7 @@ export interface SpectralFlux {
   /** FFT size. */
   n: number;
   frames: number;
-  /** Band-weighted (lows ×2) half-wave-rectified log spectral flux; frame m is centered at m·hop. */
+  /** Band-weighted (lows ×2) log spectral flux, rectified against the recent band maximum; frame m is centered at m·hop. */
   flux: Float32Array;
   /** The same flux over the bands below 150 Hz (kick and bass): drives downbeat detection. */
   lowFlux: Float32Array;

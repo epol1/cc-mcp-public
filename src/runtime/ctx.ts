@@ -9,10 +9,12 @@ export interface Ctx {
   items: { [id: string]: Item }; // asset id → project item
   t0: number;
   scene: string;
+  /** Properties to add to the current comp's Essential Graphics (PropSpec.eg), by layer and index path. */
+  eg: { layer: Layer; path: number[]; name: string }[];
 }
 
 export function newCtx(scene: string): Ctx {
-  return { cur: '', warnings: [], layers: {}, comps: {}, items: {}, t0: now(), scene: scene };
+  return { cur: '', warnings: [], layers: {}, comps: {}, items: {}, t0: now(), scene: scene, eg: [] };
 }
 
 export function warn(ctx: Ctx, msg: string): void {

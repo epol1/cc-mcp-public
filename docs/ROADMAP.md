@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.019**: 78.27% weighted, 174/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.020**: 82.24% weighted, 179/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -216,7 +216,7 @@
 - [x] AGENT_GUIDE.md
 - [x] REPORT.md
 
-# Phase 5: creative toolkit (docs/TOOLKIT.md) (17.7%)
+# Phase 5: creative toolkit (docs/TOOLKIT.md) (32.8%)
 
 ## P5 · Foundations (100%)
 - [x] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
@@ -224,12 +224,12 @@
 - [x] Rig presets: one effect per rig with its controls (.ffx pseudo effects) _(w3)_
 - [x] Existing rigs migrated to the library (text units, camera, springs, bursts) _(w2)_
 
-## P5 · Procedural (0%)
-- [ ] Cloner: master precomp + instances + Essential Properties overrides _(w5)_
-- [ ] Distributions: line, grid, circle/arc, path, scatter, 3D _(w2)_
-- [ ] Effectors: falloff, noise, stagger/cascade, follow, step, color _(w3)_
-- [ ] Data-driven instances (arrays, CSV) _(w2)_
-- [ ] Large counts: Repeater / particle fallback with measured thresholds _(w2)_
+## P5 · Procedural (67%)
+- [x] Cloner: master precomp + instances + Essential Properties overrides _(w5)_
+- [x] Distributions: line, grid, circle/arc, path, scatter, 3D _(w2)_
+- [x] Effectors: falloff, noise, stagger/cascade, follow, step, color _(w3)_
+- [x] Data-driven instances (arrays, CSV) _(w2)_
+- [x] Large counts: Repeater / particle fallback with measured thresholds _(w2)_
 - [ ] Path tools: follow path, trails/echo, draw helpers _(w2)_
 - [ ] Shape morph with vertex matching _(w3)_
 - [ ] Procedural backgrounds and textures (vanilla effects, brand palettes) _(w2)_

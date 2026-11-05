@@ -1,0 +1,4 @@
+x,y,rotation,delay,Tag
+0,-20,5,0,alpha
+10,0,-5,0.2,beta
+-10,20,0,0.4,gamma
