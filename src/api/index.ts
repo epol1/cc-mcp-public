@@ -17,6 +17,8 @@ import type { LintOptions } from './lint.ts';
 import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
 import type { MotionOptions } from './motion.ts';
 import { STYLE_RULES } from '../motion/types.ts';
+import { saveLintForPanel } from './panelstate.ts';
+export { readInbox } from './panelstate.ts';
 
 export { buildScene } from './build.ts';
 export { motionOfComp, motionPreview, motionReport } from './motion.ts';
@@ -99,6 +101,7 @@ export async function applyEdits(input: EditInput, opts: { frames?: number; lint
     r.motion = motion && r.ok ? await motionReport(r.motion, { ...motion, style: motion.style === false ? false : { ...(motion.style ?? {}), ignore: [...(motion.style?.ignore ?? []), ...((lint ? lint.ignore ?? [] : []).filter((x) => (STYLE_RULES as string[]).includes(x)) as any[])] } }, undefined, rawLint) : undefined;
     if (r.motion?.ok && r.lint) { r.lint.issues.push(...r.motion.style); r.lint.lines.push(...r.motion.lines); }
   }
+  if (r.lint?.ok) saveLintForPanel(r.lint.comp, r.lint.issues);
   return r;
 }
 

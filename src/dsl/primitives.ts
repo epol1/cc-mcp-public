@@ -5,9 +5,11 @@ import type { Anim, TextUnitsAnim, Vec } from './anim.ts';
 import type { ControlRef } from './control.ts';
 import type { EasingSpec } from '../shared/easing.ts';
 import type { ColorSpec, Time } from '../shared/units.ts';
+import type { FieldRef } from './field.ts';
 import { jsx } from './jsx-runtime.ts';
 
-type V<T> = T | Anim | ControlRef;
+/** A prop value: static, animated, a live control, or a field (exposed in the comp's Essential Graphics). */
+type V<T> = T | Anim | ControlRef | FieldRef<T>;
 type Children = any;
 
 /** Props shared by every layer. Values may be static, animation descriptors, or control(...) refs. */

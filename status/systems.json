@@ -1339,7 +1339,7 @@
         {
           "id": "p5-panel",
           "name": "CEP panel: controls by rig, variants, lint list, recipes, ask Claude",
-          "status": "todo",
+          "status": "done",
           "weight": 4
         }
       ],
@@ -1352,7 +1352,7 @@
         {
           "id": "p5-s15",
           "name": "Showcase 15: 100 cards with subtle variations (cloner)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {

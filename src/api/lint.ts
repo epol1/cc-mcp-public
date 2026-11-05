@@ -5,6 +5,7 @@ import { formatIssues, lintRules, LINT_RULES } from '../lint/index.ts';
 import type { LintData, LintIssue, LintOptions, LintRule } from '../lint/index.ts';
 import { blankFrames } from '../lint/frames.ts';
 import { STYLE_RULES } from '../motion/types.ts';
+import { saveLintForPanel } from './panelstate.ts';
 
 export type { LintOptions, LintIssue, LintRule };
 
@@ -70,6 +71,7 @@ export async function lintComp(comp: string | number | undefined, opts: LintOpti
       if (m.ok) { report.issues.push(...(m.style as any[])); report.lines.push(...m.lines); }
     } catch { /* style lint is best-effort here */ }
   }
+  if (report.ok) saveLintForPanel(report.comp, report.issues);
   return report;
 }
 

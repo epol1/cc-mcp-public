@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp, motionPreview, deliverScene } from '../api/index.ts';
+import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp, motionPreview, deliverScene, readInbox } from '../api/index.ts';
 import type { MotionReport } from '../api/index.ts';
 import { lintSummary } from '../api/lint.ts';
 import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
@@ -257,6 +257,15 @@ server.registerTool('deliver', {
   const out: Content[] = [text(lines.join('\n'))];
   for (const x of r.renders.filter((y) => y.poster).slice(0, 3)) out.push(await image(x.poster!, 640));
   return out;
+}));
+
+server.registerTool('designer_inbox', {
+  title: 'Messages from the designer panel',
+  description: 'Unread messages a designer sent from the ae-compose panel in After Effects (Window > Extensions > ae-compose > Ask Claude), each with the comp, the time and the selected layers at the moment they sent it. Check it when the user says they left notes in AE; reading marks them read.',
+  inputSchema: { peek: z.boolean().optional().describe('read without marking them read') },
+}, async (a) => wrap(async () => {
+  const msgs = readInbox(!a.peek);
+  return [text(msgs.length ? msgs.map((m) => `- ${m.at.slice(0, 16).replace('T', ' ')}${m.comp ? ` [${m.comp} @ ${m.time?.toFixed(2)}s${m.layers?.length ? `, selected: ${m.layers.join(', ')}` : ''}]` : ''}: ${m.text}`).join('\n') : 'no unread messages from the panel')];
 }));
 
 server.registerTool('analyze_beats', {

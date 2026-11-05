@@ -16,6 +16,7 @@ import { writeContactSheet } from '../visual/images.ts';
 import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
 import type { MotionOptions, MotionReport } from './motion.ts';
 import { STYLE_RULES } from '../motion/types.ts';
+import { saveLintForPanel } from './panelstate.ts';
 
 export const OUT_ROOT = path.join(os.homedir(), '.ae-compose', 'out');
 
@@ -172,6 +173,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
       } catch (e: any) { report.warnings.push(`motion report failed: ${e.message}`); }
     }
   }
+  for (const l of report.lint ?? []) if (l.ok) saveLintForPanel(l.comp, l.issues);
   report.ms = Date.now() - t0;
   { const note = await guardDiskCache(); if (note) report.warnings.push(note); }
   return report;

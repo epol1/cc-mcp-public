@@ -12,6 +12,7 @@ import type { AecElement } from './jsx-runtime.ts';
 import { Effect, Group, Null, Path, Precomp, Repeater, RigEffect, Shape } from './primitives.ts';
 import type { LayerProps } from './primitives.ts';
 import { expr } from './anim.ts';
+import type { Anim } from './anim.ts';
 import { dslWarn } from './warn.ts';
 import type { PseudoEffectDef, PseudoParam } from '../compile/ffx/pseudo.ts';
 import { parseColor } from '../shared/units.ts';
@@ -70,8 +71,8 @@ export const colorize = (o: Omit<Extract<Effector, { kind: 'color' }>, 'kind'>):
 export interface ClonerMotion {
   /** Travel along `direction` in px/s (circle: °/s around it; path: % of the path per second). */
   speed?: number;
-  /** Starting offset (same units). */
-  offset?: number;
+  /** Starting offset (same units); an animation (keys/tween) moves the whole stream, e.g. a rush out. */
+  offset?: number | Anim;
   /** Direction of travel in degrees (0 = right, 90 = down). Ignored by circle and path. */
   direction?: number;
   /** Wrap length in px: instances leaving one end re-enter at the other (0 = no wrap). Path: wrap when closed. */
@@ -100,10 +101,10 @@ export interface ClonerProps extends Omit<LayerProps, 'children'> {
    */
   data?: Record<string, any>[];
   seed?: number;
-  /** Base instance transform: scale %, rotation °, opacity %. */
-  scale?: number;
-  rotation?: number;
-  opacity?: number;
+  /** Base instance transform: scale %, rotation °, opacity % (each may be animated: they are rig params). */
+  scale?: number | Anim;
+  rotation?: number | Anim;
+  opacity?: number | Anim;
   /** 3D instances (automatic for sphere and helix). */
   threeD?: boolean;
   /**

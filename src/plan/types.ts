@@ -53,6 +53,8 @@ export interface BeatSheet {
   brand?: string;
   /** Default overlap between beats in seconds (0.3). */
   overlap?: number;
+  /** Path to a music track (relative to opts.cwd): the scaffold places it and writes its beat grid as markers. */
+  music?: string;
   beats: Beat[];
   end?: EndCard;
 }

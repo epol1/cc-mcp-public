@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.023**: 84.94% weighted, 184/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.024**: 86.65% weighted, 186/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -216,7 +216,7 @@
 - [x] AGENT_GUIDE.md
 - [x] REPORT.md
 
-# Phase 5: creative toolkit (docs/TOOLKIT.md) (43.0%)
+# Phase 5: creative toolkit (docs/TOOLKIT.md) (49.5%)
 
 ## P5 · Foundations (100%)
 - [x] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
@@ -253,11 +253,11 @@
 - [x] Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts _(w3)_
 - [ ] Recipe library: save and re-instantiate scenes with params _(w2)_
 
-## P5 · Designer panel (optional) (0%)
-- [ ] CEP panel: controls by rig, variants, lint list, recipes, ask Claude _(w4)_
+## P5 · Designer panel (optional) (100%)
+- [x] CEP panel: controls by rig, variants, lint list, recipes, ask Claude _(w4)_
 
-## P5 · Showcases, tests, docs (10%)
-- [ ] Showcase 15: 100 cards with subtle variations (cloner) _(w2)_
+## P5 · Showcases, tests, docs (23%)
+- [x] Showcase 15: 100 cards with subtle variations (cloner) _(w2)_
 - [ ] Showcase 16: product UI demo (UI kit, cursor, scroll) _(w2)_
 - [ ] Showcase 17: data story (data viz kit) _(w2)_
 - [ ] Showcase 18: music-synced promo (beat sync, transitions) _(w2)_

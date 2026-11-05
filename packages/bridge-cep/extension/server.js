@@ -252,6 +252,17 @@ function renderPanel() {
   });
 }
 
+// The designer panel's own files: editing them reloads the open panel (server.js itself is hot-swapped by loader.js).
+var panelMtimes = null;
+function watchPanelFiles() {
+  try {
+    var fs = ctx.require("fs"), path = ctx.require("path"), m = {};
+    ["panel.html", "designer.js"].forEach(function (f) { try { m[f] = fs.statSync(path.join(ctx.extDir, f)).mtimeMs; } catch (e) {} });
+    if (panelMtimes && (m["panel.html"] !== panelMtimes["panel.html"] || m["designer.js"] !== panelMtimes["designer.js"])) { ctx.log("panel files changed: reloading"); ctx.reloadAll(); }
+    panelMtimes = m;
+  } catch (e) {}
+}
+
 exports.start = function (c) {
   ctx = c;
   if (ctx.role === "panel") {
@@ -259,7 +270,7 @@ exports.start = function (c) {
     probe(DEFAULT_PORT, function (h) {
       if (!(h && h.ok)) listen();
     });
-    statusTimer = setInterval(renderPanel, 1500);
+    statusTimer = setInterval(function () { renderPanel(); watchPanelFiles(); }, 1500);
     renderPanel();
   } else {
     listen();
