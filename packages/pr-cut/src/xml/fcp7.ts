@@ -71,8 +71,11 @@ function fileXml(key: string, m: MediaInfo, seqRate: Rate, ids: Ids, ind: string
   return lines.join('\n');
 }
 
+interface Edges { start: number; end: number; inTicks: number; outTicks: number }
 interface Item {
   clip: TLClip;
+  /** This item's own edges: the clip's, or its picture's for a split edit. */
+  e: Edges;
   kind: 'video' | 'audio';
   track: number;
   sourceTrack?: number;
@@ -112,18 +115,20 @@ export function writeFcp7(t: Timeline): WriteResult {
     if (!m) throw new Error(`clip ${c.id}: unknown media "${c.media}"`);
     if (c.end <= c.start) throw new Error(`clip ${c.id}: empty or negative duration (${c.start}–${c.end})`);
     const group: Item[] = [];
-    if (c.vTrack && m.kind !== 'audio') group.push({ clip: c, kind: 'video', track: c.vTrack, xmlId: `clipitem-${++ids.clip}`, links: [] });
-    if (c.aTrack && m.audio) chans(c).forEach((ch, k) => group.push({ clip: c, kind: 'audio', track: c.aTrack! + k, sourceTrack: ch, xmlId: `clipitem-${++ids.clip}`, links: [] }));
+    const ve = c.video ?? c;
+    if (ve.end <= ve.start) throw new Error(`clip ${c.id}: empty picture range (${ve.start}–${ve.end})`);
+    if (c.vTrack && m.kind !== 'audio') group.push({ clip: c, e: ve, kind: 'video', track: c.vTrack, xmlId: `clipitem-${++ids.clip}`, links: [] });
+    if (c.aTrack && m.audio) chans(c).forEach((ch, k) => group.push({ clip: c, e: c, kind: 'audio', track: c.aTrack! + k, sourceTrack: ch, xmlId: `clipitem-${++ids.clip}`, links: [] }));
     for (const it of group) it.links = group;
     items.push(...group);
   }
-  const byTrack = (kind: 'video' | 'audio', n: number) => items.filter((i) => i.kind === kind && i.track === n).sort((a, b) => a.clip.start - b.clip.start);
+  const byTrack = (kind: 'video' | 'audio', n: number) => items.filter((i) => i.kind === kind && i.track === n).sort((a, b) => a.e.start - b.e.start);
   for (let n = 1; n <= vTracks; n++) byTrack('video', n).forEach((it, k) => (it.index = k + 1));
   for (let n = 1; n <= aTracks; n++) byTrack('audio', n).forEach((it, k) => (it.index = k + 1));
   // Overlap check per track (Premiere would silently overwrite).
   for (const kind of ['video', 'audio'] as const) for (let n = 1; n <= (kind === 'video' ? vTracks : aTracks); n++) {
     const tr = byTrack(kind, n);
-    for (let k = 1; k < tr.length; k++) if (tr[k].clip.start < tr[k - 1].clip.end) throw new Error(`${kind} track ${n}: ${tr[k].clip.id} (${tr[k].clip.start}) overlaps ${tr[k - 1].clip.id} (ends ${tr[k - 1].clip.end})`);
+    for (let k = 1; k < tr.length; k++) if (tr[k].e.start < tr[k - 1].e.end) throw new Error(`${kind} track ${n}: ${tr[k].clip.id} (${tr[k].e.start}) overlaps ${tr[k - 1].clip.id} (ends ${tr[k - 1].e.end})`);
   }
 
   const clipItem = (it: Item, ind: string, trIn?: number, trOut?: number): string => {
@@ -133,7 +138,7 @@ export function writeFcp7(t: Timeline): WriteResult {
     const r = m.video?.rate ?? t.rate;
     const durFrames = Math.round(m.duration * (r.num / r.den));
     // Under a transition the clip's edge becomes -1 and its source range extends by the overlap (FCP7 convention).
-    let inT = c.inTicks, outT = c.outTicks, start: number = c.start, end: number = c.end;
+    let inT = it.e.inTicks, outT = it.e.outTicks, start: number = it.e.start, end: number = it.e.end;
     if (trIn) { start = -1; inT -= trIn * tpf; }
     if (trOut) { end = -1; outT += trOut * tpf; }
     if (inT < 0) { warnings.push(`${c.id}: not enough source before the in point for the transition; it starts at the media start`); inT = 0; }
@@ -163,7 +168,7 @@ export function writeFcp7(t: Timeline): WriteResult {
       lines.push(`${ind}\t<filter>`, `${ind}\t\t<effect>`, `${ind}\t\t\t<name>Audio Levels</name>`, `${ind}\t\t\t<effectid>audiolevels</effectid>`, `${ind}\t\t\t<effectcategory>audiolevels</effectcategory>`, `${ind}\t\t\t<effecttype>audiolevels</effecttype>`, `${ind}\t\t\t<mediatype>audio</mediatype>`,
         `${ind}\t\t\t<parameter authoringApp="PremierePro">`, `${ind}\t\t\t\t<parameterid>level</parameterid>`, `${ind}\t\t\t\t<name>Level</name>`, `${ind}\t\t\t\t<valuemin>0</valuemin>`, `${ind}\t\t\t\t<valuemax>3.98109</valuemax>`, `${ind}\t\t\t\t<value>${round6(dbToGain(c.level ?? 0))}</value>`);
       // Keyframe <when> is in frames from the clip's source in point (FCP7), so sequence frame f → in + (f − start).
-      const inFrame = Math.round(inT / tpf), startFrame = c.start;
+      const inFrame = Math.round(inT / tpf), startFrame = it.e.start;
       for (const k of c.levelKeys ?? []) lines.push(`${ind}\t\t\t\t<keyframe>`, `${ind}\t\t\t\t\t<when>${inFrame + (k.frame - startFrame)}</when>`, `${ind}\t\t\t\t\t<value>${round6(dbToGain(k.db))}</value>`, `${ind}\t\t\t\t</keyframe>`);
       lines.push(`${ind}\t\t\t</parameter>`, `${ind}\t\t</effect>`, `${ind}\t</filter>`);
     }
@@ -191,15 +196,15 @@ export function writeFcp7(t: Timeline): WriteResult {
       const isAudioTr = want?.kind === 'audio-crossfade';
       // A transition applies on video items for video kinds and on audio items for the audio crossfade; video
       // dissolves also crossfade the linked dialogue (Premiere's default "both" behaviour is not in XML).
-      const trHere = want && prev && prev.clip.end === it.clip.start && ((kind === 'video' && !isAudioTr) || (kind === 'audio' && (isAudioTr || want.kind === 'dissolve')));
+      const trHere = want && prev && prev.e.end === it.e.start && ((kind === 'video' && !isAudioTr) || (kind === 'audio' && (isAudioTr || want.kind === 'dissolve')));
       const half = trHere ? Math.floor(want!.frames / 2) : 0;
       const nextTr = next?.clip.transitionIn;
-      const nextHere = nextTr && next.clip.start === it.clip.end && ((kind === 'video' && nextTr.kind !== 'audio-crossfade') || (kind === 'audio' && (nextTr.kind === 'audio-crossfade' || nextTr.kind === 'dissolve')));
+      const nextHere = nextTr && next.e.start === it.e.end && ((kind === 'video' && nextTr.kind !== 'audio-crossfade') || (kind === 'audio' && (nextTr.kind === 'audio-crossfade' || nextTr.kind === 'dissolve')));
       const nextHalf = nextHere ? nextTr!.frames - Math.floor(nextTr!.frames / 2) : 0;
       if (trHere) {
         const kindKey = kind === 'audio' ? 'audio-crossfade' : want!.kind;
         const tdef = TRANSITION[kindKey];
-        const cut = it.clip.start;
+        const cut = it.e.start;
         out.push(`${ind}\t<transitionitem>`, `${ind}\t\t<start>${cut - half}</start>`, `${ind}\t\t<end>${cut - half + want!.frames}</end>`, `${ind}\t\t<alignment>center</alignment>`, `${ind}\t\t<cutPointTicks>${half * tpf}</cutPointTicks>`, rateXml(t.rate, ind + '\t\t'),
           `${ind}\t\t<effect>`, `${ind}\t\t\t<name>${tdef.name}</name>`, `${ind}\t\t\t<effectid>${tdef.id}</effectid>`, `${ind}\t\t\t<effectcategory>${tdef.cat}</effectcategory>`, `${ind}\t\t\t<effecttype>transition</effecttype>`, `${ind}\t\t\t<mediatype>${tdef.media}</mediatype>`, `${ind}\t\t</effect>`, `${ind}\t</transitionitem>`);
       }

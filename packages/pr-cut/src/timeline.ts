@@ -23,6 +23,8 @@ export interface TLClip {
   /** Source range in Premiere ticks (exact), end exclusive. */
   inTicks: number;
   outTicks: number;
+  /** Split edit (J/L cut): the picture's own edges when they differ from the sound's (sequence frames, source ticks). */
+  video?: { start: number; end: number; inTicks: number; outTicks: number };
   /** Clip gain, dB (0 = unchanged). */
   level?: number;
   /** Level keyframes at sequence frames, dB (ducking, fades). */
@@ -51,4 +53,4 @@ export interface Timeline {
   markers: TLMarker[];
 }
 
-export const timelineEnd = (t: Timeline) => t.clips.reduce((m, c) => Math.max(m, c.end), 0);
+export const timelineEnd = (t: Timeline) => t.clips.reduce((m, c) => Math.max(m, c.end, c.video?.end ?? 0), 0);

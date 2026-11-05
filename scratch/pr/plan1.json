@@ -1,0 +1,12 @@
+{
+  "name": "pr-cut test 1",
+  "media": { "iv": "E:/Projects/ae-mcp-prcut/scratch/pr/speech/interview_tts.mp4", "skate": "C:/Users/Public/Documents/Adobe/Premiere Pro/26.0/Sample Media/Sample Media Clip 1.mp4", "city": "C:/Users/Public/Documents/Adobe/Premiere Pro/26.0/Sample Media/Sample Media Clip 5.mp4" },
+  "segments": [
+    { "id": "hook", "src": "iv", "quote": "we built the whole launch around that idea", "beat": "hook" },
+    { "id": "proof", "src": "iv", "sentences": ["s1", "s2"], "beat": "proof", "j": "8f" },
+    { "id": "close", "src": "iv", "sentences": "s4", "beat": "close", "transition": "dissolve" }
+  ],
+  "broll": [ { "src": "skate", "over": "proof/3" } ],
+  "grade": { "*": { "contrast": 10, "saturation": 105 } },
+  "captions": true
+}
