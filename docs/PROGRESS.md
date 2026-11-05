@@ -4,6 +4,8 @@
 > Roadmap and dashboard: `status/systems.json` → `status/index.html` (`node status/build.mjs`). Release: `node scripts/release.mjs "msg"`.
 
 ## Current phase
+**Next: Phase 5, the creative toolkit.** Spec: `docs/TOOLKIT.md`; goal prompt: `GOAL-PHASE5.md`; roadmap: the "P5 ·" groups in `status/systems.json` (36 tasks, all to do). Start with the two verifications in TOOLKIT §11 (expression libraries via `footage().sourceData`, pseudo-effect portability).
+
 **Phase 3 complete: the GOAL §7 Definition of Done is met** (evidence in `docs/REPORT.md`). Work now is the planned features below and whatever the user asks for next.
 
 ## Done

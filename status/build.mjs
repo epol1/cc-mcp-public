@@ -24,6 +24,12 @@ const pct = total ? (100 * done) / total : 0;
 const tasksDone = sum(data.systems, (s) => s.tasks.filter((t) => t.status === 'done').length);
 const tasksAll = sum(data.systems, (s) => s.tasks.length);
 const dodDone = data.definitionOfDone.filter((d) => d.status === 'done').length;
+// Optional phases: systems[].phase (default 3 = the core build) and data.phases [{ id, name, badge }].
+const phases = (data.phases ?? [{ id: 3, name: 'Core', badge: 'core' }]).map((ph) => {
+  const ss = systems.filter((s) => (s.phase ?? 3) === ph.id);
+  const t = sum(ss, (s) => s.total), d = sum(ss, (s) => s.done);
+  return { ...ph, pct: t ? (100 * d) / t : 0, systems: ss };
+});
 const show = data.systems.find((s) => s.id === 'showcases');
 const showDone = show ? show.tasks.filter((t) => t.status === 'done').length : 0;
 
@@ -135,7 +141,7 @@ svg .ax{stroke:var(--line)}svg .dim{stroke-dasharray:4 4}svg .ln{fill:none;strok
 </style></head><body><main>
 <h1>Status</h1>
 <div class="sub">ae-compose ${esc(version)} &middot; generated ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC from <code>status/systems.json</code></div>
-<div class="badges">${badge('overall', pct.toFixed(2) + '%', pct >= 100 ? 'green' : 'orange')}${badge('tasks done', tasksDone + '/' + tasksAll, tasksDone === tasksAll ? 'green' : 'orange')}${badge('showcases', showDone + '/' + (show ? show.tasks.length : 0), showDone === (show ? show.tasks.length : 0) ? 'green' : 'orange')}${badge('definition of done', dodDone + '/' + data.definitionOfDone.length, dodDone === data.definitionOfDone.length ? 'green' : 'orange')}${badge('done in 7 days', '+' + week + ' tasks', 'blue')}</div>
+<div class="badges">${badge('overall', pct.toFixed(2) + '%', pct >= 100 ? 'green' : 'orange')}${phases.length > 1 ? phases.map((ph) => badge(ph.badge ?? ph.name, ph.pct.toFixed(ph.pct >= 100 ? 0 : 1) + '%', ph.pct >= 100 ? 'green' : 'orange')).join('') : ''}${badge('tasks done', tasksDone + '/' + tasksAll, tasksDone === tasksAll ? 'green' : 'orange')}${badge('showcases', showDone + '/' + (show ? show.tasks.length : 0), showDone === (show ? show.tasks.length : 0) ? 'green' : 'orange')}${badge('definition of done', dodDone + '/' + data.definitionOfDone.length, dodDone === data.definitionOfDone.length ? 'green' : 'orange')}${badge('done in 7 days', '+' + week + ' tasks', 'blue')}</div>
 <div class="grid">
 <section><h2>Systems: ${pct.toFixed(2)}% (${(+done.toFixed(1))}/${total} weighted)</h2><div class="tm">${treemap}</div></section>
 <section><h2>Definition of done (${dodDone}/${data.definitionOfDone.length})</h2><ul>${dodHtml}</ul><h2 style="margin-top:22px">Showcase scenes (${showDone}/${show ? show.tasks.length : 0})</h2><div class="scs">${showHtml}</div><h2>Counted from the code</h2><div class="metrics">${metricsHtml}</div></section>
@@ -151,7 +157,10 @@ fs.writeFileSync(path.join(root, 'status/index.html'), html);
 // docs/ROADMAP.md (generated).
 const mark = { done: '[x]', wip: '[~]', todo: '[ ]' };
 let md = `# Roadmap\n\n> Generated from \`status/systems.json\` by \`status/build.mjs\`. Do not edit by hand. Dashboard: \`status/index.html\`.\n\n**${version}**: ${pct.toFixed(2)}% weighted, ${tasksDone}/${tasksAll} tasks, ${dodDone}/${data.definitionOfDone.length} definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.\n\n`;
-for (const s of systems) { md += `## ${s.name} (${Math.round(s.pct * 100)}%)\n`; for (const t of s.tasks) md += `- ${mark[t.status]} ${t.name}${t.weight > 1 ? ` _(w${t.weight})_` : ''}\n`; md += '\n'; }
+for (const ph of phases) {
+  if (phases.length > 1) md += `# ${ph.name} (${ph.pct.toFixed(ph.pct >= 100 ? 0 : 1)}%)\n\n`;
+  for (const s of ph.systems) { md += `## ${s.name} (${Math.round(s.pct * 100)}%)\n`; for (const t of s.tasks) md += `- ${mark[t.status]} ${t.name}${t.weight > 1 ? ` _(w${t.weight})_` : ''}\n`; md += '\n'; }
+}
 md += `## Definition of done\n`; for (const d of data.definitionOfDone) md += `- ${mark[d.status]} ${d.name}\n`;
 fs.writeFileSync(path.join(root, 'docs/ROADMAP.md'), md);
 // status/status.svg + status/status.png: the same dashboard as a static image, because GitHub's
@@ -169,6 +178,7 @@ fs.writeFileSync(path.join(root, 'docs/ROADMAP.md'), md);
   let bx = 40;
   const badgeSvg = (k, v, color) => { const kw = k.length * 9.6 + 28, vw = v.length * 10.4 + 24; const s = `<rect x="${bx}" y="122" width="${kw}" height="34" fill="#3a3f47"/>${T(bx + 14, 145, k, 18)}<rect x="${bx + kw}" y="122" width="${vw}" height="34" fill="${color}"/>${T(bx + kw + 12, 145, v, 18, '#fff', 'font-weight="600"')}`; bx += kw + vw + 12; return s; };
   parts.push(badgeSvg('overall', pct.toFixed(2) + '%', pct >= 100 ? C.green : C.orange));
+  if (phases.length > 1) for (const ph of phases) parts.push(badgeSvg(ph.badge ?? ph.name, ph.pct.toFixed(ph.pct >= 100 ? 0 : 1) + '%', ph.pct >= 100 ? C.green : C.orange));
   parts.push(badgeSvg('tasks done', `${tasksDone}/${tasksAll}`, tasksDone === tasksAll ? C.green : C.orange));
   parts.push(badgeSvg('showcases', `${showDone}/${show ? show.tasks.length : 0}`, C.orange));
   parts.push(badgeSvg('definition of done', `${dodDone}/${data.definitionOfDone.length}`, C.orange));

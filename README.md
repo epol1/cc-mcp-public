@@ -203,6 +203,7 @@ Each scene in [`examples/`](examples) is built from your own assets and exposes 
 - [docs/DECISIONS.md](docs/DECISIONS.md): every non-obvious decision, with rationale
 - [docs/RESEARCH.md](docs/RESEARCH.md): verified AE 26.5 scripting facts and research summaries
 - [docs/REPORT.md](docs/REPORT.md): what was built, what was verified, limits
+- [docs/TOOLKIT.md](docs/TOOLKIT.md): Phase 5 design, the creative toolkit (cloner, UI/data/type kits, motion previews, style lint, reframe, beat sync); goal prompt in [GOAL-PHASE5.md](GOAL-PHASE5.md)
 - [docs/PROGRESS.md](docs/PROGRESS.md): current phase, next steps, open issues
 - [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md): rules for agents developing this repo
 

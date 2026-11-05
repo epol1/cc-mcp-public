@@ -1141,6 +1141,264 @@
           "weight": 1
         }
       ]
+    },
+    {
+      "id": "p5-found",
+      "name": "P5 · Foundations",
+      "tasks": [
+        {
+          "id": "p5-verify",
+          "name": "Verify footage().sourceData libraries + pseudo-effect portability on 26.5",
+          "status": "todo",
+          "weight": 1
+        },
+        {
+          "id": "p5-exprlib",
+          "name": "Expression library aec-lib.jsx (physics, random, distribution, falloff, timing, color)",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-presets",
+          "name": "Rig presets: one effect per rig with its controls (.ffx pseudo effects)",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-migrate",
+          "name": "Existing rigs migrated to the library (text units, camera, springs, bursts)",
+          "status": "todo",
+          "weight": 2
+        }
+      ],
+      "phase": 5
+    },
+    {
+      "id": "p5-proc",
+      "name": "P5 · Procedural",
+      "tasks": [
+        {
+          "id": "p5-cloner",
+          "name": "Cloner: master precomp + instances + Essential Properties overrides",
+          "status": "todo",
+          "weight": 5
+        },
+        {
+          "id": "p5-distribute",
+          "name": "Distributions: line, grid, circle/arc, path, scatter, 3D",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-effectors",
+          "name": "Effectors: falloff, noise, stagger/cascade, follow, step, color",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-data",
+          "name": "Data-driven instances (arrays, CSV)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-scale",
+          "name": "Large counts: Repeater / particle fallback with measured thresholds",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-paths",
+          "name": "Path tools: follow path, trails/echo, draw helpers",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-morph",
+          "name": "Shape morph with vertex matching",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-bg",
+          "name": "Procedural backgrounds and textures (vanilla effects, brand palettes)",
+          "status": "todo",
+          "weight": 2
+        }
+      ],
+      "phase": 5
+    },
+    {
+      "id": "p5-kits",
+      "name": "P5 · Kits",
+      "tasks": [
+        {
+          "id": "p5-ui",
+          "name": "UI kit components on the layout engine (button, toggle, input, toast…)",
+          "status": "todo",
+          "weight": 5
+        },
+        {
+          "id": "p5-ui-cursor",
+          "name": "Cursor with clicks + component states on markers",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-ui-scroll",
+          "name": "ScrollView and feeds (cloner + data)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-ui-frames",
+          "name": "Device/browser frames + screen inserts with cursor-follow zoom",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-dataviz",
+          "name": "Data viz kit: bar, line, area, donut, stacked + counters",
+          "status": "todo",
+          "weight": 4
+        },
+        {
+          "id": "p5-captions",
+          "name": "Captions from SRT/VTT with word timing (karaoke)",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-typefx",
+          "name": "Type FX: word emphasis, decode, split-flap, variable fonts, auto-fit",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-transitions",
+          "name": "Transitions library built from scene elements",
+          "status": "todo",
+          "weight": 4
+        }
+      ],
+      "phase": 5
+    },
+    {
+      "id": "p5-agent",
+      "name": "P5 · Agent tools",
+      "tasks": [
+        {
+          "id": "p5-previews",
+          "name": "Motion previews: GIF strips + speed graphs after builds/edits",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-stylelint",
+          "name": "Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture)",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-storyboard",
+          "name": "Storyboard first: beat sheet → scene scaffold (plan_scene)",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-reframe",
+          "name": "Responsive reframe 16:9 → 9:16 / 1:1 (safe areas, type, camera)",
+          "status": "todo",
+          "weight": 4
+        },
+        {
+          "id": "p5-delivery",
+          "name": "Delivery packs: every format rendered in one call",
+          "status": "todo",
+          "weight": 1
+        },
+        {
+          "id": "p5-beats",
+          "name": "Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-recipes",
+          "name": "Recipe library: save and re-instantiate scenes with params",
+          "status": "todo",
+          "weight": 2
+        }
+      ],
+      "phase": 5
+    },
+    {
+      "id": "p5-panel",
+      "name": "P5 · Designer panel (optional)",
+      "tasks": [
+        {
+          "id": "p5-panel",
+          "name": "CEP panel: controls by rig, variants, lint list, recipes, ask Claude",
+          "status": "todo",
+          "weight": 4
+        }
+      ],
+      "phase": 5
+    },
+    {
+      "id": "p5-quality",
+      "name": "P5 · Showcases, tests, docs",
+      "tasks": [
+        {
+          "id": "p5-s15",
+          "name": "Showcase 15: 100 cards with subtle variations (cloner)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-s16",
+          "name": "Showcase 16: product UI demo (UI kit, cursor, scroll)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-s17",
+          "name": "Showcase 17: data story (data viz kit)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-s18",
+          "name": "Showcase 18: music-synced promo (beat sync, transitions)",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-tests",
+          "name": "Unit + AE integration tests (one-step undo) for every tool",
+          "status": "todo",
+          "weight": 3
+        },
+        {
+          "id": "p5-docs",
+          "name": "DSL reference + skill sections for every tool",
+          "status": "todo",
+          "weight": 2
+        },
+        {
+          "id": "p5-fresh",
+          "name": "Fresh-session test with only the skill + MCP",
+          "status": "todo",
+          "weight": 1
+        },
+        {
+          "id": "p5-report",
+          "name": "REPORT.md: Phase 5 results, limits, next improvements",
+          "status": "todo",
+          "weight": 1
+        }
+      ],
+      "phase": 5
     }
   ],
   "definitionOfDone": [
@@ -1235,6 +1493,18 @@
       "area": "AE stability",
       "text": "Seen once: an AE session stopped recording undo (Edit menu stuck at \"Can’t Undo\") until restarted; undo should detect it (D61)",
       "status": "open"
+    }
+  ],
+  "phases": [
+    {
+      "id": 3,
+      "name": "Core (phases 0–4)",
+      "badge": "core"
+    },
+    {
+      "id": 5,
+      "name": "Phase 5: creative toolkit (docs/TOOLKIT.md)",
+      "badge": "phase 5"
     }
   ]
 }
