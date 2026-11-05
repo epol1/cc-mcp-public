@@ -15,7 +15,10 @@
 - **P1/P2 cloner** (`src/dsl/cloner.ts`, D77): master precomp + fields (`field()`), a controller null with one "Cloner" rig effect, instance 1 with index-based library expressions duplicated in AE. Distributions line/grid/circle/path/scatter/sphere/helix; motion (speed, direction, wrap, variation); effectors noise, falloff (radial/linear, scale/opacity/blur), stagger (index/distance/random via time remap), follow, step, colorize; data rows/CSV to fields and transform channels; `mode: 'repeater'` for big shape counts. Build/render measured at 100/300/1000 (D77). AE checks: `tests/integration/p5/cloner.ts` (16), `distributions.ts` (all distributions vs aec-lib).
 - Node-side modules from subagents, to be wired in: captions (`src/text/captions.ts`, 50 tests), motion analysis + speed graphs + style lint (`src/motion/`, 42 tests), beat detection (`src/audio/`, 25 tests; Diafano 105 BPM).
 
-**Next:** wire A1 motion previews + A2 style lint into builds/edits (needs the AE motion sampler), then A3 storyboard, A4 reframe + delivery, kits, beat sync, recipes, showcases.
+- **A1/A2 motion previews + style lint** (D78): `src/runtime/motion.ts` sampler, `src/api/motion.ts` (reports, text-reveal folding, `motionPreview`), on every build/edit and in `lint_comp`; MCP `motion_preview`. AE check `tests/integration/p5/motion.ts` (15).
+- AE was restarted once (user OK'd) after it degraded during heavy cloner tests (D79).
+
+**Next:** A3 storyboard (`plan_scene`), A4 reframe + delivery packs, K1–K4 kits, A5 beat sync wiring, A6 recipes, P3/P4, panel, showcases 15–18, docs, fresh-session test, REPORT.
 
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.

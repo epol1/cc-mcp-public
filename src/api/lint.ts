@@ -4,6 +4,7 @@ import { callRuntime } from '../bridge/index.ts';
 import { formatIssues, lintRules, LINT_RULES } from '../lint/index.ts';
 import type { LintData, LintIssue, LintOptions, LintRule } from '../lint/index.ts';
 import { blankFrames } from '../lint/frames.ts';
+import { STYLE_RULES } from '../motion/types.ts';
 
 export type { LintOptions, LintIssue, LintRule };
 
@@ -47,8 +48,11 @@ export async function lintFromSamples(data: any, opts: LintOptions, frames?: { t
   return { comp: d.comp, ok: true, issues, lines, texts: d.texts.length, samples: d.times.length, frames: frames?.length ?? 0, truncated: d.truncated, ms: (d.ms ?? 0) + Date.now() - t0 };
 }
 
-/** Standalone lint of any comp (generated or hand-built). Renders `frames` frames for the blank-frame check. */
-export async function lintComp(comp: string | number | undefined, opts: LintOptions & { frames?: number } = {}): Promise<LintReport> {
+/**
+ * Standalone lint of any comp (generated or hand-built): text lint, the blank-frame check on `frames` rendered
+ * frames, and the style-lint craft rules from a motion sample (`style: false` skips them).
+ */
+export async function lintComp(comp: string | number | undefined, opts: LintOptions & { frames?: number; style?: boolean } = {}): Promise<LintReport> {
   const data = await callRuntime('lintSample', [comp ?? null, SAMPLE_OPTS], { timeoutMs: 300_000 });
   let frames: { t: number; file: string }[] | undefined, bpc = 8;
   const n = opts.frames ?? 8;
@@ -58,7 +62,15 @@ export async function lintComp(comp: string | number | undefined, opts: LintOpti
     frames = r.frames;
     bpc = r.bpc;
   }
-  return lintFromSamples(data, opts, frames, bpc);
+  const report = await lintFromSamples(data, opts, frames, bpc);
+  if (opts.style !== false && report.ok) {
+    try {
+      const { motionOfComp } = await import('./motion.ts');
+      const m = await motionOfComp(data.itemId, { graph: false, style: { ignore: (opts.ignore ?? []).filter((r) => (STYLE_RULES as string[]).includes(r)) as any } });
+      if (m.ok) { report.issues.push(...(m.style as any[])); report.lines.push(...m.lines); }
+    } catch { /* style lint is best-effort here */ }
+  }
+  return report;
 }
 
 /** Report header plus its issue lines (at most `max`), for CLI and MCP output. */

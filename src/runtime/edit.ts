@@ -16,6 +16,8 @@ import { parseT, ripple } from './ripple';
 import { clamp, each, errText, now } from './util';
 import { lintSample } from './lint';
 import type { LintSampleOpts } from './lint';
+import { motionSample } from './motion';
+import type { MotionSampleOpts } from './motion';
 
 export interface EditOp { op: string; layer?: any; [k: string]: any }
 
@@ -361,7 +363,7 @@ function ensureControls(comp: CompItem): Layer {
   return n;
 }
 
-export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: string; keepPartial?: boolean; lint?: LintSampleOpts }): any {
+export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: string; keepPartial?: boolean; lint?: LintSampleOpts; motion?: MotionSampleOpts }): any {
   const ctx = newCtx('edit');
   const t0 = now();
   const changes: any[] = [];
@@ -384,6 +386,7 @@ export function edit(target: { comp?: any }, ops: EditOp[], opts: { undoName?: s
     each(exprs, (x) => { if (x.prop.expressionError) res.exprErrors.push({ node: x.id, prop: x.prop.matchName, error: x.prop.expressionError }); });
     // Lint samples inside the edit's undo group (one undo still reverts the edit); a lint failure never fails the edit.
     if (opts.lint) { try { res.lint = lintSample(comp, opts.lint); } catch (e) { res.lint = { ok: false, error: errText(e) }; } }
+    if (opts.motion) { try { res.motion = motionSample(comp, opts.motion); } catch (e) { res.motion = { ok: false, error: errText(e) }; } }
   } catch (e) {
     failed = true;
     res.ok = false;

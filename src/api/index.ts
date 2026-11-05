@@ -14,8 +14,13 @@ import { guardDiskCache } from './cache.ts';
 import { attachGradients } from '../inspect/aep.ts';
 import { lintFromSamples, lintSettings, SAMPLE_OPTS } from './lint.ts';
 import type { LintOptions } from './lint.ts';
+import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
+import type { MotionOptions } from './motion.ts';
+import { STYLE_RULES } from '../motion/types.ts';
 
 export { buildScene } from './build.ts';
+export { motionOfComp, motionPreview, motionReport } from './motion.ts';
+export type { MotionOptions, MotionReport } from './motion.ts';
 export { lintComp } from './lint.ts';
 export { renderComp, renderSummary, RENDER_FORMATS } from './render.ts';
 export type { RenderOptions, RenderResult, RenderFormat } from './render.ts';
@@ -74,18 +79,24 @@ export async function snapshot(comp: string | number | undefined, times: number[
   return { files, comp: r.comp };
 }
 
-export async function applyEdits(input: EditInput, opts: { frames?: number; lint?: boolean | LintOptions } = {}): Promise<any> {
+export async function applyEdits(input: EditInput, opts: { frames?: number; lint?: boolean | LintOptions; motion?: boolean | MotionOptions } = {}): Promise<any> {
   const notes: string[] = [];
   const ops = await compileEditOps(input, notes);
   const lint = lintSettings(opts.lint);
-  const r = await callRuntime('edit', [{ comp: input.comp }, ops, lint ? { lint: SAMPLE_OPTS } : {}], { timeoutMs: 300_000 });
+  const motion = opts.motion === false ? false : opts.motion === true || opts.motion === undefined ? {} : opts.motion;
+  const r = await callRuntime('edit', [{ comp: input.comp }, ops, { ...(lint ? { lint: SAMPLE_OPTS } : {}), ...(motion ? { motion: MOTION_SAMPLE_OPTS } : {}) }], { timeoutMs: 300_000 });
   if (notes.length) r.notes = notes;
   let sheet: Awaited<ReturnType<typeof contactSheet>> | undefined;
   if (r.ok && (opts.frames ?? 6) > 0) {
     try { sheet = await contactSheet(r.itemId, opts.frames ?? 6); r.contactSheet = sheet.sheet; } catch (e: any) { r.contactSheetError = e.message; }
   }
   // The raw samples are replaced by the report (what the agent needs to read).
+  const rawLint = r.lint;
   if (r.lint) r.lint = lint && r.ok ? await lintFromSamples(r.lint, lint, sheet?.frames, sheet?.bpc) : undefined;
+  if (r.motion) {
+    r.motion = motion && r.ok ? await motionReport(r.motion, { ...motion, style: motion.style === false ? false : { ...(motion.style ?? {}), ignore: [...(motion.style?.ignore ?? []), ...((lint ? lint.ignore ?? [] : []).filter((x) => (STYLE_RULES as string[]).includes(x)) as any[])] } }, undefined, rawLint) : undefined;
+    if (r.motion?.ok && r.lint) { r.lint.issues.push(...r.motion.style); r.lint.lines.push(...r.motion.lines); }
+  }
   return r;
 }
 

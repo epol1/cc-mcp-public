@@ -1290,13 +1290,13 @@
         {
           "id": "p5-previews",
           "name": "Motion previews: GIF strips + speed graphs after builds/edits",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-stylelint",
           "name": "Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture)",
-          "status": "wip",
+          "status": "done",
           "weight": 3
         },
         {

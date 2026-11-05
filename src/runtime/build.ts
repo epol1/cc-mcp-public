@@ -17,6 +17,8 @@ import { measureLeaf, solveComp } from './layout';
 import { each, errText, now } from './util';
 import { lintSample } from './lint';
 import type { LintSampleOpts } from './lint';
+import { motionSample } from './motion';
+import type { MotionSampleOpts } from './motion';
 
 export interface IrComp {
   id: string;
@@ -58,6 +60,8 @@ export interface BuildOpts {
   snapshots?: { comp?: string; times: number[]; dir: string; prefix?: string }[];
   /** Lint samples of the main comp, taken inside the build's undo group (so one undo still reverts the build). */
   lint?: LintSampleOpts;
+  /** Motion samples of the main comp (motion previews, style lint), also inside the undo group. */
+  motion?: MotionSampleOpts;
 }
 
 const CONTROL_MN: { [mn: string]: boolean } = {
@@ -420,6 +424,10 @@ export function build(project: IrProject, opts: BuildOpts): any {
       mark('other');
       try { result.lint = lintSample(ctx.comps[project.main || project.comps[project.comps.length - 1].id], opts.lint); } catch (e) { result.lint = { ok: false, error: errText(e) }; }
       mark('lint');
+    }
+    if (opts.motion) {
+      try { result.motion = motionSample(ctx.comps[project.main || project.comps[project.comps.length - 1].id], opts.motion); } catch (e) { result.motion = { ok: false, error: errText(e) }; }
+      mark('motion');
     }
   } catch (e) {
     result.ok = false;

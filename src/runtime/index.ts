@@ -10,6 +10,8 @@ import { edit } from './edit';
 import type { EditOp } from './edit';
 import { contactFrames, describeEffect, importFile, layerSourceFrame, previewItem } from './tools';
 import { lintSample } from './lint';
+import { motionSample } from './motion';
+import type { MotionSampleOpts } from './motion';
 import { renderComp, renderTemplates } from './render';
 import type { RenderCompOpts } from './render';
 import type { LintSampleOpts } from './lint';
@@ -63,6 +65,17 @@ const AEC: any = {
   previewItem: function (ref: any, n: number, dir: string, times?: number[]) { return guard(() => noopGroup('preview', () => previewItem(ref, n, dir, times))); },
   layerSourceFrame: function (comp: any, layer: any, t: number, dir: string) { return guard(() => noopGroup('sample frame', () => layerSourceFrame(comp, layer, t, dir))); },
   lintSample: function (comp: any, opts: LintSampleOpts) { return guard(() => noopGroup('lint', () => lintSample(comp, opts || {}))); },
+  motionSample: function (comp: any, opts: MotionSampleOpts) {
+    return guard(() => noopGroup('motion sample', () => {
+      let c: any = null;
+      if (comp === null || comp === undefined) c = app.project.activeItem;
+      else if (typeof comp === 'number') c = app.project.itemByID(comp);
+      else c = findTaggedComp(String(comp));
+      if (!c) for (let i = 1; i <= app.project.numItems; i++) { const it = app.project.item(i); if (it instanceof CompItem && it.name === comp) { c = it; break; } }
+      if (!(c instanceof CompItem)) return { ok: false, error: 'comp not found: ' + comp };
+      return motionSample(c, opts || {});
+    }));
+  },
   render: function (comp: any, opts: RenderCompOpts) { return guard(() => renderComp(comp, opts)); },
   purgeCaches: function () { return guard(() => purgeCaches()); },
   renderTemplates: function () { return guard(() => noopGroup('render templates', () => renderTemplates())); },

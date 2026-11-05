@@ -12,6 +12,9 @@ import type { LintOptions, LintReport } from './lint.ts';
 import type { SourceLoc } from '../dsl/jsx-runtime.ts';
 import { callRuntime } from '../bridge/index.ts';
 import { writeContactSheet } from '../visual/images.ts';
+import { MOTION_SAMPLE_OPTS, motionReport } from './motion.ts';
+import type { MotionOptions, MotionReport } from './motion.ts';
+import { STYLE_RULES } from '../motion/types.ts';
 
 export const OUT_ROOT = path.join(os.homedir(), '.ae-compose', 'out');
 
@@ -32,6 +35,8 @@ export interface BuildOptions {
   outDir?: string;
   /** Lint the main comp after building (default on; false disables; options merge over the scene's `lint`). */
   lint?: boolean | LintOptions;
+  /** Motion previews + style lint (default on): a speed graph, a motion summary and the craft rules. */
+  motion?: boolean | MotionOptions;
 }
 
 export interface BuiltComp { id: string; name: string; itemId: number; layers: number }
@@ -53,6 +58,8 @@ export interface BuildReport {
   lint?: (LintReport & { label?: string })[];
   /** Time spent per build phase inside AE (ms), summed over variants. */
   phases?: Record<string, number>;
+  /** Motion report per built main comp: speed graph PNG, summary lines, style issues (also merged into `lint`). */
+  motion?: (MotionReport & { label?: string })[];
 }
 
 const loc = (s?: SourceLoc) => (s ? `${path.basename(s.file)}:${s.line}:${s.col}` : undefined);
@@ -89,6 +96,8 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
   const nFrames = opts.frames ?? 8;
   const lint = lintSettings(sceneLint, opts.lint);
   const lintRuns: { label?: string; data: any; frames: { t: number; file: string }[]; bpc: number }[] = [];
+  const motionOpts: MotionOptions | false = opts.motion === false ? false : opts.motion === true || opts.motion === undefined ? {} : opts.motion;
+  const motionRuns: { label?: string; data: any; ir: any }[] = [];
   for (const { ir } of irs) validateIr(ir); // fail in Node with a path, before anything reaches AE
   for (const { ir, sources, label } of irs) {
     // Variant keys come from scene code or MCP input: never let one escape outDir (it feeds a recursive delete).
@@ -100,7 +109,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     const times = nFrames > 0 ? [...sheetTimes(main.dur, main.fps, nFrames), ...(opts.times ?? [])] : opts.times ?? [];
     const snapDir = path.join(outDir, 'frames', label ?? 'main').replace(/\\/g, '/');
     fs.rmSync(snapDir, { recursive: true, force: true });
-    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined, lint: lint ? SAMPLE_OPTS : undefined }], { timeoutMs: 300_000 });
+    const r = await callRuntime('build', [ir, { replace: opts.replace !== false, keepControls: !opts.resetControls, open: opts.open !== false && label === irs[irs.length - 1].label, snapshots: times.length ? [{ times, dir: snapDir }] : undefined, lint: lint ? SAMPLE_OPTS : undefined, motion: motionOpts ? MOTION_SAMPLE_OPTS : undefined }], { timeoutMs: 300_000 });
     report.undoSteps = (report.undoSteps ?? 0) + 1;
     report.warnings.push(...(r.warnings ?? []).map((w: string) => (label ? `[${label}] ${w}` : w)));
     report.restoredControls += r.restoredControls ?? 0;
@@ -114,6 +123,7 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     }
     report.comps.push(...r.comps);
     if (r.lint) lintRuns.push({ label, data: r.lint, frames: [], bpc: 8 });
+    if (r.motion) motionRuns.push({ label, data: r.motion, ir });
     for (const s of r.snapshots ?? []) {
       const frames = s.frames.filter((f: any) => f.ok).map((f: any) => ({ file: f.file, t: f.t }));
       if (r.lint && s.comp === r.lint.comp) Object.assign(lintRuns[lintRuns.length - 1], { frames, bpc: s.bpc });
@@ -132,6 +142,20 @@ export async function buildScene(input: { file?: string; source?: string; def?: 
     report.lint = [];
     for (const run of lintRuns) {
       try { report.lint.push({ ...(await lintFromSamples(run.data, lint, run.frames, run.bpc)), label: run.label }); } catch (e: any) { report.warnings.push(`lint failed: ${e.message}`); }
+    }
+  }
+  if (motionOpts && motionRuns.length) {
+    report.motion = [];
+    const ignore = lint ? (lint.ignore ?? []) : [];
+    for (const run of motionRuns) {
+      try {
+        const style = motionOpts.style === false ? false as const : { ...(motionOpts.style ?? {}), ignore: [...(motionOpts.style?.ignore ?? []), ...(ignore.filter((r) => (STYLE_RULES as string[]).includes(r)) as any[])] };
+        const m = await motionReport(run.data, { ...motionOpts, style }, run.ir, lintRuns.find((l) => l.label === run.label)?.data);
+        report.motion.push({ ...m, label: run.label });
+        // The craft rules join the lint report (same shape), so the agent reads one list.
+        const L = report.lint?.find((l) => l.label === run.label);
+        if (L && m.ok) { L.issues.push(...(m.style as any[])); L.lines.push(...m.lines); }
+      } catch (e: any) { report.warnings.push(`motion report failed: ${e.message}`); }
     }
   }
   report.ms = Date.now() - t0;

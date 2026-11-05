@@ -4,10 +4,14 @@
 // from rendered frames (./frames.ts). Every issue names the layer and the time range so the agent can fix it.
 
 import { cssBezier } from '../shared/bezier.ts';
+import { STYLE_RULES } from '../motion/types.ts';
+import type { StyleRule } from '../motion/types.ts';
 import { springUnit } from '../shared/spring.ts';
 
-export type LintRule = 'off-frame' | 'safe-area' | 'overflow' | 'overlap' | 'occlusion' | 'reading-time' | 'missing-font' | 'linear-motion' | 'blank-frame';
-export const LINT_RULES: LintRule[] = ['off-frame', 'safe-area', 'overflow', 'overlap', 'occlusion', 'reading-time', 'missing-font', 'linear-motion', 'blank-frame'];
+export type TextLintRule = 'off-frame' | 'safe-area' | 'overflow' | 'overlap' | 'occlusion' | 'reading-time' | 'missing-font' | 'linear-motion' | 'blank-frame';
+/** Text lint rules plus the style-lint craft rules (src/motion/style.ts), so `ignore` takes either. */
+export type LintRule = TextLintRule | StyleRule;
+export const LINT_RULES: LintRule[] = ['off-frame', 'safe-area', 'overflow', 'overlap', 'occlusion', 'reading-time', 'missing-font', 'linear-motion', 'blank-frame', ...STYLE_RULES];
 
 export interface LintOptions {
   /** Safe-area margin per side: 'action' (5 %, default), 'title' (10 %), or a fraction of the frame. */

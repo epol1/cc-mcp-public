@@ -6,7 +6,8 @@ import sharp from 'sharp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp } from '../api/index.ts';
+import { buildScene, inspect, applyEdits, contactSheet, previewItem, snapshot, listEffects, describeEffect, listDialogs, answerDialog, runExtendScript, importFootage, undo, lintComp, motionPreview } from '../api/index.ts';
+import type { MotionReport } from '../api/index.ts';
 import { lintSummary } from '../api/lint.ts';
 import { renderComp, renderSummary, RENDER_FORMATS } from '../api/render.ts';
 import { recover } from '../api/recover.ts';
@@ -32,6 +33,15 @@ const lintInput = z.union([z.boolean(), z.object({
   ignore: z.array(z.enum(LINT_RULES as [string, ...string[]])).optional(),
 })]).optional().describe('lint the result (default on): false skips it, or tune it');
 
+const motionInput = z.boolean().optional().describe('motion previews + style lint (default on): a speed graph image, a motion summary, and craft rules (repeated transitions, crowded entrances, short holds, one easing everywhere, linear moves, slide furniture, a short end hold, everything moving at once, dead air) in the lint list');
+
+/** Motion summary lines for a report (the style issues are already in the lint list). */
+function motionLines(m: MotionReport | undefined, label?: string): string[] {
+  if (!m) return [];
+  if (!m.ok) return [`motion${label ? ` [${label}]` : ''}: failed (${m.error})`];
+  return [`motion${label ? ` [${label}]` : ''}:`, ...m.summary.map((l) => `- ${l}`), ...(m.graph ? [`speed graph: ${m.graph}`] : [])];
+}
+
 async function wrap(fn: () => Promise<Content[]>) {
   try { return { content: await fn() }; } catch (e) { return fail(e); }
 }
@@ -49,9 +59,10 @@ server.registerTool('build_scene', {
     times: z.array(z.number()).optional().describe('extra exact snapshot times (seconds)'),
     resetControls: z.boolean().optional().describe('rebuild with the control values written in the code (default: keep values tweaked in AE)'),
     lint: lintInput,
+    motion: motionInput,
   },
 }, async (a) => wrap(async () => {
-  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls, lint: a.lint as any });
+  const r = await buildScene({ source: a.source, file: a.file, cwd: a.cwd ?? (a.file ? path.dirname(path.resolve(a.file)) : process.cwd()) }, { params: a.params, variants: a.variants, frames: a.frames, times: a.times, resetControls: a.resetControls, lint: a.lint as any, motion: a.motion });
   const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.scene} → ${r.comps.map((c) => `"${c.name}" (${c.layers} layers)`).join(', ')} in ${r.ms} ms`];
   if (r.error) lines.push(`error: ${r.error}`);
   if (r.warnings.length) lines.push('warnings:', ...r.warnings.map((w) => `- ${w}`));
@@ -122,16 +133,19 @@ server.registerTool('apply_edits', {
     ops: z.array(z.record(z.string(), z.any())).min(1),
     frames: z.number().int().min(0).max(16).optional().describe('contact sheet frames (default 6; 0 = none)'),
     lint: lintInput,
+    motion: motionInput,
   },
 }, async (a) => wrap(async () => {
-  const r = await applyEdits({ comp: a.comp, ops: a.ops as any }, { frames: a.frames, lint: a.lint as any });
+  const r = await applyEdits({ comp: a.comp, ops: a.ops as any }, { frames: a.frames, lint: a.lint as any, motion: a.motion });
   const lines = [`${r.ok ? 'OK' : 'FAILED'}: ${r.comp ?? a.comp} — ${r.changes?.length ?? 0} change(s) in ${r.ms} ms (one undo step: call undo to revert)`];
   if (r.error) lines.push(`error: ${r.error} (${r.at})`);
   for (const c of r.changes ?? []) lines.push(`- ${JSON.stringify(c)}`);
   for (const e of r.exprErrors ?? []) lines.push(`expression error ${e.prop}: ${e.error}`);
   lines.push(...lintSummary(r.lint));
+  lines.push(...motionLines(r.motion));
   const out: Content[] = [text(lines.join('\n'))];
   if (r.contactSheet) out.push(await image(r.contactSheet));
+  if (r.motion?.graph) out.push(await image(r.motion.graph));
   return out;
 }));
 
@@ -221,6 +235,24 @@ server.registerTool('render_preview', {
   const r = await renderPreview(a.comp, a);
   const out: Content[] = [text(`${r.method}: ${r.frames} frames → ${r.file} (${r.ms} ms)${r.warnings.length ? '\n' + r.warnings.join('\n') : ''}`)];
   if (a.gif) out.push({ type: 'image', data: fs.readFileSync(r.file).toString('base64'), mimeType: 'image/gif' });
+  return out;
+}));
+
+server.registerTool('motion_preview', {
+  title: 'Judge motion: frame strip + speed graph',
+  description: 'Judge how a comp moves, as images you can read: a strip of dense frames over one segment (default: one second around the busiest moment), the speed graph of every animated layer (moves with their easing class, holds shaded, how many layers move at once), a motion summary, and the style-lint craft rules. Also writes a GIF for humans. Use after a build to check easing feel, holds, transitions and "everything moves at once".',
+  inputSchema: {
+    comp: z.union([z.string(), z.number()]).optional().describe('comp name, aec id or item id (default: the active comp)'),
+    start: z.number().optional().describe('segment start (seconds)'),
+    end: z.number().optional().describe('segment end (seconds)'),
+    frames: z.number().int().min(2).max(24).optional().describe('frames in the strip (default 12)'),
+    gif: z.boolean().optional().describe('also write a GIF (default true)'),
+  },
+}, async (a) => wrap(async () => {
+  const r = await motionPreview(a.comp, a);
+  const lines = [`strip ${r.times[0]}–${r.times[r.times.length - 1]} s: ${r.strip}`, ...(r.gif ? [`gif: ${r.gif}`] : []), ...motionLines(r.report), ...(r.report.lines.length ? ['style lint:', ...r.report.lines.map((l) => `- ${l}`)] : ['style lint: no issues'])];
+  const out: Content[] = [text(lines.join('\n')), await image(r.strip)];
+  if (r.report.graph) out.push(await image(r.report.graph));
   return out;
 }));
 
