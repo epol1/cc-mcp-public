@@ -6,7 +6,7 @@ import { libObject } from '../../../src/aeclib/index.ts';
 import { buildUndoCheck, check, done, es, findComp } from './harness.ts';
 
 const FILE = 'tests/integration/cloner-scene.tsx';
-const COMP = 'ClonerTest_v001', C = findComp(COMP), M = findComp('Cards Master');
+const COMP = 'ClonerTest_v001', C = findComp(COMP);
 const N = 24;
 const params = { count: N, labels: true, palette: true };
 const L = libObject();
@@ -48,6 +48,7 @@ check('palette assigns colors from the 4 swatches', colors.size > 1 && colors.si
 
 // Editing the master changes every instance (no rebuild): they are all layers of the one master comp.
 const src = new Set((await es(`var c=${C}, o=[]; for (var i=1;i<=c.numLayers;i++) if (c.layer(i).comment.indexOf(";clone") >= 0) o.push(c.layer(i).source.id); o.join("|")`)).split('|'));
-const mid = await es(`${M}.id`);
-check('every instance is a layer of the one master comp', src.size === 1 && src.has(mid), [...src].join(','));
+// The master by its tag (other scenes may have a "Cards Master" too): this build's part comp, namespaced (D89).
+const mid = await es(`(function(){ for (var i=1;i<=app.project.numItems;i++){ var it=app.project.item(i); if (it instanceof CompItem && it.comment.indexOf('aec:clonertest~cards.inst') === 0) return String(it.id); } return 'none'; })()`);
+check('every instance is a layer of the one master comp', src.size === 1 && src.has(mid), [...src].join(',') + ' vs ' + mid);
 done();

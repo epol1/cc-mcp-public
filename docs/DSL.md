@@ -211,7 +211,7 @@ Values marked *V* accept a static value, an animation (§7) or a `control()` (§
 | `hidden` | `boolean` | `false` | Video switch off. |
 | `shy`, `guide` | `boolean` | | Shy / guide layer. |
 | `label` | `number` | | AE label color index (0–16). |
-| `markers` | `{ t: Time; comment?: string; duration?: Time }[]` | | Layer markers. `t` is relative to the layer's start. |
+| `markers` | `{ t: Time; comment?: string; duration?: Time }[]` | | Layer markers. `t` is relative to the layer's start (`markerBase: 'sequence'`: to the enclosing Sequence's start; the UI kit uses it so `uiSteps` times hold when a component starts later). |
 | `props` | `Record<string, V<any>>` | | Raw property values by AE path (matchName or display-name segments, `#n` index): `{ 'ADBE Transform Group/ADBE Opacity': 50 }`. Values can be animated, `expr(...)` or controls. |
 | `expressions` | `Record<string, string>` | | Raw expressions by AE path. `__AEC_LAYER(id)__` in the code becomes `thisComp.layer("<name>")`. |
 | `effects` | `Element[]` | | Effects as a list, the same as `<Effect>` children. Required on `<Precomp>`, whose children are its contents. |
@@ -1409,7 +1409,7 @@ Every `build_scene` and `apply_edits` result carries a **lint report** for the c
 | `dead-air` | warn | 0.6 s or more with nothing but the background on screen inside the piece. |
 | `off-beat` | warn | With beat markers on the comp (§21.5), a scene start or entrance between a frame and 150 ms off a beat. |
 
-Layer `tags` (`bg`, `persistent`, `hero`, `transition:<kind>`) tell the style lint what a layer is for.
+Layer `tags` (`bg`, `persistent`, `hero`, `transition:<kind>`, `group:<id>`) tell the style lint what a layer is for; layers sharing a `group:` tag (a chart's parts) count as one element. Tags are stored in the layer comment, so edits, `lint_comp` and `motion_preview` see them too (D88).
 
 How it measures: inside the build's (or edit's) own undo group, one temporary text layer samples every visible text layer every 0.1 s in comp coordinates with `sourceRectAtTime` + `toComp`. That is exact for parenting, 3D layers, cameras and nested precomps; 3D text behind the camera counts as off screen. Per-unit animators are read too: ae-compose reveals and exits use the current values of their live controls (stagger, delay, spring physics), and hand-built Range Selectors are read from their Start/End/Offset keys. Blank frames are judged from the contact sheet frames. A build or edit is still one undo step.
 
@@ -1643,7 +1643,7 @@ const B = beatsOf('music/track.mp3');            // analyzed once, cached as tra
 
 ### 21.7 Motion previews and style lint
 
-Every build and edit samples the comp's motion inside its undo group (D78; `motion: false` skips it) and returns a **speed graph** (one row per animated layer: speed curve, holds shaded, easing class per move, how many layers move at once), a motion **summary** ("title arrives 0.20–0.85 s (ease-out), holds 2.4 s") and the **style lint** rules (§17). Per-unit text reveals are included from their animator timing. `motion_preview { comp, start, end, frames }` renders a dense frame strip (default: one second around the busiest moment) and a GIF, plus the graph. Cost: 3–6 s per build.
+Every build and edit samples the comp's motion inside its undo group (D78; `motion: false` skips it) and returns a **speed graph** (one row per animated layer: speed curve, holds shaded, easing class per move, how many layers move at once), a motion **summary** ("title arrives 0.20–0.85 s (ease-out), holds 2.4 s") and the **style lint** rules (§17). Per-unit text reveals are included from their animator timing. `motion_preview { comp, start, end, frames }` renders a dense frame strip (default: one second around the busiest moment) and a GIF, plus the graph. Cost: 3–6 s per build; expression-heavy comps (charts: 1–2 s per sample) are sampled within a 40 s budget on a coarser grid, and the summary and lint say so (D87).
 
 ### 21.8 Designer panel
 
@@ -1755,7 +1755,7 @@ Transitions made from the scenes' own elements, timed from the boundary between 
 | `PushThrough` | The outgoing beat recedes in depth while the incoming one arrives (`depth`, `lens`). |
 | `ParallaxSplit` | The frame splits into layers moving at different speeds (`direction`, `distance`, `spread`). |
 | `LiquidWipe`, `SliceWipe`, `GridWipe` | Organic edge, angled slices, or tiles from an origin (`direction`, `count`, `columns`/`rows`, `stagger`, `color`). |
-| `LightLeakCut` | A warm light leak flares over a hard cut (`color`, `intensity`, `flash`). |
+| `LightLeakCut` | A warm light leak flares over a hard cut (`color`, `intensity`, `flash`); a steady drift unless `easing` is given. |
 
 Each transition has one controller null with an "aec <Kind>" effect: keyed Progress plus its amounts, so it can be retimed or softened in AE. Its layers are tagged `transition:<kind>` (the style lint flags the same kind twice in a row). `beatTimeline()` returns the beat and transition times without building. Standalone use: `at`, `outgoing` and `children`. Scene elements a transition takes over (`shape`, `through`) need explicit positions and must be at rest when it starts.
 
