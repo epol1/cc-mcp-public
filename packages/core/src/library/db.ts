@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
-export const LIBRARY_DIR = path.join(os.homedir(), '.ae-compose', 'library');
+export const LIBRARY_DIR = process.env.AEC_LIBRARY_DIR ?? path.join(os.homedir(), '.ae-compose', 'library');
 export const LIBRARY_DB = path.join(LIBRARY_DIR, 'library.db');
 
 export interface MediaRow {

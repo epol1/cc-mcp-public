@@ -346,6 +346,11 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
     runs.splice(y, 1);
     k = -1;
   }
+  // What was removed: every word of the range outside the final runs (edge leftovers included).
+  for (let i = a; i <= b; i++) {
+    if (runs.some((r) => i >= r.from && i <= r.to)) continue;
+    if (why[i] === 'filler') removed.fillers++; else if (why[i] === 'repeat') removed.repeats++;
+  }
   // Cut points.
   const fq = (s: number, mode: 'floor' | 'ceil' | 'round') => (mode === 'floor' ? Math.floor(s * fps + 1e-6) : mode === 'ceil' ? Math.ceil(s * fps - 1e-6) : Math.round(s * fps)) / fps;
   const pieces: Omit<Piece, 'start' | 'end'>[] = [];
@@ -369,8 +374,7 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
       const secs = W[r.from].start - W[prevRun.to].end;
       const reasons = rw ? [...new Set(why.slice(rw[0], rw[1] + 1).filter(Boolean))] : [];
       removedBefore = { words: rw, seconds: Math.round(secs * 100) / 100, reason: rw ? reasons.join('+') || 'cut' : 'pause' };
-      if (rw) for (let i = rw[0]; i <= rw[1]; i++) { if (why[i] === 'filler') removed.fillers++; else if (why[i] === 'repeat') removed.repeats++; }
-      else { removed.pauses++; removed.pauseSeconds += secs - keepPause; }
+      if (!rw) { removed.pauses++; removed.pauseSeconds += secs - keepPause; }
     }
     pieces.push({ id: runs.length > 1 ? `${id}.${k + 1}` : id, seg: id, src: seg.src, media: mediaKey, words: [r.from, r.to], inS, outS, jump: false, ...(removedBefore ? { removedBefore } : {}) });
   });

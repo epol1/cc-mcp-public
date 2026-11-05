@@ -37,9 +37,17 @@ export function search(query: string, f: SearchFilters = {}, limit = 20): Hit[] 
       const shot = d.prepare('SELECT thumb FROM shots WHERE media_id = ? ORDER BY n LIMIT 1').get(m.id) as any;
       hits.push({ n: 0, mediaId: m.id, name: m.name, path: m.path, role: m.role, via: 'name', score: 0, thumb: shot?.thumb, duration: m.duration, size: size(m) });
     }
-  } else for (const op of ['AND', 'OR'] as const) {
+  } else {
+    // Every word first (AND); when that finds fewer than three, add hits for any word (OR) after them.
+    const strict = collect('AND');
+    const keys = new Set(strict.map((h) => `${h.mediaId}@${h.start ?? ''}@${h.via}`));
+    const loose = strict.length < 3 ? collect('OR').filter((h) => !keys.has(`${h.mediaId}@${h.start ?? ''}@${h.via}`)).map((h) => ({ ...h, score: h.score + 100 })) : [];
+    hits.push(...strict, ...loose);
+  }
+  function collect(op: 'AND' | 'OR'): Hit[] {
+    const hits: Hit[] = [];
     const fq = ftsQuery(q, op);
-    if (!fq) break;
+    if (!fq) return hits;
     const said = d.prepare(`SELECT s.media_id, s.sid, s.start, s.end, s.text, bm25(sentences_fts) score, m.* FROM sentences_fts JOIN sentences s ON s.id = sentences_fts.rowid JOIN media m ON m.id = s.media_id WHERE sentences_fts MATCH ? AND ${flt.sql} ORDER BY score LIMIT ?`).all(fq, ...flt.args, limit) as any[];
     for (const r of said) {
       const shot = d.prepare('SELECT thumb FROM shots WHERE media_id = ? AND start <= ? ORDER BY start DESC LIMIT 1').get(r.media_id, r.start) as any;
@@ -53,10 +61,11 @@ export function search(query: string, f: SearchFilters = {}, limit = 20): Hit[] 
       const shot = d.prepare('SELECT thumb FROM shots WHERE media_id = ? ORDER BY n LIMIT 1').get(m.id) as any;
       hits.push({ n: 0, mediaId: m.id, name: m.name, path: m.path, role: m.role, via: 'name', score: 0, thumb: shot?.thumb, duration: m.duration, size: size(m) });
     }
-    if (hits.length >= Math.min(5, limit)) break;
-    hits.length = 0;
-    if (op === 'OR') break;
+    return hits;
   }
+  // A file name containing the whole query is what was asked for.
+  const ql = q.toLowerCase();
+  for (const h of hits) if (ql && h.name.toLowerCase().includes(ql)) h.score -= 1000;
   hits.sort((a, b) => a.score - b.score);
   const out = hits.slice(0, limit);
   out.forEach((h, i) => (h.n = i + 1));
