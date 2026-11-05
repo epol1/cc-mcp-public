@@ -218,7 +218,9 @@ describe('text', () => {
     expect(amount.expr).toContain('var each = 0.08, dur = Math.max(0.6, 0.0001), delay = 0.3;');
     expect(amount.expr).toContain('var i = textIndex - 1;');
     expect(amount.expr).toContain('time - inPoint');
-    expect(amount.expr).toContain(`bz(${[1 / 3, 1, 2 / 3, 1].join(', ')}, t / dur)`);
+    // The easing is a library call (D73), with the bezier helper inlined under the header.
+    expect(amount.expr).toContain(`L.bezier(${[1 / 3, 1, 2 / 3, 1].join(', ')}, t / dur)`);
+    expect(amount.expr).toMatch(/^function aecLib\(\) \{ return \{ "bezier": /m);
     expect(amount.expr.trim().endsWith('[a, a, a];')).toBe(true);
     // the amount expression is valid JavaScript
     expect(() => new Function(amount.expr)).not.toThrow();
@@ -240,8 +242,8 @@ describe('text', () => {
     expect(basedOn(perLine({ from: { opacity: 0 } }))[0].v).toBe(4);
     expect(basedOn(perWord({ from: { opacity: 0 } }))[0].v).toBe(3);
     const sp = basedOn(textPresets.popIn('char'))[1].expr;
-    expect(sp).toContain('function su(f, fps, c, k, m)');
-    expect(sp).toContain('su(t * fps, fps, 11, 220, 1)');
+    expect(sp).toMatch(/"spring": function \(t, fps, c, k, m\)/);
+    expect(sp).toContain('L.spring(t, 1 / thisComp.frameDuration, 11, 220, 1)');
     expect(() => basedOn(perWord({ from: { opacity: 0 }, easing: 'bounce' }))).toThrow(/not a cubic bezier/);
     expect(() => basedOn(perWord({ from: {} }))).toThrow(/needs at least one "from" property/);
   });
@@ -282,14 +284,14 @@ describe('controls', () => {
     ]);
     expect(fx.map((e: any) => e.props[0])).toEqual([[100, 200], 15, 80, [10, 20, 30], 2, [1, 0, 0, 1], 1].map((v) => ({ p: '#1', v })));
     expect(fx[4].menu).toEqual(['A', 'B', 'C']);
-    expect(prop(layer(r, 'sh'), `${TG}/ADBE Opacity`).expr).toBe('((thisComp.layer("Controls").effect("Enabled")(1) ? 1 : 0)) * 100');
+    expect(prop(layer(r, 'sh'), `${TG}/ADBE Opacity`).expr).toBe('((thisComp.layer("Controls").effect("Enabled")(1).value ? 1 : 0)) * 100');
   });
   // Regression (was a bug, fixed): a checkbox control used as a property value throws "expected a number or array, got true"
   // (src/compile/values.ts:252 converts the boolean default with toArr), although ControlRegistry.ref
   // already emits a 0/1 expression for checkboxes. Same for effect params.
   it('a checkbox control can drive a numeric property (static 0/1 + expression)', () => {
     const r = build({}, () => h(Composition, {}, h(Solid, { id: 's', opacity: control('Visible', true) })));
-    expect(prop(layer(r, 's'), `${TG}/ADBE Opacity`)).toEqual({ p: `${TG}/ADBE Opacity`, v: 100, expr: '((thisComp.layer("Controls").effect("Visible")(1) ? 1 : 0)) * 100' });
+    expect(prop(layer(r, 's'), `${TG}/ADBE Opacity`)).toEqual({ p: `${TG}/ADBE Opacity`, v: 100, expr: '((thisComp.layer("Controls").effect("Visible")(1).value ? 1 : 0)) * 100' });
   });
   // Regression (was a bug, fixed): a 2D point control on a 3D layer's position pads z with the y value (src/compile/values.ts:39-41,252):
   // control('Pos', [100, 200]) on a threeD layer gives v = [100, 200, 200], and the expression keeps value[2] = 200.

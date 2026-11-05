@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.00.018**: 73.58% weighted, 170/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.00.019**: 78.27% weighted, 174/206 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -216,13 +216,13 @@
 - [x] AGENT_GUIDE.md
 - [x] REPORT.md
 
-# Phase 5: creative toolkit (docs/TOOLKIT.md) (0.0%)
+# Phase 5: creative toolkit (docs/TOOLKIT.md) (17.7%)
 
-## P5 · Foundations (0%)
-- [ ] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
-- [ ] Expression library aec-lib.jsx (physics, random, distribution, falloff, timing, color) _(w3)_
-- [ ] Rig presets: one effect per rig with its controls (.ffx pseudo effects) _(w3)_
-- [ ] Existing rigs migrated to the library (text units, camera, springs, bursts) _(w2)_
+## P5 · Foundations (100%)
+- [x] Verify footage().sourceData libraries + pseudo-effect portability on 26.5
+- [x] Expression library aec-lib.jsx (physics, random, distribution, falloff, timing, color) _(w3)_
+- [x] Rig presets: one effect per rig with its controls (.ffx pseudo effects) _(w3)_
+- [x] Existing rigs migrated to the library (text units, camera, springs, bursts) _(w2)_
 
 ## P5 · Procedural (0%)
 - [ ] Cloner: master precomp + instances + Essential Properties overrides _(w5)_
@@ -234,34 +234,34 @@
 - [ ] Shape morph with vertex matching _(w3)_
 - [ ] Procedural backgrounds and textures (vanilla effects, brand palettes) _(w2)_
 
-## P5 · Kits (0%)
+## P5 · Kits (6%)
 - [ ] UI kit components on the layout engine (button, toggle, input, toast…) _(w5)_
 - [ ] Cursor with clicks + component states on markers _(w2)_
 - [ ] ScrollView and feeds (cloner + data) _(w2)_
 - [ ] Device/browser frames + screen inserts with cursor-follow zoom _(w2)_
 - [ ] Data viz kit: bar, line, area, donut, stacked + counters _(w4)_
-- [ ] Captions from SRT/VTT with word timing (karaoke) _(w3)_
+- [~] Captions from SRT/VTT with word timing (karaoke) _(w3)_
 - [ ] Type FX: word emphasis, decode, split-flap, variable fonts, auto-fit _(w3)_
 - [ ] Transitions library built from scene elements _(w4)_
 
-## P5 · Agent tools (0%)
-- [ ] Motion previews: GIF strips + speed graphs after builds/edits _(w3)_
-- [ ] Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture) _(w3)_
+## P5 · Agent tools (24%)
+- [~] Motion previews: GIF strips + speed graphs after builds/edits _(w3)_
+- [~] Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture) _(w3)_
 - [ ] Storyboard first: beat sheet → scene scaffold (plan_scene) _(w3)_
 - [ ] Responsive reframe 16:9 → 9:16 / 1:1 (safe areas, type, camera) _(w4)_
 - [ ] Delivery packs: every format rendered in one call
-- [ ] Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts _(w3)_
+- [~] Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts _(w3)_
 - [ ] Recipe library: save and re-instantiate scenes with params _(w2)_
 
 ## P5 · Designer panel (optional) (0%)
 - [ ] CEP panel: controls by rig, variants, lint list, recipes, ask Claude _(w4)_
 
-## P5 · Showcases, tests, docs (0%)
+## P5 · Showcases, tests, docs (10%)
 - [ ] Showcase 15: 100 cards with subtle variations (cloner) _(w2)_
 - [ ] Showcase 16: product UI demo (UI kit, cursor, scroll) _(w2)_
 - [ ] Showcase 17: data story (data viz kit) _(w2)_
 - [ ] Showcase 18: music-synced promo (beat sync, transitions) _(w2)_
-- [ ] Unit + AE integration tests (one-step undo) for every tool _(w3)_
+- [~] Unit + AE integration tests (one-step undo) for every tool _(w3)_
 - [ ] DSL reference + skill sections for every tool _(w2)_
 - [ ] Fresh-session test with only the skill + MCP
 - [ ] REPORT.md: Phase 5 results, limits, next improvements

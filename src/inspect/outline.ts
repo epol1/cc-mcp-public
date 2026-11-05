@@ -1,5 +1,6 @@
 // Turns inspector JSON into a compact, agent-readable outline (ARCHITECTURE §0.5).
 // Eases are named by inverting AE eases back to a cubic-bezier and matching the nearest preset.
+import { stripLibTail } from '../aeclib/index.ts';
 import { resolveEasing, easingNames } from '../shared/easing.ts';
 
 const fmt = (n: number, d = 2) => (Math.abs(n) >= 1000 ? n.toFixed(0) : (+n.toFixed(d)).toString());
@@ -88,12 +89,19 @@ function propLines(node: any, prefix: string, out: string[], depth: number): voi
   let s = `${prefix}${label}: `;
   if (node.keys) s += describeKeys(node.keys);
   else s += fv(node.v);
-  if (node.expr) {
-    const first = String(node.expr).split('\n').find((l: string) => l.trim() && !l.trim().startsWith('function')) ?? '';
-    s += ` ⟵ expr${node.exprOff ? ' (disabled)' : ''}: ${first.trim().slice(0, 80)}`;
-    if (node.exprErr) s += `  ⚠ ${node.exprErr}`;
-  }
+  if (node.expr) s += ` ⟵ expr${node.exprOff ? ' (disabled)' : ''}: ${exprSummary(String(node.expr))}${node.exprErr ? `  ⚠ ${node.exprErr}` : ''}`;
   out.push(s);
+}
+
+/**
+ * One line for an expression: its first line (usually the ae-compose header comment) and, for expressions that
+ * use the library (D73), the first `L.` call: the short call a designer reads, not the inlined helpers.
+ */
+export function exprSummary(expr: string): string {
+  const lines = stripLibTail(expr).split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('function') && !/^var L = /.test(l));
+  const first = lines[0] ?? '';
+  const call = lines.find((l) => /(?<![\w$.])L\.[A-Za-z_$][\w$]*\s*\(/.test(l));
+  return call && call !== first ? `${first.slice(0, 70)} · ${call.slice(0, 90)}` : first.slice(0, 80);
 }
 
 export function outlineComp(j: any): string {

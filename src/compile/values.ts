@@ -241,12 +241,7 @@ function springExpression(a: SpringAnim, target: PropTarget, ctx: ValueCtx, star
   const body = [
     `// ae-compose spring (Remotion-exact closed form)`,
     `var k = ${p(a.stiffness, 100)}, c = ${p(a.damping, 10)}, m = ${p(a.mass, 1)};`,
-    `var fps = 1 / thisComp.frameDuration, f = (time - ${start.toFixed(6)} - (${p(a.delay, 0, true)})) * fps;`,
-    `function su(f) { if (f <= 0) return 0; var st = Math.min(1000 / fps, 64), w = Math.floor(f), t = (w * st + Math.min((f - w) * 1000 / fps, 64)) / 1000;`,
-    `  var z = c / (2 * Math.sqrt(k * m)), w0 = Math.sqrt(k / m);`,
-    `  if (z < 1) { var w1 = w0 * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w0 * t) * (Math.cos(w1 * t) + (z * w0 / w1) * Math.sin(w1 * t)); }`,
-    `  return 1 - Math.exp(-w0 * t) * (1 + w0 * t); }`,
-    `var x = su(f);${a.overshootClamping ? ' x = Math.min(x, 1);' : ''}`,
+    `var x = L.spring(time - ${start.toFixed(6)} - (${p(a.delay, 0, true)}), 1 / thisComp.frameDuration, c, k, m);${a.overshootClamping ? ' x = Math.min(x, 1);' : ''}`,
     target.dims === 1 ? `${lit(from)} + (${lit(to)} - ${lit(from)}) * x;` : `add(${lit(from)}, mul(sub(${lit(to)}, ${lit(from)}), x));`,
   ];
   return { expr: body.join('\n') };

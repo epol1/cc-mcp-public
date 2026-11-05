@@ -50,7 +50,7 @@ export function shapeItems(children: any, ctx: ValueCtx, warnings: string[]): an
   for (const c of childrenOf(children)) {
     if (typeof c === 'string') { if (c.trim()) throw new Error(`text "${c.trim()}" inside <Shape>; use <Text> for text`); continue; }
     const kind = c.type?.aec;
-    if (kind === 'effect' || kind === 'mask') continue; // layer-level, collected by the compiler
+    if (kind === 'effect' || kind === 'rigEffect' || kind === 'mask') continue; // layer-level, collected by the compiler
     if (!kind && typeof c.type === 'function') { items.push(...shapeItems(c.type(c.props), ctx, warnings)); continue; }
     const p = c.props;
     const props: PropSpec[] = [];

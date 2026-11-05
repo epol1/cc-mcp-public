@@ -4,7 +4,7 @@
 import type { Ctx } from './ctx';
 import { AecError, newCtx, warn } from './ctx';
 import type { IrAsset } from './project';
-import { ensureFolder, findTaggedComp, importAsset } from './project';
+import { ensureFolder, ensureLib, findTaggedComp, importAsset } from './project';
 import type { IrLayer } from './layers';
 import { applyAnchorBox, applyFootage, createLayer, fitScale, lockIfNeeded, setLayerAttrs, tagOf, TAG, vectorToShapes, wireLayer } from './layers';
 import type { Pending } from './groups';
@@ -47,6 +47,8 @@ export interface IrProject {
   assets?: IrAsset[];
   comps: IrComp[]; // dependency order: precomps before the comps that use them
   main?: string;
+  /** Footage-mode expression library to import or relink first (D73). */
+  lib?: { item: string; file: string; version: string };
 }
 
 export interface BuildOpts {
@@ -65,6 +67,25 @@ const CONTROL_MN: { [mn: string]: boolean } = {
 
 function isControl(fx: PropertyGroup): boolean {
   return CONTROL_MN[fx.matchName] === true || fx.matchName.indexOf('Pseudo/') === 0;
+}
+
+/**
+ * The tweakable values of a control effect, keyed by name: an expression control's one value ("Title Delay"), or
+ * every value param of a rig (pseudo) effect ("aec Cloner/Speed"). Groups, keyed and opaque params are skipped.
+ */
+function controlParams(fx: PropertyGroup): { key: string; p: Property }[] {
+  const out: { key: string; p: Property }[] = [];
+  const pseudo = fx.matchName.indexOf('Pseudo/') === 0;
+  const n = pseudo ? fx.numProperties : 1;
+  for (let j = 1; j <= n; j++) {
+    const p = fx.property(j) as Property;
+    if (!p || p.propertyType !== PropertyType.PROPERTY || p.numKeys > 0) continue;
+    const vt = p.propertyValueType;
+    if (vt === PropertyValueType.CUSTOM_VALUE || vt === PropertyValueType.NO_VALUE || vt === PropertyValueType.LAYER_INDEX) continue;
+    if (pseudo && p.matchName === 'ADBE Effect Built In Params') continue;
+    out[out.length] = { key: pseudo ? fx.name + '/' + p.name : fx.name, p: p };
+  }
+  return out;
 }
 
 /** Build-time default of each control, stored in the layer comment after the tag ("aec:<id>;d=Rise=80&Rise%20Delay=0.2"). */
@@ -105,14 +126,15 @@ function stampDefaults(L: Layer): void {
   for (let k = 1; k <= fxp.numProperties; k++) {
     const fx = fxp.property(k) as PropertyGroup;
     if (!isControl(fx)) continue;
-    const p = fx.property(1) as Property;
-    if (!p || p.numKeys > 0 || p.propertyValueType === PropertyValueType.CUSTOM_VALUE) continue;
-    const v: any = p.value;
-    if (typeof v !== 'number' && !(v && v.length !== undefined)) continue;
-    const vals: string[] = [];
-    if (typeof v === 'number') vals[0] = String(v); else for (let j = 0; j < v.length; j++) vals[j] = String(v[j]);
-    d[d.length] = escape(fx.name) + '=' + vals.join(',');
-    any = true;
+    const ps = controlParams(fx);
+    for (let q = 0; q < ps.length; q++) {
+      const v: any = ps[q].p.value;
+      if (typeof v !== 'number' && !(v && v.length !== undefined)) continue;
+      const vals: string[] = [];
+      if (typeof v === 'number') vals[0] = String(v); else for (let j = 0; j < v.length; j++) vals[j] = String(v[j]);
+      d[d.length] = escape(ps[q].key) + '=' + vals.join(',');
+      any = true;
+    }
   }
   if (!any) return;
   const tag = tagOf(L);
@@ -135,10 +157,12 @@ function captureControls(comp: CompItem): { [key: string]: any } {
     for (let k = 1; k <= fxp.numProperties; k++) {
       const fx = fxp.property(k) as PropertyGroup;
       if (!isControl(fx)) continue;
-      const p = fx.property(1) as Property;
-      if (!p || p.numKeys > 0 || p.propertyValueType === PropertyValueType.CUSTOM_VALUE) continue;
-      if (defaults[fx.name] !== undefined && sameValue(defaults[fx.name], p.value)) continue; // untouched in AE
-      out[tag + '|' + fx.name] = p.value;
+      const ps = controlParams(fx);
+      for (let q = 0; q < ps.length; q++) {
+        const key = ps[q].key, v = ps[q].p.value;
+        if (defaults[key] !== undefined && sameValue(defaults[key], v)) continue; // untouched in AE
+        out[tag + '|' + key] = v;
+      }
     }
   }
   return out;
@@ -154,11 +178,13 @@ function restoreControls(ctx: Ctx, comp: CompItem, saved: { [key: string]: any }
     if (!fxp) continue;
     for (let k = 1; k <= fxp.numProperties; k++) {
       const fx = fxp.property(k) as PropertyGroup;
-      const key = tag + '|' + fx.name;
-      if (!isControl(fx) || saved[key] === undefined) continue;
-      const p = fx.property(1) as Property;
-      if (p.numKeys > 0) continue;
-      try { p.setValue(saved[key]); n++; } catch (e) { warn(ctx, 'could not restore control ' + fx.name); }
+      if (!isControl(fx)) continue;
+      const ps = controlParams(fx);
+      for (let q = 0; q < ps.length; q++) {
+        const key = tag + '|' + ps[q].key;
+        if (saved[key] === undefined) continue;
+        try { ps[q].p.setValue(saved[key]); n++; } catch (e) { warn(ctx, 'could not restore control ' + ps[q].key); }
+      }
     }
   }
   return n;
@@ -278,6 +304,7 @@ export function build(project: IrProject, opts: BuildOpts): any {
     const parts = ensureFolder(['ae-compose', project.scene, '_parts']);
     const assetsFolder = ensureFolder(['ae-compose', project.scene, '_assets']);
     each(project.assets || [], (a) => { ctx.cur = a.id; ctx.items[a.id] = importAsset(ctx, a, assetsFolder); });
+    if (project.lib) { ctx.cur = 'lib'; ensureLib(ctx, project.lib); }
     const deferred: Pending = { exprs: [] };
     for (let i = 0; i < project.comps.length; i++) {
       const c = project.comps[i];

@@ -29,6 +29,8 @@ export interface GroupSpec {
   menu?: string[];
   /** .ffx preset applied to this property right after it is added (shape gradient stops, D47). */
   ffx?: string;
+  /** Pseudo effect (rig effect, D74): the .ffx that defines `mn`, applied once when the project doesn't know it yet. */
+  pseudo?: string;
   id?: string; // IR id for attribution
 }
 
@@ -119,6 +121,28 @@ export function applyPresetToProperty(ctx: Ctx, layer: Layer, path: number[], fi
   layer.selected = false;
 }
 
+/**
+ * A pseudo effect the project doesn't know yet: applying its preset to the layer (alone in the selection) registers
+ * the definition in the project and adds one instance at the end of the layer's effects. Later instances are added
+ * by matchName like any effect.
+ */
+function addPseudo(ctx: Ctx, layer: Layer, parent: PropertyGroup, spec: GroupSpec): PropertyBase {
+  if (parent.canAddProperty(spec.mn)) return parent.addProperty(spec.mn);
+  const f = new File(spec.pseudo as string);
+  if (!f.exists) fail(ctx, 'rig effect preset missing: ' + spec.pseudo);
+  const comp = layer.containingComp;
+  try { const sl = comp.selectedLayers; for (let k = sl.length - 1; k >= 0; k--) sl[k].selected = false; } catch (e) {}
+  const before = parent.numProperties;
+  layer.selected = true;
+  try { (layer as any).applyPreset(f); } catch (e) { fail(ctx, 'rig effect preset could not be applied: ' + errText(e)); }
+  layer.selected = false;
+  const fxp = layer.property('ADBE Effect Parade') as PropertyGroup;
+  if (fxp.numProperties === before + 1 && fxp.property(before + 1).matchName === spec.mn) return fxp.property(before + 1);
+  if (fxp.canAddProperty(spec.mn)) return fxp.addProperty(spec.mn);
+  fail(ctx, 'rig effect "' + spec.name + '" could not be registered from ' + spec.pseudo);
+  return null as any;
+}
+
 /** Adds `items` under the indexed group at `at` (path relative to `owner`). */
 export function buildGroups(ctx: Ctx, layer: Layer, owner: any, at: string, items: GroupSpec[], pending: Pending): void {
   const parent0 = mustResolve(ctx, owner, at) as PropertyGroup;
@@ -128,8 +152,8 @@ export function buildGroups(ctx: Ctx, layer: Layer, owner: any, at: string, item
     const prevCur = ctx.cur;
     if (spec.id) ctx.cur = spec.id;
     const parent = byIndexPath(layer, parentPath) as PropertyGroup;
-    if (!parent.canAddProperty(spec.mn)) fail(ctx, 'cannot add "' + spec.mn + '" under "' + parent.matchName + '"');
-    const added = parent.addProperty(spec.mn);
+    if (!spec.pseudo && !parent.canAddProperty(spec.mn)) fail(ctx, 'cannot add "' + spec.mn + '" under "' + parent.matchName + '"');
+    const added = spec.pseudo ? addPseudo(ctx, layer, parent, spec) : parent.addProperty(spec.mn);
     const path = indexPath(added);
     let g: any = byIndexPath(layer, path);
     if (spec.name) { g.name = spec.name; g = byIndexPath(layer, path); }

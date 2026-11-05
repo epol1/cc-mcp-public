@@ -4,9 +4,17 @@
 > Roadmap and dashboard: `status/systems.json` → `status/index.html` (`node status/build.mjs`). Release: `node scripts/release.mjs "msg"`.
 
 ## Current phase
-**Next: Phase 5, the creative toolkit.** Spec: `docs/TOOLKIT.md`; goal prompt: `GOAL-PHASE5.md`; roadmap: the "P5 ·" groups in `status/systems.json` (36 tasks, all to do). Start with the two verifications in TOOLKIT §11 (expression libraries via `footage().sourceData`, pseudo-effect portability).
+**Phase 5, the creative toolkit** (spec `docs/TOOLKIT.md`, goal `GOAL-PHASE5.md`, roadmap: the "P5 ·" groups in `status/systems.json`).
 
-**Phase 3 complete: the GOAL §7 Definition of Done is met** (evidence in `docs/REPORT.md`). Work now is the planned features below and whatever the user asks for next.
+### Phase 5 so far
+- **§11 verifications (D73, D74):** `footage().sourceData` libraries work on 26.5 but aren't cached (a missing file disables every expression using it) and cost ~3× per call, so the library is inlined by default. Pseudo effects generated as .ffx work, the .aep stores their definition, and a fresh `aerender` rendered a copy with our presets moved away.
+- **F1 expression library** (`src/aeclib/aec-lib.js`, 49 functions: easing/physics, seeded random/noise, distributions, falloffs, timing, color, text, markers). Expressions call `L.fn(...)`; the compiler adds the functions used (inline) or binds the shared `aec-lib.jsx` item (`lib: 'footage'`). Every function checked in AE in both modes (`tests/integration/p5/aeclib.ts`).
+- **F2 rig effects** (`src/compile/ffx/pseudo.ts`, `rigfx.ts`, `<RigEffect>`): grouped `control(..., { group })`, live text reveals (`live: true`), live camera moves (default). Sticky values cover every rig param.
+- **Migrated** text-unit reveals, spring rigs, camera moves and marker bursts (bursts now fire on every marker with the comment). Ripple (frames identical) and live controls still pass.
+- **Bug fixed (D75):** checkbox controls always read as on in expressions.
+- Node-side modules from subagents, to be wired in: captions (`src/text/captions.ts`), motion analysis + speed graphs + style lint (`src/motion/`), beat detection (`src/audio/`, in progress).
+
+**Next:** P1 cloner (master precomp + instances + overrides, distributions, data), P2 effectors, scale measurements; then wire A1/A2 into builds.
 
 ## Done
 - **Phase 0**: environment discovered (`docs/ENVIRONMENT.md`). CEP bridge installed and verified (~50 ms eval). `AfterFX.com -r` fallback verified (~1.1 s). Assets gathered from the user's own projects (`assets/SOURCES.md`). Hand-built fixture: `assets/handmade/languages_proj/`.

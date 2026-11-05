@@ -14,13 +14,16 @@ import { ControlRegistry } from './controls.ts';
 import type { PropSpec, ValueCtx } from './values.ts';
 import { lowerValue, TOL } from './values.ts';
 import { anchorBox, lowerTransform } from './transform.ts';
-import { textDoc, unitAnimator } from './text.ts';
+import { revealRig, textDoc, unitAnimator } from './text.ts';
 import { shapeItems, pointsToShape } from './shapes.ts';
 import { resolveEffect } from '../catalog/resolve.ts';
 import { paramRange, popupIndex } from '../catalog/harvest.ts';
 import { cameraProps, featuresOf, geometryProps, lightProps, materialProps } from './threed.ts';
 import type { Feature, RendererKey } from './renderers.ts';
 import { chooseRenderer, RENDERER_ID, RENDERER_NAME } from './renderers.ts';
+import type { LibMode } from '../aeclib/index.ts';
+import { LIB_ITEM, libVersion, withLib, writeLibFile } from '../aeclib/index.ts';
+import { rigEffectSpec } from './rigfx.ts';
 
 // Internal names verified from AE's localized UI strings (D36): Calder = Advanced 3D; 'ADBE Advanced 3d' is the legacy ID of Classic 3D.
 const RENDERERS = { advanced3d: 'ADBE Calder', cinema4d: 'ADBE Ernst', classic3d: 'ADBE Advanced 3d' } as const;
@@ -42,6 +45,8 @@ export class Compiler {
   sceneName = '';
   /** Name of the main comp (precomps read controls from its Controls null). */
   mainName = '';
+  libMode: LibMode = 'inline';
+  libUsed = false;
 
   constructor(private def: SceneDef<any>, private opts: CompileOpts = {}) {}
 
@@ -51,6 +56,7 @@ export class Compiler {
     const params = { ...(cfg.params ?? {}), ...(this.opts.params ?? {}) } as any;
     const seed = params.seed ?? 1;
     this.sceneName = cfg.name;
+    this.libMode = cfg.lib ?? 'inline';
     const version = this.opts.version ?? cfg.version ?? 1;
     const vtag = `v${String(version).padStart(3, '0')}`;
     const compName = `${cfg.name}_${vtag}${this.opts.variant ? '_' + this.opts.variant : ''}`;
@@ -75,6 +81,7 @@ export class Compiler {
       assets: [...this.assets.values()],
       comps: this.comps.map((c) => this.irComp(c)),
       main: mainId,
+      ...(this.libUsed ? { lib: { item: LIB_ITEM, file: writeLibFile(), version: libVersion() } } : {}),
     };
     return { ir, warnings: this.warnings, sources: this.sources };
   }
@@ -103,7 +110,9 @@ export class Compiler {
       if ((seen.get(n) ?? 0) > 1) throw new Error(`layer name "${n}" (id ${id}) is not unique, but an expression references it; give it a unique name`);
       return `thisComp.layer(${JSON.stringify(n)})`;
     });
-    const walkFix = (o: any): void => { if (!o || typeof o !== 'object') return; if (Array.isArray(o)) { o.forEach(walkFix); return; } for (const k of Object.keys(o)) { if (k === 'expr' && typeof o[k] === 'string') o[k] = fix(o[k]); else walkFix(o[k]); } };
+    // Expressions that call the library (L.spring(...), D73) get it here, inline or from the shared footage item.
+    const lib = (e: string) => { const w = withLib(e, this.libMode); if (w !== e && this.libMode === 'footage') this.libUsed = true; return w; };
+    const walkFix = (o: any): void => { if (!o || typeof o !== 'object') return; if (Array.isArray(o)) { o.forEach(walkFix); return; } for (const k of Object.keys(o)) { if (k === 'expr' && typeof o[k] === 'string') o[k] = lib(fix(o[k])); else walkFix(o[k]); } };
     walkFix(c.layers);
     const ctlId = `${c.id}.${'controls'}`;
     const ctl = c.controls.layer(ctlId);
@@ -193,6 +202,7 @@ export class Compiler {
         this.precomp(el, ctx);
         return;
       case 'effect':
+      case 'rigEffect':
       case 'mask':
         throw new Error(`<${el.type.displayName}> must be a child of a layer (Solid, Text, Shape, Footage, Adjustment, ...)`);
       case 'layout.safe': {
@@ -322,6 +332,7 @@ export class Compiler {
     for (const [k, v] of Object.entries(anim)) if (!isAnim(v) && !isControl(v)) throw new Error(`animate.${k} must be an animation (tween/spring/keys/...) or control()`);
     const groups: any[] = [];
     const props: PropSpec[] = [];
+    const rigFx: any[] = []; // rig effects a component adds to this layer (live text reveals), above the authored effects
     switch (kind) {
       case 'solid':
       case 'adjustment':
@@ -366,6 +377,7 @@ export class Compiler {
           const r = unitAnimator(ta, vctx, 0, threeD, text, { in: inT, out: outT });
           groups.push({ at: 'ADBE Text Properties/ADBE Text Animators', items: [r.group] });
           props.push(...r.moreOptions);
+          if (ta.live) rigFx.push(revealRig(ta, vctx));
         }
         break;
       }
@@ -476,15 +488,16 @@ export class Compiler {
     }
     if (p.autoOrient) L.autoOrient = { none: 'NO_AUTO_ORIENT', path: 'ALONG_PATH', camera: 'CAMERA_OR_POINT_OF_INTEREST', characters: 'CHARACTERS_TOWARD_CAMERA' }[p.autoOrient as string];
     if (L.threeD) ctx.comp.has3D = true;
-    const hasFxChildren = (p.effects ?? []).length > 0 || childrenOf(kind === 'precomp' ? [] : p.children).some((c) => typeof c !== 'string' && (c.type?.aec === 'effect' || c.type?.aec === 'mask'));
+    const hasFxChildren = rigFx.length > 0 || (p.effects ?? []).length > 0 || childrenOf(kind === 'precomp' ? [] : p.children).some((c) => typeof c !== 'string' && (c.type?.aec === 'effect' || c.type?.aec === 'rigEffect' || c.type?.aec === 'mask'));
     for (const f of featuresOf(kind, p, !!L.threeD, hasFxChildren)) ctx.comp.features.add(f);
     if (p.motionBlur && ctx.comp.motionBlur !== false && L.threeD) ctx.comp.features.add('motionBlur');
     // Children: effects and masks
-    const fx: any[] = [], masks: any[] = [];
+    const fx: any[] = [...rigFx], masks: any[] = [];
     for (const c of [...(kind === 'precomp' ? [] : childrenOf(p.children)), ...childrenOf(p.effects ?? [])]) {
       if (typeof c === 'string') continue;
       const ck = c.type?.aec;
       if (ck === 'effect') fx.push(this.effect(c, vctx, id));
+      else if (ck === 'rigEffect') fx.push(rigEffectSpec(c.props.def, c.props.name ?? c.props.def.name, c.props.values ?? {}, vctx));
       else if (ck === 'mask') masks.push(this.mask(c, vctx));
       else if (kind !== 'shape') throw new Error(`[${id}] <${c.type?.displayName ?? ck}> can't be a child of <${el.type.displayName}>; only <Effect> and <Mask> can`);
     }

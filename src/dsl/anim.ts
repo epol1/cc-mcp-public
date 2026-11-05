@@ -131,6 +131,12 @@ export interface TextUnitsAnim {
    */
   selector?: 'expression' | 'range';
   name?: string;
+  /**
+   * Live rig (D74): the timing (Each, Duration, Delay, plus Damping/Stiffness for springs) becomes one
+   * "aec Text Reveal" effect on the text layer, named like the animator ("Reveal (words)"), so a designer retimes
+   * the reveal in Effect Controls without a rebuild. Values given as control() link to those controls instead.
+   */
+  live?: boolean;
 }
 
 function units(by: TextUnitsAnim['by'], o: Omit<TextUnitsAnim, '$text' | 'by'>): TextUnitsAnim {

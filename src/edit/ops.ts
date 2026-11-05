@@ -10,6 +10,7 @@ import { curveKnots, knotsToKeys } from '../compile/keys.ts';
 import { cameraProps, geometryProps, lightProps, materialProps } from '../compile/threed.ts';
 import { ControlRegistry } from '../compile/controls.ts';
 import { gradientFfx } from '../compile/gradients.ts';
+import { withLib } from '../aeclib/index.ts';
 import { callRuntime } from '../bridge/index.ts';
 import { sampleScreenColor } from '../visual/keycolor.ts';
 import type { ScreenSample } from '../visual/keycolor.ts';
@@ -235,7 +236,7 @@ export async function compileEditOps(input: EditInput, notes?: string[]): Promis
           for (const l of lists) for (const k of l) { const last = merged[merged.length - 1]; if (last && Math.abs(last.t - k.t) < 1e-6) { last.oe = k.oe; last.o = k.o; } else merged.push(k); }
           ro.keys = ks.length === 1 ? [{ t: ks[0].t, v: ks[0].v }] : merged;
         } else if (op.value !== undefined) ro.value = conv(op.value);
-        if (op.expr !== undefined) ro.expr = op.expr;
+        if (op.expr !== undefined) ro.expr = withLib(op.expr); // expressions may call the library (L.spring(...), D73)
         out.push(ro);
         break;
       }

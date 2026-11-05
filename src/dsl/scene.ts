@@ -24,6 +24,12 @@ export interface SceneConfig<P = Record<string, any>> {
   version?: number;
   /** Lint settings for this scene (false disables lint): safe-area margin, reading rate, rules to ignore. */
   lint?: LintOptions | false;
+  /**
+   * How expressions get the ae-compose expression library (`L.spring(...)`, D73): 'inline' (default) carries the
+   * functions each expression uses inside it, so the project needs nothing else; 'footage' shares one
+   * `aec-lib.jsx` item (shorter expressions; the file must travel with the project, e.g. via Collect Files).
+   */
+  lib?: 'inline' | 'footage';
 }
 
 export interface SceneDef<P = Record<string, any>> {

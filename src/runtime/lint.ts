@@ -76,7 +76,9 @@ function probeExpression(targets: (Target | Occluder)[]): string {
 // ae-compose's Expression Selectors carry a header and live control references; we read the controls' current
 // values (so lint follows tweaks made in AE). Hand-built Range Selectors are judged from their Start/End/Offset keys.
 const AEC_HEAD = /\/\/ ae-compose: per-(\w+) (reveal|exit)/;
-const CTRL_REF = /(thisComp|comp\("((?:[^"\\]|\\.)*)"\))\.layer\("((?:[^"\\]|\\.)*)"\)\.effect\("((?:[^"\\]|\\.)*)"\)\(1\)/g;
+// Control references: `thisComp.layer("Controls").effect("X")(1)` (expression controls), the same with a param name
+// for rig effects (`effect("Group")("Param")`), or a rig effect on the layer itself (`effect("Reveal")("Each")`).
+const CTRL_REF = /(?:(thisComp|comp\("((?:[^"\\]|\\.)*)"\))\.layer\("((?:[^"\\]|\\.)*)"\)\.)?effect\("((?:[^"\\]|\\.)*)"\)\((1|"(?:[^"\\]|\\.)*")\)(?:\.value)?/g;
 const unq = (s: string) => s.replace(/\\(.)/g, '$1');
 
 const clampFn = function (x: number, a: number, b: number): number { return Math.min(b, Math.max(a, x)); };
@@ -98,12 +100,17 @@ function callArgs(code: string, from: number): string[] {
  * Value of a number expression written by the compiler: literals, live control references, `+ offset`, and the
  * `clamp(ctrl, min, max)` the compiler wraps controls in. NaN when it is anything else.
  */
-function evalNum(code: string, home: CompItem): number {
-  const s: string = (code as any).replace(CTRL_REF, function (_m: string, host: string, cname: string, lname: string, ename: string): string {
+function evalNum(code: string, home: CompItem, self?: Layer): number {
+  const s: string = (code as any).replace(CTRL_REF, function (_m: string, host: string, cname: string, lname: string, ename: string, param: string): string {
     try {
-      let c: any = home;
-      if (host !== 'thisComp') { c = null; for (let i = 1; i <= app.project.numItems; i++) { const it = app.project.item(i); if (it instanceof CompItem && it.name === unq(cname)) { c = it; break; } } }
-      const p: any = c.layer(unq(lname)).property('ADBE Effect Parade').property(unq(ename)).property(1);
+      let L: any = self;
+      if (host) {
+        let c: any = home;
+        if (host !== 'thisComp') { c = null; for (let i = 1; i <= app.project.numItems; i++) { const it = app.project.item(i); if (it instanceof CompItem && it.name === unq(cname)) { c = it; break; } } }
+        L = c.layer(unq(lname));
+      }
+      const fx: any = L.property('ADBE Effect Parade').property(unq(ename));
+      const p: any = param === '1' ? fx.property(1) : fx.property(unq(param.substring(1, param.length - 1)));
       return '(' + p.valueAtTime(0, true) + ')';
     } catch (e) { return 'NaN'; }
   });
@@ -112,21 +119,25 @@ function evalNum(code: string, home: CompItem): number {
   try { return +eval('(function (C) { return (' + t + '); })')(clampFn); } catch (e) { return NaN; }
 }
 
-function aecAnim(code: string, home: CompItem): any {
+function aecAnim(code: string, home: CompItem, self?: Layer): any {
   const h = AEC_HEAD.exec(code);
   if (!h) return null;
   const o: any = { by: h[1], dir: h[2] === 'exit' ? 'out' : 'in' };
   const m = /var each = (.*), dur = Math\.max\((.*), 0\.0001\), delay = (.*);/.exec(code);
   if (!m) return null;
-  o.each = evalNum(m[1], home); o.dur = evalNum(m[2], home); o.delay = evalNum(m[3], home);
+  o.each = evalNum(m[1], home, self); o.dur = evalNum(m[2], home, self); o.delay = evalNum(m[3], home, self);
   const ord = /var i = (.*);/.exec(code), oi = ord ? ord[1] : '';
   o.order = oi === 'textIndex - 1' ? 'start' : oi === 'textTotal - textIndex' ? 'end' : oi.indexOf('seedRandom') >= 0 ? 'random' : oi.indexOf('(textTotal - 1) / 2 -') === 0 ? 'edges' : 'center';
   const tl = /var t = time - (inPoint|outPoint)(?: - ([\d.]+))?/.exec(code);
   o.anchor = tl && tl[1] === 'outPoint' ? 'end' : 'start';
   o.off = tl && tl[2] ? +tl[2] : 0;
-  const si = code.indexOf('su(t * fps, fps, ');
-  if (si >= 0) { const a = callArgs(code, si + 'su(t * fps, fps, '.length); if (a.length === 3) o.spring = [evalNum(a[0], home), evalNum(a[1], home), evalNum(a[2], home)]; }
-  const bz = /bz\(([-\d.e]+), ([-\d.e]+), ([-\d.e]+), ([-\d.e]+), t \/ dur\)/.exec(code);
+  // Library calls (D73) and the inlined helpers of projects built before the library.
+  const SP = ['L.spring(t, 1 / thisComp.frameDuration, ', 'su(t * fps, fps, '];
+  for (let k = 0; k < SP.length; k++) {
+    const si = code.indexOf(SP[k]);
+    if (si >= 0) { const a = callArgs(code, si + SP[k].length); if (a.length === 3) o.spring = [evalNum(a[0], home, self), evalNum(a[1], home, self), evalNum(a[2], home, self)]; break; }
+  }
+  const bz = /(?:L\.bezier|bz)\(([-\d.e]+), ([-\d.e]+), ([-\d.e]+), ([-\d.e]+), t \/ dur\)/.exec(code);
   if (bz) o.bezier = [+bz[1], +bz[2], +bz[3], +bz[4]];
   return o;
 }
@@ -175,7 +186,7 @@ function animatorTiming(T: Target, o: any): void {
       if (!S.enabled) continue;
       if (S.matchName === 'ADBE Text Expressible Selector') {
         const amt = S.property('ADBE Text Expressible Amount');
-        const a = amt && amt.expressionEnabled ? aecAnim(String(amt.expression), home) : null;
+        const a = amt && amt.expressionEnabled ? aecAnim(String(amt.expression), home, T.L) : null;
         if (a) { if (!o.anims) o.anims = []; o.anims[o.anims.length] = a; }
       } else if (S.matchName === 'ADBE Text Selector') {
         const h = rangeHidden(S, opacity);

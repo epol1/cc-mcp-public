@@ -1149,25 +1149,25 @@
         {
           "id": "p5-verify",
           "name": "Verify footage().sourceData libraries + pseudo-effect portability on 26.5",
-          "status": "todo",
+          "status": "done",
           "weight": 1
         },
         {
           "id": "p5-exprlib",
           "name": "Expression library aec-lib.jsx (physics, random, distribution, falloff, timing, color)",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-presets",
           "name": "Rig presets: one effect per rig with its controls (.ffx pseudo effects)",
-          "status": "todo",
+          "status": "done",
           "weight": 3
         },
         {
           "id": "p5-migrate",
           "name": "Existing rigs migrated to the library (text units, camera, springs, bursts)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         }
       ],
@@ -1265,7 +1265,7 @@
         {
           "id": "p5-captions",
           "name": "Captions from SRT/VTT with word timing (karaoke)",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
@@ -1290,13 +1290,13 @@
         {
           "id": "p5-previews",
           "name": "Motion previews: GIF strips + speed graphs after builds/edits",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
           "id": "p5-stylelint",
           "name": "Style lint (repeats, everything-at-once, short holds, easing monotony, slide furniture)",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
@@ -1320,7 +1320,7 @@
         {
           "id": "p5-beats",
           "name": "Beat sync: music → beat markers, snap cuts/accents, lint off-beat cuts",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {
@@ -1376,7 +1376,7 @@
         {
           "id": "p5-tests",
           "name": "Unit + AE integration tests (one-step undo) for every tool",
-          "status": "todo",
+          "status": "wip",
           "weight": 3
         },
         {

@@ -1,6 +1,9 @@
 // Camera rigs built from parented nulls + expressions (all speeds/angles can be live controls).
 import { Fragment, jsx } from './jsx-runtime.ts';
-import { Camera, Light, Null } from './primitives.ts';
+import { Camera, Light, Null, RigEffect } from './primitives.ts';
+import type { PseudoEffectDef } from '../compile/ffx/pseudo.ts';
+import { resolveEasing } from '../shared/easing.ts';
+import { parseTime } from '../shared/units.ts';
 import type { CameraProps } from './primitives.ts';
 import { expr, tween } from './anim.ts';
 import type { EasingSpec } from '../shared/easing.ts';
@@ -59,36 +62,81 @@ export interface CameraMoveProps extends Omit<CameraProps, 'position' | 'pointOf
   easing?: EasingSpec;
   /** Handheld feel: wiggle of `amount` px at `freq` Hz on position (and a third of it on the aim). */
   shake?: { amount?: number | ControlRef; freq?: number | ControlRef; seed?: number };
+  /**
+   * "live" (default): the move, its timing, easing and handheld shake are one "Camera Move" rig effect on the move
+   * null, all tweakable in AE (D74). "keys": the move is ordinary keyframes on the move null (graph-editor editable;
+   * needs `duration`).
+   */
+  rig?: 'live' | 'keys';
 }
+
+const MOVE_EASES: [string, number[]][] = [['Ease In-Out (Sine)', [0.37, 0, 0.63, 1]], ['Ease In-Out (Cubic)', [0.65, 0, 0.35, 1]], ['Ease Out (Expo)', [0.16, 1, 0.3, 1]], ['Linear', [0, 0, 1, 1]]];
+
+/** "aec Camera Move": travel, timing, easing and handheld shake of a camera move. */
+const CAMERA_MOVE: PseudoEffectDef = { name: 'aec Camera Move', params: [
+  { kind: 'slider', name: 'Travel X', default: 0, min: -3000, max: 3000, precision: 0, display: 'pixel' },
+  { kind: 'slider', name: 'Travel Y', default: 0, min: -3000, max: 3000, precision: 0, display: 'pixel' },
+  { kind: 'slider', name: 'Travel Z', default: 0, min: -3000, max: 3000, precision: 0, display: 'pixel' },
+  { kind: 'slider', name: 'Delay', default: 0, min: 0, max: 20, precision: 2 },
+  { kind: 'slider', name: 'Duration', default: 0, min: 0, max: 30, validMin: 0, precision: 2 },
+  { kind: 'popup', name: 'Easing', items: [...MOVE_EASES.map(([n]) => n), 'As Built'], default: 1 },
+  { kind: 'group', name: 'Handheld', params: [
+    { kind: 'slider', name: 'Shake Amount', default: 0, min: 0, max: 40, validMin: 0, precision: 1, display: 'pixel' },
+    { kind: 'slider', name: 'Shake Frequency', default: 1.2, min: 0.1, max: 6, validMin: 0, precision: 2 },
+  ] },
+] };
 
 /**
  * A camera move as a rig: a target null, a "move" null that travels, and the camera parented to it at the framing
- * distance. With `duration` the move is ordinary keys on the move null (editable in the graph editor); without it an
- * eased expression spans the layer. PushIn, PullOut, Truck, Crane and Pedestal are presets of this.
+ * distance. Live (default): a "Camera Move" effect on the move null holds Travel X/Y/Z, Delay, Duration (0 = until
+ * the layer ends, so it follows Sequence length and ripple edits), Easing and the handheld shake. With
+ * `rig: 'keys'` the move is ordinary keys. PushIn, PullOut, Truck, Crane and Pedestal are presets of this.
  */
 export function CameraMove(p: CameraMoveProps) {
   const id = p.id ?? 'moveCam';
   const T = `${id}.target`, M = `${id}.move`;
-  const { target, distance, move, aim, duration, delay, easing, shake, ...cam } = p;
+  const { target, distance, move, aim, duration, delay, easing, shake, rig, ...cam } = p;
   const name = p.name ?? 'Camera';
   const to: [number, number, number] = [move[0], move[1], move[2]];
-  const moveAnim = duration !== undefined
-    ? tween({ from: [0, 0, 0], to, duration, delay: delay ?? 0, easing: easing ?? 'easeInOutSine' })
-    : expr(`// ae-compose rig: camera move over the layer\nvar d = ${typeof delay === 'number' ? delay : 0};\nease(time, inPoint + d, outPoint, [0, 0, 0], [${to.join(', ')}]);`);
   const dist = distance !== undefined ? `${-distance}` : '-cameraOption.zoom';
-  const refs = [shake?.amount, shake?.freq].filter(isControl) as ControlRef[];
-  const amt = num(shake?.amount, 6), fq = num(shake?.freq, 1.2), seed = shake?.seed ?? 7;
-  const camPos = shake
-    ? expr(`// ae-compose rig: handheld shake\nseedRandom(${seed}, true);\n[0, 0, ${dist}] + (wiggle(${fq}, ${amt}) - value);`, refs)
-    : expr(`[0, 0, ${dist}];`);
-  // Two-node camera: its point of interest is in the parent's (move null's) space.
   const fixedAim = `var m = thisComp.layer("${name} Move");\nm.fromWorld(thisComp.layer("${name} Target").toWorld([0, 0, 0]))`;
-  const poi = (aim ?? 'follow') === 'fixed'
-    ? expr(`${fixedAim}${shake ? ` + (seedRandom(${seed + 1}, true), wiggle(${fq}, ${amt} / 3) - value)` : ''};`, refs)
-    : shake ? expr(`seedRandom(${seed + 1}, true);\n[0, 0, 0] + (wiggle(${fq}, ${amt} / 3) - value);`, refs) : [0, 0, 0];
+  if (rig === 'keys') {
+    if (duration === undefined) throw new Error(`${name}: rig: 'keys' needs a duration`);
+    const refs = [shake?.amount, shake?.freq].filter(isControl) as ControlRef[];
+    const amt = num(shake?.amount, 6), fq = num(shake?.freq, 1.2), seed = shake?.seed ?? 7;
+    const camPos = shake ? expr(`// ae-compose rig: handheld shake\nseedRandom(${seed}, true);\n[0, 0, ${dist}] + (wiggle(${fq}, ${amt}) - value);`, refs) : expr(`[0, 0, ${dist}];`);
+    const poi = (aim ?? 'follow') === 'fixed'
+      ? expr(`${fixedAim}${shake ? ` + (seedRandom(${seed + 1}, true), wiggle(${fq}, ${amt} / 3) - value)` : ''};`, refs)
+      : shake ? expr(`seedRandom(${seed + 1}, true);\n[0, 0, 0] + (wiggle(${fq}, ${amt} / 3) - value);`, refs) : [0, 0, 0];
+    return jsx(Fragment, { children: [
+      jsx(Null, { id: T, name: `${name} Target`, threeD: true, position: target ?? expr('[thisComp.width / 2, thisComp.height / 2, 0]') }),
+      jsx(Null, { id: M, name: `${name} Move`, threeD: true, parent: T, position: tween({ from: [0, 0, 0], to, duration, delay: delay ?? 0, easing: easing ?? 'easeInOutSine' }) }),
+      jsx(Camera, { ...cam, id, name, parent: M, position: camPos, pointOfInterest: poi }),
+    ] });
+  }
+  // Live rig: the easing popup picks a curve; "As Built" is the one given in code.
+  const built = resolveEasing(easing ?? 'easeInOutSine');
+  const b = built.bezier ? [...built.bezier] : [0.37, 0, 0.63, 1];
+  const named = MOVE_EASES.findIndex(([, x]) => x.every((v, i) => Math.abs(v - b[i]) < 1e-3));
+  const sec = (v: any, d: number) => (v === undefined ? d : isControl(v) ? v : typeof v === 'number' ? v : parseTime(v, 30));
+  const values: Record<string, any> = {
+    'Travel X': to[0], 'Travel Y': to[1], 'Travel Z': to[2], Delay: sec(delay, 0), Duration: sec(duration, 0),
+    Easing: named >= 0 ? named + 1 : MOVE_EASES.length + 1, 'Shake Amount': shake ? (shake.amount ?? 6) : 0, 'Shake Frequency': shake?.freq ?? 1.2,
+  };
+  const fx = `thisComp.layer(${JSON.stringify(`${name} Move`)}).effect("Camera Move")`;
+  const moveExpr = [
+    '// ae-compose rig: camera move (live: the "Camera Move" effect on this layer)',
+    'var e = effect("Camera Move"), d = e("Delay").value, dur = e("Duration").value > 0 ? e("Duration").value : outPoint - inPoint - d;',
+    `var B = [${[...MOVE_EASES.map(([, x]) => x), b].map((x) => `[${x.join(', ')}]`).join(', ')}][Math.round(e("Easing").value) - 1];`,
+    'L.tween(time, inPoint + d, dur, [0, 0, 0], [e("Travel X").value, e("Travel Y").value, e("Travel Z").value], B);',
+  ].join('\n');
+  const seed = shake?.seed ?? 7;
+  const camPos = expr(`// ae-compose rig: camera distance + handheld shake (Camera Move effect)\nvar e = ${fx};\nseedRandom(${seed}, true);\n[0, 0, ${dist}] + (wiggle(e("Shake Frequency").value, e("Shake Amount").value) - value);`);
+  const shakeAim = `(seedRandom(${seed + 1}, true), wiggle(${fx}("Shake Frequency").value, ${fx}("Shake Amount").value / 3) - value)`;
+  const poi = (aim ?? 'follow') === 'fixed' ? expr(`${fixedAim} + ${shakeAim};`) : expr(`[0, 0, 0] + ${shakeAim};`);
   return jsx(Fragment, { children: [
     jsx(Null, { id: T, name: `${name} Target`, threeD: true, position: target ?? expr('[thisComp.width / 2, thisComp.height / 2, 0]') }),
-    jsx(Null, { id: M, name: `${name} Move`, threeD: true, parent: T, position: moveAnim }),
+    jsx(Null, { id: M, name: `${name} Move`, threeD: true, parent: T, position: expr(moveExpr), children: jsx(RigEffect, { def: CAMERA_MOVE, name: 'Camera Move', values }) }),
     jsx(Camera, { ...cam, id, name, parent: M, position: camPos, pointOfInterest: poi }),
   ] });
 }

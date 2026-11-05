@@ -242,6 +242,19 @@ export interface EffectProps {
   enabled?: boolean;
 }
 export const Effect = prim<EffectProps>('effect');
+/**
+ * A rig effect (D74): one pseudo effect holding exactly the given controls, shown in Effect Controls under `name`.
+ * Expressions read it with effect("<name>")("<param>"). Rig components (Cloner, CameraMove, live text reveals) add
+ * their own; use this for your own rigs.
+ */
+export interface RigEffectProps {
+  def: import('../compile/ffx/pseudo.ts').PseudoEffectDef;
+  /** Instance name (default: the definition's name). Unique per layer. */
+  name?: string;
+  /** Param values by param name; numbers, colors, booleans, popup labels, animations or controls. */
+  values?: Record<string, V<any>>;
+}
+export const RigEffect = prim<RigEffectProps>('rigEffect');
 export interface MaskProps { path?: string; points?: PathPoint[]; rect?: { x: number; y: number; width: number; height: number; roundness?: number }; mode?: 'add' | 'subtract' | 'intersect' | 'none' | 'lighten' | 'darken' | 'difference'; feather?: V<Vec>; expansion?: V<number>; opacity?: V<number>; inverted?: boolean; name?: string }
 export const Mask = prim<MaskProps>('mask');
 

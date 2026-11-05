@@ -107,9 +107,11 @@ export function ParticleWorld(p: ParticleProps & { preset?: ParticlePreset; widt
     const at = p.burst.at, dur = p.burst.duration ?? '0.15s';
     if (typeof at === 'object' && at !== null && 'marker' in at) {
       const d = typeof dur === 'number' ? String(dur) : /f$/.test(String(dur).trim()) ? `framesToTime(${parseFloat(String(dur))})` : /ms$/.test(String(dur).trim()) ? String(parseFloat(String(dur)) / 1000) : String(parseFloat(String(dur)));
-      exprs['Birth Rate'] = `// ae-compose rig: burst at marker "${at.marker}" (reads the marker live; ripple edits move the marker, not this)
-var m = thisComp.marker.key(${JSON.stringify(at.marker)}).time;
-(time >= m && time < m + ${d}) ? ${rate} : 0;`;
+      // Every comp marker with this comment fires a burst (drag or add markers in AE to retime them).
+      exprs['Birth Rate'] = `// ae-compose rig: burst at marker "${at.marker}" (reads the markers live; ripple edits move the markers, not this)
+var mk = thisComp.marker, hits = [];
+for (var i = 1; i <= mk.numKeys; i++) if (mk.key(i).comment === ${JSON.stringify(at.marker)}) hits.push(mk.key(i).time);
+L.pulse(time, hits, ${d}) * ${rate};`;
       delete params['Birth Rate'];
     } else params['Birth Rate'] = keys({ t: 0, v: 0, hold: true }, { t: at, v: rate, hold: true }, { t: addTime(at, dur), v: 0, hold: true });
   }
