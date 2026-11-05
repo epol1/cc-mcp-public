@@ -8,12 +8,15 @@ import { fileURLToPath } from 'node:url';
 import { framesToTimecode, ticksPerFrame, timecodeToFrames, xmlRate, type Rate } from '@ae-mcp/core/time/timecode.ts';
 import type { MediaInfo } from '@ae-mcp/core/media/probe.ts';
 import { timelineEnd, type Grade, type TLClip, type Timeline } from '../timeline.ts';
-import { el, parseXml, serialize, setText, txt } from './dom.ts';
+import { el, parseXml, serialize, setText, txt, type XEl } from './dom.ts';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** file://localhost/C%3a/path%20with%20spaces/x.mp4, as Premiere writes it. */
 export function pathUrl(p: string): string {
+  // Network paths (\\server\share\x.mp4) are file://server/share/x.mp4: "localhost" would point at a local folder.
+  const unc = /^[\\/]{2}([^\\/]+)[\\/](.*)$/.exec(p);
+  if (unc) return `file://${unc[1]}/${unc[2].replace(/\\/g, '/').split('/').map(encodeURIComponent).join('/')}`;
   const abs = path.resolve(p).replace(/\\/g, '/');
   const enc = abs.split('/').map((seg, i) => (i === 0 && /^[A-Za-z]:$/.test(seg) ? `${seg[0]}%3a` : encodeURIComponent(seg))).join('/');
   return `file://localhost/${enc.replace(/^\/+/, '')}`;
@@ -138,7 +141,7 @@ export function writeFcp7(t: Timeline): WriteResult {
     for (let k = 1; k < tr.length; k++) if (tr[k].e.start < tr[k - 1].e.end) throw new Error(`${kind} track ${n}: ${tr[k].clip.id} (${tr[k].e.start}) overlaps ${tr[k - 1].clip.id} (ends ${tr[k - 1].e.end})`);
   }
 
-  const clipItem = (it: Item, ind: string, trIn?: number, trOut?: number): string => {
+  const clipItem = (it: Item, ind: string, trIn?: number, trOut?: number, edgeIn = false, edgeOut = false): string => {
     const c = it.clip, m = t.media[c.media];
     if (c.raw?.item) return rawItem(c, it, ind);
     const masterKey = c.media;
@@ -149,6 +152,8 @@ export function writeFcp7(t: Timeline): WriteResult {
     let inT = it.e.inTicks, outT = it.e.outTicks, start: number = it.e.start, end: number = it.e.end;
     if (trIn) { start = -1; inT -= trIn * tpf; }
     if (trOut) { end = -1; outT += trOut * tpf; }
+    if (edgeIn) start = -1; // a head fade: the edge comes from the transition, the source range stays
+    if (edgeOut) end = -1;
     if (inT < 0) { warnings.push(`${c.id}: not enough source before the in point for the transition; it starts at the media start`); inT = 0; }
     const lines = [
       `${ind}<clipitem id="${it.xmlId}"${it.kind === 'audio' ? ` premiereChannelType="${chans(c).length >= 2 ? 'stereo' : 'mono'}"` : ''}>`,
@@ -212,8 +217,18 @@ export function writeFcp7(t: Timeline): WriteResult {
     if (pin) setText(root, 'pproTicksOut', Number(pin) + len * tpf);
     if (c.disabled) setText(root, 'enabled', 'FALSE');
     root.kids = root.kids.filter((k) => typeof k === 'string' || k.tag !== 'link');
-    const f = el(root, 'file');
-    if (f) f.attrs = f.attrs.map(([k, v]) => [k, k === 'id' ? `file-g${it.xmlId.replace(/\D/g, '')}` : v] as [string, string]);
+    // Everything inside (a graphic's file, a nested sequence with its own clips and files) gets ids of its own so
+    // nothing collides with the ids this writer hands out (file-N, masterclip-N, clipitem-N, sequence-N).
+    const pre = `g${it.xmlId.replace(/\D/g, '')}-`;
+    const walk = (e: XEl) => {
+      for (const k of e.kids) {
+        if (typeof k === 'string' || k.tag === '#comment') continue;
+        if (['file', 'sequence', 'clipitem', 'generatoritem'].includes(k.tag)) k.attrs = k.attrs.map(([a, v]) => [a, a === 'id' ? pre + v : v] as [string, string]);
+        if (k.tag === 'masterclipid' || k.tag === 'linkclipref') k.kids = [pre + txt(k)];
+        walk(k);
+      }
+    };
+    walk(root);
     return ind + serialize(root);
   };
 
@@ -236,14 +251,19 @@ export function writeFcp7(t: Timeline): WriteResult {
       const nextTr = next?.clip.transitionIn;
       const nextHere = nextTr && next.e.start === it.e.end && ((kind === 'video' && nextTr.kind !== 'audio-crossfade') || (kind === 'audio' && (nextTr.kind === 'audio-crossfade' || nextTr.kind === 'dissolve')));
       const nextHalf = nextHere ? nextTr!.frames - Math.floor(nextTr!.frames / 2) : 0;
-      if (trHere) {
-        const kindKey = kind === 'audio' ? 'audio-crossfade' : want!.kind;
-        const tdef = TRANSITION[kindKey];
-        const cut = it.e.start;
-        out.push(`${ind}\t<transitionitem>`, `${ind}\t\t<start>${cut - half}</start>`, `${ind}\t\t<end>${cut - half + want!.frames}</end>`, `${ind}\t\t<alignment>center</alignment>`, `${ind}\t\t<cutPointTicks>${half * tpf}</cutPointTicks>`, rateXml(t.rate, ind + '\t\t'),
+      const transitionItem = (k: keyof typeof TRANSITION, start: number, frames: number, align: string, cutFrames: number) => {
+        const tdef = TRANSITION[k];
+        out.push(`${ind}\t<transitionitem>`, `${ind}\t\t<start>${start}</start>`, `${ind}\t\t<end>${start + frames}</end>`, `${ind}\t\t<alignment>${align}</alignment>`, `${ind}\t\t<cutPointTicks>${cutFrames * tpf}</cutPointTicks>`, rateXml(t.rate, ind + '\t\t'),
           `${ind}\t\t<effect>`, `${ind}\t\t\t<name>${tdef.name}</name>`, `${ind}\t\t\t<effectid>${tdef.id}</effectid>`, `${ind}\t\t\t<effectcategory>${tdef.cat}</effectcategory>`, `${ind}\t\t\t<effecttype>transition</effecttype>`, `${ind}\t\t\t<mediatype>${tdef.media}</mediatype>`, `${ind}\t\t</effect>`, `${ind}\t</transitionitem>`);
-      }
-      out.push(clipItem(it, ind + '\t', trHere ? half : undefined, nextHere ? nextHalf : undefined));
+      };
+      if (trHere) transitionItem(kind === 'audio' ? 'audio-crossfade' : want!.kind, it.e.start - half, want!.frames, 'center', half);
+      // Fades at the clip's own head/tail (Premiere: start-black / end-black, the clip edge -1, in/out unchanged).
+      const fadeOk = (f?: TLClip['fadeIn']) => !!f && ((kind === 'video') === (f.kind !== 'audio-crossfade') || (kind === 'audio' && f.kind === 'dissolve'));
+      const fin = !trHere && fadeOk(it.clip.fadeIn) ? it.clip.fadeIn! : undefined;
+      const fout = !nextHere && fadeOk(it.clip.fadeOut) ? it.clip.fadeOut! : undefined;
+      if (fin) transitionItem(kind === 'audio' ? 'audio-crossfade' : fin.kind, it.e.start, Math.min(fin.frames, it.e.end - it.e.start), 'start-black', 0);
+      out.push(clipItem(it, ind + '\t', trHere ? half : undefined, nextHere ? nextHalf : undefined, !!fin, !!fout));
+      if (fout) { const f = Math.min(fout.frames, it.e.end - it.e.start); transitionItem(kind === 'audio' ? 'audio-crossfade' : fout.kind, it.e.end - f, f, 'end-black', f); }
     }
     out.push(`${ind}\t<enabled>TRUE</enabled>`, `${ind}\t<locked>FALSE</locked>`);
     if (kind === 'audio') out.push(`${ind}\t<outputchannelindex>${((n - 1) % 2) + 1}</outputchannelindex>`);

@@ -34,6 +34,9 @@ export interface TLClip {
   grade?: Grade;
   /** Transition into this clip from the previous clip on the same track (centered on the cut). */
   transitionIn?: { kind: 'dissolve' | 'dip-black' | 'dip-white' | 'audio-crossfade'; frames: number };
+  /** Fade from/to black or silence at the clip's own head or tail (no neighbour involved). */
+  fadeIn?: { kind: 'dissolve' | 'dip-black' | 'dip-white' | 'audio-crossfade'; frames: number };
+  fadeOut?: { kind: 'dissolve' | 'dip-black' | 'dip-white' | 'audio-crossfade'; frames: number };
   /** Source audio channels to use (1-based); default [1, 2] for stereo sources, [1] for mono. */
   channels?: number[];
   label?: 'Iris' | 'Violet' | 'Caribbean' | 'Lavender' | 'Cerulean' | 'Forest' | 'Rose' | 'Mango' | 'Purple' | 'Blue' | 'Teal' | 'Magenta' | 'Tan' | 'Green' | 'Brown' | 'Yellow';
@@ -59,4 +62,12 @@ export interface Timeline {
   markers: TLMarker[];
 }
 
-export const timelineEnd = (t: Timeline) => t.clips.reduce((m, c) => Math.max(m, c.end, c.video?.end ?? 0), 0);
+/** A clip's framing scale: its own motion, else the Basic Motion filter carried from Premiere, else 100 %. */
+export function motionScale(c: TLClip): number {
+  if (c.motion?.scale !== undefined) return c.motion.scale;
+  const f = c.raw?.video?.find((x) => /<effectid>basic<\/effectid>/.test(x));
+  const m = f && /<parameterid>scale<\/parameterid>[\s\S]*?<value>([\d.]+)<\/value>/.exec(f);
+  return m ? Number(m[1]) : 100;
+}
+
+export const timelineEnd =(t: Timeline) => t.clips.reduce((m, c) => Math.max(m, c.end, c.video?.end ?? 0), 0);

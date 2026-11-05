@@ -46,7 +46,8 @@ describe('library search', () => {
     expect(db.shotsOf(m.id)[1].description).toMatch(/hands typing/);
     expect(search('keyboard')[0].name).toBe('desk_typing.mp4');
   });
-  it('resolves lib: ids to paths only for files that exist', () => {
-    expect(db.libraryPath(String(db.mediaByHash('aaa111')!.id))).toBeNull();
+  it('resolves lib: ids to paths, and says when a known file has moved', () => {
+    expect(() => db.libraryPath(String(db.mediaByHash('aaa111')!.id))).toThrow(/file is gone/);
+    expect(db.libraryPath('999999')).toBeNull();
   });
 });

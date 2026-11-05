@@ -3,6 +3,7 @@
 // stays anchored to the source moment it sat on, and the result is imported as "Name v00N" in one undo step.
 import fs from 'node:fs';
 import path from 'node:path';
+import { z } from 'zod';
 import { parseTime, ticksPerFrame, TICKS_PER_SECOND, framesToTimecode } from '@ae-mcp/core/time/timecode.ts';
 import { cachedTranscript, transcribe } from '@ae-mcp/core/transcribe/index.ts';
 import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
@@ -15,9 +16,9 @@ import { addCaptions, CUTS_DIR, placeTitles, type BuildReport } from './build.ts
 import { cutStrips, sequenceContactSheet } from './frames.ts';
 import { importTimeline } from './importxml.ts';
 import { lintCut } from './lint.ts';
-import { DEF, tightenSegment, type Compiled, type Piece } from './plan/compile.ts';
+import { DEF, duckKeys, speechSpans, tightenSegment, type Compiled, type Piece } from './plan/compile.ts';
 import { projectInfo } from './project.ts';
-import type { Grade, TLClip, Timeline } from './timeline.ts';
+import { motionScale, type Grade, type TLClip, type Timeline } from './timeline.ts';
 
 export const EDIT_OPS_HELP = `Edits run in order; each is { op, ... }. Targets: path ids from inspect_sequence ("V1/3"), pr-cut segment/piece ids ("proof", "proof.2"), or { quote: "words spoken in the clip" }.
 - { op: "delete", target }  ripple delete (picture and sound; later clips move up)
@@ -37,8 +38,47 @@ export const EDIT_OPS_HELP = `Edits run in order; each is { op, ... }. Targets: 
 - { op: "rename", name }
 - { op: "captions", maxChars?, maxLines? } | { op: "captions", captions: false }  caption track from the new cut's words (automatic when the cut was built with captions)`;
 
+const Target = z.union([z.string().min(1), z.object({ quote: z.string().min(3) }).strict()]);
+const Tm = z.union([z.number(), z.string()]);
+const Range = { quote: z.string().optional(), words: z.tuple([z.number().int(), z.number().int()]).optional(), sentences: z.union([z.string(), z.tuple([z.string(), z.string()])]).optional(), from: Tm.optional(), to: Tm.optional() };
+const GradeKeys = { exposure: z.number().optional(), contrast: z.number().optional(), highlights: z.number().optional(), shadows: z.number().optional(), whites: z.number().optional(), blacks: z.number().optional(), temperature: z.number().optional(), tint: z.number().optional(), saturation: z.number().optional(), vibrance: z.number().optional(), fadedFilm: z.number().optional(), sharpen: z.number().optional() };
+/** Every op is checked before anything is touched; unknown fields are refused (a typo must not widen an edit). */
+export const EditOpSchema = z.discriminatedUnion('op', [
+  z.object({ op: z.literal('delete'), target: Target }).strict(),
+  z.object({ op: z.literal('trim'), target: Target, start: Tm.optional(), end: Tm.optional() }).strict(),
+  z.object({ op: z.literal('move'), target: Target, before: Target.optional(), after: Target.optional() }).strict(),
+  z.object({ op: z.literal('replace'), target: Target, src: z.string().optional(), ...Range }).strict(),
+  z.object({ op: z.literal('insert'), before: Target.optional(), after: Target.optional(), src: z.string().optional(), ...Range }).strict(),
+  z.object({ op: z.literal('cut-words'), target: Target, quote: z.string().optional(), words: z.tuple([z.number().int(), z.number().int()]).optional() }).strict(),
+  z.object({ op: z.literal('tighten'), target: Target.optional(), fillers: z.boolean().optional(), repeats: z.boolean().optional(), maxPause: Tm.optional(), keepPause: Tm.optional(), handles: Tm.optional(), minPiece: Tm.optional() }).strict(),
+  z.object({ op: z.literal('grade'), target: Target.optional(), ...GradeKeys }).strict(),
+  z.object({ op: z.literal('level'), target: Target, db: z.number().optional(), delta: z.number().optional() }).strict(),
+  z.object({ op: z.literal('broll'), src: z.string(), over: Target, offset: Tm.optional(), duration: Tm.optional(), in: Tm.optional(), audio: z.number().optional(), track: z.number().int().min(2).optional() }).strict(),
+  z.object({ op: z.literal('transition'), target: Target, kind: z.enum(['dissolve', 'dip-black', 'dip-white', 'cut']), frames: z.number().int().min(2).max(120).optional() }).strict(),
+  z.object({ op: z.literal('punch-in'), target: Target, scale: z.number().min(100).max(200).optional() }).strict(),
+  z.object({ op: z.literal('remove'), target: Target }).strict(),
+  z.object({ op: z.literal('title'), mogrt: z.string(), at: z.union([Tm, z.object({ target: Target.optional(), seg: z.string().optional(), offset: Tm.optional() }).strict()]).optional(), duration: Tm.optional(), track: z.number().int().min(2).optional(), fields: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional() }).strict(),
+  z.object({ op: z.literal('rename'), name: z.string().min(1) }).strict(),
+  z.object({ op: z.literal('captions'), captions: z.literal(false).optional(), maxChars: z.number().int().optional(), maxLines: z.number().int().optional() }).strict(),
+]);
+
+/** Check every op before anything happens: shapes, required targets, and one-of choices. */
+export function parseEdits(edits: unknown[]): any[] {
+  return edits.map((e, i) => {
+    const r = EditOpSchema.safeParse(e);
+    const fail = (m: string) => { throw new Error(`edit #${i + 1} (${(e as any)?.op ?? 'no op'}) is invalid: ${m}`); };
+    if (!r.success) fail(r.error.issues.map((x) => `${x.path.join('.') || 'op'}: ${x.message}`).join('; '));
+    const d: any = r.data;
+    if ((d.op === 'move' || d.op === 'insert') && !!d.before === !!d.after) fail('give exactly one of before / after');
+    if (d.op === 'cut-words' && !!d.quote === !!d.words) fail('give quote or words');
+    if (d.op === 'level' && (d.db === undefined) === (d.delta === undefined)) fail('give db or delta');
+    if ((d.op === 'replace' || d.op === 'insert') && [d.quote, d.words, d.sentences, d.from ?? d.to].filter((x) => x !== undefined).length !== 1 && !(d.op === 'insert' && d.src && d.from === undefined && d.to === undefined && !d.quote && !d.words && !d.sentences)) fail('give exactly one of quote, words, sentences or from/to');
+    return d;
+  });
+}
+
 /** A dialogue piece on the spine. `origin` is the original spine clip it came from (anchors hang off it). */
-interface SP { clip: TLClip; origin: number; gapBefore: number; tr?: Transcript | null; label: string }
+interface SP { clip: TLClip; origin: number; gapBefore: number; tr?: Transcript | null; label: string; /** Made by splitting in this batch (tighten, cut-words): a new jump cut. */ fresh?: boolean }
 
 const T = (x: string | number, fps: number) => parseTime(x, { num: Math.round(fps * 1000), den: 1000 });
 /** A source path, or a library id "lib:41". */
@@ -49,7 +89,8 @@ const srcPath = (src: string) => {
 
 export interface EditResult { report: BuildReport; summary: string }
 
-export async function applyCutEdits(seqId: string, edits: any[], o: { name?: string } = {}): Promise<EditResult> {
+export async function applyCutEdits(seqId: string, editsIn: unknown[], o: { name?: string } = {}): Promise<EditResult> {
+  const edits = parseEdits(editsIn);
   const { timeline: t0, warnings, spine: spineIds } = await adoptSequence(seqId);
   const R = t0.rate, fps = R.num / R.den, tpf = ticksPerFrame(R);
   const log: string[] = [];
@@ -64,17 +105,24 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
     const label = sidecar?.pieces?.find((p: any) => p.start === c.start)?.id ?? id;
     return { clip: c, origin: k, gapBefore: c.start - (prev ? prev.end : c.start), tr: trOf(c), label };
   });
-  if (!spine.length) throw new Error('the sequence has no dialogue clips on V1 to edit');
+  if (!spine.length) {
+    const opaque = t0.clips.filter((c) => c.vTrack === 1 && c.raw?.item).length;
+    throw new Error(opaque ? `V1 holds only nested sequences, multicam clips or graphics (${opaque}); pr-cut edits need media clips on V1 (flatten the multicam or edit inside the nest)` : 'the sequence has no dialogue clips on V1 to edit');
+  }
   const firstStart = spine[0].clip.start;
-  const was = (spine[spine.length - 1].clip.end - firstStart) / fps;
+  const oldEnd = spine[spine.length - 1].clip.end;
+  const was = (oldEnd - firstStart) / fps;
   const others = t0.clips.filter((c) => !spineIds.includes(c.id));
   const anchorOf = (frame: number) => {
+    // Inside a dialogue clip: that clip at that source moment. In a gap on V1 (or before the first clip): the next
+    // clip's start, with the distance kept. After the last clip: the last clip's end.
     let k = spine.findIndex((s) => frame >= s.clip.start && frame < s.clip.end);
-    if (k < 0) k = frame < spine[0].clip.start ? 0 : spine.length - 1;
+    if (k < 0) { k = spine.findIndex((s) => s.clip.start > frame); if (k < 0) k = spine.length - 1; }
     const s = spine[k].clip;
     return { origin: k, tick: s.inTicks + (Math.min(Math.max(frame, s.start), s.end) - s.start) * tpf, before: frame < s.start, after: frame >= s.end, offset: frame - (frame < s.start ? s.start : s.end) };
   };
   const anchors = new Map(others.map((c) => [c, { a: anchorOf(c.start), b: anchorOf(c.end) }]));
+  const origOf = new Map(others.map((c) => [c, { start: c.start, end: c.end, inTicks: c.inTicks, outTicks: c.outTicks }]));
 
   // ---- target resolution ----
   const resolve = (target: any, what = 'target'): SP[] => {
@@ -125,7 +173,8 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
   const gapBefore = (tr: Transcript, i: number) => { const prev = tr.words[i - 1]; const w = tr.words[i]; const p = prev ? prev.end : 0; return Math.max(p, Math.min(w.start - 0.04, (p + w.start) / 2)); };
   const gapAfter = (tr: Transcript, i: number) => { const next = tr.words[i + 1]; const w = tr.words[i]; const n = next ? next.start : tr.duration; return Math.min(n, Math.max(w.end + 0.06, (w.end + n) / 2)); };
   const fq = (s: number, mode: 'floor' | 'ceil') => (mode === 'floor' ? Math.floor(s * fps + 1e-6) : Math.ceil(s * fps - 1e-6)) / fps;
-  const rangeFromWords = (tr: Transcript, a: number, b: number) => [fq(gapBefore(tr, a), 'ceil'), fq(gapAfter(tr, b), 'floor')] as [number, number];
+  // The in point at or before the first kept word's first frame, the out point at or after the last word's last.
+  const rangeFromWords = (tr: Transcript, a: number, b: number) => [Math.min(fq(gapBefore(tr, a), 'ceil'), fq(tr.words[a].start, 'floor')), Math.max(fq(gapAfter(tr, b), 'floor'), fq(tr.words[b].end, 'ceil'))] as [number, number];
   const newPiece = async (src: string | undefined, like: SP, e: any): Promise<SP> => {
     const media = src ? srcPath(src) : t0.media[like.clip.media].path;
     let key = like.clip.media;
@@ -175,8 +224,8 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
               const tr = await needTr(s);
               const [a, b] = wordsIn(s);
               const k = +m[1];
-              if (edge === 'start') { const i = Math.max(0, Math.min(tr.words.length - 1, a + k)); inS = fq(gapBefore(tr, i), 'ceil'); }
-              else { const i = Math.max(0, Math.min(tr.words.length - 1, b + k)); outS = fq(gapAfter(tr, i), 'floor'); }
+              if (edge === 'start') { const i = Math.max(0, Math.min(tr.words.length - 1, a + k)); inS = rangeFromWords(tr, i, i)[0]; }
+              else { const i = Math.max(0, Math.min(tr.words.length - 1, b + k)); outS = rangeFromWords(tr, i, i)[1]; }
             } else {
               const dt = T(String(d).replace(/^\+/, ''), fps);
               if (edge === 'start') inS += dt; else outS += dt;
@@ -244,7 +293,7 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
             const c: TLClip = { ...s.clip, id: `${s.clip.id}.${k + 1}`, raw: s.clip.raw ? { ...s.clip.raw } : undefined, transitionIn: k ? undefined : s.clip.transitionIn };
             // Keep the editor's own head and tail where the first/last words are unchanged.
             setRange(c, k === 0 && p.words![0] === a ? Math.min(p.inS, inS0) : p.inS, k === pcs.length - 1 && p.words![1] === b ? Math.max(p.outS, outS0) : p.outS);
-            out.push({ ...s, clip: c, label: pcs.length > 1 ? `${s.label}.${k + 1}` : s.label });
+            out.push({ ...s, clip: c, label: pcs.length > 1 ? `${s.label}.${k + 1}` : s.label, fresh: k > 0 });
           });
           total += (s.clip.end - s.clip.start) - pcs.reduce((x, p) => x + Math.round((p.outS - p.inS) * fps), 0);
           if (removed.fillers + removed.repeats + removed.pauses) log.push(`  ${s.label}: −${removed.fillers} fillers, −${removed.repeats} repeats, −${removed.pauses} pauses`);
@@ -388,15 +437,64 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
     if (c.levelKeys) c.levelKeys = c.levelKeys.map((k) => ({ ...k, frame: k.frame + shift }));
     kept.push(c);
   }
-  // Long clips (music beds) that ran to the old end are cut at the new end.
-  for (const c of kept) if (c.end > end + Math.round(fps * 3) && !c.vTrack) { const cut = end + Math.round(fps * 1.5); c.outTicks -= (c.end - cut) * tpf; c.end = cut; warnings.push(`${c.id} now ends at the new end of the cut (${framesToTimecode(cut, R)}); give it a real ending with level/fade or a music edit`); }
+  // Music beds (audio-only clips that span dialogue): a bed that ran to the end of the cut still does; a backtimed
+  // bed (ending on the track's own ending) keeps that ending by moving its in point; ducking is redone against the
+  // words of the new cut.
+  const transcriptsBy: Record<string, Transcript> = {};
+  const spans = speechSpans(spine.map((sp) => {
+    const inS = sp.clip.inTicks / TICKS_PER_SECOND, outS = sp.clip.outTicks / TICKS_PER_SECOND;
+    const ws = sp.tr ? sp.tr.words.filter((w) => w.start >= inS - 0.03 && w.end <= outS + 0.03) : [];
+    if (sp.tr) transcriptsBy[sp.clip.media] = sp.tr;
+    return { media: sp.clip.media, words: ws.length ? [ws[0].i, ws[ws.length - 1].i] as [number, number] : null, inS, outS, start: sp.clip.start, end: sp.clip.end };
+  }), transcriptsBy, t0, fps);
+  for (const c of kept) {
+    const m = t0.media[c.media], o = origOf.get(c);
+    if (c.vTrack || !c.aTrack || !m || !o || (m.kind !== 'audio' && o.end - o.start < (oldEnd - firstStart) * 0.5)) continue;
+    const durT = Math.round(m.duration * TICKS_PER_SECOND);
+    if (o.end >= oldEnd - Math.round(fps / 2)) c.end = Math.max(c.start + 1, end + (o.end - oldEnd));
+    const len = c.end - c.start;
+    if (Math.abs(o.outTicks - durT) < TICKS_PER_SECOND / 2) {
+      c.outTicks = durT; c.inTicks = durT - len * tpf;
+      if (c.inTicks < 0) { c.inTicks = 0; c.outTicks = len * tpf; warnings.push(`${c.id} (${m.name}) is now shorter than the cut; it starts at its beginning and no longer ends on its own ending`); }
+    } else {
+      c.outTicks = c.inTicks + len * tpf;
+      if (c.outTicks > durT) { const fit = Math.floor((durT - c.inTicks) / tpf); c.end = c.start + fit; c.outTicks = c.inTicks + fit * tpf; warnings.push(`${c.id} (${m.name}) runs out at ${framesToTimecode(c.end, R)}, before the new end of the cut`); }
+    }
+    const lv = c.raw?.audio?.find((f) => /<effectid>audiolevels<\/effectid>/.test(f) && /<keyframe>/.test(f));
+    if (lv && c.levelKeys === undefined && c.level === undefined) {
+      const dbs = [...lv.matchAll(/<keyframe>[\s\S]*?<value>([\d.]+)<\/value>/g)].map((x) => 20 * Math.log10(Math.max(1e-6, Number(x[1]))));
+      if (dbs.length >= 2) {
+        const under = Math.round(Math.min(...dbs) * 10) / 10, open = Math.round(Math.max(...dbs) * 10) / 10;
+        c.levelKeys = duckKeys(spans, c.start, c.end, under, open, fps);
+        delete c.video;
+      }
+    }
+  }
 
   const p = await projectInfo();
   const base = (name ?? t0.name).replace(/\s+v\d{3}$/i, '');
   let v = 2;
   while (p.sequences.some((s) => s.name === `${base} v${String(v).padStart(3, '0')}`)) v++;
   const timeline: Timeline = { ...t0, name: name ?? `${base} v${String(v).padStart(3, '0')}`, clips: [...spine.map((s) => s.clip), ...kept], markers: t0.markers.map((m) => { const an = anchorOf(m.frame); const f = mapAnchor(an); return { ...m, frame: f ?? m.frame }; }) };
+  // Jump cuts this batch created (tighten, cut-words) get the alternating punch-in a build would give them.
+  for (let k = 1; k < spine.length; k++) {
+    const A = spine[k - 1], B = spine[k];
+    if (!B.fresh || A.clip.media !== B.clip.media || Math.abs(A.clip.outTicks - B.clip.inTicks) <= tpf) continue;
+    if (motionScale(A.clip) === motionScale(B.clip)) B.clip.motion = { scale: motionScale(A.clip) === 100 ? 112 : 100 };
+  }
+  // Dialogue audio not linked to its picture doesn't follow word edits.
+  const wordOps = edits.some((e) => ['tighten', 'cut-words'].includes(e.op) || (e.op === 'trim' && /w$/.test(String(e.start ?? e.end ?? ''))));
+  if (wordOps) {
+    const loose = kept.filter((c) => !c.vTrack && c.aTrack && t0.media[c.media]?.kind !== 'audio' && spine.some((sp) => c.start < sp.clip.end && c.end > sp.clip.start));
+    if (loose.length) warnings.push(`${loose.map((c) => c.id).join(', ')}: audio under the dialogue that isn't linked to its picture; word edits moved the picture only. Link it in Premiere (select picture and sound, Clip > Link) and edit again.`);
+  }
+  // Only media the new version uses (a deleted clip's missing file must not block the import).
+  const used = new Set(timeline.clips.map((c) => c.media));
+  timeline.media = Object.fromEntries(Object.entries(timeline.media).filter(([k]) => used.has(k)));
   const imp = await importTimeline(timeline);
+  // The version's own sidecar, so segment ids and captions carry on to its next version.
+  fs.mkdirSync(CUTS_DIR, { recursive: true });
+  fs.writeFileSync(path.join(CUTS_DIR, `${imp.sequenceId}.json`), JSON.stringify({ sequenceId: imp.sequenceId, name: imp.name, builtAt: new Date().toISOString(), parent: seqId, edits, plan: { captions: captions || undefined }, pieces: spine.map((sp) => ({ id: sp.label, start: sp.clip.start, end: sp.clip.end })), rate: R }, null, 1));
 
   // Report + lint on the new spine (clips take their piece labels as ids so lint can match framing per piece).
   const seen = new Set<string>();
@@ -410,7 +508,7 @@ export async function applyCutEdits(seqId: string, edits: any[], o: { name?: str
   });
   pieces.forEach((pc, k) => { const prev = pieces[k - 1]; pc.jump = !!prev && prev.media === pc.media && Math.abs(prev.outS - pc.inS) > 1 / fps; });
   const compiled: Compiled = { plan: { name: timeline.name, segments: [{ src: '-', from: 0 }] } as any, timeline, pieces, segments: [], titles: [], transcripts, warnings, stats: { sourceSeconds: 0, cutSeconds: (end - firstStart) / fps, removed: { fillers: 0, repeats: 0, pauses: 0, pauseSeconds: 0 } } };
-  const issues = lintCut(compiled, { ignore: ['mid-word'] });
+  const issues = lintCut(compiled);
   let liveSteps = 0;
   if (captions) liveSteps += await addCaptions(imp.sequenceId, compiled, captions);
   if (titles.length) {

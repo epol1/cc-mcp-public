@@ -12,7 +12,7 @@ For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `s
 ## 1. The loop
 
 1. **Pin the brief** in one line: length (2 min, 45 s…), platform (16:9 web, 9:16 Reels/Shorts/TikTok, 1:1 feed), audience, the one thing the viewer should take away. Ask only if something critical is missing; otherwise pick defaults and say what you picked.
-2. **Find the material.** `library_search` (what's said and seen across the user's indexed footage) or `transcribe` the files you were given. Long interviews: `read_transcript` in 5-minute chunks. Note sentence ids (`s41`), word ranges (`w812–840`) and times.
+2. **Find the material.** `library_search` (what's said and seen across the user's indexed footage) or `transcribe` the files you were given. Long interviews: `read_transcript` in 5-minute chunks. Note sentence ids (`s41`), word ranges (`w812–840`) and times. Fix misheard names and numbers with `correct_transcript` before building: captions and quotes use the transcript text.
 3. **Paper edit first, always.** Before any JSON, write the story as beats with the exact quotes you'll use and why (hook, problem, turn, proof, close). Mark where you need B-roll and why. Show it to the user when the brief is subjective.
 4. **Write the plan** (§3) and run `build_cut` with `dryRun: true` once: it validates quotes, word ranges and lint without touching Premiere.
 5. **Build**, then **look**: the contact sheet (one frame per segment, with what's being said) and the cut strips (frames −6, −1 | cut, +6 around each cut). Check that every cut lands on a thought, no word is clipped, framing changes at jump cuts, and B-roll covers what it should.
@@ -34,6 +34,7 @@ For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `s
 
 ### 2.3 Tighten, but keep the breath
 - Tightening is on by default: fillers (`um`, `uh`, set-off `you know`/`like`), immediate repeats ("the second thing, the second thing"), pauses over 0.6 s shortened to 0.25 s. For a reflective, emotional answer raise `maxPause` (1.0–1.5 s) or set `tighten: false` on that segment: silence can be the point.
+- Tightening never removes a word your range keeps: a "repeat" is only cut when its second copy is in the segment too, and only filler-like words (`so`, `and`, `well`, `um`…) left alone at a segment edge by a filler cut go (the report says so). Explicit `cut` words always go, however short the leftover.
 - Every removal on a single camera creates a **jump cut**. pr-cut covers them by alternating a 112 % punch-in (default `jumpCuts: "punch-in"`). Better cover is B-roll that shows what's being said: `{ "src": "...", "over": "seg3/2" }` puts a shot across the cut before seg3's second piece. Lint warns about every jump cut left uncovered.
 
 ### 2.4 J and L cuts
@@ -103,7 +104,9 @@ Look at the contact sheet and the strips; read the lint; play the story in your 
 
 Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `move` (`before`/`after`), `replace`, `insert`, `cut-words`, `tighten`, `grade`, `level` (`db` or `delta`; targets `music`, `dialogue`, `all` or a clip; `delta` keeps keyframes such as ducking), `broll`, `transition`, `punch-in`, `remove` (a non-dialogue clip), `title` (`mogrt`, `at`: time or `{ target, offset }`, `duration`, `fields`), `rename`, `captions`.
 
-- Clips on V2+ (B-roll, graphics) and music stay attached to the moment of dialogue they sat on, so they move with ripple edits; a clip whose moment was cut is dropped and reported.
+- Clips on V2+ (B-roll, graphics) stay attached to the moment of dialogue they sat on, so they move with ripple edits; a clip whose moment was cut is dropped and reported. Music beds are re-ducked to the new speech and, when they ended on the track's own ending, keep it (their in point moves).
+- Jump cuts an edit creates (tighten, cut-words) get the alternating punch-in, as in a build.
+- Dialogue audio that isn't linked to its picture doesn't follow word edits: link it in Premiere first (the report warns).
 - `tighten` alone (`dryRun` default) lists every proposed cut with its words and seconds saved: show it before applying.
 - Caption tracks don't travel through versions; pr-cut rebuilds them from the new cut's words when the cut was built with captions (or ask with `{ "op": "captions" }`).
 
@@ -133,7 +136,7 @@ Ops: `delete`, `trim` (`start`/`end`: `"+3w"`, `"-2w"`, `"12f"`, `"-0.5s"`), `mo
 
 ## 8. Rules
 - Never edit the user's original sequences or media: build new sequences; edits create versions. Never relink, move or delete media.
-- One batch = one undo step for builds and edits (titles and captions add a few live steps; `undo` reverts all of them at once).
+- A build or edit is one Ctrl+Z in Premiere for the cut itself (titles and captions add a few live steps); `undo` reverts the whole batch in one call and refuses when you've worked in Premiere since (so it never undoes your own edits). `audio_finish` with limiting adds effects per clip: use `undo`, not Ctrl+Z, to revert it.
 - Vanilla Premiere only: no third-party effects or transitions.
 - If Premiere shows a dialog, `list_dialogs` shows it as an image and `answer_dialog` presses a button. Informational dialogs (the FCP translation report) are answered automatically.
 - Missing media would open a modal dialog in Premiere, so pr-cut refuses to build with files that don't exist: fix the path.

@@ -148,9 +148,48 @@ export function cachedTranscript(file: string): Transcript | null {
   } catch { return null; }
 }
 
+/**
+ * Whisper splits some words into tokens that belong to the previous one: ",000" in "200,000", "'s", "%", "n't".
+ * Joined back so captions, quotes and word counts read like the speech ("200,000", not "200 ,000").
+ */
+export function joinTokens<T extends { text: string; start: number; end: number; p: number }>(ws: T[]): T[] {
+  const out: T[] = [];
+  for (const w of ws) {
+    const t = w.text.trim();
+    const prev = out[out.length - 1];
+    if (prev && /^(,\d|\.\d|['’](s|t|re|ve|ll|d|m)\b|n['’]t\b|%)/i.test(t) && w.start - prev.end < 0.15) {
+      out[out.length - 1] = { ...prev, text: prev.text.trim() + t, end: Math.max(prev.end, w.end), p: Math.min(prev.p, w.p) };
+      continue;
+    }
+    out.push(w);
+  }
+  return out;
+}
+
+/**
+ * Correct recognised words (a name, a number, a misheard word): replaces the text of words [from, to] with `text`
+ * (spread over the same time span) and saves the cached transcript, so captions, quotes and outlines use it.
+ */
+export function correctTranscript(file: string, from: number, to: number, text: string): Transcript {
+  const abs = path.resolve(file);
+  const cacheFile = path.join(TRANSCRIPTS, `${mediaHash(abs)}.json`);
+  const t: Transcript = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+  if (from < 0 || to >= t.words.length || from > to) throw new Error(`words [${from}, ${to}] out of range (0–${t.words.length - 1})`);
+  const span = t.words.slice(from, to + 1);
+  const toks = text.trim().split(/\s+/).filter(Boolean);
+  if (!toks.length) throw new Error('correction text is empty (to remove words from a cut, cut them in the plan instead)');
+  const a = span[0].start, b = span[span.length - 1].end, d = (b - a) / toks.length;
+  const repl: Word[] = toks.map((x, k) => ({ i: 0, text: x, start: Math.round((a + k * d) * 1000) / 1000, end: Math.round((a + (k + 1) * d) * 1000) / 1000, p: 1, ...(span[0].speaker ? { speaker: span[0].speaker } : {}) }));
+  const words = [...t.words.slice(0, from), ...repl, ...t.words.slice(to + 1)].map((w, i) => ({ ...w, i }));
+  flagFillers(words);
+  const fixed: Transcript = { ...t, words, sentences: sentences(words), pauses: pauses(words), createdAt: new Date().toISOString() };
+  fs.writeFileSync(cacheFile, JSON.stringify(fixed));
+  return { ...fixed, media: abs };
+}
+
 /** Build a Transcript from recognizer words (flags, sentences, pauses; refined when an envelope is given). */
 export function buildTranscript(media: string, hash: string, raw: RawWords, env?: Envelope): Transcript {
-  let words: Word[] = raw.words.filter((w) => w.text.trim()).map((w, i) => ({ i, text: w.text.trim(), start: w.start, end: w.end, p: w.p, ...(w.speaker ? { speaker: w.speaker } : {}) }));
+  let words: Word[] = joinTokens(raw.words.filter((w) => w.text.trim())).map((w, i) => ({ i, text: w.text.trim(), start: w.start, end: w.end, p: w.p, ...(w.speaker ? { speaker: w.speaker } : {}) }));
   if (env) words = refineWords(words, env);
   flagFillers(words);
   return {

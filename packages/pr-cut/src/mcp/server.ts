@@ -8,7 +8,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { appWindows, pressDialog } from '@ae-mcp/core/bridge/dialogs.ts';
-import { transcribe, transcriptView, cachedTranscript, TRANSCRIPTS } from '@ae-mcp/core/transcribe/index.ts';
+import { correctTranscript, transcribe, transcriptView, cachedTranscript, TRANSCRIPTS } from '@ae-mcp/core/transcribe/index.ts';
 import { findQuote } from '@ae-mcp/core/transcribe/match.ts';
 import { fromTicksPerFrame, parseTime, secondsToFrames } from '@ae-mcp/core/time/timecode.ts';
 import { es, uxp } from '../bridge.ts';
@@ -72,7 +72,7 @@ server.registerTool('build_cut', {
 
 server.registerTool('apply_cut_edits', {
   title: 'Edit a sequence (as a new version)',
-  description: `Apply a batch of edits to a sequence and import the result as its next version ("Name v002"): one undo step, the original untouched. Works on sequences pr-cut built (edits the plan) and on hand-cut ones (edits Premiere's own XML of it, keeping effects and graphics). Returns the new version's report, contact sheet and cut strips.\n${EDIT_OPS_HELP}`,
+  description: `Apply a batch of edits to a sequence and import the result as its next version ("Name v002"): one undo step, the original untouched. Works on any sequence, pr-cut's or hand cut: Premiere exports it as XML, pr-cut edits that (keeping Lumetri, levels, motion, effects, fades and graphics; caption tracks are rebuilt from the words) and imports the next version. Music beds are re-ducked to the new speech and keep their own ending. Every op is validated first. Returns the new version's report, contact sheet and cut strips.\n${EDIT_OPS_HELP}`,
   inputSchema: { sequence: z.string().optional().describe('sequence id or name (default: active)'), edits: z.array(z.any()).min(1), name: z.string().optional().describe('name for the new version') },
 }, async ({ sequence, edits, name }) => wrap(async () => {
   const seq = await resolveSequence(sequence);
@@ -119,6 +119,17 @@ server.registerTool('read_transcript', {
 }, async ({ file, from, to, maxChars }) => wrap(async () => {
   const t = cachedTranscript(path.resolve(file)) ?? await transcribe(file);
   return [text(transcriptView(t, { from: from !== undefined ? parseTime(from) : undefined, to: to !== undefined ? parseTime(to) : undefined, maxChars: maxChars ?? 30_000 }))];
+}));
+
+server.registerTool('correct_transcript', {
+  title: 'Correct misheard words',
+  description: 'Replace recognised words [from, to] (inclusive word indices from the transcript view) with the right text: a name, a number, a misheard word. Saved in the transcript cache, so captions, quotes and outlines use it from then on. If the word count changes, later word indices shift by the difference: re-read the transcript before using word ranges after the correction.',
+  inputSchema: { file: z.string(), from: z.number().int(), to: z.number().int(), text: z.string() },
+}, async ({ file, from, to, text: t }) => wrap(async () => {
+  const tr = correctTranscript(file, from, to, t);
+  const s = tr.sentences.find((x) => x.from <= from && x.to >= from);
+  return [text(`corrected words ${from}–${to} → "${t}"${s ? `
+${s.id}: ${s.text}` : ''}`)];
 }));
 
 server.registerTool('search_transcript', {

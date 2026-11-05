@@ -1,4 +1,5 @@
 // Resolves edit-plan sources (aliases, paths, library ids) to probed media and transcripts, cached per process.
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { probe, type MediaInfo } from '@ae-mcp/core/media/probe.ts';
@@ -32,9 +33,12 @@ export function mediaResolver(aliases: Record<string, string> = {}, opts: { base
   const transcripts = new Map<string, Promise<Transcript>>();
   return {
     path: resolvePath,
+    // The alias when there is one for this file; otherwise the file name plus a hash of its path, because camera
+    // cards repeat names (A-cam and B-cam both have C0001.MP4) and two files must never share a key.
     key: (src) => {
       const p = resolvePath(src);
-      return Object.entries(aliases).find(([, v]) => path.resolve(base, v) === p)?.[0] ?? path.basename(p).replace(/[^\w.-]+/g, '_');
+      const alias = Object.entries(aliases).find(([, v]) => !v.startsWith('lib:') && path.resolve(base, v) === p)?.[0] ?? (aliases[src] ? src : undefined);
+      return alias ?? `${path.basename(p).replace(/[^\w.-]+/g, '_')}~${crypto.createHash('sha1').update(p.toLowerCase()).digest('hex').slice(0, 6)}`;
     },
     info(src) {
       const p = resolvePath(src);

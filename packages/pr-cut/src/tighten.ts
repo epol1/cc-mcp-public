@@ -34,6 +34,9 @@ export async function tightenSequence(seqId: string, opts: TightenOpts, o: { dry
       const words = rb.words ? tr.words.slice(rb.words[0], rb.words[1] + 1).map((w) => w.text).join(' ') : '';
       lines.push(`${id} @ ${p.inS.toFixed(2)} s: cut ${rb.reason}${words ? ` "${words}"` : ''} (${rb.seconds} s)`);
     }
+    // Same as apply: the editor's own head and tail stay where the first and last words are unchanged.
+    if (pcs.length && pcs[0].words![0] === ws[0].i) pcs[0].inS = Math.min(pcs[0].inS, a0);
+    if (pcs.length && pcs[pcs.length - 1].words![1] === ws[ws.length - 1].i) pcs[pcs.length - 1].outS = Math.max(pcs[pcs.length - 1].outS, b0);
     const before = Math.round((b0 - a0) * fps), after = pcs.reduce((s, p) => s + Math.round((p.outS - p.inS) * fps), 0);
     saved += before - after;
   }

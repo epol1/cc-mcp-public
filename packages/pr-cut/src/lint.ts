@@ -2,6 +2,7 @@
 // Premiere. Same report format as ae-compose (core lint/report.ts): errors, warnings, notes, each with a time range.
 import type { ReportIssue } from '@ae-mcp/core/lint/report.ts';
 import type { Compiled } from './plan/compile.ts';
+import { motionScale } from './timeline.ts';
 
 export type EditRule =
   | 'flash-frame' | 'mid-word' | 'offline' | 'gap'
@@ -23,21 +24,19 @@ export function lintCut(c: Compiled, o: EditLintOptions = {}): EditIssue[] {
     const len = (cl.video ?? cl).end - (cl.video ?? cl).start;
     if (cl.vTrack && len < flash) add({ rule: 'flash-frame', severity: 'error', message: `${cl.id} is ${len} frames on screen (${sec(len)} s): a flash frame`, t: [sec(cl.start), sec(cl.end)] });
   }
-  // Cuts must sit in gaps between words, never inside one.
+  // A cut must never clip a kept word: the in point at or before the piece's first word, the out point at or after
+  // its last (1 ms tolerance). A sliver of a removed neighbour is inaudible; a clipped onset is not.
   for (const p of c.pieces) {
     if (!p.words) continue;
     const tr = c.transcripts[p.media];
     if (!tr) continue;
-    for (const w of tr.words) {
-      if (w.end - w.start < 0.06) continue;
-      const inside = (x: number) => x > w.start + 0.02 && x < w.end - 0.02;
-      if (inside(p.inS)) add({ rule: 'mid-word', severity: 'error', message: `${p.id} starts inside "${w.text}" (source ${p.inS.toFixed(2)} s, word ${w.start.toFixed(2)}–${w.end.toFixed(2)})`, t: [sec(p.start), sec(p.start)] });
-      if (inside(p.outS)) add({ rule: 'mid-word', severity: 'error', message: `${p.id} ends inside "${w.text}" (source ${p.outS.toFixed(2)} s)`, t: [sec(p.end), sec(p.end)] });
-    }
+    const first = tr.words[p.words[0]], last = tr.words[p.words[1]];
+    if (p.inS > first.start + 0.001) add({ rule: 'mid-word', severity: 'error', message: `${p.id} starts ${Math.round((p.inS - first.start) * 1000)} ms into "${first.text}" (source ${p.inS.toFixed(3)} s, word starts ${first.start.toFixed(3)} s)`, t: [sec(p.start), sec(p.start)] });
+    if (p.outS < last.end - 0.001) add({ rule: 'mid-word', severity: 'error', message: `${p.id} ends ${Math.round((last.end - p.outS) * 1000)} ms before the end of "${last.text}" (source ${p.outS.toFixed(3)} s)`, t: [sec(p.end), sec(p.end)] });
   }
   // Jump cuts: same source, discontinuous, with the same framing and no B-roll over the cut.
   const broll = t.clips.filter((x) => (x.vTrack ?? 0) >= 2);
-  const scaleOf = (id: string) => t.clips.find((x) => x.id === id)?.motion?.scale ?? 100;
+  const scaleOf = (id: string) => { const c = t.clips.find((x) => x.id === id); return c ? motionScale(c) : 100; };
   for (let k = 1; k < c.pieces.length; k++) {
     const p = c.pieces[k], prev = c.pieces[k - 1];
     if (!p.jump) continue;

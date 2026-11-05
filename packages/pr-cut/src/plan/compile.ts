@@ -47,7 +47,8 @@ export interface Compiled {
 }
 
 export const DEF: Required<Omit<Tighten, 'cut'>> = { fillers: true, repeats: true, maxPause: 0.6, keepPause: 0.25, handles: 0.06, minPiece: 0.5 };
-const DISCOURSE = new Set(['so', 'and', 'but', 'well', 'okay', 'ok', 'yeah', 'like', 'now', 'right', 'um', 'uh']);
+/** Words that may go when a filler removal leaves them alone at a segment edge ("So, um, the…" → "the…"). */
+const DISCOURSE = new Set(['so', 'and', 'well', 'okay', 'ok', 'yeah', 'like', 'um', 'uh', 'erm', 'hmm']);
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9']/g, '');
 
 export async function compilePlan(input: unknown, media: MediaResolver): Promise<Compiled> {
@@ -124,6 +125,12 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
       if (a < 0) segPieces = [{ id, seg: id, src: seg.src, media: key, words: null, inS: fr(from) / fps, outS: fr(to) / fps, jump: false }];
     }
     if (a >= 0 && tr) segPieces = tightenSegment(id, seg, key, tr, a, b, { ...DEF, ...(plan.tighten || {}), ...(seg.tighten || {}) }, seg.tighten === false || (plan.tighten === false && !seg.tighten), fps, removed, warnings);
+    // Time-addressed segments keep their own in and out (pre- and post-roll) where the edge words survived.
+    if (a >= 0 && tr && (seg.from !== undefined || seg.to !== undefined) && segPieces.length) {
+      const first = segPieces[0], last = segPieces[segPieces.length - 1];
+      if (seg.from !== undefined && first.words?.[0] === a) first.inS = Math.min(first.inS, fr(T(seg.from), 'ceil') / fps);
+      if (seg.to !== undefined && last.words?.[1] === b) last.outS = Math.max(last.outS, fr(T(seg.to), 'floor') / fps);
+    }
     // ---- lay pieces on the timeline ----
     for (const p of segPieces) {
       const d = Math.round((p.outS - p.inS) * fps);
@@ -158,6 +165,9 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     timeline.clips.push(clip);
   }
   // ---- J/L cuts at segment boundaries: move the picture cut, keep the sound continuous ----
+  const firstSeg = segments[0]?.id ?? 'seg1', lastSeg = segments.at(-1)?.id ?? `seg${segments.length}`;
+  if (segments[0]?.j !== undefined) warnings.push(`${firstSeg}: j has no effect on the first segment (nothing before it to overlap)`);
+  if (segments.at(-1)?.l !== undefined) warnings.push(`${lastSeg}: l has no effect on the last segment (nothing after it to overlap)`);
   for (let k = 1; k < pieces.length; k++) {
     const p = pieces[k], prev = pieces[k - 1];
     if (p.seg === prev.seg) continue;
@@ -165,14 +175,20 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const shift = seg.j !== undefined ? fr(T(seg.j)) : prevSeg.l !== undefined ? -fr(T(prevSeg.l)) : 0;
     if (!shift) continue;
     const A = timeline.clips[k - 1], B = timeline.clips[k];
-    const maxShift = Math.min(B.end - B.start, A.end - A.start) - 1;
-    const s = Math.max(-maxShift, Math.min(maxShift, shift));
-    if (s !== shift) warnings.push(`${p.seg}: J/L cut limited to ${s} frames by the clip lengths`);
+    const Av = A.video ?? { start: A.start, end: A.end, inTicks: A.inTicks, outTicks: A.outTicks };
+    const Bv = B.video ?? { start: B.start, end: B.end, inTicks: B.inTicks, outTicks: B.outTicks };
+    // Limits: each picture keeps at least a frame, and the picture can't run before its media start or past its end.
+    const mA = timeline.media[A.media], mB = timeline.media[B.media];
+    const maxJ = Math.min(Bv.end - Bv.start - 1, Math.floor((mA.duration * TICKS_PER_SECOND - Av.outTicks) / tpf));
+    const maxL = Math.min(Av.end - Av.start - 1, Math.floor(Bv.inTicks / tpf));
+    const s = Math.max(-maxL, Math.min(maxJ, shift));
+    if (s !== shift) warnings.push(`${p.seg}: J/L cut limited to ${s} frames (${s > 0 ? 'picture left after the previous segment' : 'picture before this segment'} and clip lengths)`);
+    if (!s) continue;
     // J (s > 0): previous picture holds s frames longer, this picture starts s later. L (s < 0): the reverse.
-    A.video = { start: A.start, end: A.end + s, inTicks: A.inTicks, outTicks: A.outTicks + s * tpf };
-    B.video = { start: B.start + s, end: B.end, inTicks: B.inTicks + s * tpf, outTicks: B.outTicks };
-    const mA = timeline.media[A.media];
-    if (A.outTicks + s * tpf > mA.duration * TICKS_PER_SECOND) warnings.push(`${prev.seg}: not enough picture after its last word for the J/L cut`);
+    // Each side keeps a split edit already made at its other boundary.
+    A.video = { ...Av, end: Av.end + s, outTicks: Av.outTicks + s * tpf };
+    B.video = { ...Bv, start: Bv.start + s, inTicks: Bv.inTicks + s * tpf };
+    void mB;
   }
   // ---- markers ----
   if (plan.markers !== false) for (const s of segs) timeline.markers.push({ frame: s.start, name: s.id, comment: [s.beat, `"${s.text.slice(0, 80)}${s.text.length > 80 ? '…' : ''}"`].filter(Boolean).join(' · ') } as TLMarker);
@@ -183,6 +199,18 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
   // ---- B-roll ----
   const dialogueEnd = cursor;
   const occupied = new Map<number, [number, number][]>();
+  // Nat sound from B-roll takes the first free stereo pair from A3 up, skipping the music's pair (A5 unless set).
+  const musicPairs = new Set((plan.music ?? []).map((m) => m.track ?? 5));
+  const audioUsed = new Map<number, [number, number][]>();
+  const audioPair = (span: [number, number]) => {
+    for (let t = 3; t < 31; t += 2) {
+      if (musicPairs.has(t)) continue;
+      if ((audioUsed.get(t) ?? []).some(([x, y]) => span[0] < y && span[1] > x)) continue;
+      audioUsed.set(t, [...(audioUsed.get(t) ?? []), span]);
+      return t;
+    }
+    throw new Error('more than 13 overlapping B-roll clips with sound');
+  };
   let bi = 0;
   for (const b of plan.broll ?? []) {
     const bid = b.id ?? `b${++bi}`;
@@ -212,15 +240,16 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const len = span[1] - span[0];
     if (len < fr(0.5)) throw new Error(`${bid}: only ${(len / fps).toFixed(2)} s long; B-roll under 0.5 s reads as a flash frame`);
     const need = len / fps;
-    if (info.duration < need - 1 / fps) { warnings.push(`${bid}: ${info.name} is ${info.duration.toFixed(1)} s, shorter than the ${need.toFixed(1)} s span; shortened`); span[1] = span[0] + Math.floor(info.duration * fps) - 1; }
-    const inS = b.in !== undefined ? T(b.in) : Math.max(0, (info.duration - need) / 2);
-    if (inS + (span[1] - span[0]) / fps > info.duration + 1e-6) throw new Error(`${bid}: in ${inS.toFixed(2)} s + ${((span[1] - span[0]) / fps).toFixed(2)} s runs past the end of ${info.name}`);
+    const still = info.kind === 'image';
+    if (!still && info.duration < need - 1 / fps) { warnings.push(`${bid}: ${info.name} is ${info.duration.toFixed(1)} s, shorter than the ${need.toFixed(1)} s span; shortened`); span[1] = span[0] + Math.floor(info.duration * fps) - 1; }
+    const inS = still ? 0 : b.in !== undefined ? T(b.in) : Math.max(0, (info.duration - need) / 2);
+    if (!still && inS + (span[1] - span[0]) / fps > info.duration + 1e-6) throw new Error(`${bid}: in ${inS.toFixed(2)} s + ${((span[1] - span[0]) / fps).toFixed(2)} s runs past the end of ${info.name}`);
     let track = b.track ?? 2;
     while ((occupied.get(track) ?? []).some(([x, y]) => span[0] < y && span[1] > x)) track++;
     occupied.set(track, [...(occupied.get(track) ?? []), span]);
     const inTicks = toTicks(fr(inS, 'floor') / fps);
     timeline.clips.push({
-      id: bid, media: key, vTrack: track, ...(b.audio !== undefined && info.audio ? { aTrack: 3, level: b.audio } : {}),
+      id: bid, media: key, vTrack: track, ...(b.audio !== undefined && info.audio ? { aTrack: audioPair(span), level: b.audio } : {}),
       start: span[0], end: span[1], inTicks, outTicks: inTicks + (span[1] - span[0]) * tpf,
       grade: b.grade ?? plan.grade?.[b.src], motion: b.scale ? { scale: b.scale } : undefined,
       transitionIn: b.transition === 'dissolve' ? { kind: 'dissolve', frames: Math.round(fps / 3) } : undefined, label: 'Mango',
@@ -246,34 +275,31 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const level = m.level ?? -20, open = m.open ?? -12;
     const keys: { frame: number; db: number }[] = [];
     const mEnd = start + playable;
-    if (m.duck !== false) {
-      // Speech spans from the words actually spoken in the cut (whole pieces when there is no transcript), merged
-      // across short gaps; music opens up in gaps of 1.5 s or more.
-      const raw: [number, number][] = [];
-      for (const p of pieces) {
-        const tr = transcripts[p.media] ?? cachedTranscript(timeline.media[p.media].path);
-        if (!tr) { raw.push([p.start, p.end]); continue; }
-        const inside = p.words ? tr.words.slice(p.words[0], p.words[1] + 1) : tr.words.filter((w) => w.start >= p.inS - 0.02 && w.end <= p.outS + 0.02);
-        for (const w of inside) {
-          raw.push([Math.max(p.start, p.start + fr(w.start - p.inS, 'floor')), Math.min(p.end, p.start + fr(w.end - p.inS, 'ceil'))]);
-        }
-      }
-      raw.sort((x, y) => x[0] - y[0]);
-      const spans: [number, number][] = [];
-      for (const s of raw) { const last = spans.at(-1); if (last && s[0] - last[1] < fr(1.5)) last[1] = Math.max(last[1], s[1]); else spans.push([...s]); }
-      const ramp = fr(0.35);
-      let lvl = spans.length && spans[0][0] - start < fr(1.5) ? level : open;
-      keys.push({ frame: start, db: lvl });
-      for (const [s, e] of spans) {
-        if (e < start || s > mEnd) continue;
-        if (lvl !== level) { keys.push({ frame: Math.max(start, s - ramp), db: open }, { frame: Math.max(start, s), db: level }); lvl = level; }
-        if (mEnd - e >= fr(1.5)) { keys.push({ frame: e, db: level }, { frame: Math.min(mEnd, e + ramp), db: open }); lvl = open; }
-      }
-    }
+    if (m.duck !== false) keys.push(...duckKeys(speechSpans(pieces, transcripts, timeline, fps), start, mEnd, level, open, fps));
     const fadeIn = m.fadeIn !== undefined ? fr(T(m.fadeIn)) : inS > 0.05 && ending !== 'backtime' ? fr(0.5) : 0;
-    if (fadeIn) { const first = keys.length ? keys[0].db : level; keys.unshift({ frame: start, db: -60 }); keys.splice(1, 0, { frame: start + fadeIn, db: first }); }
     const fadeOut = m.fadeOut !== undefined ? fr(T(m.fadeOut)) : ending === 'fade' ? fr(2) : 0;
-    if (fadeOut) { const lastDb = keys.length ? keys[keys.length - 1].db : level; keys.push({ frame: mEnd - fadeOut, db: lastDb }, { frame: mEnd, db: -60 }); }
+    if (fadeIn || fadeOut) {
+      // Fades are an envelope on top of the ducking curve (sampled at every duck key and along each fade), so a fade
+      // never overwrites a duck key and a long fade-out never opens the bed under the last words.
+      if (!keys.length) keys.push({ frame: start, db: level }, { frame: mEnd, db: level });
+      const duck = (f: number) => {
+        const ks = [...keys].sort((x, y) => x.frame - y.frame);
+        if (f <= ks[0].frame) return ks[0].db;
+        for (let i = 1; i < ks.length; i++) if (f <= ks[i].frame) { const a = ks[i - 1], b = ks[i]; return a.db + ((b.db - a.db) * (f - a.frame)) / Math.max(1, b.frame - a.frame); }
+        return ks[ks.length - 1].db;
+      };
+      const gain = (f: number) => {
+        let g = 1;
+        if (fadeIn && f < start + fadeIn) g *= Math.max(0, (f - start) / fadeIn);
+        if (fadeOut && f > mEnd - fadeOut) g *= Math.max(0, (mEnd - f) / fadeOut);
+        return g;
+      };
+      const frames = new Set<number>(keys.map((k) => k.frame));
+      for (const [a, b] of [[start, start + fadeIn], [mEnd - fadeOut, mEnd]] as [number, number][]) if (b > a) for (let i = 0; i <= 6; i++) frames.add(Math.round(a + ((b - a) * i) / 6));
+      const env = [...frames].filter((f) => f >= start && f <= mEnd).sort((x, y) => x - y).map((f) => ({ frame: f, db: Math.max(-60, duck(f) + 20 * Math.log10(Math.max(gain(f), 0.001))) }));
+      keys.length = 0;
+      keys.push(...env);
+    }
     keys.sort((x, y) => x.frame - y.frame);
     const inTicks = toTicks(inS);
     timeline.clips.push({ id: mid, media: key, aTrack: m.track ?? 5, start, end: mEnd, inTicks, outTicks: inTicks + playable * tpf, level: keys.length ? undefined : level, levelKeys: keys.length ? dedupeKeys(keys) : undefined, label: 'Forest' });
@@ -342,30 +368,48 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
     }
     keep[i] = k; why[i] = r;
   }
+  // A repeat is a false start only when its second copy is in the segment too: otherwise the plan keeps those words.
+  for (let i = a; i <= b; i++) {
+    if (why[i] !== 'repeat') continue;
+    let j = i;
+    while (j + 1 <= b && why[j + 1] === 'repeat') j++;
+    const n = j - i + 1;
+    if (j + n > b) for (let x = i; x <= j; x++) { keep[x] = true; why[x] = null; }
+    i = j;
+  }
   for (const c of opt.cut ?? []) {
     const [x, y] = Array.isArray(c) ? c : [c, c];
     for (let i = Math.max(a, x); i <= Math.min(b, y); i++) { keep[i] = false; why[i] = 'cut'; }
   }
   const maxPause = parseTime(opt.maxPause), keepPause = parseTime(opt.keepPause), handle = parseTime(opt.handles), minPiece = parseTime(opt.minPiece);
-  // Runs of kept words, split at removed words and at long pauses.
-  type Run = { from: number; to: number; splitBefore: 'start' | 'removed' | 'pause' };
+  // Runs of kept words, split at removed words (explicit cuts marked: they never merge back) and at long pauses.
+  type Run = { from: number; to: number; splitBefore: 'start' | 'removed' | 'cut' | 'pause' };
   let runs: Run[] = [];
   for (let i = a; i <= b; i++) {
     if (!keep[i]) continue;
     const last = runs.at(-1);
     const prevKept = last ? last.to : -1;
     if (last && prevKept === i - 1 && (off || W[i].start - W[i - 1].end <= maxPause)) last.to = i;
-    else runs.push({ from: i, to: i, splitBefore: !last ? 'start' : prevKept === i - 1 ? 'pause' : 'removed' });
+    else {
+      const gapWhy = last && prevKept !== i - 1 ? why.slice(prevKept + 1, i) : [];
+      runs.push({ from: i, to: i, splitBefore: !last ? 'start' : prevKept === i - 1 ? 'pause' : gapWhy.includes('cut') ? 'cut' : 'removed' });
+    }
   }
   if (!runs.length) { warnings.push(`${id}: every word was removed by tightening; kept the segment as is`); runs = [{ from: a, to: b, splitBefore: 'start' }]; }
-  // Edge leftovers that are only discourse words ("So," before a removed "um") go; other short runs merge back.
+  // Edge leftovers made only of discourse words, cut off by a filler removal ("So," before a removed "um"), go
+  // (reported); other short runs merge back with a neighbour, but never across an explicit cut.
   const dur = (r: Run) => W[r.to].end - W[r.from].start;
   const isDiscourse = (r: Run) => W.slice(r.from, r.to + 1).every((w) => DISCOURSE.has(norm(w.text)));
-  if (runs.length > 1 && dur(runs[0]) < minPiece && isDiscourse(runs[0])) { runs.shift(); runs[0].splitBefore = 'start'; }
-  if (runs.length > 1 && dur(runs.at(-1)!) < minPiece && isDiscourse(runs.at(-1)!)) runs.pop();
+  const dropped: string[] = [];
+  if (runs.length > 1 && runs[1].splitBefore === 'removed' && dur(runs[0]) < minPiece && isDiscourse(runs[0])) { dropped.push(W.slice(runs[0].from, runs[0].to + 1).map((w) => w.text).join(' ')); runs.shift(); runs[0].splitBefore = 'start'; }
+  if (runs.length > 1 && runs.at(-1)!.splitBefore === 'removed' && dur(runs.at(-1)!) < minPiece && isDiscourse(runs.at(-1)!)) { dropped.push(W.slice(runs.at(-1)!.from, runs.at(-1)!.to + 1).map((w) => w.text).join(' ')); runs.pop(); }
+  if (dropped.length) warnings.push(`${id}: also dropped ${dropped.map((d) => `"${d}"`).join(' and ')} (left alone at the segment edge by a filler cut; keep it with tighten.fillers false or words)`);
   for (let k = 0; k < runs.length; k++) {
     if (runs.length < 2 || dur(runs[k]) >= minPiece) continue;
-    const j = k === 0 ? 1 : k === runs.length - 1 ? k - 1 : (W[runs[k].from].start - W[runs[k - 1].to].end) < (W[runs[k + 1].from].start - W[runs[k].to].end) ? k - 1 : k + 1;
+    const canPrev = k > 0 && runs[k].splitBefore !== 'cut';
+    const canNext = k + 1 < runs.length && runs[k + 1].splitBefore !== 'cut';
+    if (!canPrev && !canNext) continue; // between explicit cuts: the agent asked for exactly this
+    const j = !canPrev ? k + 1 : !canNext ? k - 1 : (W[runs[k].from].start - W[runs[k - 1].to].end) < (W[runs[k + 1].from].start - W[runs[k].to].end) ? k - 1 : k + 1;
     const [x, y] = j < k ? [j, k] : [k, j];
     runs[x] = { from: runs[x].from, to: runs[y].to, splitBefore: runs[x].splitBefore };
     runs.splice(y, 1);
@@ -374,7 +418,7 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
   // What was removed: every word of the range outside the final runs (edge leftovers included).
   for (let i = a; i <= b; i++) {
     if (runs.some((r) => i >= r.from && i <= r.to)) continue;
-    if (why[i] === 'filler') removed.fillers++; else if (why[i] === 'repeat') removed.repeats++;
+    if (why[i] === 'filler' || !why[i]) removed.fillers++; else if (why[i] === 'repeat') removed.repeats++;
   }
   // Cut points.
   const fq = (s: number, mode: 'floor' | 'ceil' | 'round') => (mode === 'floor' ? Math.floor(s * fps + 1e-6) : mode === 'ceil' ? Math.ceil(s * fps - 1e-6) : Math.round(s * fps)) / fps;
@@ -386,11 +430,14 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
     const lead = r.splitBefore === 'pause' ? Math.min(keepPause / 2, gapBefore / 2) : Math.min(k === 0 ? Math.max(handle, 0.12) : handle, gapBefore / 2);
     const nextSplit = runs[k + 1]?.splitBefore;
     const tail = nextSplit === 'pause' ? Math.min(keepPause / 2, gapAfter / 2) : Math.min(k === runs.length - 1 ? Math.max(handle, 0.2) : handle, gapAfter / 2);
-    // Quantize to frames inside the gap: never include part of the neighbouring word.
-    let inS = fq(W[r.from].start - lead, 'round');
-    if (inS < prevEnd - 1e-6) inS = Math.min(fq(prevEnd, 'ceil'), fq(W[r.from].start, 'floor'));
-    let outS = fq(W[r.to].end + tail, 'round');
-    if (outS > nextStart + 1e-6) outS = Math.max(fq(nextStart, 'floor'), fq(W[r.to].end, 'ceil'));
+    // Quantize to frames inside the gap. A kept word is never clipped: the in point is at or before its first frame
+    // and the out point at or after its last, even when the gap to the neighbour is under a frame (then a sliver of
+    // the neighbour is the lesser evil).
+    const firstFrame = fq(W[r.from].start, 'floor'), lastFrame = fq(W[r.to].end, 'ceil');
+    let inS = Math.min(fq(W[r.from].start - lead, 'round'), firstFrame);
+    if (inS < prevEnd - 1e-6) inS = Math.min(fq(prevEnd, 'ceil'), firstFrame);
+    let outS = Math.max(fq(W[r.to].end + tail, 'round'), lastFrame);
+    if (outS > nextStart + 1e-6) outS = Math.max(fq(nextStart, 'floor'), lastFrame);
     if (outS <= inS) outS = inS + 1 / fps;
     const prevRun = runs[k - 1];
     let removedBefore: Piece['removedBefore'];
@@ -446,4 +493,37 @@ async function montage(m: Montage, x: { timeline: Timeline; addMedia: (src: stri
   x.timeline.clips.push({ id: 'm1', media: mus.key, aTrack: 1, start: 0, end: len, inTicks, outTicks: inTicks + len * x.tpf, level: m.level ?? 0, label: 'Forest' });
   x.segs.push({ id: 'montage', src: m.music, words: null, start: 0, end: len, text: `${cuts.length} shots cut every ${per} beat${per === 1 ? '' : 's'} of ${mus.info.name} (${ba.bpm.toFixed(1)} BPM), ${start.toFixed(2)}–${end.toFixed(2)} s` });
   return len;
+}
+
+/**
+ * Where words are spoken in the cut (sequence frames), merged across gaps under 1.5 s: what music ducks under.
+ * Pieces without a transcript count as speech throughout.
+ */
+export function speechSpans(pieces: Pick<Piece, 'media' | 'words' | 'inS' | 'outS' | 'start' | 'end'>[], transcripts: Record<string, Transcript>, timeline: Pick<Timeline, 'media'>, fps: number): [number, number][] {
+  const raw: [number, number][] = [];
+  for (const p of pieces) {
+    const tr = transcripts[p.media] ?? (timeline.media[p.media]?.path ? cachedTranscript(timeline.media[p.media].path) : null);
+    if (!tr) { raw.push([p.start, p.end]); continue; }
+    const inside = p.words ? tr.words.slice(p.words[0], p.words[1] + 1) : tr.words.filter((w) => w.start >= p.inS - 0.02 && w.end <= p.outS + 0.02);
+    for (const w of inside) raw.push([Math.max(p.start, p.start + Math.floor((w.start - p.inS) * fps)), Math.min(p.end, p.start + Math.ceil((w.end - p.inS) * fps))]);
+  }
+  raw.sort((x, y) => x[0] - y[0]);
+  const spans: [number, number][] = [];
+  const gap = Math.round(1.5 * fps);
+  for (const s of raw) { const last = spans.at(-1); if (last && s[0] - last[1] < gap) last[1] = Math.max(last[1], s[1]); else spans.push([...s]); }
+  return spans;
+}
+
+/** Level keys for a music clip [start, end): `level` dB under speech, `open` dB in gaps of 1.5 s or more, 0.35 s ramps. */
+export function duckKeys(spans: [number, number][], start: number, end: number, level: number, open: number, fps: number): { frame: number; db: number }[] {
+  const keys: { frame: number; db: number }[] = [];
+  const ramp = Math.round(0.35 * fps), gap = Math.round(1.5 * fps);
+  let lvl = spans.length && spans[0][0] - start < gap ? level : open;
+  keys.push({ frame: start, db: lvl });
+  for (const [s, e] of spans) {
+    if (e < start || s > end) continue;
+    if (lvl !== level) { keys.push({ frame: Math.max(start, s - ramp), db: open }, { frame: Math.max(start, s), db: level }); lvl = level; }
+    if (end - e >= gap) { keys.push({ frame: e, db: level }, { frame: Math.min(end, e + ramp), db: open }); lvl = open; }
+  }
+  return keys;
 }

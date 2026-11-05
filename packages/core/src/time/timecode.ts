@@ -19,7 +19,12 @@ export function rate(r: number | string | Rate): Rate {
   if (typeof r === 'object') return r;
   const s = String(r).trim();
   const frac = /^(\d+)\s*\/\s*(\d+)$/.exec(s);
-  if (frac) return { num: +frac[1], den: +frac[2] };
+  if (frac) {
+    // "2997/100" or "30000/1001.0"-style fractions of a standard rate become that rate (integer ticks per frame).
+    const v = +frac[1] / +frac[2];
+    for (const [k, known] of Object.entries(KNOWN)) if (Math.abs(v - Number(k)) < 0.006 && (known.num / known.den) !== v) return known;
+    return { num: +frac[1], den: +frac[2] };
+  }
   const n = Number(s);
   if (!Number.isFinite(n) || n <= 0) throw new Error(`frame rate "${r}" is not a number or fraction`);
   if (n > 1e6) return fromTicksPerFrame(n);

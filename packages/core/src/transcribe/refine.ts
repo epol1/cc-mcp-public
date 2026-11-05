@@ -62,10 +62,16 @@ export function refineWords(words: Word[], env: Envelope, o: RefineOptions = {})
     const w = out[i];
     const prevEnd = i ? out[i - 1].end : 0;
     const [rs, re] = w.raw!;
+    const nextRaw = out[i + 1]?.raw?.[0] ?? Infinity;
+    // A word quieter than the speech threshold everywhere in and just after its span (a soft word, a whisper) keeps
+    // the recognizer's times: there is no onset to snap to.
+    let anyLoud = false;
+    for (let t = rs; t <= Math.min(re + lookAhead * 0.5, nextRaw); t += hop) if (loud(t)) { anyLoud = true; break; }
+    if (!anyLoud) { w.start = round3(Math.max(rs, prevEnd)); w.end = round3(Math.max(re, w.start + hop)); continue; }
     let start = rs;
     if (!loud(rs)) {
-      // Starts in silence: move to the first loud frame (Whisper's early start).
-      const limit = Math.min(re + lookAhead * 0.5, rs + lookAhead);
+      // Starts in silence: move to the first loud frame (Whisper's early start), never onto the next word.
+      const limit = Math.min(re + lookAhead * 0.5, rs + lookAhead, nextRaw - hop);
       let t = rs;
       while (t < limit && !loud(t)) t += hop;
       if (t < limit) start = Math.max(prevEnd, t - attack);

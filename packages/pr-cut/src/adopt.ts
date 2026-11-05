@@ -22,6 +22,9 @@ export async function exportSequenceXml(seqId: string): Promise<string> {
 }
 
 export function fileUrlToPath(u: string): string {
+  // file://server/share/x is a network path (\\server\share\x); file://localhost/C%3a/x and file:///C:/x are local.
+  const host = /^file:\/\/([^/]+)\/(.*)$/i.exec(u);
+  if (host && host[1].toLowerCase() !== 'localhost' && !/^[A-Za-z](:|%3a)$/i.test(host[1])) return `\\\\${host[1]}\\${decodeURIComponent(host[2]).replace(/\//g, '\\')}`;
   const s = decodeURIComponent(u.replace(/^file:\/\/localhost\//i, '').replace(/^file:\/\/\//i, '').replace(/^file:\/\//i, ''));
   return path.resolve(s.replace(/^([A-Za-z]):?\//, '$1:/'));
 }
@@ -78,9 +81,14 @@ export function adoptXml(xml: string): Adopted {
   }
   type Item = { id: string; kind: 'video' | 'audio'; track: number; index: number; start: number; end: number; inT: number; outT: number; fileId?: string; links: string[]; filters: string[]; enabled: boolean; sourceTrack?: number; raw?: XEl; name: string; graphic: boolean };
   const items: Item[] = [];
-  const transitions: { kind: 'video' | 'audio'; track: number; start: number; end: number; cut: number; name: string }[] = [];
+  const prTrack: { video: number[]; audio: number[] } = { video: [], audio: [] };
+  const transitions: { kind: 'video' | 'audio'; track: number; start: number; end: number; cut: number; name: string; align: string }[] = [];
   for (const kind of ['video', 'audio'] as const) {
     const tracks = els(child(seq, `media/${kind}`)!, 'track');
+    // Premiere shows an exploded stereo pair (currentExplodedTrackIndex 0 and 1) as one track: number audio tracks
+    // the way the timeline (and inspect_sequence) does.
+    let shown = 0;
+    tracks.forEach((tr) => { if (kind === 'audio' && attr(tr, 'currentExplodedTrackIndex') !== '1') shown++; prTrack[kind].push(kind === 'audio' ? shown : prTrack[kind].length + 1); });
     tracks.forEach((tr, ti) => {
       const kids = els(tr).filter((k) => k.tag === 'clipitem' || k.tag === 'transitionitem' || k.tag === 'generatoritem');
       let idx = 0;
@@ -88,7 +96,7 @@ export function adoptXml(xml: string): Adopted {
         if (k.tag === 'transitionitem') {
           const s = Number(txt(el(k, 'start'))), e = Number(txt(el(k, 'end')));
           const cpt = txt(el(k, 'cutPointTicks'));
-          transitions.push({ kind, track: ti + 1, start: s, end: e, cut: cpt ? s + Math.round(Number(cpt) / tpf) : Math.round((s + e) / 2), name: txt(child(k, 'effect/name')) });
+          transitions.push({ kind, track: ti + 1, start: s, end: e, cut: cpt ? s + Math.round(Number(cpt) / tpf) : Math.round((s + e) / 2), name: txt(child(k, 'effect/name')), align: txt(el(k, 'alignment')) });
           return;
         }
         const fileEl = el(k, 'file');
@@ -127,10 +135,10 @@ export function adoptXml(xml: string): Adopted {
     const lead = a0 ?? v!;
     const key = lead.graphic ? `graphic_${lead.id}` : fileKey.get(lead.fileId!)!;
     if (lead.graphic && !media[key]) media[key] = { path: '', name: lead.name, kind: 'video', duration: (lead.outT - lead.inT) / tpf * R.den / R.num, bytes: 0, container: 'graphic' };
-    const id = v ? `V${v.track}/${v.index}` : `A${a0.track}/${a0.index}`;
+    const id = v ? `V${v.track}/${v.index}` : `A${prTrack.audio[a0.track - 1] ?? a0.track}/${a0.index}`;
     const c: TLClip = {
       id, media: key, name: lead.name, start: lead.start, end: lead.end, inTicks: lead.inT, outTicks: lead.outT,
-      ...(v ? { vTrack: v.track } : {}), ...(a0 ? { aTrack: a0.track, channels: as.map((x) => x.sourceTrack ?? 1) } : {}),
+      ...(v ? { vTrack: v.track } : {}), ...(a0 ? { aTrack: a0.track, channels: as.slice(0, 2).map((x) => x.sourceTrack ?? 1) } : {}),
       raw: { video: v?.filters ?? [], audio: a0?.filters ?? [], ...(lead.graphic ? { item: serialize(lead.raw!) } : {}) },
       ...(v && !v.enabled ? { disabled: true } : {}),
     };
@@ -140,7 +148,18 @@ export function adoptXml(xml: string): Adopted {
     if (as.length > 2) warnings.push(`${id}: ${as.length} audio channels linked; pr-cut keeps the first two`);
   }
   // Transitions become transitionIn on the clip that starts at the cut.
+  const kindOf = (t: { kind: string; name: string }) => (t.kind === 'audio' ? 'audio-crossfade' : /dip to black/i.test(t.name) ? 'dip-black' : /dip to white/i.test(t.name) ? 'dip-white' : 'dissolve') as 'dissolve';
   for (const t of transitions) {
+    const onTrack = (c: TLClip) => (t.kind === 'video' ? c.vTrack === t.track : c.aTrack === t.track || c.aTrack === t.track - 1);
+    // Fades at a clip's own head or tail (from/to black or silence): Premiere aligns them start-black / end-black.
+    if (t.align === 'start-black' || t.align === 'end-black') {
+      const head = t.align === 'start-black';
+      const c = clips.find((x) => onTrack(x) && (head ? ((x.video && t.kind === 'video' ? x.video.start : x.start) === t.start) : ((x.video && t.kind === 'video' ? x.video.end : x.end) === t.end)));
+      if (!c) { warnings.push(`fade "${t.name}" at frame ${t.start} on ${t.kind[0].toUpperCase()}${t.track} has no clip edge there; dropped`); continue; }
+      const f = { kind: kindOf(t), frames: t.end - t.start };
+      if (head) { if (!c.fadeIn || t.kind === 'video') c.fadeIn = f; } else if (!c.fadeOut || t.kind === 'video') c.fadeOut = f;
+      continue;
+    }
     // Audio transitions also appear on the second channel's track of a stereo pair (aTrack + 1).
     const target = clips.find((c) => (t.kind === 'video' ? c.vTrack === t.track : c.aTrack === t.track || c.aTrack === t.track - 1) && (c.video && t.kind === 'video' ? c.video.start : c.start) === t.cut);
     if (target && t.kind === 'video') target.transitionIn = { kind: /dip to black/i.test(t.name) ? 'dip-black' : /dip to white/i.test(t.name) ? 'dip-white' : 'dissolve', frames: t.end - t.start };

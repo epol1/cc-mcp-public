@@ -37,6 +37,8 @@ export function flagFillers(words: Word[], opts: { pause?: number } = {}): Word[
       if (n === 1 && FILLERS.has(norm(words[i].text))) continue;
       // Deliberate repetition ("very, very") is rare for longer runs; for single words keep only stutters close in time.
       if (n === 1 && words[i + 1].start - words[i].end > 0.6) continue;
+      // A sentence that ends where the next begins with the same words is not a false start ("…in a year. In a year…").
+      if (/[.!?]["')\]]?$/.test(words[i + n - 1].text)) continue;
       for (let k = 0; k < n; k++) words[i + k].filler ??= 'repeat';
       i += n - 1;
       break;

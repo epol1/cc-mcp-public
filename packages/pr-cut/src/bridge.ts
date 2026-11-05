@@ -8,6 +8,8 @@ import { appWindows, autoAnswerKnown } from '@ae-mcp/core/bridge/dialogs.ts';
 import type { EvalResult } from '@ae-mcp/core/bridge/types.ts';
 
 export const PR_BRIDGE_INFO = path.join(os.homedir(), '.ae-compose', 'bridge-pr.json');
+/** pr-cut's working files: generated XML, adopt exports, frames, cut sidecars, the undo journal. */
+export const PRC_HOME = path.join(os.homedir(), '.ae-compose', 'pr-cut');
 const HINT = 'is Premiere Pro running with the pr-cut extension? (node scripts/install-cep.mjs --pr, then restart Premiere)';
 
 export const es = new HttpBridge({ name: 'pr-cep', infoFile: PR_BRIDGE_INFO, missingHint: HINT });

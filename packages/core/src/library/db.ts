@@ -54,7 +54,9 @@ export function mediaByPath(p: string): MediaRow | undefined { return library().
 /** "lib:<id or hash prefix>" → path (for edit plans). */
 export function libraryPath(ref: string): string | null {
   const r = /^\d+$/.test(ref) ? mediaById(+ref) : (library().prepare('SELECT * FROM media WHERE hash LIKE ? LIMIT 2').all(ref + '%') as any[]).find(Boolean);
-  return r && fs.existsSync(r.path) ? r.path : null;
+  if (!r) return null;
+  if (!fs.existsSync(r.path)) throw new Error(`lib:${ref} (${r.name}) is in the library, but its file is gone from ${r.path}; if it moved, library_add its new folder (the content hash finds it again)`);
+  return r.path;
 }
 
 export function upsertMedia(m: Partial<MediaRow> & { hash: string; path: string }): number {

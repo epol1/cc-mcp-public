@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
 import { loudness } from '@ae-mcp/core/library/index.ts';
 import { lit, runEs } from './bridge.ts';
+import { recordChange } from './undo.ts';
 import { applyCutEdits } from './edit.ts';
 import { exportFrames } from './frames.ts';
 import { inspectSequenceRaw } from './inspect.ts';
@@ -64,7 +65,8 @@ async function limitTo(seqId: string, target: number, ceiling: number, delta: nu
   const name = `${base} v${String(v).padStart(3, '0')}`;
   const norm = (db: number) => Math.max(0, Math.min(1, (db + 60) / 90));
   let ampParam = 1 + (ceiling - 0.3) / 100;
-  const r = await runEs<{ id: string; clips: number }>(`
+  const r = await runEs<{ id: string; clips: number; u0: number; u1: number; project: string }>(`
+var u0 = prcUndo();
 var s = prcSeq(${lit(seqId)}), before = prcSeqIds(); s.clone(); var after = prcSeqIds(), id = null;
 for (var j = 0; j < after.length; j++) { var seen = false; for (var k = 0; k < before.length; k++) if (before[k] === after[j]) seen = true; if (!seen) id = after[j]; }
 var c = prcSeq(id); c.name = ${lit(name)}; app.project.openSequence(id);
@@ -72,8 +74,9 @@ var q = qe.project.getActiveSequence();
 if (!q || q.guid !== id) throw new Error('Premiere did not activate the new version; nothing was changed in the original');
 var amp = qe.project.getAudioEffectByName('Amplify'), lim = qe.project.getAudioEffectByName('Hard Limiter'), n = 0;
 for (var t = 0; t < q.numAudioTracks; t++) { var tr = q.getAudioTrackAt(t); for (var i = 0; i < tr.numItems; i++) { var it = tr.getItemAt(i); if (it.type === 'Clip') { it.addAudioEffect(amp); it.addAudioEffect(lim); n++; } } }
-prcJson({ id: id, clips: n });
+prcJson({ id: id, clips: n, u0: u0, u1: prcUndo(), project: app.project.path });
 `, { timeoutMs: 300_000 });
+  recordChange(r.u0, r.u1, r.id, r.project, name);
   const set = (db: number) => runEs(`var c = prcSeq(${lit(r.id)});
 for (var a = 0; a < c.audioTracks.numTracks; a++) { var at = c.audioTracks[a]; for (var m = 0; m < at.clips.numItems; m++) { var cl = at.clips[m];
   for (var x = 0; x < cl.components.numItems; x++) { var cp = cl.components[x], P = cp.properties;
