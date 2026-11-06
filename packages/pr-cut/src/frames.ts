@@ -12,16 +12,21 @@ import { PRC_HOME } from './importxml.ts';
 export async function exportFrames(sequenceId: string, frames: number[], r: Rate, dir: string): Promise<string[]> {
   fs.mkdirSync(dir, { recursive: true });
   const jobs = frames.map((f, k) => ({ tc: framesToTimecode(Math.max(0, f), r), base: nativePath(path.join(dir, `f${String(k).padStart(3, '0')}_${f}`)) }));
-  await runEs(`
+  // In batches: a frame can take seconds (network media, After Effects templates rendered through Dynamic Link), and
+  // one long call would run into the bridge's request limit.
+  for (let i = 0; i < jobs.length; i += 8) {
+    const batch = jobs.slice(i, i + 8);
+    await runEs(`
 var s = prcSeq(${lit(sequenceId)});
 if (!s) throw new Error('sequence not found: ' + ${lit(sequenceId)});
 app.project.openSequence(s.sequenceID);
 var q = qe.project.getActiveSequence();
 if (!q || q.guid !== s.sequenceID) throw new Error('Premiere did not activate sequence ' + s.name + ' for frame export');
-var jobs = ${JSON.stringify(jobs)};
+var jobs = ${JSON.stringify(batch)};
 for (var i = 0; i < jobs.length; i++) q.exportFramePNG(jobs[i].tc, jobs[i].base);
 prcJson({ n: jobs.length });
-`, { timeoutMs: 30_000 + frames.length * 3000 });
+`, { timeoutMs: 110_000 });
+  }
   // exportFramePNG appends .png and may finish writing just after the call returns.
   const files = jobs.map((j) => j.base + '.png');
   const t0 = Date.now();

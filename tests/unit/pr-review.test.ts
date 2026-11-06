@@ -158,3 +158,28 @@ describe('a presenter cutout over slides (a hand cut of the user)', () => {
     expect(out.match(/<file id="[^"]+">\s*<name>cutout\.mov<\/name>/)).toBeTruthy();
   });
 });
+
+describe('switched programs: no cut stays on one camera (the user note on the KATG cut)', () => {
+  const words = touching('One two three. | Four five six. | Seven eight nine.');
+  const probe = (program: boolean, same: boolean) => ({ ensure: async () => {}, isProgram: () => program, sameCamera: () => same, cutaway: () => 40 });
+  const resolver = (p: ReturnType<typeof probe>): MediaResolver => ({ ...resolverFor(words), cameras: () => p });
+  it('keeps a pause inside a segment when both sides show the same camera, and covers a same-camera join with a cutaway', async () => {
+    const c = await compilePlan({ name: 'show', segments: [{ id: 'a', src: 'iv', sentences: ['s1', 's2'] }, { id: 'b', src: 'iv', sentences: 's3' }] }, resolver(probe(true, true)));
+    expect(c.pieces.filter((p) => p.seg === 'a')).toHaveLength(1);
+    expect(c.warnings.some((w) => /kept 1 pause/.test(w))).toBe(true);
+    const ca = c.timeline.clips.filter((x) => /^ca\d/.test(x.id));
+    expect(ca).toHaveLength(1);
+    expect(ca[0].vTrack).toBe(2);
+    expect(ca[0].aTrack).toBeUndefined();
+    expect(ca[0].inTicks).toBe(40 * 254016000000);
+    expect(c.timeline.clips.some((x) => x.motion)).toBe(false);
+  });
+  it('cuts normally when the camera changes, and a single-camera source keeps its punch-ins', async () => {
+    const c = await compilePlan({ name: 'show', segments: [{ id: 'a', src: 'iv', sentences: ['s1', 's2'] }] }, resolver(probe(true, false)));
+    expect(c.pieces).toHaveLength(2);
+    expect(c.timeline.clips.some((x) => /^ca\d/.test(x.id))).toBe(false);
+    const single = await compilePlan({ name: 'iv', segments: [{ id: 'a', src: 'iv', sentences: ['s1', 's2'] }] }, resolver(probe(false, true)));
+    expect(single.pieces).toHaveLength(2);
+    expect(single.timeline.clips.some((x) => x.motion?.scale === 112)).toBe(true);
+  });
+});

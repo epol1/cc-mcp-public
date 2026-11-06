@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { probe, type MediaInfo } from '@cc-mcp/core/media/probe.ts';
 import { cachedTranscript, transcribe, type Transcript } from '@cc-mcp/core/transcribe/index.ts';
+import { cameraProbe, type CameraProbe } from './cameras.ts';
 
 const probes = new Map<string, Promise<MediaInfo>>();
 
@@ -15,6 +16,8 @@ export interface MediaResolver {
   transcript(src: string): Promise<Transcript>;
   /** Stable key for the timeline's media table. */
   key(src: string): string;
+  /** Camera awareness for a video source (switched programs); absent in resolvers that can't decode. */
+  cameras?(src: string): CameraProbe;
 }
 
 export function mediaResolver(aliases: Record<string, string> = {}, opts: { baseDir?: string; libraryPath?: (id: string) => string | null; transcribeMissing?: boolean } = {}): MediaResolver {
@@ -31,6 +34,7 @@ export function mediaResolver(aliases: Record<string, string> = {}, opts: { base
     return path.resolve(p);
   };
   const transcripts = new Map<string, Promise<Transcript>>();
+  const cams = new Map<string, CameraProbe>();
   return {
     path: resolvePath,
     // The alias when there is one for this file; otherwise the file name plus a hash of its path, because camera
@@ -56,6 +60,11 @@ export function mediaResolver(aliases: Record<string, string> = {}, opts: { base
         })());
       }
       return transcripts.get(p)!;
+    },
+    cameras: (src) => {
+      const p = resolvePath(src);
+      if (!cams.has(p)) cams.set(p, cameraProbe(p));
+      return cams.get(p)!;
     },
   };
 }

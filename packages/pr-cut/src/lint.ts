@@ -39,7 +39,7 @@ export function lintCut(c: Compiled, o: EditLintOptions = {}): EditIssue[] {
   const scaleOf = (id: string) => { const c = t.clips.find((x) => x.id === id); return c ? motionScale(c) : 100; };
   for (let k = 1; k < c.pieces.length; k++) {
     const p = c.pieces[k], prev = c.pieces[k - 1];
-    if (!p.jump) continue;
+    if (!p.jump || p.camera === 'changes') continue;
     const covered = broll.some((b) => b.start <= p.start - 2 && b.end >= p.start + 2);
     const reframed = Math.abs(scaleOf(p.id) - scaleOf(prev.id)) >= 8;
     if (!covered && !reframed) add({ rule: 'jump-cut', severity: 'warn', message: `jump cut into ${p.id} on the same framing (${p.removedBefore?.reason ?? 'discontinuous'}): cover it with B-roll (over: "${p.seg}/${p.id.split('.')[1] ?? 1}") or a punch-in`, t: [sec(p.start), sec(p.start)] });

@@ -140,8 +140,13 @@ export const PlanSchema = z.object({
   music: z.array(MusicSchema).optional(),
   /** Default tightening for every segment (segments may override or set false). */
   tighten: z.union([TightenSchema, z.literal(false)]).optional(),
-  /** Cover jump cuts left by tightening: alternate punch-ins (default), or leave them for B-roll ("none"). */
-  jumpCuts: z.enum(['punch-in', 'none']).optional(),
+  /**
+   * Jump cuts. "auto" (default): "camera" for a switched multi-camera program (a show master), else "punch-in".
+   * "camera": no cut stays on one camera (pauses and fillers inside a segment are kept when the camera wouldn't change;
+   * a same-camera join between segments gets a cutaway from another camera of the same show). "punch-in": alternate
+   * 112 % punch-ins. "none": leave them for B-roll.
+   */
+  jumpCuts: z.enum(['auto', 'camera', 'punch-in', 'none']).optional(),
   /** Grade per media alias, or "*" for every A-roll clip. */
   grade: z.record(z.string(), GradeSchema).optional(),
   /** Segment markers with ids and beats (default true). */

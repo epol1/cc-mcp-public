@@ -11,6 +11,7 @@ import { beatsCached } from '@cc-mcp/core/audio/cached.ts';
 import { beatGrid } from '@cc-mcp/core/audio/beats.ts';
 import type { Grade, TLClip, TLMarker, Timeline } from '../timeline.ts';
 import type { MediaResolver } from './media.ts';
+import type { CameraProbe } from './cameras.ts';
 import { parsePlan, type Montage, type Plan, type Segment, type Tighten } from './schema.ts';
 
 /** One continuous piece of a segment after tightening. */
@@ -29,6 +30,8 @@ export interface Piece {
   end: number;
   /** The cut into this piece is a jump cut (same source, discontinuous). */
   jump: boolean;
+  /** On a switched program: whether the camera changes across that cut (then it isn't a visible jump). */
+  camera?: 'changes' | 'same';
   /** What tightening removed just before this piece. */
   removedBefore?: { words: [number, number] | null; seconds: number; reason: string };
 }
@@ -82,6 +85,10 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
   const removed = { fillers: 0, repeats: 0, pauses: 0, pauseSeconds: 0 };
   let cursor = 0, sourceSeconds = 0;
   const usedIds = new Set<string>();
+  // Camera awareness (jumpCuts camera / auto): the sources found to be switched programs, with their frame probes.
+  const jc = plan.jumpCuts ?? 'auto';
+  const cameraMode: 'on' | 'auto' | 'off' = jc === 'camera' ? 'on' : jc === 'auto' ? 'auto' : 'off';
+  const cameraKeys = new Map<string, CameraProbe>();
 
   for (let si = 0; si < segments.length; si++) {
     const seg: Segment = segments[si];
@@ -126,7 +133,18 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
       }
       if (a < 0) segPieces = [{ id, seg: id, src: seg.src, media: key, words: null, inS: fr(from) / fps, outS: fr(to) / fps, jump: false }];
     }
-    if (a >= 0 && tr) segPieces = tightenSegment(id, seg, key, tr, a, b, { ...DEF, ...(plan.tighten || {}), ...(seg.tighten || {}) }, seg.tighten === false || (plan.tighten === false && !seg.tighten), fps, removed, warnings);
+    // A switched multi-camera program (jumpCuts camera, or auto when the frames say so): sample this part of the source.
+    let sameCamera: ((x: number, y: number) => boolean) | undefined;
+    if (a >= 0 && tr && info.video && cameraMode !== 'off' && media.cameras) {
+      const probe = media.cameras(seg.src);
+      try {
+        await probe.ensure(tr.words[a].start - 30, tr.words[b].end + 30);
+        // Same camera at the word edges, or within 0.4 s of them (the show may switch cameras right at our cut, which
+        // would leave a flash of the same camera): keep the pause rather than cut.
+        if (cameraMode === 'on' || probe.isProgram()) { sameCamera = (x, y) => [[x - 0.1, y + 0.1], [x - 0.1, y - 0.4], [x + 0.3, y + 0.1]].some(([u, v]) => probe.sameCamera(u, v)); cameraKeys.set(key, probe); }
+      } catch (e: any) { if (cameraMode === 'on') warnings.push(`${id}: camera check failed (${e.message.slice(0, 120)}); cutting without it`); }
+    }
+    if (a >= 0 && tr) segPieces = tightenSegment(id, seg, key, tr, a, b, { ...DEF, ...(plan.tighten || {}), ...(seg.tighten || {}) }, seg.tighten === false || (plan.tighten === false && !seg.tighten), fps, removed, warnings, sameCamera);
     // Time-addressed segments keep their own in and out (pre- and post-roll) where the edge words survived.
     if (a >= 0 && tr && (seg.from !== undefined || seg.to !== undefined) && segPieces.length) {
       const first = segPieces[0], last = segPieces[segPieces.length - 1];
@@ -153,15 +171,30 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     return Object.keys(g).length ? g : undefined;
   };
   let punchParity = 0;
+  const cutaways: { id: string; media: string; start: number; end: number; inS: number }[] = [];
   for (let k = 0; k < pieces.length; k++) {
     const p = pieces[k], seg = segOf.get(p.seg)!;
     const prev = pieces[k - 1];
     p.jump = !!prev && prev.media === p.media && Math.abs(prev.outS - p.inS) > 1 / fps;
     // Jump cuts alternate a punch-in so each one reads as a change of framing; a cut to another source resets it.
     punchParity = p.jump ? punchParity ^ 1 : 0;
+    const probe = cameraKeys.get(p.media);
     const clip: TLClip = { id: p.id, media: p.media, vTrack: 1, aTrack: 1, start: p.start, end: p.end, inTicks: toTicks(p.inS), outTicks: toTicks(p.inS) + (p.end - p.start) * tpf, grade: gradeFor(seg), level: seg.level, channels: seg.channels };
     if (seg.punchIn) clip.motion = { scale: seg.punchIn };
-    else if (punchParity && (plan.jumpCuts ?? 'punch-in') === 'punch-in') clip.motion = { scale: 112 };
+    else if (punchParity && !probe && (jc === 'punch-in' || jc === 'auto')) clip.motion = { scale: 112 };
+    // A switched program: a join that stays on one camera gets a cutaway to another camera of the same show (the
+    // nearest stretch of 1.4 s within 30 s of the incoming moment), across the cut.
+    if (probe && p.jump) p.camera = probe.sameCamera(prev.outS - 0.1, p.inS + 0.1) ? 'same' : 'changes';
+    if (probe && p.jump && p.camera === 'same') {
+      try { await probe.ensure(p.inS - 30, p.inS + 30); } catch { /* sampled what we could */ }
+      // Unlike what the picture shows at the join and where the cutaway hands back on either side (the source may
+      // change camera itself right after the join), and never the same moment twice.
+      const s0 = Math.max(0, p.start - Math.round(fps * 0.6)), s1 = s0 + Math.round(fps * 1.4);
+      const edges = [prev.outS - (p.start - s0) / fps - 0.1, prev.outS - 0.1, p.inS + 0.1, p.inS + (s1 - p.start) / fps + 0.1];
+      const t = probe.cutaway(p.inS, edges, 1.4, 30, cutaways.filter((x) => x.media === p.media).map((x) => [x.inS, x.inS + 1.4] as [number, number]));
+      if (t === null) warnings.push(`${p.id}: the cut from ${prev.id} stays on one camera and no other camera is within 30 s to cut away to`);
+      else cutaways.push({ id: `ca${cutaways.length + 1}`, media: p.media, start: s0, end: s1, inS: t });
+    }
     // Transition into the first piece of a segment.
     if (prev && prev.seg !== p.seg && seg.transition && seg.transition !== 'cut') clip.transitionIn = { kind: seg.transition, frames: seg.transitionFrames ?? Math.round(fps / 2) };
     timeline.clips.push(clip);
@@ -213,6 +246,14 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     }
     throw new Error('more than 13 overlapping B-roll clips with sound');
   };
+  // Cutaways first (they belong to the cut points); B-roll goes around them.
+  for (const ca of cutaways) {
+    let track = 2;
+    while ((occupied.get(track) ?? []).some(([x, y]) => ca.start < y && ca.end > x)) track++;
+    occupied.set(track, [...(occupied.get(track) ?? []), [ca.start, ca.end]]);
+    const inTicks = toTicks(fr(ca.inS, 'ceil') / fps);
+    timeline.clips.push({ id: ca.id, media: ca.media, vTrack: track, start: ca.start, end: ca.end, inTicks, outTicks: inTicks + (ca.end - ca.start) * tpf, label: 'Cerulean' });
+  }
   let bi = 0;
   for (const b of plan.broll ?? []) {
     const bid = b.id ?? `b${++bi}`;
@@ -365,7 +406,7 @@ function dedupeKeys(keys: { frame: number; db: number }[]) {
  * Split a segment's words into pieces: drop fillers/repeats/chosen words, shorten long pauses, and put every cut
  * in the gap between words (frame-quantized, never past the neighbouring word). Short leftovers merge back.
  */
-export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: string, tr: Transcript, a: number, b: number, opt: typeof DEF & { cut?: Tighten['cut'] }, off: boolean, fps: number, removed: Compiled['stats']['removed'], warnings: string[]): Omit<Piece, 'start' | 'end'>[] {
+export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: string, tr: Transcript, a: number, b: number, opt: typeof DEF & { cut?: Tighten['cut'] }, off: boolean, fps: number, removed: Compiled['stats']['removed'], warnings: string[], sameCamera?: (a: number, b: number) => boolean): Omit<Piece, 'start' | 'end'>[] {
   const W = tr.words;
   const keep: boolean[] = [];
   const why: (string | null)[] = [];
@@ -423,6 +464,18 @@ export function tightenSegment(id: string, seg: Pick<Segment, 'src'>, mediaKey: 
     runs[x] = { from: runs[x].from, to: runs[y].to, splitBefore: runs[x].splitBefore };
     runs.splice(y, 1);
     k = -1;
+  }
+  // A switched program: a removal whose two sides show the same camera would be a jump cut, so it stays (explicit cuts
+  // excepted).
+  if (sameCamera) {
+    let kept = 0;
+    for (let k = 1; k < runs.length; k++) {
+      if (runs[k].splitBefore === 'cut' || !sameCamera(W[runs[k - 1].to].end, W[runs[k].from].start)) continue;
+      runs[k - 1] = { ...runs[k - 1], to: runs[k].to };
+      runs.splice(k, 1);
+      k--; kept++;
+    }
+    if (kept) warnings.push(`${id}: kept ${kept} pause${kept === 1 ? '' : 's'} or filler${kept === 1 ? '' : 's'} where the cut would have stayed on one camera`);
   }
   // What was removed: every word of the range outside the final runs (edge leftovers included).
   for (let i = a; i <= b; i++) {

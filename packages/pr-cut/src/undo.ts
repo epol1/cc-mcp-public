@@ -55,20 +55,29 @@ export async function undoLast(opts: { force?: boolean } = {}): Promise<string> 
   if (!last) return 'nothing to undo: no pr-cut batch is recorded';
   const s = await undoState();
   if (last.projectPath && s.projectPath !== last.projectPath) return `not undone: the last batch (${last.tool} "${last.label}") was in ${last.projectPath}, but ${s.projectPath || 'no project'} is open`;
-  if (s.index !== last.after && !opts.force) {
-    return `not undone: Premiere's undo history moved since ${last.tool} "${last.label}" (undo index ${last.after} → ${s.index}); someone worked in between. Undo by hand in Premiere, or pass force to step back to where the batch started (index ${last.before}).`;
-  }
-  // Premiere keeps a limited undo history (32 states by default): a batch longer than that (a cut with a caption
-  // template per caption) can't be stepped back to its start. pr-cut batches only ever create a new sequence, so such
-  // a batch is undone by removing the sequence it created (itself one undoable step in Premiere).
-  const removeSeq = async (stepped: number) => {
+  // pr-cut batches only ever create a new sequence, so a batch that can't be stepped back is undone by removing the
+  // sequence it created (itself one undoable step in Premiere).
+  const removeSeq = async (why: string, stepped = 0) => {
     const ok = await runEs<boolean>(`var s = prcSeq(${JSON.stringify(last.sequenceId ?? '')}); prcJson(s ? !!app.project.deleteSequence(s) : false)`, { timeoutMs: 120_000 });
     if (!ok) return null;
     last.undone = true;
     write(j);
-    return `undone: ${last.tool} "${last.label}" by removing the sequence it created${stepped ? ` (after ${stepped} undo step${stepped === 1 ? '' : 's'})` : ''}; its ${last.after - last.before} steps are more than Premiere's undo history holds. Media it imported stay in the project panel.`;
+    return `undone: ${last.tool} "${last.label}" by removing the sequence it created${stepped ? ` (after ${stepped} undo step${stepped === 1 ? '' : 's'})` : ''}: ${why}. Media it imported stay in the project panel.`;
   };
-  if (last.sequenceId && last.after - last.before > HISTORY) { const m = await removeSeq(0); if (m) return m; }
+  // Premiere's history was cleared since (a restart, a reopened project): nothing is left to step back through. Changes
+  // made to that sequence by hand since would go with it, so this takes force.
+  // (At or below the batch's start with the sequence still there: an undo by hand would have removed it.)
+  if (last.sequenceId && s.index <= last.before && last.after > last.before && (await runEs<boolean>(`prcJson(!!prcSeq(${JSON.stringify(last.sequenceId)}))`))) {
+    if (!opts.force) return `not undone: Premiere's undo history was cleared since ${last.tool} "${last.label}" (a restart or a reopened project). Pass force to remove the sequence it created, with any changes made to it since.`;
+    const m = await removeSeq("Premiere's undo history was cleared since");
+    if (m) return m;
+  }
+  if (s.index !== last.after && !opts.force) {
+    return `not undone: Premiere's undo history moved since ${last.tool} "${last.label}" (undo index ${last.after} → ${s.index}); someone worked in between. Undo by hand in Premiere, or pass force to step back to where the batch started (index ${last.before}).`;
+  }
+  // Premiere keeps a limited undo history (32 states by default): a batch longer than that (a cut with a caption
+  // template per caption) can't be stepped back to its start.
+  if (last.sequenceId && last.after - last.before > HISTORY) { const m = await removeSeq(`its ${last.after - last.before} steps are more than Premiere's undo history holds`); if (m) return m; }
   // Step back until the index is where the batch started, never by count, and stop if Premiere switches to another
   // project (it can when an undo removes the open sequence) or an undo makes no progress.
   const r = await runEs<{ index: number; done: number; reached: boolean }>(`
@@ -80,7 +89,7 @@ while (idx > target && n < 2000) {
 }
 prcJson({ index: idx, done: n, reached: idx <= target });`, { timeoutMs: 600_000 });
   if (!r.reached) {
-    if (last.sequenceId) { const m = await removeSeq(r.done); if (m) return m; }
+    if (last.sequenceId) { const m = await removeSeq('Premiere stopped undoing part way', r.done); if (m) return m; }
     last.after = r.index; // what is left of the batch, if the user calls undo again
     write(j);
     return `partly undone: ${r.done} step(s) of ${last.tool} "${last.label}" (Premiere switched to another project or stopped undoing at index ${r.index}, batch started at ${last.before}); undo again or finish with Ctrl+Z in ${last.projectPath}`;
