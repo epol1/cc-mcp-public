@@ -2,7 +2,7 @@
 
 > Generated from `status/systems.json` by `status/build.mjs`. Do not edit by hand. Dashboard: `status/index.html`.
 
-**v0.02.008**: 97.19% weighted, 251/258 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
+**v0.02.009**: 97.61% weighted, 252/258 tasks, 11/11 definition-of-done items. Legend: [x] done · [~] in progress · [ ] to do.
 
 # Core (phases 0–4) (100%)
 
@@ -280,7 +280,7 @@
 - [x] Showcase 19: launch teaser built mainly from fetched assets, CREDITS.md complete _(w2)_
 - [x] Fresh-session test (brief needs assets the repo lacks) + REPORT Phase 6
 
-# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (87.5%)
+# Phase 7: pr-cut, editing in Premiere (docs/PRCUT.md) (89.4%)
 
 ## Pr · Shared core (100%)
 - [x] Shared modules moved to packages/core (bridge, watchdog, visual, captions, beats, motion, lint report, reframe targets, templates, units, assets) _(w4)_
@@ -317,13 +317,13 @@
 - [x] audio_finish: -14 LUFS / -1 dBTP measured _(w2)_
 - [x] deliver: master + Auto Reframe 9:16/1:1/4:5 _(w2)_
 
-## Pr · Media library (47%)
+## Pr · Media library (60%)
 - [x] SQLite FTS5 index, worker, statuses _(w3)_
 - [x] Shots, thumbnails, agent-written descriptions _(w2)_
 - [x] library_search (said + seen, filters, grid) _(w2)_
 - [ ] Premiere Speech to Text as an engine (UXP) _(w2)_
 - [ ] Speaker diarization _(w2)_
-- [ ] Sync groups (multicam by audio) _(w2)_
+- [x] Sync groups (multicam by audio) _(w2)_
 - [ ] find_assets local source uses the library (AE crossover) _(w2)_
 
 ## Pr · Tests, docs, showcases (85%)

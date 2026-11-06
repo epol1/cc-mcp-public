@@ -160,7 +160,8 @@ export function writeFcp7(t: Timeline): WriteResult {
     const r = m.video?.rate ?? t.rate;
     const durFrames = Math.round(m.duration * (r.num / r.den));
     // Under a transition the clip's edge becomes -1 and its source range extends by the overlap (FCP7 convention).
-    let inT = it.e.inTicks, outT = it.e.outTicks, start: number = it.e.start, end: number = it.e.end;
+    const shift = it.kind === 'video' ? c.videoShift ?? 0 : 0;
+    let inT = it.e.inTicks + shift, outT = it.e.outTicks + shift, start: number = it.e.start, end: number = it.e.end;
     if (trIn) { start = -1; inT -= trIn * tpf; }
     if (trOut) { end = -1; outT += trOut * tpf; }
     if (edgeIn) start = -1; // a head fade: the edge comes from the transition, the source range stays

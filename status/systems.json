@@ -1695,7 +1695,7 @@
         {
           "id": "pr-lib-sync",
           "name": "Sync groups (multicam by audio)",
-          "status": "todo",
+          "status": "done",
           "weight": 2
         },
         {

@@ -15,6 +15,8 @@ export interface TLClip {
   media: string;
   /** Picture from another file with the same source timing (a keyed cutout, dual-system sound); `media` is the sound. */
   videoMedia?: string;
+  /** Multicam: the picture's source is the sound's source time plus this (ticks), from the angle's audio sync. */
+  videoShift?: number;
   /** Alpha interpretation of the picture as Premiere had it ('straight' for a cutout with transparency). */
   alpha?: string;
   /** 1-based video track, or undefined for audio-only use. */

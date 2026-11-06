@@ -60,9 +60,19 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
   const plan = parsePlan(input);
   const warnings: string[] = [];
 
-  // ---- sequence settings from the first segment's media unless given ----
-  const segments = plan.segments ?? [];
-  const firstInfo = await media.info(segments[0]?.src ?? plan.montage!.clips[0]);
+  // ---- multicam: a segment naming a group takes its words and sound from the group's audio ----
+  const groups = plan.multicam ?? {};
+  const groupOf = new Map<string, string>();
+  const segments = (plan.segments ?? []).map((s, i) => {
+    const g = groups[s.src];
+    if (!g) { if (s.angle) throw new Error(`${s.id ?? `seg${i + 1}`}: angle "${s.angle}" but "${s.src}" is not a multicam group`); return s; }
+    groupOf.set(s.id ?? `seg${i + 1}`, s.src);
+    return { ...s, src: g.audio };
+  });
+
+  // ---- sequence settings from the first segment's media unless given (a group's first angle for picture) ----
+  const g0 = plan.segments?.[0] && groups[plan.segments[0].src];
+  const firstInfo = await media.info(g0 ? [Object.values(g0.angles)[0]].flat()[0] : segments[0]?.src ?? plan.montage!.clips[0]);
   const R: Rate = plan.fps !== undefined ? toRate(plan.fps) : firstInfo.video?.rate ?? toRate(25);
   const fps = R.num / R.den, tpf = ticksPerFrame(R);
   let [W, H] = [firstInfo.video?.width ?? 1920, firstInfo.video?.height ?? 1080];
@@ -170,6 +180,29 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     const g = { ...(plan.grade?.['*'] ?? {}), ...(plan.grade?.[seg.src] ?? {}), ...(seg.grade ?? {}) };
     return Object.keys(g).length ? g : undefined;
   };
+  // Multicam angles: each file placed in the group's audio time by its sound (t_audio = t_file + offset).
+  type AngleFile = { key: string; offset: number; dur: number };
+  const angleFiles = new Map<string, Map<string, AngleFile[]>>();
+  for (const gname of new Set(groupOf.values())) {
+    if (!media.sync) throw new Error(`multicam "${gname}": this resolver can't sync by sound`);
+    const g = groups[gname], byAngle = new Map<string, AngleFile[]>();
+    for (const [angle, srcs] of Object.entries(g.angles)) {
+      const files: AngleFile[] = [];
+      for (const src of [srcs].flat()) {
+        const { key, info } = await addMedia(src);
+        if (!info.video) throw new Error(`multicam "${gname}" angle ${angle}: ${info.name} has no picture`);
+        const r = await media.sync(g.audio, src);
+        if (r.confidence < 1.5) { warnings.push(`multicam "${gname}" angle ${angle}: ${info.name} doesn't sync clearly with ${g.audio} (confidence ${r.confidence}); left out`); continue; }
+        files.push({ key, offset: r.offset, dur: info.duration });
+      }
+      if (files.length) byAngle.set(angle, files);
+    }
+    if (!byAngle.size) throw new Error(`multicam "${gname}": no angle syncs with ${g.audio}`);
+    angleFiles.set(gname, byAngle);
+  }
+  const covering = (gname: string, angle: string, inS: number, outS: number) => angleFiles.get(gname)!.get(angle)?.find((f) => f.offset <= inS + 1e-3 && f.offset + f.dur >= outS - 1e-3);
+  const angleState: { group?: string; angle?: string; key?: string } = {};
+
   let punchParity = 0;
   const cutaways: { id: string; media: string; start: number; end: number; inS: number }[] = [];
   for (let k = 0; k < pieces.length; k++) {
@@ -179,13 +212,33 @@ export async function compilePlan(input: unknown, media: MediaResolver): Promise
     // Jump cuts alternate a punch-in so each one reads as a change of framing; a cut to another source resets it.
     punchParity = p.jump ? punchParity ^ 1 : 0;
     const probe = cameraKeys.get(p.media);
+    const gname = groupOf.get(p.seg);
     const clip: TLClip = { id: p.id, media: p.media, vTrack: 1, aTrack: 1, start: p.start, end: p.end, inTicks: toTicks(p.inS), outTicks: toTicks(p.inS) + (p.end - p.start) * tpf, grade: gradeFor(seg), level: seg.level, channels: seg.channels };
+    // Multicam: the picture comes from an angle; a jump cut or a new segment changes angle (round robin over the angles
+    // that cover the piece) instead of punching in.
+    if (gname) {
+      const fits = [...angleFiles.get(gname)!.keys()].filter((a) => covering(gname, a, p.inS, p.outS));
+      if (!fits.length) throw new Error(`${p.id}: no angle of multicam "${gname}" covers ${p.inS.toFixed(1)}–${p.outS.toFixed(1)} s of ${groups[gname].audio}`);
+      const same = angleState.group === gname ? angleState.angle : undefined;
+      const change = !!prev && (p.jump || prev.seg !== p.seg);
+      let pick: string;
+      if (seg.angle && fits.includes(seg.angle)) pick = seg.angle;
+      else {
+        if (seg.angle) warnings.push(`${p.id}: angle ${seg.angle} doesn't cover ${p.inS.toFixed(1)}–${p.outS.toFixed(1)} s of ${groups[gname].audio}; using another`);
+        pick = same && fits.includes(same) && !change ? same : same ? fits[(fits.indexOf(same) + 1) % fits.length] : fits[0];
+      }
+      const f = covering(gname, pick, p.inS, p.outS)!;
+      clip.videoMedia = f.key;
+      clip.videoShift = toTicks(-f.offset);
+      if (prev) p.camera = angleState.group === gname && angleState.angle === pick && angleState.key === f.key ? 'same' : 'changes';
+      Object.assign(angleState, { group: gname, angle: pick, key: f.key });
+    } else angleState.group = undefined;
     if (seg.punchIn) clip.motion = { scale: seg.punchIn };
-    else if (punchParity && !probe && (jc === 'punch-in' || jc === 'auto')) clip.motion = { scale: 112 };
+    else if (punchParity && !probe && !gname && (jc === 'punch-in' || jc === 'auto')) clip.motion = { scale: 112 };
     // A switched program: a join that stays on one camera gets a cutaway to another camera of the same show (the
     // nearest stretch of 1.4 s within 30 s of the incoming moment), across the cut.
-    if (probe && p.jump) p.camera = probe.sameCamera(prev.outS - 0.1, p.inS + 0.1) ? 'same' : 'changes';
-    if (probe && p.jump && p.camera === 'same') {
+    if (probe && p.jump && !gname) p.camera = probe.sameCamera(prev.outS - 0.1, p.inS + 0.1) ? 'same' : 'changes';
+    if (probe && p.jump && !gname && p.camera === 'same') {
       try { await probe.ensure(p.inS - 30, p.inS + 30); } catch { /* sampled what we could */ }
       // Unlike what the picture shows at the join and where the cutaway hands back on either side (the source may
       // change camera itself right after the join), and never the same moment twice.

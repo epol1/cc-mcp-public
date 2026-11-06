@@ -183,3 +183,30 @@ describe('switched programs: no cut stays on one camera (the user note on the KA
     expect(single.timeline.clips.some((x) => x.motion?.scale === 112)).toBe(true);
   });
 });
+
+describe('multicam: angles synced by sound, cut on angle changes (the user note: edit like an editor)', () => {
+  const words = touching('One two three. | Four five six. | Seven eight nine.');
+  const tr = buildTranscript('D:/iv.mp4', 'h', { engine: 't', duration: 60, words });
+  const offsets: Record<string, number> = { camA: 0, camB: -12.5, mic: 0 }; // camB started rolling 12.5 s before the recorder
+  const r: MediaResolver = {
+    path: (s) => `D:/${s}.mp4`, key: (s) => s, info: async (s) => vid(`D:/${s}.mp4`, 60), transcript: async () => tr,
+    sync: async (_ref, other) => ({ offset: offsets[other], score: 0.5, confidence: 4 }),
+  };
+  it('takes words and sound from the audio, picture from the angles, and changes angle at every cut', async () => {
+    const c = await compilePlan({ name: 'mc', multicam: { show: { audio: 'mic', angles: { wide: 'camA', close: 'camB' } } }, segments: [{ id: 'a', src: 'show', sentences: ['s1', 's2'] }, { id: 'b', src: 'show', sentences: 's3' }] }, r);
+    const a1 = c.timeline.clips.filter((x) => x.vTrack === 1);
+    expect(a1.map((x) => x.videoMedia)).toEqual(['camA', 'camB', 'camA']);
+    expect(a1.every((x) => x.media === 'mic' && !x.motion)).toBe(true);
+    expect(a1[1].videoShift).toBe(12.5 * 254016000000);
+    expect(c.pieces.slice(1).every((p) => p.camera === 'changes')).toBe(true);
+    const xml = writeFcp7(c.timeline).xml;
+    const fid = /<file id="([^"]+)">\s*<name>camB\.mp4<\/name>/.exec(xml)![1];
+    const item = xml.split('<clipitem').find((b) => b.includes(`<file id="${fid}"`))!;
+    expect(Number(/<pproTicksIn>(-?\d+)<\/pproTicksIn>/.exec(item)![1])).toBe(a1[1].inTicks + 12.5 * 254016000000);
+  });
+  it('honours a segment angle and refuses angles that are not in the group', async () => {
+    const c = await compilePlan({ name: 'mc', multicam: { show: { audio: 'mic', angles: { wide: 'camA', close: 'camB' } } }, segments: [{ id: 'a', src: 'show', sentences: 's1', angle: 'close' }] }, r);
+    expect(c.timeline.clips.find((x) => x.vTrack === 1)!.videoMedia).toBe('camB');
+    await expect(compilePlan({ name: 'x', segments: [{ id: 'a', src: 'mic', sentences: 's1', angle: 'close' }] }, r)).rejects.toThrow(/not a multicam group/);
+  });
+});

@@ -55,7 +55,7 @@ const planDescription = `An edit plan (JSON). Shape:
   broll?: [{ src, over?: "seg2" | ["seg2","seg3"] | "seg2/3" (the jump cut before seg2's 3rd piece), at?: time, offset?, duration?, in?, audio?: dB, scale?, grade? }],
   titles?: [{ mogrt, at?: time | { seg, offset? }, duration?, track?, fields?: { "Name": "Ana Ruiz" } }],
   music?: [{ src, at?, until?, level?: dB under dialogue (-20), open?: dB in gaps (-12), duck?, ending?: "backtime"|"fade"|"cut", fadeIn?, fadeOut? }],
-  tighten?: {...} | false, jumpCuts?: "punch-in"|"none", grade?: { alias|"*": { exposure, contrast, temperature, tint, saturation, ... } },
+  tighten?: {...} | false, jumpCuts?: "auto"|"camera"|"punch-in"|"none", multicam?: { group: { audio: alias, angles: { name: alias | [chunk aliases] } } } (segments use src: group, angle?), grade?: { alias|"*": { exposure, contrast, temperature, tint, saturation, ... } },
   markers?: bool, captions?: bool | { maxChars, maxLines, mogrt?: ae-compose caption template (karaoke, one per caption) } }
 Times: seconds, "3.5s", "250ms", "12f", "1:02.5" or timecode. Tightening is on by default (fillers, repeats, pauses > 0.6 s).`;
 

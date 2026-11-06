@@ -6,6 +6,7 @@ import path from 'node:path';
 import { lit, nativePath, PRC_HOME, runEs } from './bridge.ts';
 import { recordChange } from './undo.ts';
 import { writeFcp7 } from './xml/fcp7.ts';
+import { prepareAudio } from './xml/audio-prep.ts';
 import type { Timeline } from './timeline.ts';
 
 export { PRC_HOME } from './bridge.ts';
@@ -16,7 +17,9 @@ const safe = (s: string) => s.replace(/[^\w.-]+/g, '_').slice(0, 80);
 
 export async function importTimeline(t: Timeline, opts: { bin?: string } = {}): Promise<ImportResult> {
   for (const m of Object.values(t.media)) if (m.path && !fs.existsSync(m.path)) throw new Error(`media missing: ${m.path} (importing it would open a modal dialog in Premiere)`);
+  const prepNotes = await prepareAudio(t);
   const w = writeFcp7(t);
+  w.warnings.push(...prepNotes);
   const dir = path.join(PRC_HOME, 'xml');
   fs.mkdirSync(dir, { recursive: true });
   const xmlFile = path.join(dir, `${safe(t.name)}_${Date.now().toString(36)}.xml`);

@@ -21,7 +21,15 @@ For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `s
 
 ## 2. Edit like an editor
 
+Work the way a good editor does: know all the material, find the story in it, and use every tool the footage gives you (B-roll, other angles, J and L cuts, the room's reactions) so the shorter piece plays as one coherent thing, not a string of soundbites.
+
+### 2.0 Know the material first
+- **Log everything before choosing.** Read the whole transcript (in 5-minute chunks), not just the start. Note the strong moments by theme: the stories, the lines that land, the reactions, the numbers, the callbacks.
+- **Inventory what you have to cut with:** the A-roll (who talks), **B-roll** (`library_search` with the nouns and actions people mention; shot descriptions say what's seen), **other angles of the same event** (a second camera, a wide; see §2.7), a separate **sound recorder** (usually the best sound), music. Say what you found; if there's no B-roll or second angle, say so and plan around it.
+
 ### 2.1 Story first
+- **Find the through-line**: what is this piece about, in one sentence? Pick a spine (a question and its answer, a problem and how it was solved, a setup and its payoff, a change someone went through) and keep only what serves it. Tangents go, however good.
+- **Make it coherent**: each segment leads into the next (cause → effect, question → answer, setup → payoff, a callback to something earlier). Read your segment list as a script before building: would someone who never saw the footage follow it? Never cut a line so it means something the speaker didn't mean.
 - A testimonial or interview cut is an argument: **hook** (the most surprising true line, ≤ 2 s into a social cut), **problem** (stakes), **turn** (what changed), **proof** (a concrete detail, number or moment), **close** (a line that lands; often the emotional one). Not every cut needs all five; every cut needs a hook and a close.
 - Pick lines for meaning, then for delivery: prefer the take with energy, a clean start and a falling ending ("…and that's why we built it." beats a trailing "so, yeah").
 - Reorder freely: interviews are answered in the wrong order. A line from minute 28 is often the best opening.
@@ -35,13 +43,15 @@ For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `s
 ### 2.3 Tighten, but keep the breath
 - Tightening is on by default: fillers (`um`, `uh`, set-off `you know`/`like`), immediate repeats ("the second thing, the second thing"), pauses over 0.6 s shortened to 0.25 s. For a reflective, emotional answer raise `maxPause` (1.0–1.5 s) or set `tighten: false` on that segment: silence can be the point.
 - Tightening never removes a word your range keeps: a "repeat" is only cut when its second copy is in the segment too, and only filler-like words (`so`, `and`, `well`, `um`…) left alone at a segment edge by a filler cut go (the report says so). Explicit `cut` words always go, however short the leftover.
-- Every removal on a single camera creates a **jump cut**. pr-cut covers them by alternating a 112 % punch-in (default `jumpCuts: "punch-in"`). Better cover is B-roll that shows what's being said: `{ "src": "...", "over": "seg3/2" }` puts a shot across the cut before seg3's second piece. Lint warns about every jump cut left uncovered.
+- Every removal on a single camera creates a **jump cut**. In order of preference, cover it with: **B-roll** that shows what's being said (`{ "src": "...", "over": "seg3/2" }` puts a shot across the cut before seg3's second piece); **another angle** (multicam, §2.7: pr-cut changes angle at every cut by itself); a **punch-in** (alternating 112 %, the fallback for a single camera). Lint warns about every jump cut left uncovered.
+- **A show master** (a podcast or live show already switched between cameras): `jumpCuts: "auto"` (the default) notices and never leaves a cut on one camera: it keeps a pause rather than cut on the same camera, and covers a same-camera join between segments with a cutaway from another camera of the show.
 
 ### 2.4 J and L cuts
-- `j: "8f"` on a segment: its sound starts before its picture (we hear the next answer while still seeing the previous shot). `l: "10f"`: the sound runs under the next picture. They make dialogue flow, but **only where the picture changes to something without visible lips** (B-roll, a second angle, a wide). On a single talking head they put the speaker out of sync; lint flags `lip-sync`.
+- Use them at most joins where the picture changes: they are what makes an edit flow instead of click. `j: "8f"` on a segment: its sound starts before its picture (we hear the next line while still on the previous shot). `l: "10f"`: the outgoing sound runs under the next picture (a reaction, a wide, B-roll). 6–12 frames reads naturally; longer for a reflective beat.
+- **Only where the picture changes to something without the speaker's visible lips** (B-roll, another angle, a wide, a reaction). On a single talking head they put the speaker out of sync; lint flags `lip-sync`.
 
 ### 2.5 B-roll and music
-- B-roll illustrates the words, it doesn't decorate: a product line gets the product, a "the team" line gets the team. Hold B-roll 2–4 s; cut B-roll on action or a beat, not on a word.
+- **Use B-roll wherever there is any.** Search for it per segment (`library_search` with what's named or done in the line) and place it over jump cuts, over the person, place or thing being described, and to compress time. B-roll illustrates the words, it doesn't decorate: a product line gets the product, a "the team" line gets the team. Hold B-roll 2–4 s; cut it on action or a beat, not on a word; let the dialogue run under it.
 - Music serves the dialogue: under speech it sits about −20 dB (`level`) and opens to about −12 dB in gaps (`open`), ducking automatically. Let it **end on its real ending**: the default `ending: "backtime"` picks the in point so the track's own last bar lands at the end of the cut. Don't fade a phrase out in the middle.
 - Talking head for more than ~20 s without a cutaway reads as a lecture (lint note `talking-head`).
 
@@ -50,8 +60,13 @@ For titles and lower thirds, pr-cut places `.mogrt`s built by ae-compose (see `s
 - Vary shot lengths; a cut where every shot is the same length feels mechanical (lint note `monotone`).
 - Comedy, live shows, banter: laughs are pauses in the transcript, and cutting them kills the timing. Keep them with `tighten: { maxPause: 1.6, keepPause: 0.7 }` and keep repeats that are the joke (`"no, no, no, no"`: `tighten: { repeats: false }` on that segment). The `long-pause` notes are then expected.
 
-### 2.7 Before you call it done
-Look at the contact sheet and the strips; read the lint; play the story in your head from the segment list in the report (it prints what each segment says). Then tell the user the length, the story in one line per beat, what you removed, and what you'd try next.
+### 2.7 Multicam: several cameras of one event
+- Group the cameras (and a sound recorder) of one event and cut from the group: `multicam: { "show": { "audio": "mic", "angles": { "wide": "camA", "close": ["camB_01.MOV", "camB_02.MOV"] } } }`. A camera that records in chunks is one angle with its files in order. pr-cut syncs every file to `audio` by their sound (a file that doesn't sync clearly is left out, with a warning), takes the words and sound from `audio` (use the best microphone) and the picture from the angles.
+- Segments then use `"src": "show"`. pr-cut changes angle at every jump cut and segment join (so cuts read as camera changes, never jumps); set `angle` on a segment to choose: the **wide** to orient and to land a physical moment, the **close** for the emotional line or the punchline, the other person for a **reaction**. Lip sync holds across angles, so J and L cuts work at angle changes.
+- Camcorder files with Dolby (AC-3) sound: Premiere can't decode it, so pr-cut extracts the sound to a WAV once and uses that (the report says so).
+
+### 2.8 Before you call it done
+Look at the contact sheet and the strips (every cut should change something: framing, angle, or a B-roll cover); read the lint; play the story in your head from the segment list in the report (it prints what each segment says) and check it's coherent from start to end. Then tell the user the length, the story in one line per beat, what you removed, what B-roll and angles you used (or why there were none), and what you'd try next.
 
 ## 3. The edit plan
 
@@ -83,7 +98,7 @@ Look at the contact sheet and the strips; read the lint; play the story in your 
 - `music`: `at`, `until`, `level`, `open`, `duck`, `ending` (`backtime` / `fade` / `cut`), `in`, `fadeIn`, `fadeOut`.
 - `titles`: `{ "mogrt": "path.mogrt", "at": { "seg": "turn", "offset": "0.5s" }, "duration": "4s", "fields": { "Name": "Ana Ruiz", "Title": "Founder" } }`. Field names are the template's Essential Graphics property names. Titles go on their own track above the picture and B-roll (V3 by default; `track` to choose); a color field reads back as a packed number in Premiere, so set colors in the template.
 - **Montage** (instead of `segments`): `"montage": { "music": "…", "clips": ["lib:3", "lib:7", …], "cut": "bar" | "beat" | 2, "length": "30s", "level": 0 }` cuts the picture on the track's bars or beats, cycling the clips (each shot takes the next stretch of its source), and ends on the track's own ending. Give the clips in story order; check the strips for shots that start on a bad frame.
-- Plan-wide: `fps`, `size` (`[w,h]` or `"9:16"`), `jumpCuts`, `grade` (per alias or `"*"`), `markers` (segment markers with beat and quote, default on), `captions`.
+- Plan-wide: `fps`, `size` (`[w,h]` or `"9:16"`), `jumpCuts` (`"auto"` default: camera-aware for show masters, punch-ins for a single camera; `"camera"`, `"punch-in"`, `"none"`), `multicam` (§2.7; segments then use the group as `src` and may set `angle`), `grade` (per alias or `"*"`), `markers` (segment markers with beat and quote, default on), `captions`.
 - `captions: true` makes a Premiere caption track (editable in the Text panel). For styled or **karaoke** captions (each word lights up as it's said), build a caption template in ae-compose (`<Captions style="karaoke" template cues={[…one placeholder cue…]} />`, a comp of 8–10 s at the sequence size, then `export_mogrt`) and pass `captions: { "mogrt": "path.mogrt" }`: pr-cut places one per caption on its own top track with its text and word times filled in.
 - Times anywhere: `3.5`, `"3.5s"`, `"250ms"`, `"12f"`, `"1:02.5"`, `"00:01:02:12"`.
 

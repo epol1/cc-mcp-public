@@ -5,6 +5,7 @@ import path from 'node:path';
 import { probe, type MediaInfo } from '@cc-mcp/core/media/probe.ts';
 import { cachedTranscript, transcribe, type Transcript } from '@cc-mcp/core/transcribe/index.ts';
 import { cameraProbe, type CameraProbe } from './cameras.ts';
+import { syncOffset, type SyncResult } from '@cc-mcp/core/audio/sync.ts';
 
 const probes = new Map<string, Promise<MediaInfo>>();
 
@@ -18,6 +19,8 @@ export interface MediaResolver {
   key(src: string): string;
   /** Camera awareness for a video source (switched programs); absent in resolvers that can't decode. */
   cameras?(src: string): CameraProbe;
+  /** Where `other` sits in `ref` by their sound (multicam sync; t_ref = t_other + offset). */
+  sync?(ref: string, other: string): Promise<SyncResult>;
 }
 
 export function mediaResolver(aliases: Record<string, string> = {}, opts: { baseDir?: string; libraryPath?: (id: string) => string | null; transcribeMissing?: boolean } = {}): MediaResolver {
@@ -61,6 +64,7 @@ export function mediaResolver(aliases: Record<string, string> = {}, opts: { base
       }
       return transcripts.get(p)!;
     },
+    sync: (ref, other) => syncOffset(resolvePath(ref), resolvePath(other)),
     cameras: (src) => {
       const p = resolvePath(src);
       if (!cams.has(p)) cams.set(p, cameraProbe(p));

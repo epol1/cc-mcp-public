@@ -51,6 +51,8 @@ export const SegmentSchema = z.object({
   transitionFrames: z.number().int().min(2).max(120).optional(),
   /** Punch in (scale %) on this segment, e.g. to vary a single-camera interview. */
   punchIn: z.number().min(100).max(200).optional(),
+  /** Multicam (`src` names a multicam group): the angle for this segment (default: pr-cut changes angle at every cut). */
+  angle: z.string().optional(),
   grade: GradeSchema.optional(),
   /** Dialogue gain, dB. */
   level: z.number().min(-60).max(12).optional(),
@@ -132,6 +134,12 @@ export const PlanSchema = z.object({
   /** Frame size or aspect (default: the first segment's media size). */
   size: z.union([z.tuple([z.number().int(), z.number().int()]), z.enum(['16:9', '9:16', '1:1', '4:5'])]).optional(),
   media: z.record(z.string(), z.string()).optional(),
+  /**
+   * Multicam groups: several cameras (and a sound recorder) of one event, synced by their sound. A segment whose `src`
+   * names a group takes its words and sound from `audio` and its picture from an angle; an angle is one file or a
+   * camera's chunks in order. `{ "show": { "audio": "mic", "angles": { "wide": "A.MTS", "close": ["B1.MOV", "B2.MOV"] } } }`
+   */
+  multicam: z.record(z.string(), z.object({ audio: z.string(), angles: z.record(z.string(), z.union([z.string(), z.array(z.string()).min(1)])) }).strict()).optional(),
   segments: z.array(SegmentSchema).optional(),
   /** A music-driven montage: picture cut to the beats/bars of a track (instead of dialogue segments). */
   montage: MontageSchema.optional(),
